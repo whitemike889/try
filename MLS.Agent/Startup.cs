@@ -37,6 +37,7 @@ namespace MLS.Agent
             loggerFactory.AddDebug();
 
             app.UseMvc();
+            app.UseStaticFiles();
         }
     }
 }
