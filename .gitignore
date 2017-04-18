@@ -13,6 +13,7 @@
 x64/
 [Bb]in/
 [Oo]bj/
+node_modules/
 
 # These are generated or copied by Init.cmd
 Roslyn.sln

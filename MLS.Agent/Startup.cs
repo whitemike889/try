@@ -14,6 +14,7 @@ namespace MLS.Agent
         {
             Configuration = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
+                
                 //                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
                 //                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
 //                .AddEnvironmentVariables()

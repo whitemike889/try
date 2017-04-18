@@ -7,10 +7,6 @@ namespace MLS.Agent.Controllers
     [Route("api/[controller]")]
     public class HelloController : Controller
     {
-        [HttpGet]
-        public string Get()
-        {
-            return "Hello!";
-        }
+        public string Get() => "Hello!";
     }
 }
