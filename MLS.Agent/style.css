@@ -29,6 +29,8 @@
     min-width: 800px;
     padding-left: 36px;
     border-top: lightgray 1px solid;
+    overflow: auto;
+    max-height: 300px;
 }
 
 button {

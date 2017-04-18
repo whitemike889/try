@@ -5,28 +5,43 @@ import styles from "./style.css";
 class App extends Component {
   constructor(props) {
     super(props);
-    this.state = {  
-      code: [
-        "using System;",
-        "using System.Collections.Generic;",
-        "",
-        "public class Program",
-        "{", 
-        "    public static void Main()",
-        "    {",
-        "        var names = new List<string>",
-        "        {",
-        "            \"Alice\",",
-        "            \"Bobby\",",
-        "            \"Carol\",",
-        "            \"Diane\"",
-        "        };",
-        "",
-        "        names.ForEach(name => Console.WriteLine(name));",  
-        "    }",
-        "}",
-        ].join('\n'),
-      output: "Click run to get output"
+
+    this.state = {
+        code: "// loading...",
+        output: "Click run to get output"
+    };
+
+    var code;
+
+    if (props.codeUrl) {
+      this.loadCode(props.codeUrl)
+          .then(r => this.setState({
+            code: r
+          }));
+    } else { 
+      code = setState({
+        code: [
+          ` // ${JSON.stringify(props)} `,
+          "using System;",
+          "using System.Collections.Generic;",
+          "",
+          "public class Program",
+          "{", 
+          "    public static void Main()",
+          "    {",
+          "        var names = new List<string>",
+          "        {",
+          "            \"Alice\",",
+          "            \"Bobby\",",
+          "            \"Carol\",",
+          "            \"Diane\"",
+          "        };",
+          "",
+          "        names.ForEach(name => Console.WriteLine(name));",  
+          "    }",
+          "}",
+        ].join('\n')
+        });
     }
 
     this.onClick = this.onClick.bind(this);
@@ -38,11 +53,12 @@ class App extends Component {
   }
 
   onChange(newValue, e) {
-    console.log('onChange: ' + JSON.stringify(e));
+    console.log(e);
     this.setState({code: newValue});
   }
 
   onClick(e) {
+    console.log(e);
     this.compileAndExecute(this.state.code)
         .then(result => {
           this.setState({output: result.output.map(l => <span>{l} <br /></span>)});
@@ -59,9 +75,13 @@ class App extends Component {
       body: JSON.stringify({
         Source: code 
       })
-    }).then(r => {
-        return r.json();
-    });
+    })
+          .then(r => r.json());
+  }
+
+  loadCode(uri) {
+    return fetch(`/api/code?from=${uri}`, { method: 'GET' })
+           .then(r => r.text());
   }
 
   render() {
@@ -77,7 +97,7 @@ class App extends Component {
 
         <div className={styles.editor}>
           <MonacoEditor
-            width="700"
+            width="650"
             height="350"
             language="csharp"
             value={code}
