@@ -36,8 +36,9 @@ namespace MLS.Agent
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
 
-            app.UseMvc();
-            app.UseStaticFiles();
+            app.UseDefaultFiles()
+               .UseStaticFiles()
+               .UseMvc();
         }
     }
 }

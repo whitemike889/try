@@ -1,5 +1,6 @@
 ﻿import React, { Component } from 'react';
 import MonacoEditor from 'react-monaco-editor';
+import styles from "./style.css";
 
 class App extends Component {
   constructor(props) {
@@ -8,11 +9,13 @@ class App extends Component {
       code: [
         "using System;",
         "",
-        "public class HelloWorld",
+        "public class Program",
         "{", 
         "    public static void Main()",
         "    {",
-        "        Console.WriteLine($\"Hello world! {DateTime.Now}!\");",
+        "        var names = new { Name = \"Jeff\", Age = 20 };",
+        "        var s = $\"{person.Name} is {person.Age} years old.\";",  
+        "        Console.WriteLine(s);",  
         "    }",
         "}",
         ].join('\n'),
@@ -28,17 +31,18 @@ class App extends Component {
   }
 
   onChange(newValue, e) {
+    console.log('onChange: ' + JSON.stringify(e));
     this.setState({code: newValue});
   }
 
   onClick(e) {
-    this.getOutput(this.state.code)
+    this.compileAndExecute(this.state.code)
         .then(result => {
-          this.setState({output: result.output.map(l => <p>{l}</p>)});
+          this.setState({output: result.output.map(l => <span>{l} <br /></span>)});
         });
   }
 
-  getOutput(code)
+  compileAndExecute(code)
   {
     return fetch('/api/compile', {
       method: 'POST',
@@ -54,16 +58,20 @@ class App extends Component {
   }
 
   render() {
+
     const code = this.state.code;
     const options = {
       selectOnLineNumbers: true
-    };
+    }; 
+
     return (
-      <div>
-        <div>
+      
+      <div className={styles.parent}>
+
+        <div className={styles.editor}>
           <MonacoEditor
-            width="800"
-            height="600"
+            width="700"
+            height="350"
             language="csharp"
             value={code}
             options={options}
@@ -71,17 +79,21 @@ class App extends Component {
             editorDidMount={this.editorDidMount}
           />
         </div>
-        <div className='mlsTerminal'>
+        
+        <div className={styles.controls}>
+            <button onClick={this.onClick}>
+              Run
+            </button>
+        </div>
+        
+        <div className={styles.terminal}>
           {this.state.output}
         </div>
-        <div>
-          <button onClick={this.onClick}>
-            Run
-          </button>
-        </div>
+
       </div>
     );
   }
 }
+
 
 export default App;

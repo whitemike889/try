@@ -1,0 +1,40 @@
+
+.parent {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    width: 700px;
+}
+
+.child {
+    flex: 1;
+    padding: 10px;
+}
+
+.controls {
+    composes: child;
+    min-width: 100px;
+}
+
+.editor {
+    composes: child;
+    min-width: 700px;
+}
+
+.terminal {
+    composes: child;
+    background-color: white;
+    font-family: Consolas, "Courier New", monospace;
+    height: 300px;
+    min-width: 800px;
+}
+
+button {
+    background-color: #0a7eb2;
+    border-radius: 0px;
+    border: 0;
+    box-shadow:none;
+    color: white;
+    padding: 10px;
+}
+
