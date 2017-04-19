@@ -1,0 +1,44 @@
+
+.parent {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.child {
+    align-self: flex-end;
+    flex: 1;
+    padding: 10px;
+}
+
+.controls {
+    composes: child;
+    min-width: 100px;
+}
+
+.editor {
+    composes: child;
+    min-width: 700px;
+}
+
+.terminal {
+    composes: child;
+    background-color: white;
+    font-family: Consolas, "Courier New", monospace;
+    height: 300px;
+    min-width: 800px;
+    padding-left: 36px;
+    border-top: lightgray 1px solid;
+    overflow: auto;
+    max-height: 300px;
+}
+
+button {
+    background-color: #0a7eb2;
+    border-radius: 0px;
+    border: 0;
+    box-shadow: none;
+    color: white;
+    padding: 10px;
+}
+
