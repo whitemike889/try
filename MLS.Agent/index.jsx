@@ -8,7 +8,6 @@ import { AppContainer } from 'react-hot-loader'
 import 'react-hot-loader/patch';
 import App from './App.jsx'
 
-
 const Routes = (props) => (
   <Router {...props}>
     <Route path="/" component={App} />

@@ -11,15 +11,11 @@ class App extends Component {
                 props.location.search &&
                 parseQueryString(props.location.search);
 
-    console.log({query});
-
     this.state = {
       code: "// loading...",
       output: "Click run to get output",
       height: query['height'] || 140
     };
-    
-    var code;
     
     if (!query || !this.tryLoadCodeFromUrl(query)) {
       this.loadDefault();
@@ -118,24 +114,27 @@ public class Program
     
     return (
     
-    <div className={styles.parent}>
-    
-      <div className={styles.editor}>
-        <MonacoEditor
-        width="500"
-        height={this.state.height}
-        language="csharp"
-        value={code}
-        options={options}
-        onChange={this.onChange}
-        editorDidMount={this.editorDidMount}
-        />
-      </div>
-      
-      <div className={styles.controls}>
-        <button onClick={this.onClick}>
-          Run
-        </button>
+    <div>
+   
+      <div className={styles.content}>
+          <div className={styles.editor}>
+            <MonacoEditor
+            height={this.state.height}
+            language="csharp"
+            value={code}
+            options={options}
+            onChange={this.onChange}
+            editorDidMount={this.editorDidMount}
+            />
+
+            
+          <div className={styles.controls}>
+            <button onClick={this.onClick}>
+              Run
+            </button>
+          </div>
+          </div>
+          
       </div>
       
       <div className={styles.terminal} 
@@ -147,6 +146,5 @@ public class Program
     );
   }
 }
-
 
 export default App;

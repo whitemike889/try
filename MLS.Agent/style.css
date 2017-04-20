@@ -1,34 +1,29 @@
 
-.parent {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-}
-
-.child {
-    align-self: flex-end;
-    flex: 1;
-    padding: 10px;
-}
-
-.controls {
-    composes: child;
-    min-width: 100px;
-}
-
-.editor {
-    composes: child;
-    min-width: 500px;
-}
-
 .terminal {
-    composes: child;
     background-color: white;
     font-family: Consolas, "Courier New", monospace;
-    min-width: 500px;
+    width: 90%;
     padding-left: 36px;
     border-top: lightgray 1px solid;
     overflow: auto;
+    padding: 10px;
+    padding-left: 32px;
+}
+
+.content { 
+    width: 100%; 
+}
+
+.editor { 
+    width: 90%; 
+    min-width: 40px;  
+    float: left;
+}
+
+.controls { 
+    width: 80px; 
+    float: right;
+    position: relative;
 }
 
 button {
@@ -38,5 +33,7 @@ button {
     box-shadow: none;
     color: white;
     padding: 10px;
+    position: absolute;
+    right: -60px;
+    bottom: 4px;
 }
-
