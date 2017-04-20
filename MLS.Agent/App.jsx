@@ -80,10 +80,11 @@ public class Program
   
   onClick(e) {
     console.log(e);
+    this.setState({output: '...'});
     this.compileAndExecute(this.state.code)
-    .then(result => {
-      this.setState({output: result.output.map(l => <span>{l} <br /></span>)});
-    });
+        .then(result => {
+            this.setState({output: result.output.map(l => <span>{l} <br /></span>)});
+        });
   }
   
   compileAndExecute(code)
@@ -115,7 +116,6 @@ public class Program
     return (
     
     <div>
-   
       <div className={styles.content}>
           <div className={styles.editor}>
             <MonacoEditor
@@ -126,15 +126,13 @@ public class Program
             onChange={this.onChange}
             editorDidMount={this.editorDidMount}
             />
-
             
           <div className={styles.controls}>
             <button onClick={this.onClick}>
               Run
             </button>
           </div>
-          </div>
-          
+        </div>
       </div>
       
       <div className={styles.terminal} 
