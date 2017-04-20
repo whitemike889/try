@@ -17,7 +17,7 @@ namespace MLS.Agent
                 
                 //                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
                 //                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
-//                .AddEnvironmentVariables()
+                //                .AddEnvironmentVariables()
                 .Build();
         }
 

@@ -5,15 +5,17 @@ VisualStudioVersion = 15.0.26228.9
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MLS.Agent", "MLS.Agent\MLS.Agent.csproj", "{5D63B3BA-9C25-4F06-91F0-6B0E1091FCD3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MLS.Agent.Tests", "MLS.Agent.Tests\MLS.Agent.Tests.csproj", "{765AE2F8-7A2A-471A-8BD2-2CB2994743E9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MLS.Agent.Tests", "MLS.Agent.Tests\MLS.Agent.Tests.csproj", "{765AE2F8-7A2A-471A-8BD2-2CB2994743E9}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{8192FEAD-BCE6-4E62-97E5-2E9EA884BD71}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "source", "source", "{6EE8F484-DFA2-4F0F-939F-400CE78DFAC2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LanguageServer", "LanguageServer\LanguageServer.csproj", "{5CAF24CB-90EA-42AE-81E0-0E82BF3D4AF8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LanguageServer", "LanguageServer\LanguageServer.csproj", "{5CAF24CB-90EA-42AE-81E0-0E82BF3D4AF8}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LanguageServer.Tests", "LanguageServer.Tests\LanguageServer.Tests.csproj", "{93E75EF0-416D-43C7-BC67-BF386CE7C79D}"
+EndProject
+Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{8AE92A3B-727C-4D43-8D1D-D29CAE7FC716}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -37,6 +39,10 @@ Global
 		{93E75EF0-416D-43C7-BC67-BF386CE7C79D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{93E75EF0-416D-43C7-BC67-BF386CE7C79D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{93E75EF0-416D-43C7-BC67-BF386CE7C79D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8AE92A3B-727C-4D43-8D1D-D29CAE7FC716}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8AE92A3B-727C-4D43-8D1D-D29CAE7FC716}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8AE92A3B-727C-4D43-8D1D-D29CAE7FC716}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8AE92A3B-727C-4D43-8D1D-D29CAE7FC716}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

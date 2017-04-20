@@ -1,0 +1,8 @@
+version: '2'
+
+services:
+  mls.agent:
+    image: "${DOCKER_REPOSITORY_SERVER}/${IMAGE_NAME}:latest"
+    build:
+      context: ./MLS.Agent
+      dockerfile: Dockerfile
