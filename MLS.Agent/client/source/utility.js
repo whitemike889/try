@@ -1,8 +1,6 @@
 
-
 function parseQueryString(query) {
-
-    if(!query) {
+    if (!query) {
         return { };
     }
 
