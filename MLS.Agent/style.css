@@ -18,19 +18,18 @@
 
 .editor {
     composes: child;
-    min-width: 700px;
+    min-width: 500px;
 }
 
 .terminal {
     composes: child;
     background-color: white;
     font-family: Consolas, "Courier New", monospace;
-    height: 300px;
-    min-width: 800px;
+    min-width: 500px;
     padding-left: 36px;
     border-top: lightgray 1px solid;
     overflow: auto;
-    max-height: 300px;
+    height: 150px;
 }
 
 button {

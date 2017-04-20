@@ -125,8 +125,8 @@ public class Program
     
       <div className={styles.editor}>
         <MonacoEditor
-        width="650"
-        height="350"
+        width="500"
+        height="180"
         language="csharp"
         value={code}
         options={options}
@@ -143,7 +143,7 @@ public class Program
       
       <div className={styles.terminal}>
         {this.state.output}
-      </div>
+      </div> 
     
     </div>
     );
