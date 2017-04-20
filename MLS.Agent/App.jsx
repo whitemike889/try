@@ -1,19 +1,27 @@
 ﻿import React, { Component } from 'react';
 import MonacoEditor from 'react-monaco-editor';
 import styles from "./style.css";
+import parseQueryString from './client/source/utility.js';
 
 class App extends Component {
   constructor(props) {
     super(props);
     
+    let query = props.location && 
+                props.location.search &&
+                parseQueryString(props.location.search);
+
+    console.log({query});
+
     this.state = {
       code: "// loading...",
-      output: "Click run to get output"
+      output: "Click run to get output",
+      height: query['height'] || 140
     };
     
     var code;
     
-    if (!this.tryLoadCodeFromUrl(props)) {
+    if (!query || !this.tryLoadCodeFromUrl(query)) {
       this.loadDefault();
     }
     
@@ -21,42 +29,31 @@ class App extends Component {
     this.onChange = this.onChange.bind(this);
   }
   
-  tryLoadCodeFromUrl (props) {
-    if (!props.location || !props.location.search) {
+  tryLoadCodeFromUrl (query) {
+   
+    var from = query['from'];
+
+    if (!from) {
       return false;
     }
 
-    var from = props
-          .location
-          .search
-          .slice(1)
-          .split('&')
-          .map(kv => kv.split('='))
-          .reduce((hash, pair) => { 
-            hash[pair[0]] = pair[1];
-            return hash;
-          }, {})['from'];
+    this.state = {
+      code: `// loading from ${decodeURIComponent(from)} ...`,
+      output: "Click run to get output",
+      height: query['height'] || 140
+    };
 
-      if (!from) {
-        return false;
-      }
-
-      this.state = {
-        code: `// loading from ${decodeURIComponent(from)} ...`,
-        output: "Click run to get output"
-      };
-
-      this.loadCode(from)
-          .then(r => {
-            setTimeout(() => {
-              this.setState({
-                code: r, 
-                loaded: true
-              });
-            }, 3000);
-      });
-      
-      return true;
+    this.loadCode(from)
+        .then(r => {
+          setTimeout(() => {
+            this.setState({
+              code: r, 
+              loaded: true
+            });
+          }, 3000);
+    });
+    
+    return true;
   }
 
   loadDefault() {
@@ -125,8 +122,8 @@ public class Program
     
       <div className={styles.editor}>
         <MonacoEditor
-        width="650"
-        height="350"
+        width="500"
+        height={this.state.height}
         language="csharp"
         value={code}
         options={options}
@@ -141,9 +138,10 @@ public class Program
         </button>
       </div>
       
-      <div className={styles.terminal}>
+      <div className={styles.terminal} 
+           style={{maxHeight: Math.floor(this.state.height/2)}}>
         {this.state.output}
-      </div>
+      </div> 
     
     </div>
     );
