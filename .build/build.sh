@@ -1,3 +1,5 @@
+-e
+
 export IMAGE_NAME=dotnet-repl
 
 echo "Pre-Build Diagnostics:"
@@ -9,7 +11,20 @@ echo "DOCKER VERSION:"
 docker version
 echo "----------------------"
 
-docker-compose -f docker-compose.ci.build.yml up --build
+docker-compose -f docker-compose.ci.build.yml up --build 
+
+buildResult=$(docker-compose -f docker-compose.ci.build.yml ps -q | xargs docker inspect -f '{{ .State.ExitCode }}' | grep -v 0 | wc -l | tr -d ' ')
+
+if [ "$buildResult" -ne 0 ]
+then
+    echo ""
+    echo "============================================"
+    echo "build failed:"
+    docker-compose -f docker-compose.ci.build.yml ps 
+    echo "============================================"
+    exit 1
+fi
+
 docker-compose build
 
 if [ -z "${PUSH_DOCKER_IMAGE+x}" ]
