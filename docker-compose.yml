@@ -6,3 +6,4 @@ services:
     build:
       context: ./MLS.Agent
       dockerfile: Dockerfile
+    env_file: .env

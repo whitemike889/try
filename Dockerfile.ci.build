@@ -1,0 +1,4 @@
+FROM mls-ls/restored
+WORKDIR /app
+COPY . .
+RUN dotnet build ./MLS-LS.sln

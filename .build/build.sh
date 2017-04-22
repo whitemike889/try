@@ -3,11 +3,13 @@ export IMAGE_NAME=dotnet-repl
 echo "Pre-Build Diagnostics:"
 echo "----------------------"
 echo "IMAGE_NAME: $IMAGE_NAME"
+echo "DOCKER_REPOSITORY_SERVER: $DOCKER_REPOSITORY_SERVER"
+echo "----------------------"
 echo "DOCKER VERSION:"
 docker version
 echo "----------------------"
 
-docker-compose -f docker-compose.ci.build.yml up
+docker-compose -f docker-compose.ci.build.yml up --build
 docker-compose build
 
 if [ -z "${PUSH_DOCKER_IMAGE+x}" ]
