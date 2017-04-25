@@ -1,12 +1,8 @@
 ﻿namespace LanguageServer
 {
-    public class CompileAndExecuteResult
+    public class ProcessResult
     {
         public bool Succeeded { get; set; }
-
-        public string Reason { get; set; }
-
-        public string Phase { get; set; }
 
         public string[] Output { get; set; }
     }

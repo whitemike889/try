@@ -8,7 +8,7 @@ namespace MLS.Agent.Controllers
     [Route("api/[controller]")]
     public class CompileController : Controller
     {
-        public async Task<CompileAndExecuteResult> Post([FromBody] CompileAndExecuteRequest request)
+        public async Task<ProcessResult> Post([FromBody] CompileAndExecuteRequest request)
         {
             var languageServer = new DotDotnetLanguageServer();
 

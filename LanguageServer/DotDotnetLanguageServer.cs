@@ -1,4 +1,5 @@
-﻿using System;
+﻿using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -6,9 +7,9 @@ using Newtonsoft.Json;
 
 namespace LanguageServer
 {
-    public class DotDotnetLanguageServer
+    public class DotDotnetLanguageServer : ILanguageServer
     {
-        public async Task<CompileAndExecuteResult> CompileAndExecute(
+        public async Task<ProcessResult> CompileAndExecute(
             CompileAndExecuteRequest request)
         {
             using (var httpClient = new HttpClient())
@@ -27,7 +28,11 @@ namespace LanguageServer
 
                 var json = await response.Content.ReadAsStringAsync();
 
-                return JsonConvert.DeserializeObject<CompileAndExecuteResult>(json);
+                var compileAndExecuteResult = JsonConvert.DeserializeObject<ProcessResult>(json);
+
+                compileAndExecuteResult.Output = compileAndExecuteResult.Output.Select(WebUtility.HtmlDecode).ToArray();
+
+                return compileAndExecuteResult;
             }
         }
     }
