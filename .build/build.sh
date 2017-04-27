@@ -1,4 +1,4 @@
--e
+#!/bin/bash -e
 
 export IMAGE_NAME=dotnet-repl
 

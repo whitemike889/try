@@ -18,5 +18,7 @@
       <DependentUpon>docker-compose.yml</DependentUpon>
     </None>
     <None Include="docker-compose.yml" />
+    <None Include="Dockerfile.ci.build" />
+    <None Include="Dockerfile.ci.restore" />
   </ItemGroup>
 </Project>
