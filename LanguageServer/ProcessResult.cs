@@ -1,9 +1,19 @@
-﻿namespace LanguageServer
+﻿using System.Collections.Generic;
+
+namespace LanguageServer
 {
     public class ProcessResult
     {
-        public bool Succeeded { get; set; }
+        public ProcessResult(
+            bool succeeded,
+            IReadOnlyCollection<string> output)
+        {
+            Succeeded = succeeded;
+            Output = output;
+        }
 
-        public string[] Output { get; set; }
+        public bool Succeeded { get; }
+
+        public IReadOnlyCollection<string> Output { get; }
     }
 }

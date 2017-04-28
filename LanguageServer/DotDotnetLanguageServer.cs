@@ -10,7 +10,7 @@ namespace LanguageServer
     public class DotDotnetLanguageServer : ILanguageServer
     {
         public async Task<ProcessResult> CompileAndExecute(
-            CompileAndExecuteRequest request)
+            BuildAndRunRequest request)
         {
             using (var httpClient = new HttpClient())
             {
@@ -28,11 +28,13 @@ namespace LanguageServer
 
                 var json = await response.Content.ReadAsStringAsync();
 
-                var compileAndExecuteResult = JsonConvert.DeserializeObject<ProcessResult>(json);
+                var result = JsonConvert.DeserializeObject<ProcessResult>(json);
 
-                compileAndExecuteResult.Output = compileAndExecuteResult.Output.Select(WebUtility.HtmlDecode).ToArray();
-
-                return compileAndExecuteResult;
+                return new ProcessResult(
+                    result.Succeeded,
+                    result.Output
+                          .Select(WebUtility.HtmlDecode)
+                          .ToArray());
             }
         }
     }

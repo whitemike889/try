@@ -4,6 +4,6 @@ namespace LanguageServer
 {
     public interface ILanguageServer
     {
-        Task<ProcessResult> CompileAndExecute(CompileAndExecuteRequest request);
+        Task<ProcessResult> CompileAndExecute(BuildAndRunRequest request);
     }
 }
