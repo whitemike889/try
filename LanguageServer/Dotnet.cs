@@ -1,10 +1,16 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
 namespace LanguageServer
 {
+    public static class ProcessResultExtensions
+    {
+        
+    }
+
     public class Dotnet
     {
         private readonly FileInfo _muxerPath;
@@ -50,11 +56,20 @@ namespace LanguageServer
 
             process.WaitForExit();
 
+            var stdOut = SplitLines(process.StandardOutput);
+
+            var stdErr = SplitLines(process.StandardError);
+
             return new ProcessResult
-            {
-                Succeeded = process.ExitCode == 0,
-                Output = process.StandardOutput.ReadToEnd().Replace("\r\n", "\n").Split('\n').Concat(process.StandardError.ReadToEnd().Replace("\r\n", "\n").Split('\n')).ToArray()
-            };
+            (
+                succeeded: process.ExitCode == 0,
+                output: stdOut.Concat(stdErr).ToArray()
+            );
         }
+
+        private static IReadOnlyCollection<string> SplitLines(StreamReader reader) =>
+            reader.ReadToEnd()
+                  .Replace("\r\n", "\n")
+                  .Split('\n');
     }
 }

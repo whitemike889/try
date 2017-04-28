@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -18,9 +17,11 @@ namespace LanguageServer
             _dotnet = dotnet ?? new Dotnet(_workingDirectory);
         }
 
-        public async Task<ProcessResult> CompileAndExecute(CompileAndExecuteRequest request)
+        public async Task<ProcessResult> CompileAndExecute(BuildAndRunRequest request)
         {
             EnsureWorkingDirectoryExists();
+
+            CleanOldSources();
 
             _dotnet.New("console");
 
@@ -31,6 +32,14 @@ namespace LanguageServer
             _dotnet.Restore();
 
             return _dotnet.Run();
+        }
+
+        private void CleanOldSources()
+        {
+            foreach (var sourceFile in _workingDirectory.EnumerateFileSystemInfos("*.cs"))
+            {
+                sourceFile.Delete();
+            }
         }
 
         private void EnsureWorkingDirectoryExists()

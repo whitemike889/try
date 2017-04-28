@@ -1,8 +1,8 @@
 ﻿namespace LanguageServer
 {
-    public class CompileAndExecuteRequest
+    public class BuildAndRunRequest
     {
-        public CompileAndExecuteRequest(string source)
+        public BuildAndRunRequest(string source)
         {
             source = source ?? "";
 
