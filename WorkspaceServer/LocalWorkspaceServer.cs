@@ -2,15 +2,15 @@
 using System.IO;
 using System.Threading.Tasks;
 
-namespace LanguageServer
+namespace WorkspaceServer
 {
-    public class LocalLanguageServer : ILanguageServer
+    public class LocalWorkspaceServer : IWorkspaceServer
     {
         private readonly Dotnet _dotnet;
 
         private readonly DirectoryInfo _workingDirectory;
 
-        public LocalLanguageServer(DirectoryInfo workingDirectory, Dotnet dotnet = null)
+        public LocalWorkspaceServer(DirectoryInfo workingDirectory, Dotnet dotnet = null)
         {
             _workingDirectory = workingDirectory ?? throw new ArgumentNullException(nameof(workingDirectory));
 

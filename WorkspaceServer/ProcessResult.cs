@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace LanguageServer
+namespace WorkspaceServer
 {
     public class ProcessResult
     {

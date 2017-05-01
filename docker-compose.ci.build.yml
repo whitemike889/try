@@ -27,10 +27,10 @@ services:
     volumes:
       - ./MLS.Agent.Tests/TestResults:/app/MLS.Agent.Tests/TestResults
     command: dotnet test /app/MLS.Agent.Tests/MLS.Agent.Tests.csproj --logger trx 
-  ci-test-languageserver:
+  ci-test-workspaceserver:
     depends_on:
       - ci-build
     image: mls-ls/built
     volumes:
-      - ./LanguageServer.Tests/TestResults:/app/LanguageServer.Tests/TestResults
-    command: dotnet test /app/LanguageServer.Tests/LanguageServer.Tests.csproj --logger trx 
+      - ./WorkspaceServer.Tests/TestResults:/app/WorkspaceServer.Tests/TestResults
+    command: dotnet test /app/WorkspaceServer.Tests/WorkspaceServer.Tests.csproj --logger trx 

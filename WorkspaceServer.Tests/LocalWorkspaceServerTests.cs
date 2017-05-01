@@ -5,27 +5,27 @@ using FluentAssertions;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace LanguageServer.Tests
+namespace WorkspaceServer.Tests
 {
-    public class LocalLanguageServerTests : LanguageServerTests
+    public class LocalWorkspaceServerTests : WorkspaceServerTests
     {
-        protected override ILanguageServer GetLanguageServer()
+        protected override IWorkspaceServer GetWorkspaceServer()
         {
             var directoryName = DateTime.Now.ToString("yyyy.MM.dd-hh.mm.ss");
 
             var directory = new DirectoryInfo(directoryName);
 
-            return new LocalLanguageServer(directory);
+            return new LocalWorkspaceServer(directory);
         }
 
-        public LocalLanguageServerTests(ITestOutputHelper output) : base(output)
+        public LocalWorkspaceServerTests(ITestOutputHelper output) : base(output)
         {
         }
 
         [Fact]
         public async Task Code_can_be_updated_and_rerun_in_the_same_workspace()
         {
-            var server = GetLanguageServer();
+            var server = GetWorkspaceServer();
 
             ProcessResult result;
 

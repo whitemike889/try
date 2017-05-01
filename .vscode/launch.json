@@ -6,7 +6,7 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceRoot}\\LanguageServer.Tests\\bin\\Debug\\netcoreapp1.1\\LanguageServer.Tests.dll",
+            "program": "${workspaceRoot}\\Workspace Server.Tests\\bin\\Debug\\netcoreapp1.1\\Workspace   Server.Tests.dll",
             "args": [],
             "cwd": "${workspaceRoot}",
             "externalConsole": false,

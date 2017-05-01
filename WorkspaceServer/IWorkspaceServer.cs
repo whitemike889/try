@@ -1,8 +1,8 @@
 ﻿using System.Threading.Tasks;
 
-namespace LanguageServer
+namespace WorkspaceServer
 {
-    public interface ILanguageServer
+    public interface IWorkspaceServer
     {
         Task<ProcessResult> CompileAndExecute(BuildAndRunRequest request);
     }

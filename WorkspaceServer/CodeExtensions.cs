@@ -1,4 +1,4 @@
-﻿namespace LanguageServer
+﻿namespace WorkspaceServer
 {
     internal static class CodeExtensions
     {

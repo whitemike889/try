@@ -5,9 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
-namespace LanguageServer
+namespace WorkspaceServer
 {
-    public class DotDotnetLanguageServer : ILanguageServer
+    public class DotDotnetWorkspaceServer : IWorkspaceServer
     {
         public async Task<ProcessResult> CompileAndExecute(
             BuildAndRunRequest request)
