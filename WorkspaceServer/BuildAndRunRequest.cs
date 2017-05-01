@@ -1,4 +1,4 @@
-﻿namespace LanguageServer
+﻿namespace WorkspaceServer
 {
     public class BuildAndRunRequest
     {

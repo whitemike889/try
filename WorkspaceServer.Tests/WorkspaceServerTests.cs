@@ -3,15 +3,15 @@ using FluentAssertions;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace LanguageServer.Tests
+namespace WorkspaceServer.Tests
 {
-    public abstract class LanguageServerTests
+    public abstract class WorkspaceServerTests
     {
-        protected abstract ILanguageServer GetLanguageServer();
+        protected abstract IWorkspaceServer GetWorkspaceServer();
 
         protected readonly ITestOutputHelper _output;
 
-        protected LanguageServerTests(ITestOutputHelper output)
+        protected WorkspaceServerTests(ITestOutputHelper output)
         {
             _output = output;
         }
@@ -30,7 +30,7 @@ public static class Hello
 }
 ");
 
-            var server = GetLanguageServer();
+            var server = GetWorkspaceServer();
 
             var result = await server.CompileAndExecute(request);
 
@@ -53,7 +53,7 @@ public static class Hello
     } 
 }");
 
-            var server = GetLanguageServer();
+            var server = GetWorkspaceServer();
 
             var result = await server.CompileAndExecute(request);
 
@@ -68,7 +68,7 @@ var person = new { Name = ""Jeff"", Age = 20 };
 var s = $""{person.Name} is {person.Age} year(s) old"";
 Console.WriteLine(s);");
 
-            var server = GetLanguageServer();
+            var server = GetWorkspaceServer();
 
             var result = await server.CompileAndExecute(request);
 
@@ -81,7 +81,7 @@ Console.WriteLine(s);");
             var request = new BuildAndRunRequest(@"
 Console.WriteLine(banana);");
 
-            var server = GetLanguageServer();
+            var server = GetWorkspaceServer();
 
             var result = await server.CompileAndExecute(request);
 

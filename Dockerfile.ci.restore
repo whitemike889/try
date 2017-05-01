@@ -1,9 +1,9 @@
 FROM microsoft/aspnetcore-build:1.0-1.1
 WORKDIR /app
-RUN mkdir MLS.Agent && mkdir MLS.Agent.Tests && mkdir LanguageServer && mkdir LanguageServer.Tests
+RUN mkdir MLS.Agent && mkdir MLS.Agent.Tests && mkdir WorkspaceServer && mkdir WorkspaceServer.Tests
 COPY MLS-LS.sln .
 COPY MLS.Agent/MLS.Agent.csproj MLS.Agent/MLS.Agent.csproj
 COPY MLS.Agent.Tests/MLS.Agent.Tests.csproj MLS.Agent.Tests/MLS.Agent.Tests.csproj
-COPY LanguageServer/LanguageServer.csproj LanguageServer/LanguageServer.csproj
-COPY LanguageServer.Tests/LanguageServer.Tests.csproj LanguageServer.Tests/LanguageServer.Tests.csproj
+COPY WorkspaceServer/WorkspaceServer.csproj WorkspaceServer/WorkspaceServer.csproj
+COPY WorkspaceServer.Tests/WorkspaceServer.Tests.csproj WorkspaceServer.Tests/WorkspaceServer.Tests.csproj
 RUN dotnet restore ./MLS-LS.sln

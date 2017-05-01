@@ -6,7 +6,7 @@ using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-namespace LanguageServer
+namespace WorkspaceServer
 {
     public static class DotnetMuxer
     {

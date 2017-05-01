@@ -1,6 +1,6 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
-using LanguageServer;
+using WorkspaceServer;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MLS.Agent.Controllers
@@ -14,7 +14,7 @@ namespace MLS.Agent.Controllers
             [FromBody] BuildAndRunRequest request)
         {
             var workingDirectory = new DirectoryInfo(Path.Combine(Directory.GetCurrentDirectory(), "workspaces", workspaceId));
-            var server = new LocalLanguageServer(workingDirectory);
+            var server = new LocalWorkspaceServer(workingDirectory);
 
             var result = await server.CompileAndExecute(request);
 
