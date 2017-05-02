@@ -3,3 +3,5 @@
 */TestResults/*
 .build/*
 docker-compose*.yml
+*/Dockerfile
+.dockerignore
