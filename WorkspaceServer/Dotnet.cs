@@ -6,21 +6,13 @@ using System.Linq;
 
 namespace WorkspaceServer
 {
-    public static class ProcessResultExtensions
-    {
-        
-    }
-
     public class Dotnet
     {
-        private readonly FileInfo _muxerPath;
         private readonly DirectoryInfo _workingDirectory;
 
-        public Dotnet(DirectoryInfo workingDirectory, FileInfo muxerPath = null)
+        public Dotnet(DirectoryInfo workingDirectory)
         {
             _workingDirectory = workingDirectory ?? throw new ArgumentNullException(nameof(workingDirectory));
-
-            _muxerPath = muxerPath ?? DotnetMuxer.Path;
         }
 
         public void New(string templateName)
@@ -48,7 +40,7 @@ namespace WorkspaceServer
             var process = Process.Start(new ProcessStartInfo
             {
                 Arguments = args,
-                FileName = _muxerPath.FullName,
+                FileName = DotnetMuxer.Path.FullName,
                 RedirectStandardError = true,
                 RedirectStandardOutput = true,
                 WorkingDirectory = _workingDirectory.FullName
