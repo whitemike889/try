@@ -20,7 +20,6 @@ echo "Sourcing Dependencies from $SCRIPT_ROOT"
 
 source $SCRIPT_ROOT/docker_login.sh
 source $SCRIPT_ROOT/update_docker_tags.sh
-source $SCRIPT_ROOT/restart_appservice.sh
 
 echo "Loading Commit Hash from $BUILD_DROP/build.artifact.commit.sha"
 
