@@ -1,2 +1,1 @@
-IMAGE_NAME=build.artifact
 FALLBACK_ARTIFACTS_DIRECTORY=./artifacts
