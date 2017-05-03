@@ -1,11 +1,18 @@
 #!/bin/bash -e
 
-export IMAGE_NAME=dotnet-repl
+REPO_ROOT=`dirname "$0"`; REPO_ROOT=`eval "cd \"$REPO_ROOT/..\" && pwd"`
+
+cd $REPO_ROOT
+
+source $REPO_ROOT/.build/conventions.sh
+
+if [ -z "$BUILD_ARTIFACTSTAGINGDIRECTORY" ]
+then
+    BUILD_ARTIFACTSTAGINGDIRECTORY=$FALLBACK_ARTIFACTS_DIRECTORY
+    mkdir -p $BUILD_ARTIFACTSTAGINGDIRECTORY
+fi
 
 echo "Pre-Build Diagnostics:"
-echo "----------------------"
-echo "IMAGE_NAME: $IMAGE_NAME"
-echo "DOCKER_REPOSITORY_SERVER: $DOCKER_REPOSITORY_SERVER"
 echo "----------------------"
 echo "DOCKER VERSION:"
 docker version
@@ -27,25 +34,15 @@ fi
 
 docker-compose build
 
-if [ -z "${PUSH_DOCKER_IMAGE+x}" ]
+docker save build.artifact:latest -o $BUILD_ARTIFACTSTAGINGDIRECTORY/build.artifact.tar.gz
+
+git rev-parse HEAD > $BUILD_ARTIFACTSTAGINGDIRECTORY/build.artifact.commit.sha
+
+if [ -d "$BUILD_ARTIFACTSTAGINGDIRECTORY/.build" ]
 then
-    echo "Not pushing docker image"
-else
-    if [ -z "${DOCKER_REPOSITORY_USER+x}" ]; then echo "DOCKER_REPOSITORY_USER env var must be set." && MISSING_ARGUMENTS=1; fi
-
-    if [ -z "${DOCKER_REPOSITORY_PASSWORD+x}" ]; then echo "DOCKER_REPOSITORY_PASSWORD env var must be set." && MISSING_ARGUMENTS=1; fi
-
-    if [ -z "${DOCKER_REPOSITORY_SERVER+x}" ]; then echo "DOCKER_REPOSITORY_SERVER env var must be set." && MISSING_ARGUMENTS=1 && DOCKER_REPOSITORY_SERVER=undefined; fi
-
-    if [ -z "${BUILD_SOURCEVERSION+x}" ]; then echo "BUILD_SOURCEVERSION env var must be set." && MISSING_ARGUMENTS=1; fi
-
-    if [ -n "$MISSING_ARGUMENTS" ] && [ "$MISSING_ARGUMENTS" -eq 1 ] ; then exit 1; fi
-
-    docker tag $DOCKER_REPOSITORY_SERVER/$IMAGE_NAME:latest $DOCKER_REPOSITORY_SERVER/$IMAGE_NAME:$BUILD_SOURCEVERSION
-
-    docker login -u $DOCKER_REPOSITORY_USER -p $DOCKER_REPOSITORY_PASSWORD $DOCKER_REPOSITORY_SERVER
-
-    docker push $DOCKER_REPOSITORY_SERVER/$IMAGE_NAME:latest
-
-    docker push $DOCKER_REPOSITORY_SERVER/$IMAGE_NAME:$BUILD_SOURCEVERSION
+    rm -rf "$BUILD_ARTIFACTSTAGINGDIRECTORY/.build"
 fi
+
+mkdir -p "$BUILD_ARTIFACTSTAGINGDIRECTORY/.build"
+
+cp -r "$REPO_ROOT/.build" "$BUILD_ARTIFACTSTAGINGDIRECTORY"
