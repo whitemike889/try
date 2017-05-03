@@ -6,32 +6,31 @@ namespace WorkspaceServer
 {
     public class LocalWorkspaceServer : IWorkspaceServer
     {
-        private readonly Dotnet _dotnet;
-
         private readonly DirectoryInfo _workingDirectory;
 
-        public LocalWorkspaceServer(DirectoryInfo workingDirectory, Dotnet dotnet = null)
+        public LocalWorkspaceServer(DirectoryInfo workingDirectory)
         {
             _workingDirectory = workingDirectory ?? throw new ArgumentNullException(nameof(workingDirectory));
-
-            _dotnet = dotnet ?? new Dotnet(_workingDirectory);
         }
 
         public async Task<ProcessResult> CompileAndExecute(BuildAndRunRequest request)
         {
-            EnsureWorkingDirectoryExists();
-
-            CleanOldSources();
-
-            _dotnet.New("console");
-
-            new FileInfo(Path.Combine(_workingDirectory.FullName, "Program.cs")).Delete();
+            var dotnet = new Dotnet(GetWorkingDirectory());
 
             WriteUserSourceFiles(request.Sources);
 
-            _dotnet.Restore();
+            return dotnet.Run();
+        }
 
-            return _dotnet.Run();
+        private static void PrepareWorkspace(Dotnet dotnet)
+        {
+            dotnet.Restore();
+        }
+
+        private void AcquireTemplate(Dotnet dotnet)
+        {
+            dotnet.New("console");
+            new FileInfo(Path.Combine(_workingDirectory.FullName, "Program.cs")).Delete();
         }
 
         private void CleanOldSources()
@@ -42,12 +41,26 @@ namespace WorkspaceServer
             }
         }
 
-        private void EnsureWorkingDirectoryExists()
+        private DirectoryInfo GetWorkingDirectory()
         {
+            _workingDirectory.Refresh();
+
             if (!_workingDirectory.Exists)
             {
                 _workingDirectory.Create();
+
+                var dotnet = new Dotnet(_workingDirectory);
+
+                AcquireTemplate(dotnet);
+
+                PrepareWorkspace(dotnet);
             }
+            else
+            {
+                CleanOldSources();
+            }
+
+            return _workingDirectory;
         }
 
         private void WriteUserSourceFiles(string[] requestSources)
