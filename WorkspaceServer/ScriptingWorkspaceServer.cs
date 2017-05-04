@@ -86,11 +86,6 @@ namespace WorkspaceServer
                                     request.RawSource,
                                     options);
 #endif
-
-                    if (state != null)
-                    {
-                        Compile(state.Script);
-                    }
                 }
                 catch (CompilationErrorException exception)
                 {
@@ -114,44 +109,28 @@ namespace WorkspaceServer
         {
             var compilation = script.GetCompilation();
 
-            var containsMain = compilation.ContainsSymbolsWithName(s => s == "Main");
-            var containsBlah = compilation.ContainsSymbolsWithName(s => s == "blah");
-
-            var entryPoint = compilation.GetEntryPoint(new CancellationToken());
-
-            Console.WriteLine(new { containsMain, containsBlah, entryPoint });
-
-            try
+            using (var ms = new MemoryStream())
             {
-                using (var ms = new MemoryStream())
+                var result = compilation.Emit(ms);
+
+                if (!result.Success)
                 {
-                    var result = compilation.Emit(ms);
+                    var failures = result.Diagnostics
+                                         .Where(diagnostic =>
+                                                    diagnostic.IsWarningAsError ||
+                                                    diagnostic.Severity == DiagnosticSeverity.Error);
 
-                    if (!result.Success)
+                    foreach (Diagnostic diagnostic in failures)
                     {
-                        var failures = result.Diagnostics
-                                             .Where(diagnostic =>
-                                                        diagnostic.IsWarningAsError ||
-                                                        diagnostic.Severity == DiagnosticSeverity.Error);
-
-                        foreach (Diagnostic diagnostic in failures)
-                        {
-                            Console.Error.WriteLine("{0}: {1}", diagnostic.Id, diagnostic.GetMessage());
-                        }
-                    }
-                    else
-                    {
-                        ms.Seek(0, SeekOrigin.Begin);
-
-                        var assembly = AssemblyLoadContext.Default.LoadFromStream(ms);
-
-                        Console.WriteLine("Successfully emitted in-memory assembly");
+                        Console.Error.WriteLine("{0}: {1}", diagnostic.Id, diagnostic.GetMessage());
                     }
                 }
-            }
-            catch (Exception exception)
-            {
-                Console.WriteLine(exception);
+                else
+                {
+                    ms.Seek(0, SeekOrigin.Begin);
+
+                    var assembly = AssemblyLoadContext.Default.LoadFromStream(ms);
+                }
             }
         }
     }
