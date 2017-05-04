@@ -1,7 +1,6 @@
-﻿using System.IO;
-using System.Threading.Tasks;
-using WorkspaceServer;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using WorkspaceServer;
 
 namespace MLS.Agent.Controllers
 {
@@ -13,8 +12,7 @@ namespace MLS.Agent.Controllers
             string workspaceId,
             [FromBody] BuildAndRunRequest request)
         {
-            var workingDirectory = new DirectoryInfo(Path.Combine(Directory.GetCurrentDirectory(), "workspaces", workspaceId));
-            var server = new LocalWorkspaceServer(workingDirectory);
+            var server = new ScriptingWorkspaceServer();
 
             var result = await server.CompileAndExecute(request);
 
