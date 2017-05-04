@@ -1,5 +1,7 @@
+using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
+using WorkspaceServer.Tests._Recipes_;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -34,7 +36,7 @@ public static class Hello
 
             var result = await server.CompileAndExecute(request);
 
-            _output.WriteLine(string.Join("\n", result.Output));
+            _output.WriteLine(result.ToString());
 
             result.Succeeded.Should().BeTrue();
         }
@@ -58,6 +60,8 @@ Hello.Main();");
             var server = GetWorkspaceServer();
 
             var result = await server.CompileAndExecute(request);
+
+            _output.WriteLine(result.ToString());
 
             result.Succeeded.Should().BeTrue();
             result.Output.Should().Contain("Hello there!");
@@ -91,6 +95,8 @@ $""{person.Name} is {person.Age} year(s) old""");
 
             var result = server.CompileAndExecute(request).Result;
 
+            _output.WriteLine(result.ToJson());
+
             result.ReturnValue
                   .Should()
                   .Be("Jeff is 20 year(s) old",
@@ -100,7 +106,8 @@ $""{person.Name} is {person.Age} year(s) old""");
         [Fact]
         public async Task Response_indicates_when_compile_is_unsuccessful()
         {
-            var request = new BuildAndRunRequest(@"Console.WriteLine(banana);");
+            var request = new BuildAndRunRequest(@"
+Console.WriteLine(banana);");
 
             var server = GetWorkspaceServer();
 
@@ -113,7 +120,64 @@ $""{person.Name} is {person.Age} year(s) old""");
             result.Output
                   .Should()
                   .Contain(
-                      s => s.Contains("(1,19): error CS0103: The name \'banana\' does not exist in the current context"));
+                      s => s.Contains("(2,19): error CS0103: The name \'banana\' does not exist in the current context"));
+        }
+
+        [Fact]
+        public async Task It_indicates_line_by_line_variable_values()
+        {
+            var request = new BuildAndRunRequest(@"
+string name;
+name = ""Jeff"";
+name = ""Alice"";");
+
+            var server = GetWorkspaceServer();
+
+            var result = await server.CompileAndExecute(request);
+
+            var states = result.Variables.Single(v => v.Name == "name").States;
+
+            _output.WriteLine(result.ToString());
+
+            states.Select(s => s.LineNumber)
+                  .Should()
+                  .BeEquivalentTo(2, 3, 4);
+
+            var values = states.Select(s => s.Value).Cast<string>().ToArray();
+
+            _output.WriteLine(new { result }.ToJson());
+
+            values
+                .Should()
+                .BeEquivalentTo(null, "Jeff", "Alice");
+        }
+
+        [Fact]
+        public async Task It_indicates_final_variable_values()
+        {
+            var request = new BuildAndRunRequest(@"
+string name;
+name = ""Jeff"";
+name = ""Alice"";");
+
+            var server = GetWorkspaceServer();
+
+            var result = await server.CompileAndExecute(request);
+
+            var name = result.Variables.Single(v => v.Name == "name").Value;
+
+            _output.WriteLine(result.ToString());
+
+           name.Should().Be("Alice");
+        }
+
+        [Fact(Skip = "not yet")]
+        public void When_the_users_code_throws_then_it_is_returned_as_an_exception_property()
+        {
+            
+
+            // TODO-JOSEQU (When_the_users_code_throws_then) write test
+            Assert.True(false, "Test When_the_users_code_throws_then is not written yet.");
         }
     }
 }
