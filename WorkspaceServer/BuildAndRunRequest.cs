@@ -4,25 +4,28 @@
     {
         public BuildAndRunRequest(string source)
         {
-            source = source ?? "";
+            RawSource = source ?? "";
 
             if (!source.IsFragment())
             {
-                Sources = new[] { source };
+                Sources = new[] { RawSource };
             }
             else
             {
                 Sources = new[]
                 {
                     main,
-                    $"{usingStatements} public static class Fragment {{ public static void Invoke() {{ {source} }} }}"
+                    $"{usingStatements} public static class Fragment {{ public static void Invoke() {{ {RawSource} }} }}"
                 };
             }
+
         }
 
         public string Language => "csharp";
 
         public string[] Sources { get; }
+
+        public string RawSource { get; }
 
         private static readonly string usingStatements = @"
 using System; using System.Collections.Generic; using System.Linq;";
