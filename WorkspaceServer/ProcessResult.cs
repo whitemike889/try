@@ -8,12 +8,12 @@ namespace WorkspaceServer
         public ProcessResult(
             bool succeeded,
             IReadOnlyCollection<string> output,
-            IReadOnlyCollection<LineInfo> lineInfo = null,
+            IReadOnlyCollection<Variable> variables = null,
             object returnValue = null)
         {
             Output = output ?? throw new ArgumentNullException(nameof(output));
             Succeeded = succeeded;
-            LineInfo = lineInfo ?? Array.Empty<LineInfo>();
+            Variables = variables ?? Array.Empty<Variable>();
             ReturnValue = returnValue;
         }
 
@@ -23,13 +23,11 @@ namespace WorkspaceServer
 
         public object ReturnValue { get; }
 
-        public IReadOnlyCollection<LineInfo> LineInfo { get; }
+        public IReadOnlyCollection<Variable> Variables { get; }
 
         public override string ToString() =>
-            $"Succeeded: {Succeeded}\n{string.Join("\n", Output)}";
-    }
-
-    public class LineInfo
-    {
+$@"Succeeded: {Succeeded}
+ReturnValue: {ReturnValue}
+Output: {string.Join("\n", Output)}";
     }
 }

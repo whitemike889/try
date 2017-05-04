@@ -1,13 +1,16 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Linq;
 using System.Runtime.Loader;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
+using Recipes;
 
 namespace WorkspaceServer
 {
@@ -15,8 +18,6 @@ namespace WorkspaceServer
     {
         public async Task<ProcessResult> CompileAndExecute(BuildAndRunRequest request)
         {
-            var scriptOptions = ScriptOptions.Default;
-
             var referenceAssemblies = new[]
             {
                 typeof(object).GetTypeInfo().Assembly,
@@ -24,38 +25,72 @@ namespace WorkspaceServer
                 typeof(Console).GetTypeInfo().Assembly
             };
 
-            scriptOptions = scriptOptions.AddReferences(referenceAssemblies);
-
-            scriptOptions = scriptOptions.AddImports("System");
-            scriptOptions = scriptOptions.AddImports("System.Linq");
-            scriptOptions = scriptOptions.AddImports("System.Collections.Generic");
+            var options = ScriptOptions.Default
+                                       .AddReferences(referenceAssemblies)
+                                       .AddImports("System")
+                                       .AddImports("System.Linq")
+                                       .AddImports("System.Collections.Generic");
 
             ScriptState<object> state = null;
+            var variables = new Dictionary<string, Variable>();
 
             using (var console = new RedirectConsoleOutput())
             {
                 try
                 {
-#if false
-                    var rawSourceLines = request.RawSource
-                                                .Replace("\r\n", "\n")
-                                                .Split('\n');
+#if true
+                    var sourceLines = request.RawSource
+                                             .Replace("\r\n", "\n")
+                                             .Split('\n')
+                                             .Select((code, lineNumber) =>
+                                                         new { code, lineNumber = lineNumber + 1 })
+                                             .ToList();
 
-                    foreach (var rawSourceLine in rawSourceLines)
+                    var buffer = new StringBuilder();
+
+                    foreach (var sourceLine in sourceLines)
                     {
-                        state = await (state?.ContinueWithAsync(rawSourceLine) ??
-                                       CSharpScript.RunAsync(
-                                           rawSourceLine,
-                                           scriptOptions));
+                        buffer.AppendLine(sourceLine.code);
+
+                        try
+                        {
+                            state = await (state?.ContinueWithAsync(buffer.ToString(),
+                                                                    catchException: ex => true) ??
+                                           CSharpScript.RunAsync(
+                                               buffer.ToString(),
+                                               options));
+
+                            foreach (var scriptVariable in state.Variables)
+                            {
+                                variables.GetOrAdd(scriptVariable.Name,
+                                                   name => new Variable(name))
+                                         .TryAddState(
+                                             new VariableState(
+                                                 sourceLine.lineNumber,
+                                                 scriptVariable.Value,
+                                                 scriptVariable.Type));
+                            }
+                        }
+                        catch (CompilationErrorException)
+                        {
+                            if (sourceLine.lineNumber == sourceLines.Count)
+                            {
+                                throw;
+                            }
+                        }
                     }
+
 #else
                     state = await
                                 CSharpScript.RunAsync(
                                     request.RawSource,
-                                    scriptOptions);
+                                    options);
 #endif
 
-                    Compile(state.Script);
+                    if (state != null)
+                    {
+                        Compile(state.Script);
+                    }
                 }
                 catch (CompilationErrorException exception)
                 {
@@ -70,6 +105,7 @@ namespace WorkspaceServer
                     output: console.ToString()
                                    .Replace("\r\n", "\n")
                                    .Split('\n'),
+                    variables: variables.Values,
                     returnValue: state?.ReturnValue);
             }
         }
