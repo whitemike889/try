@@ -8,11 +8,13 @@ namespace WorkspaceServer
         public ProcessResult(
             bool succeeded,
             IReadOnlyCollection<string> output,
-            IReadOnlyCollection<Variable> variables = null,
-            object returnValue = null)
+            object returnValue = null,
+            Exception exception = null,
+            IReadOnlyCollection<Variable> variables = null)
         {
             Output = output ?? throw new ArgumentNullException(nameof(output));
             Succeeded = succeeded;
+            Exception = exception;
             Variables = variables ?? Array.Empty<Variable>();
             ReturnValue = returnValue;
         }
@@ -24,6 +26,8 @@ namespace WorkspaceServer
         public object ReturnValue { get; }
 
         public IReadOnlyCollection<Variable> Variables { get; }
+
+        public Exception Exception { get;  }
 
         public override string ToString() =>
 $@"Succeeded: {Succeeded}

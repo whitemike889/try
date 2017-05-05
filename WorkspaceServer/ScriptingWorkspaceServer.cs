@@ -5,7 +5,6 @@ using System.Reflection;
 using System.Linq;
 using System.Runtime.Loader;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
@@ -54,6 +53,8 @@ namespace WorkspaceServer
 
                         try
                         {
+                            console.Clear();
+
                             state = await (state?.ContinueWithAsync(buffer.ToString(),
                                                                     catchException: ex => true) ??
                                            CSharpScript.RunAsync(
@@ -100,8 +101,9 @@ namespace WorkspaceServer
                     output: console.ToString()
                                    .Replace("\r\n", "\n")
                                    .Split('\n'),
-                    variables: variables.Values,
-                    returnValue: state?.ReturnValue);
+                    returnValue: state?.ReturnValue,
+                    exception: state?.Exception, 
+                    variables: variables.Values);
             }
         }
 

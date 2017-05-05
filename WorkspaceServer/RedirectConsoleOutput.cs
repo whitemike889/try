@@ -16,6 +16,8 @@ namespace WorkspaceServer
 
         public void Dispose() => Console.SetOut(originalWriter);
 
-        public override string ToString() => writer.ToString();
+        public override string ToString() => writer.ToString().Trim();
+
+        public void Clear() => writer.GetStringBuilder().Clear();
     }
 }
