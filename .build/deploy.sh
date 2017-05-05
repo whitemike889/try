@@ -20,6 +20,7 @@ echo "Sourcing Dependencies from $SCRIPT_ROOT"
 
 source $SCRIPT_ROOT/docker_login.sh
 source $SCRIPT_ROOT/update_docker_tags.sh
+source $SCRIPT_ROOT/restart_appservice.sh
 
 echo "Loading Commit Hash from $BUILD_DROP/build.artifact.commit.sha"
 
@@ -46,6 +47,10 @@ update_docker_tags
 docker push $DOCKER_REPOSITORY_SERVER/$IMAGE_NAME:$COMMIT_HASH
 
 docker push $DOCKER_REPOSITORY_SERVER/$IMAGE_NAME:staging
+
+dotnet restore $REPO_ROOT/.build/MLS.ReleaseManager/src/MLS.ReleaseManager/MLS.ReleaseManager.csproj
+    
+restart_appservice "trydotnetagent"
 
 # Test against trydontet-staging <-- C#
 
