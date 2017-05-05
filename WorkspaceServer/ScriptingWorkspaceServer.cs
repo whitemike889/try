@@ -100,8 +100,9 @@ namespace WorkspaceServer
                     output: console.ToString()
                                    .Replace("\r\n", "\n")
                                    .Split('\n'),
-                    variables: variables.Values,
-                    returnValue: state?.ReturnValue);
+                    returnValue: state?.ReturnValue,
+                    exception: state?.Exception, 
+                    variables: variables.Values);
             }
         }
 

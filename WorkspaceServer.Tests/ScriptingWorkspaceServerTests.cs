@@ -171,13 +171,20 @@ name = ""Alice"";");
            name.Should().Be("Alice");
         }
 
-        [Fact(Skip = "not yet")]
-        public void When_the_users_code_throws_then_it_is_returned_as_an_exception_property()
         {
-            
+        [Fact]
+        public async Task When_the_users_code_throws_then_it_is_returned_as_an_exception_property()
+        {
+            var request = new BuildAndRunRequest(@"
+throw new Exception(""oops!"");");
 
-            // TODO-JOSEQU (When_the_users_code_throws_then) write test
-            Assert.True(false, "Test When_the_users_code_throws_then is not written yet.");
+            var server = GetWorkspaceServer();
+
+            var result = await server.CompileAndExecute(request);
+
+            _output.WriteLine(result.ToString());
+
+            result.Exception.Should().NotBeNull();
         }
     }
 }
