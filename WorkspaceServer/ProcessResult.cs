@@ -9,7 +9,7 @@ namespace WorkspaceServer
             bool succeeded,
             IReadOnlyCollection<string> output,
             object returnValue = null,
-            Exception exception = null,
+            string exception = null,
             IReadOnlyCollection<Variable> variables = null)
         {
             Output = output ?? throw new ArgumentNullException(nameof(output));
@@ -27,7 +27,7 @@ namespace WorkspaceServer
 
         public IReadOnlyCollection<Variable> Variables { get; }
 
-        public Exception Exception { get;  }
+        public string Exception { get; }
 
         public override string ToString() =>
 $@"Succeeded: {Succeeded}

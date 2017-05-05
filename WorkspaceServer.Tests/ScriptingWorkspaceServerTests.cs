@@ -209,7 +209,22 @@ Console.WriteLine(4);");
         }
 
         [Fact]
-        public async Task When_the_users_code_throws_then_it_is_returned_as_an_exception_property()
+        public async Task When_the_users_code_throws_on_first_line_then_it_is_returned_as_an_exception_property()
+        {
+            var request = new BuildAndRunRequest(@"throw new Exception(""oops!"");");
+
+            var server = GetWorkspaceServer();
+
+            var result = await server.CompileAndExecute(request);
+
+            _output.WriteLine(result.ToString());
+
+            result.Exception.Should().NotBeNull();
+            result.Exception.Should().Contain("oops!");
+        }
+
+        [Fact]
+        public async Task When_the_users_code_throws_on_subsequent_line_then_it_is_returned_as_an_exception_property()
         {
             var request = new BuildAndRunRequest(@"
 throw new Exception(""oops!"");");
@@ -221,6 +236,7 @@ throw new Exception(""oops!"");");
             _output.WriteLine(result.ToString());
 
             result.Exception.Should().NotBeNull();
+            result.Exception.Should().Contain("oops!");
         }
     }
 }

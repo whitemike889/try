@@ -32,6 +32,7 @@ namespace WorkspaceServer
 
             ScriptState<object> state = null;
             var variables = new Dictionary<string, Variable>();
+            Exception exception = null;
 
             using (var console = new RedirectConsoleOutput())
             {
@@ -79,6 +80,11 @@ namespace WorkspaceServer
                                 throw;
                             }
                         }
+                        catch (Exception ex)
+                        {
+                            exception = ex;
+                            break;
+                        }
                     }
 
 #else
@@ -88,21 +94,22 @@ namespace WorkspaceServer
                                     options);
 #endif
                 }
-                catch (CompilationErrorException exception)
+                catch (CompilationErrorException compilationErrorException)
                 {
                     return new ProcessResult(
                         false,
-                        exception.Diagnostics.Select(d => d.ToString())
-                                 .ToArray());
+                        compilationErrorException.Diagnostics
+                                                 .Select(d => d.ToString())
+                                                 .ToArray());
                 }
 
                 return new ProcessResult(
-                    succeeded: true,
+                    succeeded: exception == null,
                     output: console.ToString()
                                    .Replace("\r\n", "\n")
                                    .Split('\n'),
                     returnValue: state?.ReturnValue,
-                    exception: state?.Exception, 
+                    exception: exception?.ToString() ?? state?.Exception?.ToString(), 
                     variables: variables.Values);
             }
         }
