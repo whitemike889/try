@@ -5,7 +5,6 @@ using System.Reflection;
 using System.Linq;
 using System.Runtime.Loader;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
@@ -54,6 +53,8 @@ namespace WorkspaceServer
 
                         try
                         {
+                            console.Clear();
+
                             state = await (state?.ContinueWithAsync(buffer.ToString(),
                                                                     catchException: ex => true) ??
                                            CSharpScript.RunAsync(

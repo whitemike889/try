@@ -171,7 +171,43 @@ name = ""Alice"";");
            name.Should().Be("Alice");
         }
 
+        [Fact]
+        public async Task Multi_line_console_output_is_captured_correctly()
         {
+            var request = new BuildAndRunRequest(@"
+Console.WriteLine(1);
+Console.WriteLine(2);
+Console.WriteLine(3);
+Console.WriteLine(4);");
+
+            var server = GetWorkspaceServer();
+
+            var result = await server.CompileAndExecute(request);
+
+            _output.WriteLine(result.ToString());
+
+            result.Output.Should().BeEquivalentTo("1", "2", "3", "4");
+        }
+
+        [Fact]
+        public async Task Multi_line_console_output_is_captured_correctly_when_an_exception_is_thrown()
+        {
+            var request = new BuildAndRunRequest(@"
+Console.WriteLine(1);
+Console.WriteLine(2);
+throw new Exception(""oops!"");
+Console.WriteLine(3);
+Console.WriteLine(4);");
+
+            var server = GetWorkspaceServer();
+
+            var result = await server.CompileAndExecute(request);
+
+            _output.WriteLine(result.ToString());
+
+            result.Output.Should().BeEquivalentTo("1", "2");
+        }
+
         [Fact]
         public async Task When_the_users_code_throws_then_it_is_returned_as_an_exception_property()
         {
