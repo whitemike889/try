@@ -1,6 +1,8 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using WorkspaceServer;
+using WorkspaceServer.Models.Completion;
+using WorkspaceServer.Models.Execution;
+using WorkspaceServer.Servers.Scripting;
 
 namespace MLS.Agent.Controllers
 {
@@ -10,11 +12,24 @@ namespace MLS.Agent.Controllers
         [Route("/workspace/{workspaceId}/compile")]
         public async Task<IActionResult> Run(
             string workspaceId,
-            [FromBody] BuildAndRunRequest request)
+            [FromBody] RunRequest request)
         {
             var server = new ScriptingWorkspaceServer();
 
             var result = await server.CompileAndExecute(request);
+
+            return Ok(result);
+        }
+
+        [HttpPost]
+        [Route("/workspace/{workspaceId}/getCompletionItems")]
+        public async Task<IActionResult> Run(
+            string workspaceId,
+            [FromBody] CompletionRequest request)
+        {
+            var server = new ScriptingWorkspaceServer();
+
+            var result = await server.GetCompletionList(request);
 
             return Ok(result);
         }

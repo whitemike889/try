@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace WorkspaceServer
+namespace WorkspaceServer.Models.Execution
 {
     public class Variable
     {

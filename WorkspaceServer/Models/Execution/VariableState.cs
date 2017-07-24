@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace WorkspaceServer
+namespace WorkspaceServer.Models.Execution
 {
     public class VariableState
     {

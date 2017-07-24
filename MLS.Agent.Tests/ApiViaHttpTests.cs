@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Recipes;
+using WorkspaceServer.Models.Completion;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -67,6 +68,38 @@ namespace MLS.Agent.Tests
                 result.Output
                       .Should()
                       .ContainSingle(s => s == output);
+            }
+        }
+
+        [Fact]
+        public async Task When_they_load_a_snippet_then_they_can_use_the_workspace_endpoint_to_get_completions()
+        {
+            var output = Guid.NewGuid().ToString();
+
+            using (var server = CreateTestServer())
+            using (var client = server.CreateClient())
+            {
+                var request = new HttpRequestMessage(
+                    HttpMethod.Post,
+                    @"/workspace/hello/getCompletionItems")
+                {
+                    Content = new StringContent(
+                        JsonConvert.SerializeObject(new
+                        {
+                            Source = "Console.",
+                            Position = 8
+                        }),
+                        Encoding.UTF8,
+                        "application/json")
+                };
+
+                var response = await client.SendAsync(request);
+
+                var result = await response
+                                 .EnsureSuccess()
+                                 .DeserializeAs<CompletionResult>();
+
+                result.Items.Should().ContainSingle(item => item.DisplayText == "WriteLine");
             }
         }
 

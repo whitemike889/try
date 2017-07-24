@@ -9,6 +9,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
 using Xunit;
+using WorkspaceServer.Servers.Local;
 
 namespace WorkspaceServer.Tests
 {

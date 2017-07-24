@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using WorkspaceServer.Models.Execution;
 
-namespace WorkspaceServer
+namespace WorkspaceServer.Servers.Local
 {
     public class Dotnet
     {

@@ -1,3 +1,4 @@
+using WorkspaceServer.Servers.Legacy;
 using Xunit.Abstractions;
 
 namespace WorkspaceServer.Tests

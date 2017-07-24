@@ -1,9 +1,13 @@
 ﻿using System.Threading.Tasks;
+using WorkspaceServer.Models.Completion;
+using WorkspaceServer.Models.Execution;
 
 namespace WorkspaceServer
 {
     public interface IWorkspaceServer
     {
-        Task<ProcessResult> CompileAndExecute(BuildAndRunRequest request);
+        Task<ProcessResult> CompileAndExecute(RunRequest request);
+
+        Task<CompletionResult> GetCompletionList(CompletionRequest request);
     }
 }

@@ -4,13 +4,14 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using WorkspaceServer.Models.Completion;
+using WorkspaceServer.Models.Execution;
 
-namespace WorkspaceServer
+namespace WorkspaceServer.Servers.Legacy
 {
     public class DotDotnetWorkspaceServer : IWorkspaceServer
     {
-        public async Task<ProcessResult> CompileAndExecute(
-            BuildAndRunRequest request)
+        public async Task<ProcessResult> CompileAndExecute(RunRequest request)
         {
             using (var httpClient = new HttpClient())
             {
@@ -36,6 +37,11 @@ namespace WorkspaceServer
                           .Select(WebUtility.HtmlDecode)
                           .ToArray());
             }
+        }
+
+        public Task<CompletionResult> GetCompletionList(CompletionRequest request)
+        {
+            throw new System.NotSupportedException();
         }
     }
 }

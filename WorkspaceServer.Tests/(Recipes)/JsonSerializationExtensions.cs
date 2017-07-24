@@ -1,7 +1,6 @@
-﻿using System;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 
-namespace WorkspaceServer.Tests._Recipes_
+namespace Recipes
 {
     internal static class JsonSerializationExtensions
     {

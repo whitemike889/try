@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 
-namespace WorkspaceServer
+namespace WorkspaceServer.Servers.Scripting
 {
     public class RedirectConsoleOutput : IDisposable
     {

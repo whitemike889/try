@@ -1,8 +1,9 @@
 using System;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
+using WorkspaceServer.Models.Execution;
+using WorkspaceServer.Servers.Local;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -31,12 +32,12 @@ namespace WorkspaceServer.Tests
             ProcessResult result;
 
             result = await server.CompileAndExecute(
-                         new BuildAndRunRequest(@"Console.WriteLine(i don't compile!);"));
+                         new RunRequest(@"Console.WriteLine(i don't compile!);"));
 
             result.Output.Should().Contain(line => line.Contains("Syntax error"));
 
             result = await server.CompileAndExecute(
-                         new BuildAndRunRequest(@"
+                         new RunRequest(@"
 using System;
 
 public static class Hello 

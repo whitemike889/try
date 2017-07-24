@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace WorkspaceServer
+namespace WorkspaceServer.Models.Execution
 {
     public class ProcessResult
     {

@@ -1,8 +1,10 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
+using WorkspaceServer.Models.Completion;
+using WorkspaceServer.Models.Execution;
 
-namespace WorkspaceServer
+namespace WorkspaceServer.Servers.Local
 {
     public class LocalWorkspaceServer : IWorkspaceServer
     {
@@ -13,13 +15,15 @@ namespace WorkspaceServer
             _workingDirectory = workingDirectory ?? throw new ArgumentNullException(nameof(workingDirectory));
         }
 
-        public async Task<ProcessResult> CompileAndExecute(BuildAndRunRequest request)
+        public Task<ProcessResult> CompileAndExecute(RunRequest request)
         {
+            var sourceFiles = request.GetSourceFiles();
+
             var dotnet = new Dotnet(GetWorkingDirectory());
 
-            WriteUserSourceFiles(request.Sources);
+            WriteUserSourceFiles(sourceFiles);
 
-            return dotnet.Run();
+            return Task.FromResult(dotnet.Run());
         }
 
         private static void PrepareWorkspace(Dotnet dotnet)
@@ -63,14 +67,22 @@ namespace WorkspaceServer
             return _workingDirectory;
         }
 
-        private void WriteUserSourceFiles(string[] requestSources)
+        private void WriteUserSourceFiles(SourceFile[] sourceFiles)
         {
             int i = 1;
 
-            foreach (var requestSource in requestSources)
+            foreach (var sourceFile in sourceFiles)
             {
-                File.WriteAllText(Path.Combine(_workingDirectory.FullName, $"{i++}.cs"), requestSource);
+                var filePath = Path.Combine(_workingDirectory.FullName, $"{i++}.cs");
+                var text = sourceFile.Text.ToString();
+
+                File.WriteAllText(filePath, text);
             }
+        }
+
+        public Task<CompletionResult> GetCompletionList(CompletionRequest request)
+        {
+            throw new NotSupportedException();
         }
     }
 }
