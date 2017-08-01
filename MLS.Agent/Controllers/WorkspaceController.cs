@@ -1,8 +1,11 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Pocket;
 using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Servers.Scripting;
+using static Pocket.Logger<MLS.Agent.Controllers.WorkspaceController>;
 
 namespace MLS.Agent.Controllers
 {
@@ -14,24 +17,34 @@ namespace MLS.Agent.Controllers
             string workspaceId,
             [FromBody] RunRequest request)
         {
-            var server = new ScriptingWorkspaceServer();
+            using (var operation = Log.ConfirmOnExit())
+            {
+                var server = new ScriptingWorkspaceServer();
 
-            var result = await server.CompileAndExecute(request);
+                var result = await server.CompileAndExecute(request);
 
-            return Ok(result);
+                operation.Succeed();
+
+                return Ok(result);
+            }
         }
 
         [HttpPost]
         [Route("/workspace/{workspaceId}/getCompletionItems")]
-        public async Task<IActionResult> Run(
+        public async Task<IActionResult> GetCompletionItems(
             string workspaceId,
             [FromBody] CompletionRequest request)
         {
-            var server = new ScriptingWorkspaceServer();
+            using (var operation = Log.ConfirmOnExit())
+            {
+                var server = new ScriptingWorkspaceServer();
 
-            var result = await server.GetCompletionList(request);
+                var result = await server.GetCompletionList(request);
 
-            return Ok(result);
+                operation.Succeed();
+
+                return Ok(result);
+            }
         }
     }
 }

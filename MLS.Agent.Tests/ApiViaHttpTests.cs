@@ -3,44 +3,21 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Recipes;
 using WorkspaceServer.Models.Completion;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace MLS.Agent.Tests
 {
     public class ApiViaHttpTests
     {
-        private readonly ITestOutputHelper output;
-
-        public ApiViaHttpTests(ITestOutputHelper output)
-        {
-            this.output = output;
-        }
-
-        private IWebHostBuilder CreateWebHostBuilder()
-        {
-            var config = new ConfigurationBuilder().Build();
-
-            var host = new WebHostBuilder()
-                .UseConfiguration(config)
-                .UseStartup<Startup>();
-
-            return host;
-        }
-
         [Fact]
         public async Task When_they_load_a_snippet_then_they_can_use_the_workspace_endpoint_to_compile_their_edited_code()
         {
             var output = Guid.NewGuid().ToString();
 
-            using (var server = CreateTestServer())
-            using (var client = server.CreateClient())
+            using (var agent = new AgentService())
             {
                 var request = new HttpRequestMessage(
                     HttpMethod.Post,
@@ -55,7 +32,7 @@ namespace MLS.Agent.Tests
                         "application/json")
                 };
 
-                var response = await client.SendAsync(request);
+                var response = await agent.SendAsync(request);
 
                 var result = await response
                                  .EnsureSuccess()
@@ -74,10 +51,7 @@ namespace MLS.Agent.Tests
         [Fact]
         public async Task When_they_load_a_snippet_then_they_can_use_the_workspace_endpoint_to_get_completions()
         {
-            var output = Guid.NewGuid().ToString();
-
-            using (var server = CreateTestServer())
-            using (var client = server.CreateClient())
+            using (var agent = new AgentService())
             {
                 var request = new HttpRequestMessage(
                     HttpMethod.Post,
@@ -93,7 +67,7 @@ namespace MLS.Agent.Tests
                         "application/json")
                 };
 
-                var response = await client.SendAsync(request);
+                var response = await agent.SendAsync(request);
 
                 var result = await response
                                  .EnsureSuccess()
@@ -101,11 +75,6 @@ namespace MLS.Agent.Tests
 
                 result.Items.Should().ContainSingle(item => item.DisplayText == "WriteLine");
             }
-        }
-
-        private TestServer CreateTestServer()
-        {
-            return new TestServer(CreateWebHostBuilder());
         }
 
         private class CompileResponse

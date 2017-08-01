@@ -17,31 +17,25 @@ namespace Recipes
             var info = new BuildInfo
             {
                 AssemblyName = assembly.GetName().Name,
-                AssemblyInformationalVersion = Assembly.GetEntryAssembly()
-                                                       .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
-                                                       .InformationalVersion,
-                BuildVersion = assembly.GetName().Version.ToString(),
+                AssemblyInformationalVersion = assembly
+                    .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+                    .InformationalVersion,
+                AssemblyVersion = assembly.GetName().Version.ToString(),
                 BuildDate = new FileInfo(new Uri(assembly.CodeBase).LocalPath).CreationTimeUtc.ToString("o")
             };
 
             return info;
         });
 
-        public static dynamic Version()
+        public static BuildInfo Version()
         {
-            return new
-            {
-                buildInfo.Value.AssemblyName,
-                buildInfo.Value.AssemblyInformationalVersion,
-                buildInfo.Value.BuildVersion,
-                buildInfo.Value.BuildDate
-            };
+            return buildInfo.Value;
         }
 
-        private class BuildInfo
+        public class BuildInfo
         {
-            public string BuildVersion;
-            public string BuildDate;
+            public string AssemblyVersion { get; set; }
+            public string BuildDate { get; set; }
             public string AssemblyInformationalVersion { get; set; }
             public string AssemblyName { get; set; }
         }
