@@ -1,5 +1,4 @@
-﻿using ClientRequestIdMiddleware;
-using Microsoft.ApplicationInsights;
+﻿using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.AspNetCore.Builder;
@@ -25,7 +24,6 @@ namespace MLS.Agent
             _disposables.Add(LogEvents.Enrich(add =>
             {
                 add(("applicationVersion", AssemblyVersionSensor.Version().AssemblyInformationalVersion));
-                add(("clientRequestId", ClientRequestIdMiddleware.ClientRequestIdMiddleware.ClientRequestId));
                 add(("machineName", System.Environment.MachineName ));
             }));
 
@@ -104,8 +102,7 @@ namespace MLS.Agent
 
             _disposables.Add(operationLogger);
 
-            app.UseClientRequestId()
-               .UseDefaultFiles()
+            app.UseDefaultFiles()
                .UseStaticFiles()
                .UseMvc()
                .UseDeveloperExceptionPage();
