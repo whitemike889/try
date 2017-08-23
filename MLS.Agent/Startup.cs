@@ -104,8 +104,7 @@ namespace MLS.Agent
 
             app.UseDefaultFiles()
                .UseStaticFiles()
-               .UseMvc()
-               .UseDeveloperExceptionPage();
+               .UseMvc();
         }
     }
 }
