@@ -15,8 +15,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WorkspaceServer", "Workspac
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WorkspaceServer.Tests", "WorkspaceServer.Tests\WorkspaceServer.Tests.csproj", "{93E75EF0-416D-43C7-BC67-BF386CE7C79D}"
 EndProject
-Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{8AE92A3B-727C-4D43-8D1D-D29CAE7FC716}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{5B03B52F-8C2A-41B5-AFFE-86B29FC5F061}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".build", ".build", "{376CF23C-4046-4962-B999-D0192B742DB2}"

@@ -1,4 +1,4 @@
-FROM microsoft/aspnetcore-build:1.0-1.1
+FROM microsoft/aspnetcore-build:2.0
 WORKDIR /app
 RUN mkdir MLS.Agent && mkdir MLS.Agent.Tests && mkdir WorkspaceServer && mkdir WorkspaceServer.Tests
 COPY MLS-LS.sln .

@@ -1,4 +1,4 @@
-FROM microsoft/aspnetcore-build:1.0-1.1
+FROM microsoft/aspnetcore-build:2.0
 ARG source
 WORKDIR /app
 EXPOSE 80
