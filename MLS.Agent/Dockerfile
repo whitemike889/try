@@ -6,14 +6,9 @@ RUN mkdir -p /app \
 
 WORKDIR /app
 ENV ASPNETCORE_URLS=http://+:4242
-EXPOSE 4243
+EXPOSE 4242
 COPY ${source:-obj/Docker/publish} .
-# Chown all the files to the app user.
 RUN chown --recursive app_user:app_group /app
-# Change to the app user.
-USER app_user
-
-# Change to the app user.
 USER app_user
 ENTRYPOINT ["dotnet", "MLS.Agent.dll"]
 
