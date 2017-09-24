@@ -34,10 +34,9 @@ echo "IMAGE_NAME: $IMAGE_NAME"
 echo "COMMIT_HASH: $COMMIT_HASH"
 echo "DOCKER VERSION:"
 docker version
-echo "AZURE CLI VERSION:"
-az --version
-echo "DOTNET VERSION:"
-dotnet --version
+echo "----------------------"
+echo "DOCKER IMAGES"
+docker images
 echo "----------------------"
 
 do_docker_login 
