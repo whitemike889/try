@@ -1,4 +1,6 @@
-#!/bin/bash -e
+#!/bin/bash
+set -e
+
 echo "Starting Deployment"
 
 SCRIPT_ROOT=`dirname "$0"`; SCRIPT_ROOT=`eval "cd \"$SCRIPT_ROOT\" && pwd"`
@@ -52,9 +54,9 @@ dotnet restore $REPO_ROOT/.build/MLS.ReleaseManager/src/MLS.ReleaseManager/MLS.R
     
 restart_appservice "trydotnetagent-staging"
 
-dotnet restore $REPO_ROOT/MLS.Orchestrator.Integration.Tests/MLS.Orchestrator.Integration.Tests.csproj
+dotnet restore $REPO_ROOT/MLS.Agent.Integration.Tests/MLS.Agent.Integration.Tests.csproj
 
-dotnet test $REPO_ROOT/MLS.Orchestrator.Integration.Tests/MLS.Orchestrator.Integration.Tests.csproj --logger trx
+dotnet test $REPO_ROOT/MLS.Agent.Integration.Tests/MLS.Agent.Integration.Tests.csproj --logger trx
 
 docker push $DOCKER_REPOSITORY_SERVER/$IMAGE_NAME:latest
 
