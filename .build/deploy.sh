@@ -50,8 +50,12 @@ docker push $DOCKER_REPOSITORY_SERVER/$IMAGE_NAME:staging
 
 dotnet restore $REPO_ROOT/.build/MLS.ReleaseManager/src/MLS.ReleaseManager/MLS.ReleaseManager.csproj
     
-restart_appservice "trydotnetagent"
+restart_appservice "trydotnetagent-staging"
 
-# Test against trydontet-staging <-- C#
+dotnet restore $REPO_ROOT/MLS.Orchestrator.Integration.Tests/MLS.Orchestrator.Integration.Tests.csproj
+
+dotnet test $REPO_ROOT/MLS.Orchestrator.Integration.Tests/MLS.Orchestrator.Integration.Tests.csproj --logger trx
 
 docker push $DOCKER_REPOSITORY_SERVER/$IMAGE_NAME:latest
+
+restart_appservice "trydotnetagent"
