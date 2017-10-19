@@ -37,7 +37,7 @@ public static class Hello
 
             var server = GetWorkspaceServer();
 
-            var result = await server.CompileAndExecute(request);
+            var result = await server.Run(request);
 
             _output.WriteLine(result.ToString());
 
@@ -62,7 +62,7 @@ Hello.Main();");
 
             var server = GetWorkspaceServer();
 
-            var result = await server.CompileAndExecute(request);
+            var result = await server.Run(request);
 
             _output.WriteLine(result.ToString());
 
@@ -80,7 +80,7 @@ Console.WriteLine(s);");
 
             var server = GetWorkspaceServer();
 
-            var result = await server.CompileAndExecute(request);
+            var result = await server.Run(request);
 
             result.Output
                   .Should()
@@ -96,7 +96,7 @@ $""{person.Name} is {person.Age} year(s) old""");
 
             var server = GetWorkspaceServer();
 
-            var result = server.CompileAndExecute(request).Result;
+            var result = server.Run(request).Result;
 
             _output.WriteLine(result.ToJson());
 
@@ -114,7 +114,7 @@ Console.WriteLine(banana);");
 
             var server = GetWorkspaceServer();
 
-            var result = await server.CompileAndExecute(request);
+            var result = await server.Run(request);
 
             result.Succeeded.Should().BeFalse();
 
@@ -136,7 +136,7 @@ name = ""Alice"";");
 
             var server = GetWorkspaceServer();
 
-            var result = await server.CompileAndExecute(request);
+            var result = await server.Run(request);
 
             var states = result.Variables.Single(v => v.Name == "name").States;
 
@@ -165,7 +165,7 @@ name = ""Alice"";");
 
             var server = GetWorkspaceServer();
 
-            var result = await server.CompileAndExecute(request);
+            var result = await server.Run(request);
 
             var name = result.Variables.Single(v => v.Name == "name").Value;
 
@@ -185,7 +185,7 @@ Console.WriteLine(4);");
 
             var server = GetWorkspaceServer();
 
-            var result = await server.CompileAndExecute(request);
+            var result = await server.Run(request);
 
             _output.WriteLine(result.ToString());
 
@@ -204,7 +204,7 @@ Console.WriteLine(4);");
 
             var server = GetWorkspaceServer();
 
-            var result = await server.CompileAndExecute(request);
+            var result = await server.Run(request);
 
             _output.WriteLine(result.ToString());
 
@@ -218,7 +218,7 @@ Console.WriteLine(4);");
 
             var server = GetWorkspaceServer();
 
-            var result = await server.CompileAndExecute(request);
+            var result = await server.Run(request);
 
             _output.WriteLine(result.ToString());
 
@@ -234,7 +234,7 @@ throw new Exception(""oops!"");");
 
             var server = GetWorkspaceServer();
 
-            var result = await server.CompileAndExecute(request);
+            var result = await server.Run(request);
 
             _output.WriteLine(result.ToString());
 

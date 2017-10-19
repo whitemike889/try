@@ -19,7 +19,7 @@ namespace WorkspaceServer.Servers.Scripting
 {
     public class ScriptingWorkspaceServer : IWorkspaceServer
     {
-        public async Task<ProcessResult> CompileAndExecute(RunRequest request)
+        public async Task<RunResult> Run(RunRequest request)
         {
             var source = SourceFile.Create(request.RawSource);
 
@@ -91,14 +91,14 @@ namespace WorkspaceServer.Servers.Scripting
                 }
                 catch (CompilationErrorException compilationErrorException)
                 {
-                    return new ProcessResult(
+                    return new RunResult(
                         false,
                         compilationErrorException.Diagnostics
                                                  .Select(d => d.ToString())
                                                  .ToArray());
                 }
 
-                return new ProcessResult(
+                return new RunResult(
                     succeeded: exception == null,
                     output: console.ToString()
                                    .Replace("\r\n", "\n")

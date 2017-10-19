@@ -6,7 +6,7 @@ namespace WorkspaceServer
 {
     public interface IWorkspaceServer
     {
-        Task<ProcessResult> CompileAndExecute(RunRequest request);
+        Task<RunResult> Run(RunRequest request);
 
         Task<CompletionResult> GetCompletionList(CompletionRequest request);
     }

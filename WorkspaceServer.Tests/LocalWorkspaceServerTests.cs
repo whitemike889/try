@@ -29,14 +29,14 @@ namespace WorkspaceServer.Tests
         {
             var server = GetWorkspaceServer();
 
-            ProcessResult result;
+            RunResult result;
 
-            result = await server.CompileAndExecute(
+            result = await server.Run(
                          new RunRequest(@"Console.WriteLine(i don't compile!);"));
 
             result.Output.Should().Contain(line => line.Contains("Syntax error"));
 
-            result = await server.CompileAndExecute(
+            result = await server.Run(
                          new RunRequest(@"
 using System;
 

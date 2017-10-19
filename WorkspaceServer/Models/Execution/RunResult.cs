@@ -3,9 +3,9 @@ using System.Collections.Generic;
 
 namespace WorkspaceServer.Models.Execution
 {
-    public class ProcessResult
+    public class RunResult
     {
-        public ProcessResult(
+        public RunResult(
             bool succeeded,
             IReadOnlyCollection<string> output,
             object returnValue = null,

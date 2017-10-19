@@ -36,7 +36,7 @@ namespace MLS.Agent.Tests
 
                 var result = await response
                                  .EnsureSuccess()
-                                 .DeserializeAs<CompileResponse>();
+                                 .DeserializeAs<RunResult>();
 
                 result.Succeeded
                       .Should()
@@ -77,7 +77,7 @@ namespace MLS.Agent.Tests
             }
         }
 
-        private class CompileResponse
+        private class RunResult
         {
             public bool Succeeded { get; set; }
             public string[] Output { get; set; }

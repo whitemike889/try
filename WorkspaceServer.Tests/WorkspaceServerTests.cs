@@ -33,7 +33,7 @@ public static class Hello
 
             var server = GetWorkspaceServer();
 
-            var result = await server.CompileAndExecute(request);
+            var result = await server.Run(request);
 
             _output.WriteLine(string.Join("\n", result.Output));
 
@@ -56,7 +56,7 @@ public static class Hello
 
             var server = GetWorkspaceServer();
 
-            var result = await server.CompileAndExecute(request);
+            var result = await server.Run(request);
 
             result.Output.Should().Contain("Hello there!");
         }
@@ -71,7 +71,7 @@ Console.WriteLine(s);");
 
             var server = GetWorkspaceServer();
 
-            var result = await server.CompileAndExecute(request);
+            var result = await server.Run(request);
 
             result.Output.Should().Contain("Jeff is 20 year(s) old");
         }
@@ -84,7 +84,7 @@ Console.WriteLine(banana);");
 
             var server = GetWorkspaceServer();
 
-            var result = await server.CompileAndExecute(request);
+            var result = await server.Run(request);
 
             result.Succeeded.Should().BeFalse();
 
