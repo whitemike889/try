@@ -21,7 +21,7 @@ namespace MLS.Agent.Controllers
             {
                 var server = new ScriptingWorkspaceServer();
 
-                var result = await server.CompileAndExecute(request);
+                var result = await server.Run(request);
 
                 operation.Succeed();
 

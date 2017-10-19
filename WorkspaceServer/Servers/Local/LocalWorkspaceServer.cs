@@ -15,7 +15,7 @@ namespace WorkspaceServer.Servers.Local
             _workingDirectory = workingDirectory ?? throw new ArgumentNullException(nameof(workingDirectory));
         }
 
-        public Task<ProcessResult> CompileAndExecute(RunRequest request)
+        public Task<RunResult> Run(RunRequest request)
         {
             var sourceFiles = request.GetSourceFiles();
 

@@ -31,12 +31,12 @@ namespace WorkspaceServer.Servers.Local
             ExecuteDotnet("restore");
         }
 
-        public ProcessResult Run()
+        public RunResult Run()
         {
             return ExecuteDotnet("run");
         }
 
-        public ProcessResult ExecuteDotnet(string args)
+        public RunResult ExecuteDotnet(string args)
         {
             var process = Process.Start(new ProcessStartInfo
             {
@@ -53,7 +53,7 @@ namespace WorkspaceServer.Servers.Local
 
             var stdErr = SplitLines(process.StandardError);
 
-            return new ProcessResult
+            return new RunResult
             (
                 succeeded: process.ExitCode == 0,
                 output: stdOut.Concat(stdErr).ToArray()
