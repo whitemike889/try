@@ -19,6 +19,9 @@
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="2.3.2" />
     <PackageReference Include="Microsoft.CodeAnalysis.Scripting" Version="2.3.2" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.5.0-preview-20170810-02" />
+    <PackageReference Include="pocketlogger" Version="0.2.6" />
+    <PackageReference Include="pocketlogger.for.xunit" Version="0.1.2" />
+    <PackageReference Include="pocketlogger.subscribe" Version="0.2.3" />
     <PackageReference Include="xunit" Version="2.3.0-beta5-build3754" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.3.0-beta5-build3754" />
   </ItemGroup>
