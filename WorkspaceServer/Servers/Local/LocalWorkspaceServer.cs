@@ -1,8 +1,10 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
+using Pocket;
 using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
+using static Pocket.Logger<WorkspaceServer.Servers.Local.LocalWorkspaceServer>;
 
 namespace WorkspaceServer.Servers.Local
 {
@@ -12,18 +14,28 @@ namespace WorkspaceServer.Servers.Local
 
         public LocalWorkspaceServer(DirectoryInfo workingDirectory)
         {
-            _workingDirectory = workingDirectory ?? throw new ArgumentNullException(nameof(workingDirectory));
+            _workingDirectory = workingDirectory ??
+                                throw new ArgumentNullException(nameof(workingDirectory));
+
+            Log.Trace("Creating workspace in @ {directory}", _workingDirectory);
         }
 
-        public Task<RunResult> Run(RunRequest request)
+        public async Task<RunResult> Run(RunRequest request)
         {
-            var sourceFiles = request.GetSourceFiles();
+            using (var operation = Log.OnEnterAndConfirmOnExit())
+            {
+                var sourceFiles = request.GetSourceFiles();
 
-            var dotnet = new Dotnet(GetWorkingDirectory());
+                var dotnet = new Dotnet(GetWorkingDirectory());
 
-            WriteUserSourceFiles(sourceFiles);
+                WriteUserSourceFiles(sourceFiles);
 
-            return Task.FromResult(dotnet.Run());
+                var result = await Task.Run(() => dotnet.Run());
+
+                operation.Succeed();
+
+                return result;
+            }
         }
 
         private static void PrepareWorkspace(Dotnet dotnet)
@@ -39,9 +51,26 @@ namespace WorkspaceServer.Servers.Local
 
         private void CleanOldSources()
         {
-            foreach (var sourceFile in _workingDirectory.EnumerateFileSystemInfos("*.cs"))
+            using (Log.OnExit())
             {
-                sourceFile.Delete();
+                foreach (var sourceFile in _workingDirectory.EnumerateFileSystemInfos("*.cs"))
+                {
+                    sourceFile.Delete();
+                }
+            }
+        }
+
+        private void CreateWorkingDirectory()
+        {
+            using (Log.OnExit())
+            {
+                _workingDirectory.Create();
+
+                var dotnet = new Dotnet(_workingDirectory);
+
+                AcquireTemplate(dotnet);
+
+                PrepareWorkspace(dotnet);
             }
         }
 
@@ -51,13 +80,7 @@ namespace WorkspaceServer.Servers.Local
 
             if (!_workingDirectory.Exists)
             {
-                _workingDirectory.Create();
-
-                var dotnet = new Dotnet(_workingDirectory);
-
-                AcquireTemplate(dotnet);
-
-                PrepareWorkspace(dotnet);
+                CreateWorkingDirectory();
             }
             else
             {
@@ -69,14 +92,17 @@ namespace WorkspaceServer.Servers.Local
 
         private void WriteUserSourceFiles(SourceFile[] sourceFiles)
         {
-            int i = 1;
-
-            foreach (var sourceFile in sourceFiles)
+            using (Log.OnExit())
             {
-                var filePath = Path.Combine(_workingDirectory.FullName, $"{i++}.cs");
-                var text = sourceFile.Text.ToString();
+                int i = 1;
 
-                File.WriteAllText(filePath, text);
+                foreach (var sourceFile in sourceFiles)
+                {
+                    var filePath = Path.Combine(_workingDirectory.FullName, $"{i++}.cs");
+                    var text = sourceFile.Text.ToString();
+
+                    File.WriteAllText(filePath, text);
+                }
             }
         }
 

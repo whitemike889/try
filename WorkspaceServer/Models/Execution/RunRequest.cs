@@ -5,7 +5,9 @@ namespace WorkspaceServer.Models.Execution
     public class RunRequest
     {
         public string Language { get; }
+
         public string RawSource { get; }
+
         public string[] Sources { get; }
 
         public RunRequest(string source)
@@ -22,8 +24,8 @@ namespace WorkspaceServer.Models.Execution
 
         private static string[] GetSources(string source)
             => IsFragment(source)
-                ? new[] { Main, AddScaffoldingToFragment(source) }
-                : new[] { source };
+                   ? new[] { Main, AddScaffoldingToFragment(source) }
+                   : new[] { source };
 
         private static bool IsFragment(string source)
             => !source.Contains("public static void Main(");
