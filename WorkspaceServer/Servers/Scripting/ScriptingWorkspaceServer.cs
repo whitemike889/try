@@ -24,8 +24,7 @@ namespace WorkspaceServer.Servers.Scripting
     public class ScriptingWorkspaceServer : IWorkspaceServer
     {
         public async Task<RunResult> Run(
-            RunRequest request,
-            CancellationToken? cancellationToken = null)
+            RunRequest request)
         {
             using (var operation = Log.OnEnterAndConfirmOnExit())
             {
@@ -38,9 +37,7 @@ namespace WorkspaceServer.Servers.Scripting
                 ScriptState<object> state = null;
                 var variables = new Dictionary<string, Variable>();
                 Exception exception = null;
-
-                var cancelationToken = cancellationToken ?? new CancellationTokenSource(
-                                           TimeSpan.FromSeconds(15)).Token;
+               
 
                 using (var console = new RedirectConsoleOutput())
                 {
@@ -61,15 +58,13 @@ namespace WorkspaceServer.Servers.Scripting
                             {
                                 console.Clear();
 
-                                state = await (state?.ContinueWithAsync(
-                                                   buffer.ToString(),
-                                                   catchException: ex => true,
-                                                   cancellationToken: cancelationToken)
-                                               ??
-                                               CSharpScript.RunAsync(
-                                                   buffer.ToString(),
-                                                   options,
-                                                   cancellationToken: cancelationToken));
+                                state = state == null
+                                            ? await CSharpScript.RunAsync(
+                                                  buffer.ToString(),
+                                                  options)
+                                            : await state.ContinueWithAsync(
+                                                  buffer.ToString(),
+                                                  catchException: ex => true);
 
                                 foreach (var scriptVariable in state.Variables)
                                 {

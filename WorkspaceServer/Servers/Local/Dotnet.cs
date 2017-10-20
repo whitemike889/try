@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
+using System.Text;
 using Pocket;
 using WorkspaceServer.Models.Execution;
 using static Pocket.Logger<WorkspaceServer.Servers.Local.Dotnet>;
@@ -19,7 +19,7 @@ namespace WorkspaceServer.Servers.Local
             TimeSpan? defaultCommandTimeout = null)
         {
             _defaultCommandTimeout = defaultCommandTimeout ??
-                                     TimeSpan.FromSeconds(30);
+                                     TimeSpan.FromSeconds(10);
             _workingDirectory = workingDirectory ??
                                 throw new ArgumentNullException(nameof(workingDirectory));
         }
@@ -34,46 +34,73 @@ namespace WorkspaceServer.Servers.Local
             ExecuteDotnet($"new {templateName}", timeoutMilliseconds);
         }
 
-        public void Restore(int? timeoutMilliseconds = null) => 
+        public void Restore(int? timeoutMilliseconds = null) =>
             ExecuteDotnet("restore", timeoutMilliseconds);
 
-        public RunResult Run(int? timeoutMilliseconds = null) => 
+        public RunResult Run(int? timeoutMilliseconds = null) =>
             ExecuteDotnet("run", timeoutMilliseconds);
 
         public RunResult ExecuteDotnet(string args, int? timeoutMilliseconds = null)
         {
             var dotnetPath = DotnetMuxer.Path.FullName;
 
+            var timeout = timeoutMilliseconds ??
+                          (int) _defaultCommandTimeout.TotalMilliseconds;
+
             using (var operation = LogConfirm(dotnetPath, args))
-            using (var process = Process.Start(new ProcessStartInfo
             {
-                Arguments = args,
-                FileName = dotnetPath,
-                RedirectStandardError = true,
-                RedirectStandardOutput = true,
-                WorkingDirectory = _workingDirectory.FullName
-            }))
-            {
-                if (!process.WaitForExit(timeoutMilliseconds ??
-                                         (int) _defaultCommandTimeout.TotalMilliseconds))
+                var stdOut = new StringBuilder();
+                var stdErr = new StringBuilder();
+
+                using (var process = new Process())
                 {
-                    operation.Fail(message: "Timed out");
-                    throw new TimeoutException("Timed out waiting for dotnet.exe.");
+                    process.StartInfo.Arguments = args;
+                    process.StartInfo.FileName = dotnetPath;
+                    process.StartInfo.RedirectStandardError = true;
+                    process.StartInfo.RedirectStandardOutput = true;
+                    process.StartInfo.WorkingDirectory = _workingDirectory.FullName;
+
+                    process.OutputDataReceived += (_, e) =>
+                    {
+                        if (e.Data != null)
+                        {
+                            stdOut.AppendLine(e.Data);
+                        }
+                    };
+
+                    process.ErrorDataReceived += (sender, e) =>
+                    {
+                        if (e.Data != null)
+                        {
+                            stdErr.AppendLine(e.Data);
+                        }
+                    };
+
+                    process.Start();
+
+                    process.BeginOutputReadLine();
+                    process.BeginErrorReadLine();
+
+                    Exception exception = null;
+
+                    if (process.WaitForExit(timeout))
+                    {
+                        operation.Succeed("dotnet.exe exited with {code}", process.ExitCode);
+                    }
+                    else
+                    {
+                        exception = new TimeoutException();
+                        process.Kill();
+                        operation.Fail(exception);
+                    }
+
+                    return new RunResult(
+                        succeeded: process.HasExited && process.ExitCode == 0,
+                        output: $"{stdOut}\n{stdErr}"
+                            .Replace("\r\n", "\n")
+                            .Split('\n'),
+                        exception: exception?.ToString());
                 }
-
-                operation.Trace("dotnet.exe exited with {code}", process.ExitCode);
-
-                var stdOut = SplitLines(process.StandardOutput);
-
-                var stdErr = SplitLines(process.StandardError);
-
-                operation.Succeed();
-
-                return new RunResult
-                (
-                    succeeded: process.ExitCode == 0,
-                    output: stdOut.Concat(stdErr).ToArray()
-                );
             }
         }
 

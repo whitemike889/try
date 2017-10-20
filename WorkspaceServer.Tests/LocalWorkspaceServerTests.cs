@@ -110,13 +110,12 @@ Console.WriteLine(banana);");
                       s => s.Contains("(3,19): error CS0103: The name \'banana\' does not exist in the current context"));
         }
 
-        [Fact(Skip = "Later")]
+        [Fact]
         public async Task Response_indicates_when_execution_times_out()
         {
             var request = new RunRequest(@"
-while (false)
+while (true)
 {
-    Console.WriteLine(""still going..."");
 }");
 
             var server = GetWorkspaceServer();
@@ -127,7 +126,7 @@ while (false)
 
             result.Exception
                   .Should()
-                  .Contain("something something something");
+                  .StartWith("System.TimeoutException");
         }
 
         [Fact]

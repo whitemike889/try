@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
 using Pocket;
 using WorkspaceServer.Models.Completion;
@@ -21,9 +20,7 @@ namespace WorkspaceServer.Servers.Local
             Log.Trace("Creating workspace in @ {directory}", _workingDirectory);
         }
 
-        public async Task<RunResult> Run(
-            RunRequest request,
-            CancellationToken? cancellationToken = null)
+        public async Task<RunResult> Run(RunRequest request)
         {
             using (var operation = Log.OnEnterAndConfirmOnExit())
             {
@@ -63,11 +60,9 @@ namespace WorkspaceServer.Servers.Local
             }
         }
 
-        private DirectoryInfo GetWorkingDirectory()
+        private void CreateWorkingDirectory()
         {
-            _workingDirectory.Refresh();
-
-            if (!_workingDirectory.Exists)
+            using (Log.OnExit())
             {
                 _workingDirectory.Create();
 
@@ -76,6 +71,16 @@ namespace WorkspaceServer.Servers.Local
                 AcquireTemplate(dotnet);
 
                 PrepareWorkspace(dotnet);
+            }
+        }
+
+        private DirectoryInfo GetWorkingDirectory()
+        {
+            _workingDirectory.Refresh();
+
+            if (!_workingDirectory.Exists)
+            {
+                CreateWorkingDirectory();
             }
             else
             {
