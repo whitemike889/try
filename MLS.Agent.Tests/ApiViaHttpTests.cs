@@ -4,14 +4,25 @@ using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Newtonsoft.Json;
+using Pocket;
 using Recipes;
 using WorkspaceServer.Models.Completion;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace MLS.Agent.Tests
 {
-    public class ApiViaHttpTests
+    public class ApiViaHttpTests : IDisposable
     {
+        private readonly CompositeDisposable disposables = new CompositeDisposable();
+
+        public ApiViaHttpTests(ITestOutputHelper output)
+        {
+            disposables.Add(LogEvents.Subscribe(e => output.WriteLine(e.ToLogString())));
+        }
+
+        public void Dispose() => disposables.Dispose();
+
         [Fact]
         public async Task When_they_load_a_snippet_then_they_can_use_the_workspace_endpoint_to_compile_their_edited_code()
         {

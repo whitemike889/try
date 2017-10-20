@@ -3,62 +3,85 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using Pocket;
 using WorkspaceServer.Models.Execution;
+using static Pocket.Logger<WorkspaceServer.Servers.Local.Dotnet>;
 
 namespace WorkspaceServer.Servers.Local
 {
     public class Dotnet
     {
+        private readonly TimeSpan _defaultCommandTimeout;
         private readonly DirectoryInfo _workingDirectory;
 
-        public Dotnet(DirectoryInfo workingDirectory)
+        public Dotnet(
+            DirectoryInfo workingDirectory,
+            TimeSpan? defaultCommandTimeout = null)
         {
-            _workingDirectory = workingDirectory ?? throw new ArgumentNullException(nameof(workingDirectory));
+            _defaultCommandTimeout = defaultCommandTimeout ??
+                                     TimeSpan.FromSeconds(30);
+            _workingDirectory = workingDirectory ??
+                                throw new ArgumentNullException(nameof(workingDirectory));
         }
 
-        public void New(string templateName)
+        public void New(string templateName, int? timeoutMilliseconds = null)
         {
             if (string.IsNullOrWhiteSpace(templateName))
             {
                 throw new ArgumentException("Value cannot be null or whitespace.", nameof(templateName));
             }
 
-            ExecuteDotnet($"new {templateName}");
+            ExecuteDotnet($"new {templateName}", timeoutMilliseconds);
         }
 
-        public void Restore()
-        {
-            ExecuteDotnet("restore");
-        }
+        public void Restore(int? timeoutMilliseconds = null) => 
+            ExecuteDotnet("restore", timeoutMilliseconds);
 
-        public RunResult Run()
-        {
-            return ExecuteDotnet("run");
-        }
+        public RunResult Run(int? timeoutMilliseconds = null) => 
+            ExecuteDotnet("run", timeoutMilliseconds);
 
-        public RunResult ExecuteDotnet(string args)
+        public RunResult ExecuteDotnet(string args, int? timeoutMilliseconds = null)
         {
-            var process = Process.Start(new ProcessStartInfo
+            var dotnetPath = DotnetMuxer.Path.FullName;
+
+            using (var operation = LogConfirm(dotnetPath, args))
+            using (var process = Process.Start(new ProcessStartInfo
             {
                 Arguments = args,
-                FileName = DotnetMuxer.Path.FullName,
+                FileName = dotnetPath,
                 RedirectStandardError = true,
                 RedirectStandardOutput = true,
                 WorkingDirectory = _workingDirectory.FullName
-            });
+            }))
+            {
+                if (!process.WaitForExit(timeoutMilliseconds ??
+                                         (int) _defaultCommandTimeout.TotalMilliseconds))
+                {
+                    operation.Fail(message: "Timed out");
+                    throw new TimeoutException("Timed out waiting for dotnet.exe.");
+                }
 
-            process.WaitForExit();
+                operation.Trace("dotnet.exe exited with {code}", process.ExitCode);
 
-            var stdOut = SplitLines(process.StandardOutput);
+                var stdOut = SplitLines(process.StandardOutput);
 
-            var stdErr = SplitLines(process.StandardError);
+                var stdErr = SplitLines(process.StandardError);
 
-            return new RunResult
-            (
-                succeeded: process.ExitCode == 0,
-                output: stdOut.Concat(stdErr).ToArray()
-            );
+                operation.Succeed();
+
+                return new RunResult
+                (
+                    succeeded: process.ExitCode == 0,
+                    output: stdOut.Concat(stdErr).ToArray()
+                );
+            }
         }
+
+        private static ConfirmationLogger LogConfirm(string dotnetPath, string args) => new ConfirmationLogger(
+            category: Log.Category,
+            message: "Invoking {dotnet} {args}",
+            args: new object[] { dotnetPath, args },
+            logOnStart: true);
 
         private static IReadOnlyCollection<string> SplitLines(StreamReader reader) =>
             reader.ReadToEnd()

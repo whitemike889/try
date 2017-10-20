@@ -1,25 +1,31 @@
-using System.Linq;
-using System.Threading.Tasks;
+using System;
 using FluentAssertions;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Pocket;
 using Recipes;
 using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Servers.Scripting;
 using Xunit;
 using Xunit.Abstractions;
+using static Pocket.Logger<WorkspaceServer.Tests.ScriptingWorkspaceServerTests>;
 
 namespace WorkspaceServer.Tests
 {
-    public class ScriptingWorkspaceServerTests
+    public class ScriptingWorkspaceServerTests : IDisposable
     {
-        private readonly ITestOutputHelper _output;
+        private readonly CompositeDisposable disposables = new CompositeDisposable();
 
         public ScriptingWorkspaceServerTests(ITestOutputHelper output)
         {
-            _output = output;
+            disposables.Add(LogEvents.Subscribe(e => output.WriteLine(e.ToLogString())));
         }
 
         protected IWorkspaceServer GetWorkspaceServer() => new ScriptingWorkspaceServer();
+
+        public void Dispose() => disposables.Dispose();
 
         [Fact]
         public async Task Response_indicates_when_compile_is_successful_and_signature_is_like_a_console_app()
@@ -39,7 +45,7 @@ public static class Hello
 
             var result = await server.Run(request);
 
-            _output.WriteLine(result.ToString());
+            Log.Trace(result.ToString());
 
             result.Succeeded.Should().BeTrue();
         }
@@ -64,7 +70,7 @@ Hello.Main();");
 
             var result = await server.Run(request);
 
-            _output.WriteLine(result.ToString());
+            Log.Trace(result.ToString());
 
             result.Succeeded.Should().BeTrue();
             result.Output.Should().Contain("Hello there!");
@@ -82,6 +88,9 @@ Console.WriteLine(s);");
 
             var result = await server.Run(request);
 
+            result.Succeeded
+                  .Should()
+                  .BeTrue();
             result.Output
                   .Should()
                   .Contain("Jeff is 20 year(s) old");
@@ -98,7 +107,7 @@ $""{person.Name} is {person.Age} year(s) old""");
 
             var result = server.Run(request).Result;
 
-            _output.WriteLine(result.ToJson());
+            Log.Trace(result.ToJson());
 
             result.ReturnValue
                   .Should()
@@ -118,7 +127,7 @@ Console.WriteLine(banana);");
 
             result.Succeeded.Should().BeFalse();
 
-            _output.WriteLine(string.Join("\n", result.Output));
+            Log.Trace(string.Join("\n", result.Output));
 
             result.Output
                   .Should()
@@ -140,7 +149,7 @@ name = ""Alice"";");
 
             var states = result.Variables.Single(v => v.Name == "name").States;
 
-            _output.WriteLine(result.ToString());
+            Log.Trace(result.ToString());
 
             states.Select(s => s.LineNumber)
                   .Should()
@@ -148,7 +157,7 @@ name = ""Alice"";");
 
             var values = states.Select(s => s.Value).Cast<string>().ToArray();
 
-            _output.WriteLine(new { result }.ToJson());
+            Log.Trace(new { result }.ToJson());
 
             values
                 .Should()
@@ -169,9 +178,9 @@ name = ""Alice"";");
 
             var name = result.Variables.Single(v => v.Name == "name").Value;
 
-            _output.WriteLine(result.ToString());
+            Log.Trace(result.ToString());
 
-           name.Should().Be("Alice");
+            name.Should().Be("Alice");
         }
 
         [Fact]
@@ -187,7 +196,7 @@ Console.WriteLine(4);");
 
             var result = await server.Run(request);
 
-            _output.WriteLine(result.ToString());
+            Log.Trace(result.ToString());
 
             result.Output.Should().BeEquivalentTo("1", "2", "3", "4");
         }
@@ -206,7 +215,7 @@ Console.WriteLine(4);");
 
             var result = await server.Run(request);
 
-            _output.WriteLine(result.ToString());
+            Log.Trace(result.ToString());
 
             result.Output.Should().BeEquivalentTo("1", "2");
         }
@@ -220,7 +229,7 @@ Console.WriteLine(4);");
 
             var result = await server.Run(request);
 
-            _output.WriteLine(result.ToString());
+            Log.Trace(result.ToString());
 
             result.Exception.Should().NotBeNull();
             result.Exception.Should().Contain("oops!");
@@ -236,7 +245,7 @@ throw new Exception(""oops!"");");
 
             var result = await server.Run(request);
 
-            _output.WriteLine(result.ToString());
+            Log.Trace(result.ToString());
 
             result.Exception.Should().NotBeNull();
             result.Exception.Should().Contain("oops!");
@@ -252,6 +261,27 @@ throw new Exception(""oops!"");");
             var result = await server.GetCompletionList(request);
 
             result.Items.Should().ContainSingle(item => item.DisplayText == "WriteLine");
+        }
+
+        [Fact]
+        public async Task Response_indicates_when_execution_times_out()
+        {
+            var request = new RunRequest(@"
+while (true)
+{
+}");
+
+            var server = GetWorkspaceServer();
+
+            var result = await server.Run(
+                request, 
+                new CancellationTokenSource(2.Seconds()).Token);
+
+            result.Succeeded.Should().BeFalse();
+
+            result.Exception
+                  .Should()
+                  .StartWith("System.OperationCanceledException: The operation was canceled");
         }
     }
 }

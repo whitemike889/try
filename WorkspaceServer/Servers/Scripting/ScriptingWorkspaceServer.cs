@@ -1,111 +1,122 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
+using System.Linq;
 using System.Runtime.Loader;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Completion;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.Scripting;
+using Pocket;
 using Recipes;
 using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
+using static Pocket.Logger<WorkspaceServer.Servers.Scripting.ScriptingWorkspaceServer>;
 
 namespace WorkspaceServer.Servers.Scripting
 {
     public class ScriptingWorkspaceServer : IWorkspaceServer
     {
-        public async Task<RunResult> Run(RunRequest request)
+        public async Task<RunResult> Run(
+            RunRequest request,
+            CancellationToken? cancellationToken = null)
         {
-            var source = SourceFile.Create(request.RawSource);
-
-            var options = ScriptOptions.Default
-                                       .AddReferences(GetReferenceAssemblies())
-                                       .AddImports(GetDefultUsings());
-
-            ScriptState<object> state = null;
-            var variables = new Dictionary<string, Variable>();
-            Exception exception = null;
-
-            using (var console = new RedirectConsoleOutput())
+            using (var operation = Log.OnEnterAndConfirmOnExit())
             {
-                try
+                var source = SourceFile.Create(request.RawSource);
+
+                var options = ScriptOptions.Default
+                                           .AddReferences(GetReferenceAssemblies())
+                                           .AddImports(GetDefultUsings());
+
+                ScriptState<object> state = null;
+                var variables = new Dictionary<string, Variable>();
+                Exception exception = null;
+
+                var cancelationToken = cancellationToken ?? new CancellationTokenSource(
+                                           TimeSpan.FromSeconds(15)).Token;
+
+                using (var console = new RedirectConsoleOutput())
                 {
-#if true
-                    var sourceLines = source.Text.Lines;
-
-                    var buffer = new StringBuilder();
-
-                    foreach (var sourceLine in sourceLines)
+                    try
                     {
-                        buffer.AppendLine(sourceLine.ToString());
+                        var sourceLines = source.Text.Lines;
 
-                        // Convert from 0-based to 1-based.
-                        var lineNumber = sourceLine.LineNumber + 1;
+                        var buffer = new StringBuilder();
 
-                        try
+                        foreach (var sourceLine in sourceLines)
                         {
-                            console.Clear();
+                            buffer.AppendLine(sourceLine.ToString());
 
-                            state = await (state?.ContinueWithAsync(buffer.ToString(),
-                                                                    catchException: ex => true) ??
-                                           CSharpScript.RunAsync(
-                                               buffer.ToString(),
-                                               options));
+                            // Convert from 0-based to 1-based.
+                            var lineNumber = sourceLine.LineNumber + 1;
 
-                            foreach (var scriptVariable in state.Variables)
+                            try
                             {
-                                variables.GetOrAdd(scriptVariable.Name,
-                                                   name => new Variable(name))
-                                         .TryAddState(
-                                             new VariableState(
-                                                 lineNumber,
-                                                 scriptVariable.Value,
-                                                 scriptVariable.Type));
+                                console.Clear();
+
+                                state = await (state?.ContinueWithAsync(
+                                                   buffer.ToString(),
+                                                   catchException: ex => true,
+                                                   cancellationToken: cancelationToken)
+                                               ??
+                                               CSharpScript.RunAsync(
+                                                   buffer.ToString(),
+                                                   options,
+                                                   cancellationToken: cancelationToken));
+
+                                foreach (var scriptVariable in state.Variables)
+                                {
+                                    variables.GetOrAdd(scriptVariable.Name,
+                                                       name => new Variable(name))
+                                             .TryAddState(
+                                                 new VariableState(
+                                                     lineNumber,
+                                                     scriptVariable.Value,
+                                                     scriptVariable.Type));
+                                }
                             }
-                        }
-                        catch (CompilationErrorException)
-                        {
-                            if (lineNumber == sourceLines.Count)
+                            catch (CompilationErrorException)
                             {
-                                throw;
+                                if (lineNumber == sourceLines.Count)
+                                {
+                                    throw;
+                                }
                             }
-                        }
-                        catch (Exception ex)
-                        {
-                            exception = ex;
-                            break;
+                            catch (Exception ex)
+                            {
+                                exception = ex;
+                                operation.Warning(ex);
+                                break;
+                            }
                         }
                     }
+                    catch (CompilationErrorException compilationErrorException)
+                    {
+                        return new RunResult(
+                            false,
+                            compilationErrorException.Diagnostics
+                                                     .Select(d => d.ToString())
+                                                     .ToArray());
+                    }
 
-#else
-                    state = await
-                                CSharpScript.RunAsync(
-                                    request.RawSource,
-                                    options);
-#endif
-                }
-                catch (CompilationErrorException compilationErrorException)
-                {
+                    operation.Succeed();
+
                     return new RunResult(
-                        false,
-                        compilationErrorException.Diagnostics
-                                                 .Select(d => d.ToString())
-                                                 .ToArray());
+                        succeeded: exception == null,
+                        output: console.ToString()
+                                       .Replace("\r\n", "\n")
+                                       .Split('\n'),
+                        returnValue: state?.ReturnValue,
+                        exception: exception?.ToString() ?? state?.Exception?.ToString(),
+                        variables: variables.Values);
                 }
-
-                return new RunResult(
-                    succeeded: exception == null,
-                    output: console.ToString()
-                                   .Replace("\r\n", "\n")
-                                   .Split('\n'),
-                    returnValue: state?.ReturnValue,
-                    exception: exception?.ToString() ?? state?.Exception?.ToString(),
-                    variables: variables.Values);
             }
         }
 
@@ -155,15 +166,20 @@ namespace WorkspaceServer.Servers.Scripting
 
         public async Task<CompletionResult> GetCompletionList(CompletionRequest request)
         {
-            var sourceFile = SourceFile.Create(request.RawSource, request.Position);
+            using (Log.OnExit())
+            {
+                var sourceFile = SourceFile.Create(request.RawSource, request.Position);
 
-            var document = CreateDocument(sourceFile);
-            var service = Microsoft.CodeAnalysis.Completion.CompletionService.GetService(document);
+                var document = CreateDocument(sourceFile);
+                var service = CompletionService.GetService(document);
 
-            var completionList = await service.GetCompletionsAsync(document, request.Position);
+                var completionList = await service.GetCompletionsAsync(
+                                         document,
+                                         request.Position);
 
-            return new CompletionResult(
-                items: completionList.Items.Select(item => item.ToModel()).ToArray());
+                return new CompletionResult(
+                    items: completionList.Items.Select(item => item.ToModel()).ToArray());
+            }
         }
 
         private static Document CreateDocument(SourceFile sourceFile)
@@ -193,13 +209,13 @@ namespace WorkspaceServer.Servers.Scripting
             var documentId = DocumentId.CreateNewId(projectId, "ScriptDocument");
 
             var documentInfo = DocumentInfo.Create(documentId,
-                name: "ScriptDocument",
-                sourceCodeKind: SourceCodeKind.Script);
+                                                   name: "ScriptDocument",
+                                                   sourceCodeKind: SourceCodeKind.Script);
 
             workspace.AddDocument(documentInfo);
 
             var solution = workspace.CurrentSolution
-                .WithDocumentText(documentId, sourceFile.Text);
+                                    .WithDocumentText(documentId, sourceFile.Text);
 
             workspace.TryApplyChanges(solution);
 
