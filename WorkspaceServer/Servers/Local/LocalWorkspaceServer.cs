@@ -20,7 +20,7 @@ namespace WorkspaceServer.Servers.Local
             Log.Trace("Creating workspace in @ {directory}", _workingDirectory);
         }
 
-        public async Task<RunResult> Run(RunRequest request)
+        public async Task<RunResult> Run(RunRequest request, TimeSpan? timeout = null)
         {
             using (var operation = Log.OnEnterAndConfirmOnExit())
             {
@@ -30,7 +30,7 @@ namespace WorkspaceServer.Servers.Local
 
                 WriteUserSourceFiles(sourceFiles);
 
-                var result = await Task.Run(() => dotnet.Run());
+                var result = await Task.Run(() => dotnet.Run(timeout));
 
                 operation.Succeed();
 

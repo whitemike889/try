@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace WorkspaceServer.Servers.Scripting
@@ -19,5 +20,13 @@ namespace WorkspaceServer.Servers.Scripting
         public override string ToString() => writer.ToString().Trim();
 
         public void Clear() => writer.GetStringBuilder().Clear();
+
+        public void WriteLines(IEnumerable<string> lines)
+        {
+            foreach (var line in lines)
+            {
+                writer.WriteLine(line);
+            }
+        }
     }
 }

@@ -5,7 +5,6 @@ using System.Reflection;
 using System.Linq;
 using System.Runtime.Loader;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Completion;
@@ -23,13 +22,13 @@ namespace WorkspaceServer.Servers.Scripting
 {
     public class ScriptingWorkspaceServer : IWorkspaceServer
     {
-        public async Task<RunResult> Run(
-            RunRequest request)
+        private static readonly TimeSpan _defaultTimeout = TimeSpan.FromSeconds(5);
+
+        public async Task<RunResult> Run(RunRequest request, TimeSpan? timeout = null)
         {
             using (var operation = Log.OnEnterAndConfirmOnExit())
+            using (var console = new RedirectConsoleOutput())
             {
-                var source = SourceFile.Create(request.RawSource);
-
                 var options = ScriptOptions.Default
                                            .AddReferences(GetReferenceAssemblies())
                                            .AddImports(GetDefultUsings());
@@ -37,13 +36,12 @@ namespace WorkspaceServer.Servers.Scripting
                 ScriptState<object> state = null;
                 var variables = new Dictionary<string, Variable>();
                 Exception exception = null;
-               
 
-                using (var console = new RedirectConsoleOutput())
+                try
                 {
-                    try
+                    await Task.Run(async () =>
                     {
-                        var sourceLines = source.Text.Lines;
+                        var sourceLines = SourceFile.Create(request.RawSource).Text.Lines;
 
                         var buffer = new StringBuilder();
 
@@ -77,11 +75,16 @@ namespace WorkspaceServer.Servers.Scripting
                                                      scriptVariable.Type));
                                 }
                             }
-                            catch (CompilationErrorException)
+                            catch (CompilationErrorException ex)
                             {
                                 if (lineNumber == sourceLines.Count)
                                 {
-                                    throw;
+                                    exception = ex;
+
+                                    console.WriteLines(ex.Diagnostics
+                                                         .Select(d => d.ToString()));
+
+                                    break;
                                 }
                             }
                             catch (Exception ex)
@@ -91,27 +94,23 @@ namespace WorkspaceServer.Servers.Scripting
                                 break;
                             }
                         }
-                    }
-                    catch (CompilationErrorException compilationErrorException)
-                    {
-                        return new RunResult(
-                            false,
-                            compilationErrorException.Diagnostics
-                                                     .Select(d => d.ToString())
-                                                     .ToArray());
-                    }
-
-                    operation.Succeed();
-
-                    return new RunResult(
-                        succeeded: exception == null,
-                        output: console.ToString()
-                                       .Replace("\r\n", "\n")
-                                       .Split('\n'),
-                        returnValue: state?.ReturnValue,
-                        exception: exception?.ToString() ?? state?.Exception?.ToString(),
-                        variables: variables.Values);
+                    }).Timeout(timeout ?? _defaultTimeout);
                 }
+                catch (TimeoutException timeoutException)
+                {
+                    exception = timeoutException;
+                }
+
+                operation.Succeed();
+
+                return new RunResult(
+                    succeeded: exception == null,
+                    output: console.ToString()
+                                   .Replace("\r\n", "\n")
+                                   .Split('\n'),
+                    returnValue: state?.ReturnValue,
+                    exception: exception?.ToString() ?? state?.Exception?.ToString(),
+                    variables: variables.Values);
             }
         }
 

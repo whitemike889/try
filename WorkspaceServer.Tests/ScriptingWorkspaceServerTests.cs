@@ -1,7 +1,6 @@
 using System;
 using FluentAssertions;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Pocket;
 using Recipes;
@@ -263,7 +262,7 @@ throw new Exception(""oops!"");");
             result.Items.Should().ContainSingle(item => item.DisplayText == "WriteLine");
         }
 
-        [Fact(Skip = "still not working...")]
+        [Fact]
         public async Task Response_indicates_when_execution_times_out()
         {
             var request = new RunRequest(@"while (true) {  }");
@@ -276,7 +275,7 @@ throw new Exception(""oops!"");");
 
             result.Exception
                   .Should()
-                  .StartWith("System.OperationCanceledException: The operation was canceled");
+                  .StartWith("System.TimeoutException");
         }
     }
 }
