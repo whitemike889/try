@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
+using External;
 using Pocket;
+using Recipes;
 using WorkspaceServer.Models.Execution;
 using static Pocket.Logger<WorkspaceServer.Servers.Local.Dotnet>;
 
@@ -89,7 +92,7 @@ namespace WorkspaceServer.Servers.Local
                     else
                     {
                         exception = new TimeoutException();
-                        process.Kill();
+                        Task.Run(() => process.KillTree(1000)).DontAwait();
                         operation.Fail(exception);
                     }
 
