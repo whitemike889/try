@@ -17,7 +17,6 @@ namespace Recipes
         /// </summary>
         /// <param name="source">The task being given a limited amount of time to complete.</param>
         /// <param name="timeout">The amount of time before a TimeoutException will be thrown.</param>
-        /// <returns>The source Task or a new Task the result of which is a TimeoutException.</returns>
         public static async Task Timeout(
             this Task source,
             TimeSpan timeout)
