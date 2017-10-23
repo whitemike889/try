@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
+using External;
 using Pocket;
+using Recipes;
 using WorkspaceServer.Models.Execution;
 using static Pocket.Logger<WorkspaceServer.Servers.Local.Dotnet>;
 
@@ -24,28 +27,27 @@ namespace WorkspaceServer.Servers.Local
                                 throw new ArgumentNullException(nameof(workingDirectory));
         }
 
-        public void New(string templateName, int? timeoutMilliseconds = null)
+        public void New(string templateName, TimeSpan? timeout = null)
         {
             if (string.IsNullOrWhiteSpace(templateName))
             {
                 throw new ArgumentException("Value cannot be null or whitespace.", nameof(templateName));
             }
 
-            ExecuteDotnet($"new {templateName}", timeoutMilliseconds);
+            ExecuteDotnet($"new {templateName}", timeout);
         }
 
-        public void Restore(int? timeoutMilliseconds = null) =>
-            ExecuteDotnet("restore", timeoutMilliseconds);
+        public void Restore(TimeSpan? timeout = null) =>
+            ExecuteDotnet("restore", timeout);
 
-        public RunResult Run(int? timeoutMilliseconds = null) =>
-            ExecuteDotnet("run", timeoutMilliseconds);
+        public RunResult Run(TimeSpan? timeout = null) =>
+            ExecuteDotnet("run", timeout);
 
-        public RunResult ExecuteDotnet(string args, int? timeoutMilliseconds = null)
+        public RunResult ExecuteDotnet(string args, TimeSpan? timeout = null)
         {
-            var dotnetPath = DotnetMuxer.Path.FullName;
+            timeout = timeout ?? _defaultCommandTimeout;
 
-            var timeout = timeoutMilliseconds ??
-                          (int) _defaultCommandTimeout.TotalMilliseconds;
+            var dotnetPath = DotnetMuxer.Path.FullName;
 
             using (var operation = LogConfirm(dotnetPath, args))
             {
@@ -83,14 +85,14 @@ namespace WorkspaceServer.Servers.Local
 
                     Exception exception = null;
 
-                    if (process.WaitForExit(timeout))
+                    if (process.WaitForExit((int) timeout.Value.TotalMilliseconds))
                     {
                         operation.Succeed("dotnet.exe exited with {code}", process.ExitCode);
                     }
                     else
                     {
                         exception = new TimeoutException();
-                        process.Kill();
+                        Task.Run(() => process.KillTree(1000)).DontAwait();
                         operation.Fail(exception);
                     }
 

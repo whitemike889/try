@@ -20,7 +20,7 @@ namespace WorkspaceServer.Servers.Local
             Log.Trace("Creating workspace in @ {directory}", _workingDirectory);
         }
 
-        public async Task<RunResult> Run(RunRequest request)
+        public async Task<RunResult> Run(RunRequest request, TimeSpan? timeout = null)
         {
             using (var operation = Log.OnEnterAndConfirmOnExit())
             {
@@ -30,7 +30,7 @@ namespace WorkspaceServer.Servers.Local
 
                 WriteUserSourceFiles(sourceFiles);
 
-                var result = await Task.Run(() => dotnet.Run());
+                var result = await Task.Run(() => dotnet.Run(timeout));
 
                 operation.Succeed();
 
@@ -51,7 +51,7 @@ namespace WorkspaceServer.Servers.Local
 
         private void CleanOldSources()
         {
-            using (Log.OnExit())
+            using (Log.OnEnterAndExit())
             {
                 foreach (var sourceFile in _workingDirectory.EnumerateFileSystemInfos("*.cs"))
                 {
@@ -62,7 +62,7 @@ namespace WorkspaceServer.Servers.Local
 
         private void CreateWorkingDirectory()
         {
-            using (Log.OnExit())
+            using (Log.OnEnterAndExit())
             {
                 _workingDirectory.Create();
 
@@ -92,7 +92,7 @@ namespace WorkspaceServer.Servers.Local
 
         private void WriteUserSourceFiles(SourceFile[] sourceFiles)
         {
-            using (Log.OnExit())
+            using (Log.OnEnterAndExit())
             {
                 int i = 1;
 
