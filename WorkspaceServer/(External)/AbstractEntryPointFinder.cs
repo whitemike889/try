@@ -10,7 +10,7 @@ namespace WorkspaceServer
 {
     internal abstract class AbstractEntryPointFinder : SymbolVisitor
     {
-        protected readonly HashSet<INamedTypeSymbol> EntryPoints = new HashSet<INamedTypeSymbol>();
+        protected readonly HashSet<IMethodSymbol> EntryPoints = new HashSet<IMethodSymbol>();
  
         public override void VisitNamespace(INamespaceSymbol symbol)
         {
@@ -52,21 +52,21 @@ namespace WorkspaceServer
             if (symbol.Parameters.Length == 1)
             {
                 var parameter = symbol.Parameters.Single();
-                if (parameter.Type is IArrayTypeSymbol)
+                if (parameter.Type is IArrayTypeSymbol typeSymbol)
                 {
-                    var elementType = ((IArrayTypeSymbol)parameter.Type).ElementType;
+                    var elementType = typeSymbol.ElementType;
                     var specialType = elementType.SpecialType;
  
                     if (specialType == SpecialType.System_String)
                     {
-                        EntryPoints.Add(symbol.ContainingType);
+                        EntryPoints.Add(symbol);
                     }
                 }
             }
  
             if (!symbol.Parameters.Any())
             {
-                EntryPoints.Add(symbol.ContainingType);
+                EntryPoints.Add(symbol);
             }
         }
  

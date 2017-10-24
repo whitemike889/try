@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using System.Linq;
 using Microsoft.CodeAnalysis;
 
 namespace WorkspaceServer
@@ -9,12 +9,12 @@ namespace WorkspaceServer
         {
             return name == "Main";
         }
- 
-        public static IEnumerable<INamedTypeSymbol> FindEntryPoints(INamespaceSymbol symbol)
+
+        public static IMethodSymbol FindEntryPoint(INamespaceSymbol symbol)
         {
             var visitor = new EntryPointFinder();
             visitor.Visit(symbol);
-            return visitor.EntryPoints;
+            return visitor.EntryPoints.SingleOrDefault();
         }
     }
 }

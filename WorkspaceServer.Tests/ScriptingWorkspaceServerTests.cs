@@ -346,7 +346,7 @@ public static class Hello
 
             Log.Trace(result.ToString());
 
-//            result.Succeeded.Should().BeTrue();
+            result.Succeeded.Should().BeTrue();
             result.Output.Should().BeEmpty();
         }
 

@@ -218,14 +218,14 @@ namespace WorkspaceServer.Servers.Scripting
             if (compiled.FirstOrDefault(d => d.Descriptor.Id == "CS7022")
                     is Diagnostic noEntryPointWarning &&
                 EntryPointType()
-                    is INamedTypeSymbol entryPointType)
+                    is IMethodSymbol entryPointMethod)
             {
                 // e.g. warning CS7022: The entry point of the program is global script code; ignoring 'Program.Main()' entry point. 
 
                 // add a line of code to call Main using reflection
                 buffer.AppendLine(
                     $@"
-typeof({entryPointType.Name})
+typeof({entryPointMethod.ContainingType.Name})
     .GetMethod(""Main"", 
                System.Reflection.BindingFlags.Static | 
                System.Reflection.BindingFlags.NonPublic | 
@@ -242,12 +242,11 @@ typeof({entryPointType.Name})
 
             return state;
 
-            INamedTypeSymbol EntryPointType() =>
-                EntryPointFinder.FindEntryPoints(
-                                    script.GetCompilation().GlobalNamespace)
-                                .FirstOrDefault();
+            IMethodSymbol EntryPointType() =>
+                EntryPointFinder.FindEntryPoint(
+                    script.GetCompilation().GlobalNamespace);
 
-            string ParametersForMain() => noEntryPointWarning.ToString().Contains("[]")
+            string ParametersForMain() => entryPointMethod.Parameters.Any()
                                               ? "new object[]{ new string[0] }"
                                               : "null";
         }
