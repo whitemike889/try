@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using FluentAssertions;
 using System.Linq;
 using System.Threading.Tasks;
@@ -277,5 +277,103 @@ throw new Exception(""oops!"");");
                   .Should()
                   .StartWith("System.TimeoutException");
         }
+
+        [Fact]
+        public async Task When_a_public_void_Main_with_no_parameters_is_present_it_is_invoked()
+        {
+            var request = new RunRequest(@"
+using System;
+
+public static class Hello
+{
+    public static void Main() 
+    { 
+        Console.WriteLine(""Hello there!"");
+    } 
+}");
+
+            var server = GetWorkspaceServer();
+
+            var result = await server.Run(request);
+
+            Log.Trace(result.ToString());
+
+            result.Succeeded.Should().BeTrue();
+            result.Output.Should().Contain("Hello there!");
+        }
+
+        [Fact]
+        public async Task When_a_public_void_Main_with_parameters_is_present_it_is_invoked()
+        {
+            var request = new RunRequest(@"
+using System;
+
+public static class Hello
+{
+    public static void Main(params string[] args) 
+    { 
+        Console.WriteLine(""Hello there!"");
+    } 
+}");
+
+            var server = GetWorkspaceServer();
+
+            var result = await server.Run(request);
+
+            Log.Trace(result.ToString());
+
+            result.Succeeded.Should().BeTrue();
+            result.Output.Should().Contain("Hello there!");
+        }
+
+        [Fact]
+        public async Task When_an_internal_void_Main_with_no_parameters_is_present_it_is_invoked()
+        {
+            var request = new RunRequest(@"
+using System;
+
+public static class Hello
+{
+    static void Main()
+    { 
+        Console.WriteLine(""Hello there!"");
+    } 
+}");
+
+            var server = GetWorkspaceServer();
+
+            var result = await server.Run(request);
+
+            Log.Trace(result.ToString());
+
+            result.Succeeded.Should().BeTrue();
+            result.Output.Should().Contain("Hello there!");
+        }
+
+        [Fact]
+        public async Task When_an_internal_void_Main_with_parameters_is_present_it_is_invoked()
+        {
+            var request = new RunRequest(@"
+using System;
+
+public static class Hello
+{
+    static void Main(string[] args)
+    { 
+        Console.WriteLine(""Hello there!"");
+    } 
+}");
+
+            var server = GetWorkspaceServer();
+
+            var result = await server.Run(request);
+
+            Log.Trace(result.ToString());
+
+            result.Succeeded.Should().BeTrue();
+            result.Output.Should().Contain("Hello there!");
+        }
+
+      
     }
 }

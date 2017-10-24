@@ -21,6 +21,8 @@ namespace WorkspaceServer.Servers.Scripting
 
         public void Clear() => writer.GetStringBuilder().Clear();
 
+        public bool IsEmpty() => writer.ToString().Length == 0;
+
         public void WriteLines(IEnumerable<string> lines)
         {
             foreach (var line in lines)
