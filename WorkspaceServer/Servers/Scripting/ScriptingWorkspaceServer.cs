@@ -1,9 +1,7 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Reflection;
 using System.Linq;
-using System.Runtime.Loader;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -45,8 +43,9 @@ namespace WorkspaceServer.Servers.Scripting
 
                         var buffer = new StringBuilder();
 
-                        foreach (var sourceLine in sourceLines)
+                        for (var index = 0; index < sourceLines.Count; index++)
                         {
+                            var sourceLine = sourceLines[index];
                             buffer.AppendLine(sourceLine.ToString());
 
                             // Convert from 0-based to 1-based.
@@ -56,23 +55,14 @@ namespace WorkspaceServer.Servers.Scripting
                             {
                                 console.Clear();
 
-                                state = state == null
-                                            ? await CSharpScript.RunAsync(
-                                                  buffer.ToString(),
-                                                  options)
-                                            : await state.ContinueWithAsync(
-                                                  buffer.ToString(),
-                                                  catchException: ex => true);
+                                state = await Run(state, buffer, options);
 
-                                foreach (var scriptVariable in state.Variables)
+                                CaptureVariableState(state, variables, lineNumber);
+
+                                if (index == sourceLines.Count - 1 &&
+                                    console.IsEmpty())
                                 {
-                                    variables.GetOrAdd(scriptVariable.Name,
-                                                       name => new Variable(name))
-                                             .TryAddState(
-                                                 new VariableState(
-                                                     lineNumber,
-                                                     scriptVariable.Value,
-                                                     scriptVariable.Type));
+                                    state = await EmulateConsoleMainInvocation(state, buffer, options, operation);
                                 }
                             }
                             catch (CompilationErrorException ex)
@@ -107,56 +97,49 @@ namespace WorkspaceServer.Servers.Scripting
                     succeeded: exception == null,
                     output: console.ToString()
                                    .Replace("\r\n", "\n")
-                                   .Split('\n'),
+                                   .Split('\n', StringSplitOptions.RemoveEmptyEntries),
                     returnValue: state?.ReturnValue,
                     exception: exception?.ToString() ?? state?.Exception?.ToString(),
                     variables: variables.Values);
             }
         }
 
-        private static Assembly[] GetReferenceAssemblies()
+        private static void CaptureVariableState(ScriptState<object> state, Dictionary<string, Variable> variables, int lineNumber)
         {
-            return new[]
+            foreach (var scriptVariable in state.Variables)
+            {
+                variables.GetOrAdd(scriptVariable.Name,
+                                   name => new Variable(name))
+                         .TryAddState(
+                             new VariableState(
+                                 lineNumber,
+                                 scriptVariable.Value,
+                                 scriptVariable.Type));
+            }
+        }
+
+        private static async Task<ScriptState<object>> Run(
+            ScriptState<object> state,
+            StringBuilder buffer,
+            ScriptOptions options) =>
+            state == null
+                ? await CSharpScript.RunAsync(
+                      buffer.ToString(),
+                      options)
+                : await state.ContinueWithAsync(
+                      buffer.ToString(),
+                      catchException: ex => true);
+
+        private static Assembly[] GetReferenceAssemblies() =>
+            new[]
             {
                 typeof(object).GetTypeInfo().Assembly,
                 typeof(Enumerable).GetTypeInfo().Assembly,
                 typeof(Console).GetTypeInfo().Assembly
             };
-        }
 
-        private static string[] GetDefultUsings()
-        {
-            return new[] { "System", "System.Linq", "System.Collections.Generic" };
-        }
-
-        private static void Compile(Script script)
-        {
-            var compilation = script.GetCompilation();
-
-            using (var ms = new MemoryStream())
-            {
-                var result = compilation.Emit(ms);
-
-                if (!result.Success)
-                {
-                    var failures = result.Diagnostics
-                                         .Where(diagnostic =>
-                                                    diagnostic.IsWarningAsError ||
-                                                    diagnostic.Severity == DiagnosticSeverity.Error);
-
-                    foreach (var diagnostic in failures)
-                    {
-                        Console.Error.WriteLine("{0}: {1}", diagnostic.Id, diagnostic.GetMessage());
-                    }
-                }
-                else
-                {
-                    ms.Seek(0, SeekOrigin.Begin);
-
-                    var assembly = AssemblyLoadContext.Default.LoadFromStream(ms);
-                }
-            }
-        }
+        private static string[] GetDefultUsings() =>
+            new[] { "System", "System.Linq", "System.Collections.Generic" };
 
         public async Task<CompletionResult> GetCompletionList(CompletionRequest request)
         {
@@ -214,6 +197,51 @@ namespace WorkspaceServer.Servers.Scripting
             workspace.TryApplyChanges(solution);
 
             return workspace.CurrentSolution.GetDocument(documentId);
+        }
+
+        private static async Task<ScriptState<object>> EmulateConsoleMainInvocation(
+            ScriptState<object> state,
+            StringBuilder buffer,
+            ScriptOptions options,
+            ConfirmationLogger operation)
+        {
+            var script = state.Script;
+            var compiled = script.Compile();
+
+            if (compiled.FirstOrDefault(d => d.Descriptor.Id == "CS7022")
+                    is Diagnostic noEntryPointWarning &&
+                EntryPointType()
+                    is IMethodSymbol entryPointMethod)
+            {
+                // e.g. warning CS7022: The entry point of the program is global script code; ignoring 'Program.Main()' entry point. 
+
+                // add a line of code to call Main using reflection
+                buffer.AppendLine(
+                    $@"
+typeof({entryPointMethod.ContainingType.Name})
+    .GetMethod(""Main"", 
+               System.Reflection.BindingFlags.Static | 
+               System.Reflection.BindingFlags.NonPublic | 
+               System.Reflection.BindingFlags.Public)
+    .Invoke(null, {ParametersForMain()});");
+
+                state = await Run(state, buffer, options);
+
+                if (state.Exception != null)
+                {
+                    operation.Warning(state.Exception);
+                }
+            }
+
+            return state;
+
+            IMethodSymbol EntryPointType() =>
+                EntryPointFinder.FindEntryPoint(
+                    script.GetCompilation().GlobalNamespace);
+
+            string ParametersForMain() => entryPointMethod.Parameters.Any()
+                                              ? "new object[]{ new string[0] }"
+                                              : "null";
         }
     }
 }

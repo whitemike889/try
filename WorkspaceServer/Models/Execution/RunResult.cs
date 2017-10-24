@@ -30,8 +30,8 @@ namespace WorkspaceServer.Models.Execution
         public string Exception { get; }
 
         public override string ToString() =>
-$@"Succeeded: {Succeeded}
-ReturnValue: {ReturnValue}
-Output: {string.Join("\n", Output)}";
+$@"{nameof(Succeeded)}: {Succeeded}
+{nameof(ReturnValue)}: {ReturnValue}
+{nameof(Output)}: {string.Join("\n", Output)}";
     }
 }
