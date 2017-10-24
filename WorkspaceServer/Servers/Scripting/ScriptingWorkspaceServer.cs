@@ -121,31 +121,25 @@ namespace WorkspaceServer.Servers.Scripting
         private static async Task<ScriptState<object>> Run(
             ScriptState<object> state,
             StringBuilder buffer,
-            ScriptOptions options)
-        {
-            return state == null
-                       ? await CSharpScript.RunAsync(
-                             buffer.ToString(),
-                             options)
-                       : await state.ContinueWithAsync(
-                             buffer.ToString(),
-                             catchException: ex => true);
-        }
+            ScriptOptions options) =>
+            state == null
+                ? await CSharpScript.RunAsync(
+                      buffer.ToString(),
+                      options)
+                : await state.ContinueWithAsync(
+                      buffer.ToString(),
+                      catchException: ex => true);
 
-        private static Assembly[] GetReferenceAssemblies()
-        {
-            return new[]
+        private static Assembly[] GetReferenceAssemblies() =>
+            new[]
             {
                 typeof(object).GetTypeInfo().Assembly,
                 typeof(Enumerable).GetTypeInfo().Assembly,
                 typeof(Console).GetTypeInfo().Assembly
             };
-        }
 
-        private static string[] GetDefultUsings()
-        {
-            return new[] { "System", "System.Linq", "System.Collections.Generic" };
-        }
+        private static string[] GetDefultUsings() =>
+            new[] { "System", "System.Linq", "System.Collections.Generic" };
 
         public async Task<CompletionResult> GetCompletionList(CompletionRequest request)
         {
@@ -205,7 +199,6 @@ namespace WorkspaceServer.Servers.Scripting
             return workspace.CurrentSolution.GetDocument(documentId);
         }
 
-        [ಠ_ಠ]
         private static async Task<ScriptState<object>> EmulateConsoleMainInvocation(
             ScriptState<object> state,
             StringBuilder buffer,
