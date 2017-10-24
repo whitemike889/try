@@ -327,6 +327,30 @@ public static class Hello
         }
 
         [Fact]
+        public async Task When_a_public_void_Main_with_non_string_parameters_is_present_it_is_not_invoked()
+        {
+            var request = new RunRequest(@"
+using System;
+
+public static class Hello
+{
+    public static void Main(params int[] args) 
+    { 
+        Console.WriteLine(""Hello there!"");
+    } 
+}");
+
+            var server = GetWorkspaceServer();
+
+            var result = await server.Run(request);
+
+            Log.Trace(result.ToString());
+
+//            result.Succeeded.Should().BeTrue();
+            result.Output.Should().BeEmpty();
+        }
+
+        [Fact]
         public async Task When_an_internal_void_Main_with_no_parameters_is_present_it_is_invoked()
         {
             var request = new RunRequest(@"

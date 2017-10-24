@@ -97,7 +97,7 @@ namespace WorkspaceServer.Servers.Scripting
                     succeeded: exception == null,
                     output: console.ToString()
                                    .Replace("\r\n", "\n")
-                                   .Split('\n'),
+                                   .Split('\n', StringSplitOptions.RemoveEmptyEntries),
                     returnValue: state?.ReturnValue,
                     exception: exception?.ToString() ?? state?.Exception?.ToString(),
                     variables: variables.Values);
@@ -216,13 +216,21 @@ namespace WorkspaceServer.Servers.Scripting
             var compiled = script.Compile();
 
             if (compiled.FirstOrDefault(d => d.Descriptor.Id == "CS7022")
-                    is Diagnostic noEntryPointWarning)
+                    is Diagnostic noEntryPointWarning &&
+                EntryPointType()
+                    is INamedTypeSymbol entryPointType)
             {
                 // e.g. warning CS7022: The entry point of the program is global script code; ignoring 'Program.Main()' entry point. 
 
                 // add a line of code to call Main using reflection
                 buffer.AppendLine(
-                    $"\n\ntypeof({TheClassDeclaringMain()}).GetMethod(\"Main\", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public).Invoke(null, {ParametersForMain()});");
+                    $@"
+typeof({entryPointType.Name})
+    .GetMethod(""Main"", 
+               System.Reflection.BindingFlags.Static | 
+               System.Reflection.BindingFlags.NonPublic | 
+               System.Reflection.BindingFlags.Public)
+    .Invoke(null, {ParametersForMain()});");
 
                 state = await Run(state, buffer, options);
 
@@ -234,21 +242,10 @@ namespace WorkspaceServer.Servers.Scripting
 
             return state;
 
-            string TheClassDeclaringMain()
-            {
-                var message = noEntryPointWarning.ToString();
-                var indexOfFirstTick = message.IndexOf(
-                    "'",
-                    StringComparison.OrdinalIgnoreCase);
-                var indexOfDot = message.IndexOf(
-                    ".",
-                    indexOfFirstTick + 1,
-                    StringComparison.OrdinalIgnoreCase);
-                var className = message.Substring(
-                    indexOfFirstTick + 1,
-                    indexOfDot - indexOfFirstTick - 1);
-                return className;
-            }
+            INamedTypeSymbol EntryPointType() =>
+                EntryPointFinder.FindEntryPoints(
+                                    script.GetCompilation().GlobalNamespace)
+                                .FirstOrDefault();
 
             string ParametersForMain() => noEntryPointWarning.ToString().Contains("[]")
                                               ? "new object[]{ new string[0] }"
