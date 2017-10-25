@@ -135,6 +135,25 @@ Console.WriteLine(banana);");
         }
 
         [Fact]
+        public async Task When_compile_is_unsuccessful_then_no_exceptions_are_shown()
+        {
+            var request = new RunRequest(@"
+Console.WriteLine(banana);");
+
+            var server = GetWorkspaceServer();
+
+            var result = await server.Run(request);
+
+            result.Succeeded.Should().BeFalse();
+
+            Log.Trace(string.Join("\n", result.Output));
+
+            result.Exception
+                  .Should()
+                  .BeNull($"we already display compilation errors in {nameof(RunResult.Output)}");
+        }
+
+        [Fact]
         public async Task It_indicates_line_by_line_variable_values()
         {
             var request = new RunRequest(@"

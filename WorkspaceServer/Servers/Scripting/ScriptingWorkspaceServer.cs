@@ -99,7 +99,7 @@ namespace WorkspaceServer.Servers.Scripting
                                    .Replace("\r\n", "\n")
                                    .Split('\n', StringSplitOptions.RemoveEmptyEntries),
                     returnValue: state?.ReturnValue,
-                    exception: exception?.ToString() ?? state?.Exception?.ToString(),
+                    exception: ToDisplayString(exception ?? state?.Exception),
                     variables: variables.Values);
             }
         }
@@ -115,6 +115,18 @@ namespace WorkspaceServer.Servers.Scripting
                                  lineNumber,
                                  scriptVariable.Value,
                                  scriptVariable.Type));
+            }
+        }
+
+        internal static string ToDisplayString(Exception exception)
+        {
+            switch (exception)
+            {
+                case CompilationErrorException _:
+                    return null;
+
+                default:
+                    return exception?.ToString();
             }
         }
 
