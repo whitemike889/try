@@ -288,8 +288,6 @@ namespace External
             }
         }
 
-        private static bool? _isMono;
-
         /// <summary>
         /// Gets a flag indicating if we are running under some version of Windows
         /// </summary>
@@ -311,9 +309,6 @@ namespace External
                 return RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
             }
         }
-
-        private static SystemInformationData _systemInformation;
-        private static bool _systemInformationInitialized;
 
         #endregion
 
