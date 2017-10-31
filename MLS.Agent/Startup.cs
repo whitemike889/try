@@ -24,7 +24,7 @@ namespace MLS.Agent
             _disposables.Add(LogEvents.Enrich(add =>
             {
                 add(("applicationVersion", AssemblyVersionSensor.Version().AssemblyInformationalVersion));
-                add(("machineName", System.Environment.MachineName ));
+                add(("machineName", System.Environment.MachineName));
             }));
 
             var configurationBuilder = new ConfigurationBuilder()
@@ -50,7 +50,7 @@ namespace MLS.Agent
                     });
 
             services.AddSingleton(Configuration);
-            
+
             if (!Environment.IsTest())
             {
                 var appInsightsOptions =
@@ -86,7 +86,7 @@ namespace MLS.Agent
             {
                 var log = new LoggerConfiguration()
                     .WriteTo
-                    .RollingFileAlternate(".\\logs", outputTemplate: "{Message}{NewLine}")
+                    .RollingFileAlternate("logs", outputTemplate: "{Message}{NewLine}")
                     .CreateLogger();
 
                 var subscription = LogEvents.Subscribe(e => log.Information(e.ToLogString()));
