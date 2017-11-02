@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
@@ -111,10 +110,5 @@ namespace WorkspaceServer.Servers.Local
             message: "Invoking {dotnet} {args}",
             args: new object[] { dotnetPath, args },
             logOnStart: true);
-
-        private static IReadOnlyCollection<string> SplitLines(StreamReader reader) =>
-            reader.ReadToEnd()
-                  .Replace("\r\n", "\n")
-                  .Split('\n');
     }
 }
