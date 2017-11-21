@@ -12,6 +12,7 @@ using Recipes;
 using LoggerConfiguration = Serilog.LoggerConfiguration;
 using Serilog.Sinks.RollingFileAlternate;
 using static Pocket.Logger<MLS.Agent.Startup>;
+using System.Threading.Tasks;
 
 namespace MLS.Agent
 {
@@ -21,17 +22,12 @@ namespace MLS.Agent
 
         public Startup(IHostingEnvironment env)
         {
-            _disposables.Add(LogEvents.Enrich(add =>
-            {
-                add(("applicationVersion", AssemblyVersionSensor.Version().AssemblyInformationalVersion));
-                add(("machineName", System.Environment.MachineName));
-            }));
+            Environment = env;
 
             var configurationBuilder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath);
 
             Configuration = configurationBuilder.Build();
-            Environment = env;
         }
 
         protected IConfigurationRoot Configuration { get; }
@@ -50,33 +46,6 @@ namespace MLS.Agent
                     });
 
             services.AddSingleton(Configuration);
-
-            if (!Environment.IsTest())
-            {
-                var appInsightsOptions =
-                    new ApplicationInsightsServiceOptions
-                    {
-                        InstrumentationKey = "1bca19cc-3417-462c-bb60-7337605fee38",
-                        DeveloperMode = Environment.IsDevelopment()
-                    };
-
-                services.AddApplicationInsightsTelemetry(appInsightsOptions);
-                services.AddSingleton<TelemetryClient>(c =>
-                {
-                    var telemetryConf = c.GetRequiredService<TelemetryConfiguration>();
-                    var telemetryClient = new TelemetryClient(telemetryConf);
-
-                    var disposable = telemetryClient.SubscribeToPocketLogger();
-
-                    _disposables.Add(disposable);
-
-                    return telemetryClient;
-                });
-            }
-            else
-            {
-                services.AddTransient<TelemetryClient>();
-            }
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

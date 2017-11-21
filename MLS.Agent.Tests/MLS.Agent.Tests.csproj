@@ -7,6 +7,7 @@
   <ItemGroup>
     <PackageReference Include="FluentAssertions" Version="4.19.3" />
     <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="2.0.0" />
+    <PackageReference Include="Microsoft.DotNet.Cli.CommandLine" Version="0.1.1-alpha-201" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0" />
     <PackageReference Include="newtonsoft.json" Version="10.0.3" />
     <PackageReference Include="pocket.disposable" Version="1.0.3" />
