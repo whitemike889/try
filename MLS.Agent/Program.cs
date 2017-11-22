@@ -5,7 +5,12 @@ using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using static Pocket.Logger<MLS.Agent.Program>;
 using Pocket;
+using System.Threading.Tasks;
+using Microsoft.ApplicationInsights;
+using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.AspNetCore.Hosting;
+using Pocket.For.ApplicationInsights;
+using Microsoft.DotNet.Cli.CommandLine;
 
 namespace MLS.Agent
 {
@@ -17,32 +22,79 @@ namespace MLS.Agent
             return new X509Certificate2(bytes);
         }
 
-        internal static IWebHost host = null;
-
-        public static void Main(string[] args)
+        private static void StartLogging(CompositeDisposable disposables, CommandLineOptions options)
         {
-            if (args.Length == 1)
+            var instrumentationKey = options.production ?
+                "1bca19cc-3417-462c-bb60-7337605fee38" :
+                "6c13142c-8ddf-4335-b857-9d3e0cbb1ea1";
+
+            var applicationVersion = Recipes.AssemblyVersionSensor.Version().AssemblyInformationalVersion;
+            var websiteSiteName = System.Environment.GetEnvironmentVariable("WEBSITE_SITE_NAME") ?? "UNKNOWN-AGENT";
+
+            disposables.Add(
+                LogEvents.Enrich(a =>
+                {
+                    a(("applicationVersion", applicationVersion));
+                    a(("websiteSiteName", websiteSiteName));
+                }));
+
+            TaskScheduler.UnobservedTaskException += (sender, args) =>
             {
-                var cert = ParseKey(args[0]);
-                Log.Info($"CERTIFICATE: {args[0]} - {cert.GetCertHashString()}");
+                Log.Warning($"{nameof(TaskScheduler.UnobservedTaskException)}", args.Exception);
+                args.SetObserved();
+            };
+
+            //TODO: Re-add serilog logging
+            var telemetryClient = new TelemetryClient(new TelemetryConfiguration(instrumentationKey));
+            telemetryClient.InstrumentationKey = instrumentationKey;
+
+            disposables.Add(telemetryClient.SubscribeToPocketLogger());
+            disposables.Add(LogEvents.Subscribe(e => System.Console.WriteLine(e.ToLogString())));
+
+            Log.Event("AgentStarting");
+        }
+
+        public static IWebHost ConstructWebHost(CommandLineOptions options)
+        {
+            var disposables = new CompositeDisposable();
+            StartLogging(disposables, options);
+
+            if (options.key is null)
+            {
+                Log.Info("No Key Provided");
             }
             else
             {
-                Log.Warning("No X509Certificate Provided To Main");
+                Log.Info($"Received Key {options.key}");
             }
 
-            host = new WebHostBuilder()
-                .UseKestrel(configure =>
-                {
-                    configure.AddServerHeader = false;
-                })
+            var webHost = new WebHostBuilder()
+                .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseIISIntegration()
                 .UseStartup<Startup>()
-                .UseApplicationInsights()
                 .Build();
+            return webHost;
+        }
 
-            host.Run();
+        public static int Main(string[] args)
+        {
+            var options = CommandLineOptions.Parse(args);
+            if (options.helpRequested)
+            {
+                Console.WriteLine(options.helpText);
+                return 0;
+            }
+            else if (!options.wasSuccess)
+            {
+                Console.WriteLine(options.helpText);
+                return 1;
+            }
+            else
+            {
+                ConstructWebHost(options).Run();
+                return 0;
+            }
         }
     }
 }

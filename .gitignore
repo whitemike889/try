@@ -21,7 +21,6 @@ node_modules/
 # These are generated or copied by Init.cmd
 Roslyn.sln
 .editorconfig
-NuGet.Config
 
 # Enable "build/" folder in the NuGet Packages folder since NuGet packages use it for MSBuild targets
 !packages/*/build/
