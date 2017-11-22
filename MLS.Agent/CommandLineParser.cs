@@ -1,37 +1,35 @@
-using Microsoft.DotNet.Cli.CommandLine;
-using Microsoft.DotNet.Cli;
 using System;
-using static Microsoft.DotNet.Cli.CommandLine.DefaultHelpViewText;
+using Microsoft.DotNet.Cli.CommandLine;
 using static Microsoft.DotNet.Cli.CommandLine.Accept;
-using static Microsoft.DotNet.Cli.CommandLine.HelpViewExtensions;
 
 namespace MLS.Agent
 {
     public class CommandLineOptions
     {
-        public readonly bool wasSuccess;
-        public readonly bool production;
-        public readonly bool helpRequested;
-        public readonly string helpText;
-        public readonly string key;
-        public CommandLineOptions(bool wasSuccess, bool helpRequested, string helpText, bool production, string key)
+        public CommandLineOptions(bool wasSuccess, bool helpRequested, string helpText, bool isProduction, string key)
         {
-            this.wasSuccess = wasSuccess;
-            this.production = production;
-            this.helpRequested = helpRequested;
-            this.helpText = helpText;
-            this.key = key;
+            WasSuccess = wasSuccess;
+            IsProduction = isProduction;
+            HelpRequested = helpRequested;
+            HelpText = helpText;
+            Key = key;
         }
+
+        public bool WasSuccess { get; }
+        public bool IsProduction { get; }
+        public bool HelpRequested { get; }
+        public string HelpText { get; }
+        public string Key { get; }
 
         public static CommandLineOptions Parse(string[] args)
         {
-            var parser = new Microsoft.DotNet.Cli.CommandLine.Parser(
+            var parser = new Parser(
                 Create.Option("-h|--help", "Shows this help text"),
                 Create.Option("--production", "Specifies if the agent is being run using production resources or not"),
                 Create.Option("-k|--key", "The encryption key", ExactlyOneArgument()));
 
             var parseResult = parser.Parse(args);
-            bool wasSuccess = true;
+            var wasSuccess = true;
             string errorText = null;
 
             foreach (var error in parseResult.Errors)
@@ -43,7 +41,7 @@ namespace MLS.Agent
                 }
                 else
                 {
-                    errorText += $"{System.Environment.NewLine}{error.Message}";
+                    errorText += $"{Environment.NewLine}{error.Message}";
                 }
             }
 
@@ -52,9 +50,13 @@ namespace MLS.Agent
             return new CommandLineOptions(
                 wasSuccess,
                 helpRequested,
-                helpText: helpRequested ? parseResult.Command().HelpView() : errorText,
-                production: parseResult.HasOption("production"),
-                key: parseResult.HasOption("key") ? parseResult["key"].Value<string>() : null);
+                helpText: helpRequested
+                              ? parseResult.Command().HelpView()
+                              : errorText,
+                isProduction: parseResult.HasOption("production"),
+                key: parseResult.HasOption("key")
+                         ? parseResult["key"].Value<string>()
+                         : null);
         }
     }
 }
