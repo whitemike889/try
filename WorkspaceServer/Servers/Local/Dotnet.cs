@@ -49,59 +49,57 @@ namespace WorkspaceServer.Servers.Local
             var dotnetPath = DotnetMuxer.Path.FullName;
 
             using (var operation = LogConfirm(dotnetPath, args))
+            using (var process = new Process())
             {
                 var stdOut = new StringBuilder();
                 var stdErr = new StringBuilder();
 
-                using (var process = new Process())
+                process.StartInfo.Arguments = args;
+                process.StartInfo.FileName = dotnetPath;
+                process.StartInfo.RedirectStandardError = true;
+                process.StartInfo.RedirectStandardOutput = true;
+                process.StartInfo.WorkingDirectory = _workingDirectory.FullName;
+
+                process.OutputDataReceived += (_, e) =>
                 {
-                    process.StartInfo.Arguments = args;
-                    process.StartInfo.FileName = dotnetPath;
-                    process.StartInfo.RedirectStandardError = true;
-                    process.StartInfo.RedirectStandardOutput = true;
-                    process.StartInfo.WorkingDirectory = _workingDirectory.FullName;
-
-                    process.OutputDataReceived += (_, e) =>
+                    if (e.Data != null)
                     {
-                        if (e.Data != null)
-                        {
-                            stdOut.AppendLine(e.Data);
-                        }
-                    };
-
-                    process.ErrorDataReceived += (sender, e) =>
-                    {
-                        if (e.Data != null)
-                        {
-                            stdErr.AppendLine(e.Data);
-                        }
-                    };
-
-                    process.Start();
-
-                    process.BeginOutputReadLine();
-                    process.BeginErrorReadLine();
-
-                    Exception exception = null;
-
-                    if (process.WaitForExit((int) timeout.Value.TotalMilliseconds))
-                    {
-                        operation.Succeed("dotnet.exe exited with {code}", process.ExitCode);
+                        stdOut.AppendLine(e.Data);
                     }
-                    else
-                    {
-                        exception = new TimeoutException();
-                        Task.Run(() => process.KillTree(1000)).DontAwait();
-                        operation.Fail(exception);
-                    }
+                };
 
-                    return new RunResult(
-                        succeeded: process.HasExited && process.ExitCode == 0,
-                        output: $"{stdOut}\n{stdErr}"
-                            .Replace("\r\n", "\n")
-                            .Split('\n'),
-                        exception: exception?.ToString());
+                process.ErrorDataReceived += (sender, e) =>
+                {
+                    if (e.Data != null)
+                    {
+                        stdErr.AppendLine(e.Data);
+                    }
+                };
+
+                process.Start();
+
+                process.BeginOutputReadLine();
+                process.BeginErrorReadLine();
+
+                Exception exception = null;
+
+                if (process.WaitForExit((int) timeout.Value.TotalMilliseconds))
+                {
+                    operation.Succeed("dotnet.exe exited with {code}", process.ExitCode);
                 }
+                else
+                {
+                    exception = new TimeoutException();
+                    Task.Run(() => process.KillTree(1000)).DontAwait();
+                    operation.Fail(exception);
+                }
+
+                return new RunResult(
+                    succeeded: process.HasExited && process.ExitCode == 0,
+                    output: $"{stdOut}\n{stdErr}"
+                        .Replace("\r\n", "\n")
+                        .Split('\n'),
+                    exception: exception?.ToString());
             }
         }
 
