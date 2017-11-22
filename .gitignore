@@ -92,6 +92,7 @@ _TeamCity*
 
 # NCrunch
 *.ncrunch*
+*.nCrunch*
 .*crunch*.local.xml
 
 # Installshield output folder
