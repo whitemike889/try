@@ -19,18 +19,18 @@ namespace MLS.Agent.Tests
         public void TestEmpty()
         {
             var options = CommandLineOptions.Parse(new string[] { });
-            options.production.Should().Be(false);
-            options.helpRequested.Should().Be(false);
-            options.helpText.Should().Be(null);
+            options.IsProduction.Should().Be(false);
+            options.HelpRequested.Should().Be(false);
+            options.HelpText.Should().Be(null);
         }
 
         [Fact]
         public void TestProduction()
         {
             var options = CommandLineOptions.Parse(new string[] { "--production" });
-            options.production.Should().Be(true);
-            options.helpRequested.Should().Be(false);
-            options.helpText.Should().Be(null);
+            options.IsProduction.Should().Be(true);
+            options.HelpRequested.Should().Be(false);
+            options.HelpText.Should().Be(null);
         }
 
         [Fact]
@@ -38,13 +38,13 @@ namespace MLS.Agent.Tests
         {
             {
                 var options = CommandLineOptions.Parse(new string[] { "--help" });
-                options.helpRequested.Should().Be(true);
-                options.helpText.Should().NotBe(null);
+                options.HelpRequested.Should().Be(true);
+                options.HelpText.Should().NotBe(null);
             }
             {
                 var options = CommandLineOptions.Parse(new string[] { "-h" });
-                options.helpRequested.Should().Be(true);
-                options.helpText.Should().NotBe(null);
+                options.HelpRequested.Should().Be(true);
+                options.HelpText.Should().NotBe(null);
             }
         }
 
@@ -53,23 +53,23 @@ namespace MLS.Agent.Tests
         {
             {
                 var options = CommandLineOptions.Parse(new string[] { "-k" });
-                options.wasSuccess.Should().BeFalse();
+                options.WasSuccess.Should().BeFalse();
             }
             {
                 var options = CommandLineOptions.Parse(new string[] { "--key" });
-                options.wasSuccess.Should().BeFalse();
+                options.WasSuccess.Should().BeFalse();
             }
 
             {
                 var options = CommandLineOptions.Parse(new string[] { "-k", "abc123" });
-                Console.WriteLine(options.helpText);
-                options.wasSuccess.Should().BeTrue();
-                options.key.Should().Be("abc123");
+                Console.WriteLine(options.HelpText);
+                options.WasSuccess.Should().BeTrue();
+                options.Key.Should().Be("abc123");
             }
             {
                 var options = CommandLineOptions.Parse(new string[] { "--key", "abc123" });
-                options.wasSuccess.Should().BeTrue();
-                options.key.Should().Be("abc123");
+                options.WasSuccess.Should().BeTrue();
+                options.Key.Should().Be("abc123");
             }
         }
     }

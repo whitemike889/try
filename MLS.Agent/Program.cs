@@ -1,7 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
-using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using static Pocket.Logger<MLS.Agent.Program>;
 using Pocket;
@@ -10,7 +8,6 @@ using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.AspNetCore.Hosting;
 using Pocket.For.ApplicationInsights;
-using Microsoft.DotNet.Cli.CommandLine;
 
 namespace MLS.Agent
 {
@@ -24,12 +21,12 @@ namespace MLS.Agent
 
         private static void StartLogging(CompositeDisposable disposables, CommandLineOptions options)
         {
-            var instrumentationKey = options.production ?
+            var instrumentationKey = options.IsProduction ?
                 "1bca19cc-3417-462c-bb60-7337605fee38" :
                 "6c13142c-8ddf-4335-b857-9d3e0cbb1ea1";
 
             var applicationVersion = Recipes.AssemblyVersionSensor.Version().AssemblyInformationalVersion;
-            var websiteSiteName = System.Environment.GetEnvironmentVariable("WEBSITE_SITE_NAME") ?? "UNKNOWN-AGENT";
+            var websiteSiteName = Environment.GetEnvironmentVariable("WEBSITE_SITE_NAME") ?? "UNKNOWN-AGENT";
 
             disposables.Add(
                 LogEvents.Enrich(a =>
@@ -58,13 +55,13 @@ namespace MLS.Agent
             var disposables = new CompositeDisposable();
             StartLogging(disposables, options);
 
-            if (options.key is null)
+            if (options.Key is null)
             {
                 Log.Info("No Key Provided");
             }
             else
             {
-                Log.Info($"Received Key {options.key}");
+                Log.Info("Received Key", options.Key);
             }
 
             var webHost = new WebHostBuilder()
@@ -79,21 +76,20 @@ namespace MLS.Agent
         public static int Main(string[] args)
         {
             var options = CommandLineOptions.Parse(args);
-            if (options.helpRequested)
+            if (options.HelpRequested)
             {
-                Console.WriteLine(options.helpText);
+                Console.WriteLine(options.HelpText);
                 return 0;
             }
-            else if (!options.wasSuccess)
+
+            if (!options.WasSuccess)
             {
-                Console.WriteLine(options.helpText);
+                Console.WriteLine(options.HelpText);
                 return 1;
             }
-            else
-            {
-                ConstructWebHost(options).Run();
-                return 0;
-            }
+
+            ConstructWebHost(options).Run();
+            return 0;
         }
     }
 }
