@@ -49,7 +49,6 @@ namespace MLS.Agent
             telemetryClient.InstrumentationKey = instrumentationKey;
 
             disposables.Add(telemetryClient.SubscribeToPocketLogger());
-            disposables.Add(LogEvents.Subscribe(e => System.Console.WriteLine(e.ToLogString())));
 
             Log.Event("AgentStarting");
         }
