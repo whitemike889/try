@@ -1,6 +1,7 @@
 FROM microsoft/aspnetcore-build:2.0
 WORKDIR /app
 RUN mkdir MLS.Agent && mkdir MLS.Agent.Tests && mkdir WorkspaceServer && mkdir WorkspaceServer.Tests
+COPY NuGet.Config .
 COPY MLS-LS.sln .
 COPY MLS.Agent/MLS.Agent.csproj MLS.Agent/MLS.Agent.csproj
 COPY MLS.Agent.Tests/MLS.Agent.Tests.csproj MLS.Agent.Tests/MLS.Agent.Tests.csproj
