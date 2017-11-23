@@ -62,7 +62,7 @@ namespace WorkspaceServer.Servers.Scripting
                                 if (index == sourceLines.Count - 1 &&
                                     console.IsEmpty())
                                 {
-                                    state = await EmulateConsoleMainInvocation(state, buffer, options, operation);
+                                    state = await EmulateConsoleMainInvocation(state, buffer, options);
                                 }
                             }
                             catch (CompilationErrorException ex)
@@ -71,8 +71,10 @@ namespace WorkspaceServer.Servers.Scripting
                                 {
                                     exception = ex;
 
-                                    console.WriteLines(ex.Diagnostics
-                                                         .Select(d => d.ToString()));
+                                    Console.WriteLine(
+                                        string.Join(Environment.NewLine,
+                                                    ex.Diagnostics
+                                                      .Select(d => d.ToString())));
 
                                     break;
                                 }
@@ -80,7 +82,6 @@ namespace WorkspaceServer.Servers.Scripting
                             catch (Exception ex)
                             {
                                 exception = ex;
-                                operation.Warning(ex);
                                 break;
                             }
                         }
@@ -90,8 +91,6 @@ namespace WorkspaceServer.Servers.Scripting
                 {
                     exception = timeoutException;
                 }
-
-                operation.Succeed();
 
                 return new RunResult(
                     succeeded: exception == null,
@@ -214,8 +213,7 @@ namespace WorkspaceServer.Servers.Scripting
         private static async Task<ScriptState<object>> EmulateConsoleMainInvocation(
             ScriptState<object> state,
             StringBuilder buffer,
-            ScriptOptions options,
-            ConfirmationLogger operation)
+            ScriptOptions options)
         {
             var script = state.Script;
             var compiled = script.Compile();
@@ -238,11 +236,6 @@ typeof({entryPointMethod.ContainingType.Name})
     .Invoke(null, {ParametersForMain()});");
 
                 state = await Run(state, buffer, options);
-
-                if (state.Exception != null)
-                {
-                    operation.Warning(state.Exception);
-                }
             }
 
             return state;

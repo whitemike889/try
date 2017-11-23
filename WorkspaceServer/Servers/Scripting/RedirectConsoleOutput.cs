@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -58,13 +57,5 @@ namespace WorkspaceServer.Servers.Scripting
         public void Clear() => writer.GetStringBuilder().Clear();
 
         public bool IsEmpty() => writer.ToString().Length == 0;
-
-        public void WriteLines(IEnumerable<string> lines)
-        {
-            foreach (var line in lines)
-            {
-                writer.WriteLine(line);
-            }
-        }
     }
 }

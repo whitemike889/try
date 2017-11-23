@@ -489,5 +489,18 @@ usings: new[] { "System.Threading" });
                 Exception = (string)null,
             }, config => config.ExcludingMissingMembers());
         }
+
+        [Fact]
+        public async Task Diagnostic_logs_do_not_show_up_in_captured_console_output()
+        {
+            using (LogEvents.Subscribe(e => Console.WriteLine(e.ToLogString())))
+            {
+                var server = GetWorkspaceServer();
+
+                var result = await server.Run(new RunRequest("Console.WriteLine(\"hi!\");"));
+
+                result.Output.Single().Should().Be("hi!");
+            }
+        }
     }
 }
