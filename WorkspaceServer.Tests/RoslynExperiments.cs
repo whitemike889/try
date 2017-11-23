@@ -55,7 +55,7 @@ public static class C
             Console.WriteLine(new { workingDir });
             var dotnet = new Dotnet(new DirectoryInfo(workingDir));
 
-            var result = dotnet.ExecuteDotnet("exec output.dll");
+            var result = dotnet.Execute("exec output.dll");
 
             Console.WriteLine(result);
 
