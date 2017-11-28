@@ -13,7 +13,7 @@ namespace WorkspaceServer.Models.Execution
         public RunRequest(string source)
         {
             Language = "csharp";
-            RawSource = source ?? string.Empty;
+            RawSource = source;
             Sources = GetSources(RawSource);
         }
 
@@ -28,7 +28,7 @@ namespace WorkspaceServer.Models.Execution
                    : new[] { source };
 
         private static bool IsFragment(string source)
-            => !source.Contains("public static void Main(");
+            => source != null && !source.Contains("public static void Main(");
 
         private static string AddScaffoldingToFragment(string source)
             => $"{UsingStatements} public static class Fragment {{ public static void Invoke() {{ {source} }} }}";

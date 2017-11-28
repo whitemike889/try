@@ -1,4 +1,5 @@
 using System;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -56,6 +57,30 @@ namespace MLS.Agent.Tests
                 result.Output
                       .Should()
                       .ContainSingle(s => s == output);
+            }
+        }
+
+        [Theory]
+        [InlineData("{}")]
+        [InlineData("{")]
+        [InlineData("")]
+        [InlineData("garbage 1235")]
+        public async Task Sending_payloads_that_dont_include_source_strings_result_in_BadRequest(string content)
+        {
+            using (var agent = new AgentService())
+            {
+                var request = new HttpRequestMessage(
+                    HttpMethod.Post,
+                    @"/workspace/hello/compile")
+                {
+                    Content = new StringContent(
+                        content,
+                        Encoding.UTF8,
+                        "application/json")
+                };
+
+                var response = await agent.SendAsync(request);
+                response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
             }
         }
 

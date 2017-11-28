@@ -19,6 +19,11 @@ namespace MLS.Agent.Controllers
         {
             using (var operation = Log.ConfirmOnExit())
             {
+                if (request?.RawSource is null)
+                {
+                    return BadRequest();
+                }
+
                 var server = new ScriptingWorkspaceServer();
 
                 var result = await server.Run(request);
