@@ -19,7 +19,7 @@ namespace WorkspaceServer.Tests
     {
         private static readonly Lazy<DirectoryInfo> projectRoot = new Lazy<DirectoryInfo>(() =>
         {
-            var directory = new DirectoryInfo(@"c:\temp\WorkspaceServer.Tests\ConsoleApp");
+            var directory = new DirectoryInfo(@"./ProjectTypes/ConsoleApp");
 
             if (!directory.Exists)
             {
