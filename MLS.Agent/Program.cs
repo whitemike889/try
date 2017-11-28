@@ -47,6 +47,11 @@ namespace MLS.Agent
 
             disposables.Add(telemetryClient.SubscribeToPocketLogger());
 
+            if (!options.IsProduction)
+            {
+                disposables.Add(LogEvents.Subscribe(e => Console.WriteLine(e.ToLogString())));
+            }
+
             Log.Event("AgentStarting");
         }
 

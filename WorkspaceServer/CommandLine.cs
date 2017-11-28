@@ -18,44 +18,39 @@ namespace WorkspaceServer
             string workingDir,
             TimeSpan? timeout = null)
         {
+            args = args ?? "";
+
+            var stdOut = new StringBuilder();
+            var stdErr = new StringBuilder();
+
             using (var operation = LogConfirm(exePath, args))
-            using (var process = new Process())
+            using (var process = StartProcess(
+                exePath,
+                args,
+                workingDir,
+                output: data =>
+                {
+                    stdOut.AppendLine(data);
+                    operation.Info("{x}", data);
+                },
+                error: data =>
+                {
+                    stdErr.AppendLine(data);
+                    operation.Error("{x}", args: data);
+                }))
             {
-                var stdOut = new StringBuilder();
-                var stdErr = new StringBuilder();
-
-                process.StartInfo.Arguments = args;
-                process.StartInfo.FileName = exePath;
-                process.StartInfo.RedirectStandardError = true;
-                process.StartInfo.RedirectStandardOutput = true;
-                process.StartInfo.WorkingDirectory = workingDir;
-
-                process.OutputDataReceived += (_, e) =>
-                {
-                    if (e.Data != null)
-                    {
-                        stdOut.AppendLine(e.Data);
-                    }
-                };
-
-                process.ErrorDataReceived += (sender, e) =>
-                {
-                    if (e.Data != null)
-                    {
-                        stdErr.AppendLine(e.Data);
-                    }
-                };
-
-                process.Start();
-
-                process.BeginOutputReadLine();
-                process.BeginErrorReadLine();
-
                 Exception exception = null;
 
-                if (process.WaitForExit((int) (timeout ?? TimeSpan.MaxValue).TotalMilliseconds))
+                int timeoutMs = timeout.HasValue
+                                    ? (int) timeout.Value.TotalMilliseconds
+                                    : int.MaxValue;
+
+                if (process.WaitForExit(timeoutMs))
                 {
-                    operation.Succeed("dotnet.exe exited with {code}", process.ExitCode);
+                    operation.Succeed(
+                        "{exe} exited with {code}",
+                        exePath,
+                        process.ExitCode);
                 }
                 else
                 {
@@ -71,6 +66,58 @@ namespace WorkspaceServer
                         .Split('\n'),
                     exception: exception?.ToString());
             }
+        }
+
+        public static Process StartProcess(
+            string exePath,
+            string args,
+            string workingDir,
+            Action<string> output = null,
+            Action<string> error = null)
+        {
+            args = args ?? "";
+
+            var process = new Process
+            {
+                StartInfo =
+                {
+                    Arguments = args,
+                    FileName = exePath,
+                    RedirectStandardError = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardInput = true,
+                    WorkingDirectory = workingDir
+                }
+            };
+
+            if (output != null)
+            {
+                process.OutputDataReceived += (sender, eventArgs) =>
+                {
+                    if (eventArgs.Data != null)
+                    {
+                        output(eventArgs.Data);
+                    }
+                };
+            }
+
+            if (error != null)
+            {
+                process.ErrorDataReceived += (sender, eventArgs) =>
+                {
+                    if (eventArgs.Data != null)
+                    {
+                        error(eventArgs.Data);
+                    }
+                };
+            }
+
+            process.Start();
+
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
+
+            return process;
         }
 
         private static ConfirmationLogger LogConfirm(string exePath, string args) => new ConfirmationLogger(
