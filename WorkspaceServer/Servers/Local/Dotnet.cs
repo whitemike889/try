@@ -39,12 +39,11 @@ namespace WorkspaceServer.Servers.Local
         {
             timeout = timeout ?? _defaultCommandTimeout;
 
-            var exePath = DotnetMuxer.Path.FullName;
-
-            return CommandLine.Execute(exePath,
-                                       args,
-                                       _workingDirectory.FullName,
-                                       timeout);
+            return CommandLine.Execute(
+                DotnetMuxer.Path,
+                args,
+                _workingDirectory,
+                timeout);
         }
     }
 }

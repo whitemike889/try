@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using External;
@@ -13,9 +14,9 @@ namespace WorkspaceServer
     internal static class CommandLine
     {
         public static RunResult Execute(
-            string exePath,
+            FileInfo exePath,
             string args,
-            string workingDir,
+            DirectoryInfo workingDir,
             TimeSpan? timeout = null)
         {
             args = args ?? "";
@@ -69,9 +70,9 @@ namespace WorkspaceServer
         }
 
         public static Process StartProcess(
-            string exePath,
+            FileInfo exePath,
             string args,
-            string workingDir,
+            DirectoryInfo workingDir,
             Action<string> output = null,
             Action<string> error = null)
         {
@@ -82,11 +83,11 @@ namespace WorkspaceServer
                 StartInfo =
                 {
                     Arguments = args,
-                    FileName = exePath,
+                    FileName = exePath.FullName,
                     RedirectStandardError = true,
                     RedirectStandardOutput = true,
                     RedirectStandardInput = true,
-                    WorkingDirectory = workingDir
+                    WorkingDirectory = workingDir.FullName
                 }
             };
 
@@ -120,10 +121,10 @@ namespace WorkspaceServer
             return process;
         }
 
-        private static ConfirmationLogger LogConfirm(string exePath, string args) => new ConfirmationLogger(
+        private static ConfirmationLogger LogConfirm(FileInfo executable, string args) => new ConfirmationLogger(
             category: Logger<Dotnet>.Log.Category,
             message: "Invoking {dotnet} {args}",
-            args: new object[] { exePath, args },
+            args: new object[] { executable, args },
             logOnStart: true);
     }
 }

@@ -7,32 +7,29 @@ namespace WorkspaceServer.Servers.OmniSharp
 {
     public class OmniSharp : IDisposable
     {
-        private readonly string projectDirectory;
-        private readonly string _omnisharpPath = @"C:\dev\github\omnisharp-roslyn\artifacts\publish\OmniSharp.Stdio\win7-x64\OmniSharp.exe";
+        private readonly FileInfo _omnisharpPath = new FileInfo(@"C:\dev\github\omnisharp-roslyn\artifacts\publish\OmniSharp.Stdio\win7-x64\OmniSharp.exe");
 
-        private readonly ISubject<string> subject;
-        private Process _process;
+        private readonly Process _process;
 
-        public OmniSharp(string projectDirectory)
+        public OmniSharp(DirectoryInfo projectDirectory)
         {
-            this.projectDirectory = projectDirectory;
-            subject = new ReplaySubject<string>();
-            StandardOut = subject;
-            Start();
+            var subject = new ReplaySubject<string>();
+
+            StandardOutput = subject;
+
+            _process = CommandLine.StartProcess(
+                _omnisharpPath,
+                null,
+                projectDirectory,
+                data => subject.OnNext(data));
+
             StandardInput = _process.StandardInput;
         }
 
-        public IObservable<string> StandardOut { get; }
-        public StreamWriter StandardInput { get; private set; }
+        public IObservable<string> StandardOutput { get; }
 
-        private void Start()
-        {
-            _process = CommandLine.StartProcess(_omnisharpPath, null, projectDirectory, data => subject.OnNext(data));
-        }
+        public StreamWriter StandardInput { get; }
 
-        public void Dispose()
-        {
-            _process?.Kill();
-        }
+        public void Dispose() => _process?.Kill();
     }
 }
