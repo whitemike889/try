@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -8,6 +9,7 @@ using Newtonsoft.Json;
 using Pocket;
 using Recipes;
 using WorkspaceServer.Models.Completion;
+using WorkspaceServer.Models.Execution;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -50,9 +52,7 @@ namespace MLS.Agent.Tests
                                  .EnsureSuccess()
                                  .DeserializeAs<RunResult>();
 
-                result.Succeeded
-                      .Should()
-                      .BeTrue();
+                VerifySucceeded(result);
 
                 result.Output
                       .Should()
@@ -113,10 +113,17 @@ namespace MLS.Agent.Tests
             }
         }
 
-        private class RunResult
+        private class FailedRunResult : Exception
         {
-            public bool Succeeded { get; set; }
-            public string[] Output { get; set; }
+            internal FailedRunResult(string message) : base(message)
+            { }
+        }
+        private void VerifySucceeded(RunResult runResult)
+        {
+            if (!runResult.Succeeded)
+            {
+                throw new FailedRunResult(runResult.ToString());
+            }
         }
     }
 }

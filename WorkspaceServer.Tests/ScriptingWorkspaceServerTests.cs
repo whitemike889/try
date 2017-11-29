@@ -32,11 +32,11 @@ namespace WorkspaceServer.Tests
             var request = new RunRequest(@"
 using System;
 
-public static class Hello 
+public static class Hello
 {
-    public static void Main() 
+    public static void Main()
     {
-    } 
+    }
 }
 ");
 
@@ -55,12 +55,12 @@ public static class Hello
             var request = new RunRequest(@"
 using System;
 
-public static class Hello 
+public static class Hello
 {
-    public static void Main() 
-    { 
+    public static void Main()
+    {
         Console.WriteLine(""Hello there!"");
-    } 
+    }
 }
 
 Hello.Main();");
@@ -305,10 +305,10 @@ using System;
 
 public static class Hello
 {
-    public static void Main() 
-    { 
+    public static void Main()
+    {
         Console.WriteLine(""Hello there!"");
-    } 
+    }
 }");
 
             var server = GetWorkspaceServer();
@@ -329,10 +329,10 @@ using System;
 
 public static class Hello
 {
-    public static void Main(params string[] args) 
-    { 
+    public static void Main(params string[] args)
+    {
         Console.WriteLine(""Hello there!"");
-    } 
+    }
 }");
 
             var server = GetWorkspaceServer();
@@ -353,10 +353,10 @@ using System;
 
 public static class Hello
 {
-    public static void Main(params int[] args) 
-    { 
+    public static void Main(params int[] args)
+    {
         Console.WriteLine(""Hello there!"");
-    } 
+    }
 }");
 
             var server = GetWorkspaceServer();
@@ -378,9 +378,9 @@ using System;
 public static class Hello
 {
     static void Main()
-    { 
+    {
         Console.WriteLine(""Hello there!"");
-    } 
+    }
 }");
 
             var server = GetWorkspaceServer();
@@ -402,9 +402,9 @@ using System;
 public static class Hello
 {
     static void Main(string[] args)
-    { 
+    {
         Console.WriteLine(""Hello there!"");
-    } 
+    }
 }");
 
             var server = GetWorkspaceServer();
@@ -417,6 +417,6 @@ public static class Hello
             result.Output.Should().Contain("Hello there!");
         }
 
-      
+
     }
 }
