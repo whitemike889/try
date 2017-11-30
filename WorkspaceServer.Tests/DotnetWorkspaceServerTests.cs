@@ -43,7 +43,7 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task OmniSharp_console_output_is_observable()
         {
-            using (var omnisharp = new OmniSharp(projectRoot.Value))
+            using (var omnisharp = new OmniSharpServer(projectRoot.Value))
             {
                 var observer = new Subject<string>();
 
@@ -61,7 +61,7 @@ namespace WorkspaceServer.Tests
 
             var omnisharpProcessCount = processCount();
 
-            using (new OmniSharp(projectRoot.Value))
+            using (new OmniSharpServer(projectRoot.Value))
             {
             }
 
@@ -73,7 +73,7 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task Omnisharp_loads_the_project_found_in_its_working_directory()
         {
-            using (var omnisharp = new OmniSharp(projectRoot.Value))
+            using (var omnisharp = new OmniSharpServer(projectRoot.Value))
             {
                 var output = new ConcurrentQueue<string>();
                 using (omnisharp.StandardOutput.Subscribe(s => output.Enqueue(s)))
@@ -82,8 +82,18 @@ namespace WorkspaceServer.Tests
 
                     output.Should().Contain(s => s.Contains("ConsoleApp.csproj"));
                 }
-
             }
+        }
+
+        [Fact]
+        public void Can_subscribe_to_omisharp_events()
+        {
+            using (var omnisharp = new OmniSharpServer(projectRoot.Value))
+            {
+            }
+
+            // TODO (Can_subscribe_to_omisharp_events) write test
+            throw new NotImplementedException("Test Can_subscribe_to_omisharp_events is not written yet.");
         }
     }
 }

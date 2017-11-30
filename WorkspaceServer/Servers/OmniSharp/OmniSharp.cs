@@ -5,13 +5,13 @@ using System.Reactive.Subjects;
 
 namespace WorkspaceServer.Servers.OmniSharp
 {
-    public class OmniSharp : IDisposable
+    public class OmniSharpServer : IDisposable
     {
         private readonly FileInfo _omnisharpPath = new FileInfo(@"C:\dev\github\omnisharp-roslyn\artifacts\publish\OmniSharp.Stdio\win7-x64\OmniSharp.exe");
 
         private readonly Process _process;
 
-        public OmniSharp(DirectoryInfo projectDirectory)
+        public OmniSharpServer(DirectoryInfo projectDirectory)
         {
             var subject = new ReplaySubject<string>();
 
@@ -21,7 +21,7 @@ namespace WorkspaceServer.Servers.OmniSharp
                 _omnisharpPath,
                 null,
                 projectDirectory,
-                data => subject.OnNext(data));
+                subject.OnNext);
 
             StandardInput = _process.StandardInput;
         }
