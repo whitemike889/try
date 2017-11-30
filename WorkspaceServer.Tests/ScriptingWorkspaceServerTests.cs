@@ -10,10 +10,20 @@ using WorkspaceServer.Servers.Scripting;
 using Xunit;
 using Xunit.Abstractions;
 using static Pocket.Logger<WorkspaceServer.Tests.ScriptingWorkspaceServerTests>;
+using static WorkspaceServer.Tests.RunResultExtensions;
 
 namespace WorkspaceServer.Tests
 {
-    [CollectionDefinition("Scripting Workspace Server Tests", DisableParallelization=true)]
+    static class RunResultExtensions
+    {
+        public static RunResult WithExceptionStacktraceRemoved(this RunResult result)
+        {
+            var exception = result.Exception.Replace("\r\n", "\n").Split('\n').First();
+            return new RunResult(result.Succeeded, result.Output, result.ReturnValue, exception, result.Variables);
+        }
+    }
+
+    [CollectionDefinition("Scripting Workspace Server Tests", DisableParallelization = true)]
     public class ScriptingWorkspaceServerTests : IDisposable
     {
         private readonly CompositeDisposable disposables = new CompositeDisposable();
@@ -47,7 +57,12 @@ public static class Hello
 
             Log.Trace(result.ToString());
 
-            result.Succeeded.Should().BeTrue();
+            result.ShouldBeEquivalentTo(new
+            {
+                Succeeded = true,
+                Output = new string[] { },
+                Exception = (string)null,
+            }, config => config.ExcludingMissingMembers());
         }
 
         [Fact]
@@ -70,10 +85,12 @@ Hello.Main();");
 
             var result = await server.Run(request);
 
-            Log.Trace(result.ToString());
-
-            result.Succeeded.Should().BeTrue();
-            result.Output.Should().Contain("Hello there!");
+            result.ShouldBeEquivalentTo(new
+            {
+                Succeeded = true,
+                Output = new[] { "Hello there!" },
+                Exception = (string)null,
+            }, config => config.ExcludingMissingMembers());
         }
 
         [Fact]
@@ -82,18 +99,18 @@ Hello.Main();");
             var request = new RunRequest(@"
 var person = new { Name = ""Jeff"", Age = 20 };
 var s = $""{person.Name} is {person.Age} year(s) old"";
-Console.WriteLine(s);");
+Console.Write(s);");
 
             var server = GetWorkspaceServer();
 
             var result = await server.Run(request);
 
-            result.Succeeded
-                  .Should()
-                  .BeTrue();
-            result.Output
-                  .Should()
-                  .Contain("Jeff is 20 year(s) old");
+            result.ShouldBeEquivalentTo(new
+            {
+                Succeeded = true,
+                Output = new[] { "Jeff is 20 year(s) old" },
+                Exception = (string)null,
+            }, config => config.ExcludingMissingMembers());
         }
 
         [Fact]
@@ -109,10 +126,13 @@ $""{person.Name} is {person.Age} year(s) old""");
 
             Log.Trace(result.ToJson());
 
-            result.ReturnValue
-                  .Should()
-                  .Be("Jeff is 20 year(s) old",
-                      "because there is no semicolon on the final line of the fragment");
+            result.ShouldBeEquivalentTo(new
+            {
+                Succeeded = true,
+                Output = new string[] { },
+                Exception = (string)null,
+                ReturnValue = "Jeff is 20 year(s) old",
+            }, config => config.ExcludingMissingMembers());
         }
 
         [Fact]
@@ -125,14 +145,12 @@ Console.WriteLine(banana);");
 
             var result = await server.Run(request);
 
-            result.Succeeded.Should().BeFalse();
-
-            Log.Trace(string.Join("\n", result.Output));
-
-            result.Output
-                  .Should()
-                  .Contain(
-                      s => s.Contains("(2,19): error CS0103: The name \'banana\' does not exist in the current context"));
+            result.ShouldBeEquivalentTo(new
+            {
+                Succeeded = false,
+                Output = new string[] { "(2,19): error CS0103: The name \'banana\' does not exist in the current context" },
+                Exception = (string)null, // we already display the error in Output
+            }, config => config.ExcludingMissingMembers());
         }
 
         [Fact]
@@ -145,13 +163,12 @@ Console.WriteLine(banana);");
 
             var result = await server.Run(request);
 
-            result.Succeeded.Should().BeFalse();
-
-            Log.Trace(string.Join("\n", result.Output));
-
-            result.Exception
-                  .Should()
-                  .BeNull($"we already display compilation errors in {nameof(RunResult.Output)}");
+            result.ShouldBeEquivalentTo(new
+            {
+                Succeeded = false,
+                Output = new string[] { "(2,19): error CS0103: The name \'banana\' does not exist in the current context" },
+                Exception = (string)null, // we already display the error in Output
+            }, config => config.ExcludingMissingMembers());
         }
 
         [Fact]
@@ -215,9 +232,13 @@ Console.WriteLine(4);");
 
             var result = await server.Run(request);
 
-            Log.Trace(result.ToString());
 
-            result.Output.Should().BeEquivalentTo("1", "2", "3", "4");
+            result.ShouldBeEquivalentTo(new
+            {
+                Succeeded = true,
+                Output = new string[] { "1", "2", "3", "4" },
+                Exception = (string)null,
+            }, config => config.ExcludingMissingMembers());
         }
 
         [Fact]
@@ -233,10 +254,13 @@ Console.WriteLine(4);");
             var server = GetWorkspaceServer();
 
             var result = await server.Run(request);
-
-            Log.Trace(result.ToString());
-
-            result.Output.Should().BeEquivalentTo("1", "2");
+            result = result.WithExceptionStacktraceRemoved();
+            result.ShouldBeEquivalentTo(new
+            {
+                Succeeded = true,
+                Output = new string[] { "1", "2" },
+                Exception = "System.Exception: oops!"
+            }, config => config.ExcludingMissingMembers());
         }
 
         [Fact]
@@ -247,11 +271,14 @@ Console.WriteLine(4);");
             var server = GetWorkspaceServer();
 
             var result = await server.Run(request);
+            result = result.WithExceptionStacktraceRemoved();
 
-            Log.Trace(result.ToString());
-
-            result.Exception.Should().NotBeNull();
-            result.Exception.Should().Contain("oops!");
+            result.ShouldBeEquivalentTo(new
+            {
+                Succeeded = false,
+                Output = new string[] { },
+                Exception = "System.Exception: oops!",
+            }, config => config.ExcludingMissingMembers());
         }
 
         [Fact]
@@ -263,11 +290,14 @@ throw new Exception(""oops!"");");
             var server = GetWorkspaceServer();
 
             var result = await server.Run(request);
+            result = result.WithExceptionStacktraceRemoved();
 
-            Log.Trace(result.ToString());
-
-            result.Exception.Should().NotBeNull();
-            result.Exception.Should().Contain("oops!");
+            result.ShouldBeEquivalentTo(new
+            {
+                Succeeded = true,
+                Output = new string[] { },
+                Exception = "System.Exception: oops!",
+            }, config => config.ExcludingMissingMembers());
         }
 
         [Fact]
@@ -290,12 +320,14 @@ throw new Exception(""oops!"");");
             var server = GetWorkspaceServer();
 
             var result = await server.Run(request);
+            result = result.WithExceptionStacktraceRemoved();
 
-            result.Succeeded.Should().BeFalse();
-
-            result.Exception
-                  .Should()
-                  .StartWith("System.TimeoutException");
+            result.ShouldBeEquivalentTo(new
+            {
+                Succeeded = false,
+                Output = new string[] { },
+                Exception = "System.TimeoutException: The operation has timed out.",
+            }, config => config.ExcludingMissingMembers());
         }
 
         [Fact]
@@ -315,11 +347,12 @@ public static class Hello
             var server = GetWorkspaceServer();
 
             var result = await server.Run(request);
-
-            Log.Trace(result.ToString());
-
-            result.Succeeded.Should().BeTrue();
-            result.Output.Should().Contain("Hello there!");
+            result.ShouldBeEquivalentTo(new
+            {
+                Succeeded = true,
+                Output = new string[] { "Hello there!" },
+                Exception = (string)null,
+            }, config => config.ExcludingMissingMembers());
         }
 
         [Fact]
@@ -340,10 +373,12 @@ public static class Hello
 
             var result = await server.Run(request);
 
-            Log.Trace(result.ToString());
-
-            result.Succeeded.Should().BeTrue();
-            result.Output.Should().Contain("Hello there!");
+            result.ShouldBeEquivalentTo(new
+            {
+                Succeeded = true,
+                Output = new string[] { "Hello there!" },
+                Exception = (string)null,
+            }, config => config.ExcludingMissingMembers());
         }
 
         [Fact]
@@ -364,10 +399,12 @@ public static class Hello
 
             var result = await server.Run(request);
 
-            Log.Trace(result.ToString());
-
-            result.Succeeded.Should().BeTrue();
-            result.Output.Should().BeEmpty();
+            result.ShouldBeEquivalentTo(new
+            {
+                Succeeded = true,
+                Output = new string[] { },
+                Exception = (string)null,
+            }, config => config.ExcludingMissingMembers());
         }
 
         [Fact]
@@ -390,8 +427,12 @@ public static class Hello
 
             Log.Trace(result.ToString());
 
-            result.Succeeded.Should().BeTrue();
-            result.Output.Should().Contain("Hello there!");
+            result.ShouldBeEquivalentTo(new
+            {
+                Succeeded = true,
+                Output = new string[] { "Hello there!" },
+                Exception = (string)null,
+            }, config => config.ExcludingMissingMembers());
         }
 
         [Fact]
@@ -411,13 +452,13 @@ public static class Hello
             var server = GetWorkspaceServer();
 
             var result = await server.Run(request);
-
-            Log.Trace(result.ToString());
-
-            result.Succeeded.Should().BeTrue();
-            result.Output.Should().Contain("Hello there!");
+            result.ShouldBeEquivalentTo(new
+            {
+                Succeeded = true,
+                Output = new string[] { "Hello there!" },
+                Exception = (string)null,
+            }, config => config.ExcludingMissingMembers());
         }
-
 
     }
 }
