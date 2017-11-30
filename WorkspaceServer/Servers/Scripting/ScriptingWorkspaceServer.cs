@@ -25,7 +25,7 @@ namespace WorkspaceServer.Servers.Scripting
         public async Task<RunResult> Run(RunRequest request, TimeSpan? timeout = null)
         {
             using (var operation = Log.OnEnterAndConfirmOnExit())
-            using (var console = new RedirectConsoleOutput())
+            using (var console = await RedirectConsoleOutput.Acquire())
             {
                 var options = ScriptOptions.Default
                                            .AddReferences(GetReferenceAssemblies())
@@ -225,15 +225,15 @@ namespace WorkspaceServer.Servers.Scripting
                 EntryPointType()
                     is IMethodSymbol entryPointMethod)
             {
-                // e.g. warning CS7022: The entry point of the program is global script code; ignoring 'Program.Main()' entry point. 
+                // e.g. warning CS7022: The entry point of the program is global script code; ignoring 'Program.Main()' entry point.
 
                 // add a line of code to call Main using reflection
                 buffer.AppendLine(
                     $@"
 typeof({entryPointMethod.ContainingType.Name})
-    .GetMethod(""Main"", 
-               System.Reflection.BindingFlags.Static | 
-               System.Reflection.BindingFlags.NonPublic | 
+    .GetMethod(""Main"",
+               System.Reflection.BindingFlags.Static |
+               System.Reflection.BindingFlags.NonPublic |
                System.Reflection.BindingFlags.Public)
     .Invoke(null, {ParametersForMain()});");
 

@@ -31,15 +31,15 @@ namespace WorkspaceServer.Tests
 
         public void Dispose() => disposables.Dispose();
 
-        [Fact]
+        [Fact(Skip="Disable LocalWorkspaceServerTests")]
         public async Task Response_indicates_when_compile_is_successful_and_signature_is_like_a_console_app()
         {
             var request = new RunRequest(@"
 using System;
 
-public static class Hello 
+public static class Hello
 {
-    public static void Main() 
+    public static void Main()
     {
     }
 }
@@ -54,18 +54,18 @@ public static class Hello
             result.Succeeded.Should().BeTrue();
         }
 
-        [Fact]
+        [Fact(Skip="Disable LocalWorkspaceServerTests")]
         public async Task Response_shows_program_output_when_compile_is_successful_and_signature_is_like_a_console_app()
         {
             var request = new RunRequest(@"
 using System;
 
-public static class Hello 
+public static class Hello
 {
-    public static void Main() 
-    { 
+    public static void Main()
+    {
         Console.WriteLine(""Hello there!"");
-    } 
+    }
 }");
 
             var server = GetWorkspaceServer();
@@ -75,7 +75,7 @@ public static class Hello
             result.Output.Should().Contain("Hello there!");
         }
 
-        [Fact]
+        [Fact(Skip="Disable LocalWorkspaceServerTests")]
         public async Task Response_shows_program_output_when_compile_is_successful_and_signature_is_a_fragment_containing_console_output()
         {
             var request = new RunRequest(@"
@@ -90,7 +90,7 @@ Console.WriteLine(s);");
             result.Output.Should().Contain("Jeff is 20 year(s) old");
         }
 
-        [Fact]
+        [Fact(Skip="Disable LocalWorkspaceServerTests")]
         public async Task Response_indicates_when_compile_is_unsuccessful()
         {
             var request = new RunRequest(@"
@@ -110,7 +110,7 @@ Console.WriteLine(banana);");
                       s => s.Contains("(3,19): error CS0103: The name \'banana\' does not exist in the current context"));
         }
 
-        [Fact]
+        [Fact(Skip="Disable LocalWorkspaceServerTests")]
         public async Task Response_indicates_when_execution_times_out()
         {
             var request = new RunRequest(@"
@@ -129,7 +129,7 @@ while (true)
                   .StartWith("System.TimeoutException");
         }
 
-        [Fact]
+        [Fact(Skip="Disable LocalWorkspaceServerTests")]
         public async Task Code_can_be_updated_and_rerun_in_the_same_workspace()
         {
             var server = GetWorkspaceServer();
@@ -143,12 +143,12 @@ while (true)
                          new RunRequest(@"
 using System;
 
-public static class Hello 
+public static class Hello
 {
-    public static void Main() 
-    { 
+    public static void Main()
+    {
         Console.WriteLine(""i do compile!"");
-    } 
+    }
 }"));
 
             result.Output.Should().Contain("i do compile!");
