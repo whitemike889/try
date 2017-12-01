@@ -1,18 +1,13 @@
-﻿using Microsoft.ApplicationInsights;
-using Microsoft.ApplicationInsights.AspNetCore.Extensions;
-using Microsoft.ApplicationInsights.Extensibility;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Pocket;
-using Pocket.For.ApplicationInsights;
 using Recipes;
 using LoggerConfiguration = Serilog.LoggerConfiguration;
 using Serilog.Sinks.RollingFileAlternate;
 using static Pocket.Logger<MLS.Agent.Startup>;
-using System.Threading.Tasks;
 
 namespace MLS.Agent
 {
@@ -64,12 +59,9 @@ namespace MLS.Agent
                 _disposables.Add(log);
             }
 
-            var operationLogger = Log.OnEnterAndExit()
-                                     .Info("Agent version {orchestrator_version} starting in environment {environment}",
-                                           AssemblyVersionSensor.Version().AssemblyInformationalVersion,
-                                           Environment.EnvironmentName);
-
-            _disposables.Add(operationLogger);
+            Log.Info("Agent version {orchestrator_version} starting in environment {environment}",
+                     AssemblyVersionSensor.Version().AssemblyInformationalVersion,
+                     Environment.EnvironmentName);
 
             app.UseDefaultFiles()
                .UseStaticFiles()
