@@ -7,7 +7,6 @@ using External;
 using Pocket;
 using Recipes;
 using WorkspaceServer.Models.Execution;
-using WorkspaceServer.Servers.Local;
 
 namespace WorkspaceServer
 {
@@ -16,7 +15,17 @@ namespace WorkspaceServer
         public static RunResult Execute(
             FileInfo exePath,
             string args,
-            DirectoryInfo workingDir,
+            DirectoryInfo workingDir= null,
+            TimeSpan? timeout = null) =>
+            Execute(exePath.FullName,
+                    args,
+                    workingDir,
+                    timeout);
+
+        public static RunResult Execute(
+            string command,
+            string args,
+            DirectoryInfo workingDir = null,
             TimeSpan? timeout = null)
         {
             args = args ?? "";
@@ -24,9 +33,9 @@ namespace WorkspaceServer
             var stdOut = new StringBuilder();
             var stdErr = new StringBuilder();
 
-            using (var operation = LogConfirm(exePath, args))
+            using (var operation = LogConfirm(command, args))
             using (var process = StartProcess(
-                exePath,
+                command,
                 args,
                 workingDir,
                 output: data =>
@@ -49,8 +58,8 @@ namespace WorkspaceServer
                 if (process.WaitForExit(timeoutMs))
                 {
                     operation.Succeed(
-                        "{exe} exited with {code}",
-                        exePath,
+                        "{command} exited with {code}",
+                        command,
                         process.ExitCode);
                 }
                 else
@@ -70,7 +79,7 @@ namespace WorkspaceServer
         }
 
         public static Process StartProcess(
-            FileInfo exePath,
+            string command,
             string args,
             DirectoryInfo workingDir,
             Action<string> output = null,
@@ -83,11 +92,11 @@ namespace WorkspaceServer
                 StartInfo =
                 {
                     Arguments = args,
-                    FileName = exePath.FullName,
+                    FileName = command,
                     RedirectStandardError = true,
                     RedirectStandardOutput = true,
                     RedirectStandardInput = true,
-                    WorkingDirectory = workingDir.FullName
+                    WorkingDirectory = workingDir?.FullName
                 }
             };
 
@@ -121,10 +130,12 @@ namespace WorkspaceServer
             return process;
         }
 
-        private static ConfirmationLogger LogConfirm(FileInfo executable, string args) => new ConfirmationLogger(
-            category: Logger<Dotnet>.Log.Category,
-            message: "Invoking {dotnet} {args}",
-            args: new object[] { executable, args },
+        private static ConfirmationLogger LogConfirm(
+            object command,
+            string args) => new ConfirmationLogger(
+            category: Logger.Log.Category,
+            message: "Invoking {command} {args}",
+            args: new[] { command, args },
             logOnStart: true);
     }
 }

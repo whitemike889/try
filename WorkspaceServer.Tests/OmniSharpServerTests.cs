@@ -1,39 +1,30 @@
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
-using System.IO;
 using System.Reactive.Linq;
 using FluentAssertions;
 using System.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using Pocket;
-using WorkspaceServer.Servers.Local;
 using WorkspaceServer.Servers.OmniSharp;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace WorkspaceServer.Tests
 {
-    public class DotnetWorkspaceServerTests : IDisposable
+    public class OmniSharpServerTests : IDisposable
     {
-        private static readonly Lazy<DirectoryInfo> projectRoot = new Lazy<DirectoryInfo>(() =>
+        private static readonly Lazy<Project> project = new Lazy<Project>(() =>
         {
-            var directory = new DirectoryInfo(@"./ProjectTypes/ConsoleApp");
-
-            if (!directory.Exists)
-            {
-                directory.Create();
-
-                new Dotnet(directory).New("console");
-            }
-
-            return directory;
+            var project = new Project(nameof(OmniSharpServerTests));
+            project.IfEmptyInitializeFromDotnetTemplate("console");
+            return project;
         });
 
         private readonly CompositeDisposable disposables = new CompositeDisposable();
 
-        public DotnetWorkspaceServerTests(ITestOutputHelper output)
+        public OmniSharpServerTests(ITestOutputHelper output)
         {
             disposables.Add(LogEvents.Subscribe(e => output.WriteLine(e.ToLogString())));
         }
@@ -43,7 +34,7 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task OmniSharp_console_output_is_observable()
         {
-            using (var omnisharp = new OmniSharpServer(projectRoot.Value))
+            using (var omnisharp = new OmniSharpServer(project.Value.Directory))
             {
                 var observer = new Subject<string>();
 
@@ -61,34 +52,34 @@ namespace WorkspaceServer.Tests
 
             var omnisharpProcessCount = processCount();
 
-            using (new OmniSharpServer(projectRoot.Value))
+            using (new OmniSharpServer(project.Value.Directory))
             {
             }
 
             var laterOmnisharpProcessCount = processCount();
 
-            Assert.Equal(omnisharpProcessCount, laterOmnisharpProcessCount);
+            laterOmnisharpProcessCount.Should().Be(omnisharpProcessCount);
         }
 
         [Fact]
         public async Task Omnisharp_loads_the_project_found_in_its_working_directory()
         {
-            using (var omnisharp = new OmniSharpServer(projectRoot.Value))
+            using (var omnisharp = new OmniSharpServer(project.Value.Directory))
             {
                 var output = new ConcurrentQueue<string>();
                 using (omnisharp.StandardOutput.Subscribe(s => output.Enqueue(s)))
                 {
                     await omnisharp.StandardInput.WriteLineAsync("/project");
 
-                    output.Should().Contain(s => s.Contains("ConsoleApp.csproj"));
+                    output.Should().Contain(s => s.Contains($"{nameof(OmniSharpServerTests)}.csproj"));
                 }
             }
         }
 
-        [Fact]
+        [Fact(Skip = "not yet")]
         public void Can_subscribe_to_omisharp_events()
         {
-            using (var omnisharp = new OmniSharpServer(projectRoot.Value))
+            using (var omnisharp = new OmniSharpServer(project.Value.Directory))
             {
             }
 
