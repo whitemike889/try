@@ -1,15 +1,6 @@
 using System;
-using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
 using FluentAssertions;
-using Newtonsoft.Json;
-using Pocket;
-using Recipes;
-using WorkspaceServer.Models.Completion;
 using Xunit;
-using Xunit.Abstractions;
-using MLS.Agent;
 
 namespace MLS.Agent.Tests
 {
