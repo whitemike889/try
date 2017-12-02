@@ -11,29 +11,37 @@ namespace WorkspaceServer.Servers.OmniSharp
 {
     internal static class OmniSharp
     {
-        private static readonly DirectoryInfo OmniSharpInstallFolder =
-            new DirectoryInfo(
+        private static readonly DirectoryInfo _omniSharpInstallFolder;
+        private static readonly FileInfo _omniSharpExe;
+        private static readonly FileInfo _omniSharpRunScript;
+
+        static OmniSharp()
+        {
+            var environmentVariable = Environment.GetEnvironmentVariable("TRYDOTNET_OMNISHARP_PATH");
+
+            var omniSharpInstallPath =
+                environmentVariable ??
                 Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
                     ".trydotnet",
-                    "omnisharp"));
+                    "omnisharp");
 
-        private static readonly FileInfo OmniSharpExe =
-            new FileInfo(
-                Path.Combine(
-                    OmniSharpInstallFolder.FullName,
-                    "OmniSharp.exe"));
+            _omniSharpInstallFolder = new DirectoryInfo(omniSharpInstallPath);
 
-        private static readonly FileInfo OmniSharpRunScript =
-            new FileInfo(
+            _omniSharpRunScript = new FileInfo(
                 Path.Combine(
-                    OmniSharpInstallFolder.FullName,
+                    _omniSharpInstallFolder.FullName,
                     "run"));
+
+            _omniSharpExe = new FileInfo(
+                Path.Combine(
+                    _omniSharpInstallFolder.FullName,
+                    "OmniSharp.exe"));
+        }
 
         public static FileInfo GetPath()
         {
-            var fileInfo = GetInstalledLocation() ??
-                           GetFromWellKnownLocationOrAcquire() ??
+            var fileInfo = EnsureInstalledOrAcquire() ??
                            throw new OmniSharpNotFoundException("Failed to locate or acquire OmniSharp.");
 
             Log.Info("Using OmniSharp at {path}", fileInfo);
@@ -41,7 +49,7 @@ namespace WorkspaceServer.Servers.OmniSharp
             return fileInfo;
         }
 
-        private static FileInfo GetFromWellKnownLocationOrAcquire()
+        private static FileInfo EnsureInstalledOrAcquire()
         {
             using (Log.OnEnterAndExit())
             {
@@ -68,17 +76,17 @@ namespace WorkspaceServer.Servers.OmniSharp
         {
             using (var operation = Log.OnEnterAndConfirmOnExit())
             {
-                if (!OmniSharpRunScript.Exists)
+                if (!_omniSharpRunScript.Exists)
                 {
                     var targzFile = Download(new Uri(@"https://github.com/OmniSharp/omnisharp-roslyn/releases/download/v1.27.2/omnisharp-linux-x64.tar.gz"));
 
                     CommandLine.Execute(
                         "tar",
-                        $"xvz {targzFile.FullName} -C {OmniSharpInstallFolder}");
+                        $"xvz {targzFile.FullName} -C {_omniSharpInstallFolder}");
 
-                    OmniSharpRunScript.Refresh();
+                    _omniSharpRunScript.Refresh();
 
-                    if (!OmniSharpRunScript.Exists)
+                    if (!_omniSharpRunScript.Exists)
                     {
                         return null;
                     }
@@ -86,7 +94,7 @@ namespace WorkspaceServer.Servers.OmniSharp
 
                 operation.Succeed();
 
-                return OmniSharpExe;
+                return _omniSharpExe;
             }
         }
 
@@ -99,19 +107,19 @@ namespace WorkspaceServer.Servers.OmniSharp
         {
             using (var operation = Log.OnEnterAndConfirmOnExit())
             {
-                if (!OmniSharpExe.Exists)
+                if (!_omniSharpExe.Exists)
                 {
                     var zipFile = Download(new Uri(@"https://github.com/OmniSharp/omnisharp-roslyn/releases/download/v1.27.2/omnisharp-win-x64.zip"));
 
                     using (var stream = zipFile.OpenRead())
                     using (var archive = new ZipArchive(stream, ZipArchiveMode.Read))
                     {
-                        archive.ExtractToDirectory(OmniSharpInstallFolder.FullName);
+                        archive.ExtractToDirectory(_omniSharpInstallFolder.FullName);
                     }
 
-                    OmniSharpExe.Refresh();
+                    _omniSharpExe.Refresh();
 
-                    if (!OmniSharpExe.Exists)
+                    if (!_omniSharpExe.Exists)
                     {
                         return null;
                     }
@@ -119,7 +127,7 @@ namespace WorkspaceServer.Servers.OmniSharp
 
                 operation.Succeed();
 
-                return OmniSharpExe;
+                return _omniSharpExe;
             }
         }
 
@@ -130,35 +138,14 @@ namespace WorkspaceServer.Servers.OmniSharp
                 var fileToWriteTo = Path.GetTempFileName();
 
                 using (var httpClient = new HttpClient())
+                using (var response = await httpClient.GetStreamAsync(uri))
+                using (Stream streamToWriteTo = File.Open(fileToWriteTo, FileMode.Create))
                 {
-                    var response = await httpClient.GetStreamAsync(uri);
-
-                    using (Stream streamToWriteTo = File.Open(fileToWriteTo, FileMode.Create))
-                    {
-                        await response.CopyToAsync(streamToWriteTo);
-                    }
+                    await response.CopyToAsync(streamToWriteTo);
                 }
 
                 return new FileInfo(fileToWriteTo);
             }).Result;
-        }
-
-        private static FileInfo GetInstalledLocation()
-        {
-            var omnisharpPathEnvironmentVariableName = "TRYDOTNET_OMNISHARP_PATH";
-
-            var environmentVariable = Environment.GetEnvironmentVariable(omnisharpPathEnvironmentVariableName);
-
-            if (environmentVariable == null)
-            {
-                return null;
-            }
-
-            var fileInfo = new FileInfo(environmentVariable);
-
-            return fileInfo.Exists
-                       ? fileInfo
-                       : null;
         }
     }
 }
