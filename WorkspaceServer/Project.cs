@@ -6,6 +6,22 @@ namespace WorkspaceServer
 {
     public class Project
     {
+        static Project()
+        {
+            var omnisharpPathEnvironmentVariableName = "TRYDOTNET_PROJECTS_PATH";
+
+            var environmentVariable = Environment.GetEnvironmentVariable(omnisharpPathEnvironmentVariableName);
+
+            DefaultProjectsDirectory =
+                environmentVariable != null
+                    ? new DirectoryInfo(environmentVariable)
+                    : new DirectoryInfo(
+                        Path.Combine(
+                            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                            ".trydotnet",
+                            "projects"));
+        }
+
         public Project(string name) : this(new DirectoryInfo(Path.Combine(DefaultProjectsDirectory.FullName, name)))
         {
         }
@@ -17,12 +33,7 @@ namespace WorkspaceServer
 
         public DirectoryInfo Directory { get; }
 
-        public static DirectoryInfo DefaultProjectsDirectory { get; } =
-            new DirectoryInfo(
-                Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-                    ".trydotnet",
-                    "projects"));
+        public static DirectoryInfo DefaultProjectsDirectory { get; }
 
         public void IfEmptyInitializeFromDotnetTemplate(string template)
         {

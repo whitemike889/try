@@ -145,7 +145,7 @@ namespace WorkspaceServer.Servers.OmniSharp
 
         private static FileInfo GetInstalledLocation()
         {
-            var omnisharpPathEnvironmentVariableName = "OMNISHARP_PATH";
+            var omnisharpPathEnvironmentVariableName = "TRYDOTNET_OMNISHARP_PATH";
 
             var environmentVariable = Environment.GetEnvironmentVariable(omnisharpPathEnvironmentVariableName);
 
