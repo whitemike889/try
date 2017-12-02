@@ -4,8 +4,16 @@ ARG source
 RUN mkdir -p /app
 RUN groupadd app_group 
 RUN useradd -r --gid app_group --home /app --shell /sbin/nologin --comment "app user" app_user 
+
+# set up OmniSharp
 RUN mkdir -p /dependencies/omnisharp 
 RUN curl -SL https://github.com/OmniSharp/omnisharp-roslyn/releases/download/v1.27.2/omnisharp-linux-x64.tar.gz | tar xvz -C /dependencies/omnisharp
+ENV TRYDOTNET_OMNISHARP_PATH=/dependencies/omnisharp/run
+
+# set up project directory
+RUN mkdir -p /projects 
+RUN chown --recursive app_user:app_group /projects
+ENV TRYDOTNET_PROJECTS_PATH=/projects
 
 WORKDIR /app
 ENV ASPNETCORE_URLS=http://+:4242
