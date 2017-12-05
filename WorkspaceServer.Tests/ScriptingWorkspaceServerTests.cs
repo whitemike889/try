@@ -460,5 +460,34 @@ public static class Hello
             }, config => config.ExcludingMissingMembers());
         }
 
+        [Fact]
+        public async Task Additional_using_statements_from_request_are_passed_to_scripting_when_running_snippet()
+        {
+            var request = new RunRequest(@"
+using System;
+
+public static class Hello
+{
+    public static void Main()
+    {
+        Thread.Sleep(1);
+        Console.WriteLine(""Hello there!"");
+    }
+}
+
+Hello.Main();",
+usings: new[] { "System.Threading" });
+
+            var server = GetWorkspaceServer();
+
+            var result = await server.Run(request);
+
+            result.ShouldBeEquivalentTo(new
+            {
+                Succeeded = true,
+                Output = new[] { "Hello there!" },
+                Exception = (string)null,
+            }, config => config.ExcludingMissingMembers());
+        }
     }
 }

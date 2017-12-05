@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 
 namespace WorkspaceServer.Models.Execution
 {
@@ -10,11 +11,14 @@ namespace WorkspaceServer.Models.Execution
 
         public string[] Sources { get; }
 
-        public RunRequest(string source)
+        public string[] Usings { get; }
+
+        public RunRequest(string source, string[] usings = null)
         {
             Language = "csharp";
             RawSource = source;
             Sources = GetSources(RawSource);
+            Usings = usings ?? Array.Empty<string>();
         }
 
         public SourceFile[] GetSourceFiles()

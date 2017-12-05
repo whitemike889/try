@@ -29,7 +29,7 @@ namespace WorkspaceServer.Servers.Scripting
             {
                 var options = ScriptOptions.Default
                                            .AddReferences(GetReferenceAssemblies())
-                                           .AddImports(GetDefultUsings());
+                                           .AddImports(GetDefultUsings().Concat(request.Usings));
 
                 ScriptState<object> state = null;
                 var variables = new Dictionary<string, Variable>();
