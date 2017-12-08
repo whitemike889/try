@@ -13,7 +13,6 @@ using static Pocket.Logger<WorkspaceServer.Tests.ScriptingWorkspaceServerTests>;
 
 namespace WorkspaceServer.Tests
 {
-    [CollectionDefinition("Scripting Workspace Server Tests", DisableParallelization = true)]
     public class ScriptingWorkspaceServerTests : IDisposable
     {
         private readonly CompositeDisposable disposables = new CompositeDisposable();

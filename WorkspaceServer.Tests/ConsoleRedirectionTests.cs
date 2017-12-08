@@ -8,9 +8,6 @@ using Xunit;
 
 namespace WorkspaceServer.Tests
 {
-    // DisableParallelization means that all of these tests will run serially among themselves,
-    // *and* serially with regards to other tests in the system.
-    [CollectionDefinition("console redirection", DisableParallelization = true)]
     public class ConsoleRedirectionTests
     {
         [Fact]
