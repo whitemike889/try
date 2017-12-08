@@ -10,6 +10,7 @@ using Pocket;
 using WorkspaceServer.Servers.OmniSharp;
 using Xunit;
 using Xunit.Abstractions;
+using static Pocket.Logger<WorkspaceServer.Tests.OmniSharpServerTests>;
 
 namespace WorkspaceServer.Tests
 {
@@ -68,6 +69,7 @@ namespace WorkspaceServer.Tests
             {
                 var output = new ConcurrentQueue<string>();
                 using (omnisharp.StandardOutput.Subscribe(s => output.Enqueue(s)))
+                using (omnisharp.StandardError.Subscribe(s => Log.Error(s)))
                 {
                     await omnisharp.StandardInput.WriteLineAsync("/project");
 

@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Reactive.Subjects;
+using External;
 
 namespace WorkspaceServer.Servers.OmniSharp
 {
@@ -13,23 +14,28 @@ namespace WorkspaceServer.Servers.OmniSharp
 
         public OmniSharpServer(DirectoryInfo projectDirectory)
         {
-            var subject = new Subject<string>();
+            var standardOutput = new ReplaySubject<string>();
+            var standardError = new ReplaySubject<string>();
 
-            StandardOutput = subject;
+            StandardOutput = standardOutput;
+            StandardError = standardError;
 
             _process = CommandLine.StartProcess(
                 _omnisharpPath.Value.FullName,
                 $"-lsp",
                 projectDirectory,
-                subject.OnNext);
+                standardOutput.OnNext,
+                standardError.OnNext);
 
             StandardInput = _process.StandardInput;
         }
 
         public IObservable<string> StandardOutput { get; }
 
+        public IObservable<string> StandardError { get; }
+
         public StreamWriter StandardInput { get; }
 
-        public void Dispose() => _process?.Kill();
+        public void Dispose() => _process.KillTree(5000);
     }
 }

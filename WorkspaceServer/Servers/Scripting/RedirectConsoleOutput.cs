@@ -2,21 +2,24 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Pocket;
+using static Pocket.Logger<WorkspaceServer.Servers.Scripting.RedirectConsoleOutput>;
 
 namespace WorkspaceServer.Servers.Scripting
 {
     public class RedirectConsoleOutput : IDisposable
     {
-        private TextWriter originalWriter;
-        private StringWriter writer = new StringWriter();
+        private TextWriter originalOutputWriter;
+        private TextWriter originalErrorWriter;
+        private readonly StringWriter outputWriter = new StringWriter();
+        private readonly StringWriter errorWriter = new StringWriter();
 
         private const int NOT_DISPOSED = 0;
         private const int DISPOSED = 1;
 
         private int alreadyDisposed = NOT_DISPOSED;
 
-        private static SemaphoreSlim consoleLock = new SemaphoreSlim(1, 1);
-
+        private static readonly SemaphoreSlim consoleLock = new SemaphoreSlim(1, 1);
 
         private RedirectConsoleOutput()
         {
@@ -29,8 +32,11 @@ namespace WorkspaceServer.Servers.Scripting
 
             try
             {
-                redirector.originalWriter = Console.Out;
-                Console.SetOut(redirector.writer);
+                redirector.originalOutputWriter = Console.Out;
+                redirector.originalErrorWriter = Console.Error;
+
+                Console.SetOut(redirector.outputWriter);
+                Console.SetError(redirector.errorWriter);
             }
             catch
             {
@@ -45,17 +51,23 @@ namespace WorkspaceServer.Servers.Scripting
         {
             if (Interlocked.CompareExchange(ref alreadyDisposed, DISPOSED, NOT_DISPOSED) == NOT_DISPOSED)
             {
-                // This must only happen once.
+                if (originalOutputWriter != null)
+                {
+                    Console.SetOut(originalOutputWriter);
+                }
+                if (originalErrorWriter != null)
+                {
+                    Console.SetError(originalErrorWriter);
+                }
+               
                 consoleLock.Release();
             }
-
-            Console.SetOut(originalWriter);
         }
 
-        public override string ToString() => writer.ToString().Trim();
+        public override string ToString() => outputWriter.ToString().Trim();
 
-        public void Clear() => writer.GetStringBuilder().Clear();
+        public void Clear() => outputWriter.GetStringBuilder().Clear();
 
-        public bool IsEmpty() => writer.ToString().Length == 0;
+        public bool IsEmpty() => outputWriter.ToString().Length == 0;
     }
 }
