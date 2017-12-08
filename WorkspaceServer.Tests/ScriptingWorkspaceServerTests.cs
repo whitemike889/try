@@ -10,19 +10,9 @@ using WorkspaceServer.Servers.Scripting;
 using Xunit;
 using Xunit.Abstractions;
 using static Pocket.Logger<WorkspaceServer.Tests.ScriptingWorkspaceServerTests>;
-using static WorkspaceServer.Tests.RunResultExtensions;
 
 namespace WorkspaceServer.Tests
 {
-    static class RunResultExtensions
-    {
-        public static RunResult WithExceptionStacktraceRemoved(this RunResult result)
-        {
-            var exception = result.Exception.Replace("\r\n", "\n").Split('\n').First();
-            return new RunResult(result.Succeeded, result.Output, result.ReturnValue, exception, result.Variables);
-        }
-    }
-
     [CollectionDefinition("Scripting Workspace Server Tests", DisableParallelization = true)]
     public class ScriptingWorkspaceServerTests : IDisposable
     {
