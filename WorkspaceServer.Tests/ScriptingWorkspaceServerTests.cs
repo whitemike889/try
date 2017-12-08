@@ -23,7 +23,7 @@ namespace WorkspaceServer.Tests
             disposables.Add(LogEvents.Subscribe(e => output.WriteLine(e.ToLogString())));
         }
 
-        protected IWorkspaceServer GetWorkspaceServer() => new ScriptingWorkspaceServer();
+        protected IWorkspaceServer GetWorkspaceServer(int defaultTimeoutInSeconds = 10) => new ScriptingWorkspaceServer(defaultTimeoutInSeconds);
 
         public void Dispose() => disposables.Dispose();
 
@@ -307,7 +307,7 @@ throw new Exception(""oops!"");");
         {
             var request = new RunRequest(@"while (true) {  }");
 
-            var server = GetWorkspaceServer();
+            var server = GetWorkspaceServer(1);
 
             var result = await server.Run(request);
             result = result.WithExceptionStacktraceRemoved();

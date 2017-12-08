@@ -20,11 +20,23 @@ namespace WorkspaceServer.Servers.Scripting
 {
     public class ScriptingWorkspaceServer : IWorkspaceServer
     {
-        private static readonly TimeSpan _defaultTimeout = TimeSpan.FromSeconds(5);
+        public const int DefaultTimeoutInSeconds = 5;
+
+        private readonly TimeSpan _defaultTimeout;
+
+        public ScriptingWorkspaceServer(int defaultTimeoutInSeconds = DefaultTimeoutInSeconds)
+        {
+            if (defaultTimeoutInSeconds < 1)
+            {
+                throw new ArgumentException($"{nameof(defaultTimeoutInSeconds)} must be at least 1.");
+            }
+
+            _defaultTimeout = TimeSpan.FromSeconds(defaultTimeoutInSeconds);
+        }
 
         public async Task<RunResult> Run(RunRequest request, TimeSpan? timeout = null)
         {
-            using (var operation = Log.OnEnterAndConfirmOnExit())
+            using (Log.OnEnterAndExit())
             using (var console = await RedirectConsoleOutput.Acquire())
             {
                 var options = ScriptOptions.Default
