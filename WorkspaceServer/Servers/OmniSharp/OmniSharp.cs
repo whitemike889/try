@@ -78,7 +78,11 @@ namespace WorkspaceServer.Servers.OmniSharp
             {
                 if (!_omniSharpRunScript.Exists)
                 {
-                    var targzFile = Download(new Uri(@"https://github.com/OmniSharp/omnisharp-roslyn/releases/download/v1.27.2/omnisharp-linux-x64.tar.gz"));
+                    var downloadUri = new Uri(@"https://github.com/OmniSharp/omnisharp-roslyn/releases/download/v1.27.2/omnisharp-linux-x64.tar.gz");
+
+                    operation.Info("OmniSharp not found at {path}. Downloading from {uri}.", _omniSharpRunScript, downloadUri);
+             
+                    var targzFile = Download(downloadUri);
 
                     CommandLine.Execute(
                         "tar",
@@ -94,7 +98,7 @@ namespace WorkspaceServer.Servers.OmniSharp
 
                 operation.Succeed();
 
-                return _omniSharpExe;
+                return _omniSharpRunScript;
             }
         }
 
