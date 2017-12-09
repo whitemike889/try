@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace WorkspaceServer.Servers.Scripting
 {
-    public class RedirectConsoleOutput : IDisposable
+    public class ConsoleOutput : IDisposable
     {
         private TextWriter originalOutputWriter;
         private TextWriter originalErrorWriter;
@@ -19,13 +19,13 @@ namespace WorkspaceServer.Servers.Scripting
 
         private static readonly SemaphoreSlim consoleLock = new SemaphoreSlim(1, 1);
 
-        private RedirectConsoleOutput()
+        private ConsoleOutput()
         {
         }
 
-        public static async Task<RedirectConsoleOutput> Acquire()
+        public static async Task<ConsoleOutput> Capture()
         {
-            var redirector = new RedirectConsoleOutput();
+            var redirector = new ConsoleOutput();
             await consoleLock.WaitAsync();
 
             try

@@ -14,7 +14,7 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task StandardOutput_is_captured()
         {
-            using (var console = await RedirectConsoleOutput.Acquire())
+            using (var console = await ConsoleOutput.Capture())
             {
                 Console.WriteLine("hello");
 
@@ -25,7 +25,7 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task StandardError_is_captured()
         {
-            using (var console = await RedirectConsoleOutput.Acquire())
+            using (var console = await ConsoleOutput.Capture())
             {
                 Console.Error.WriteLine("oops!");
 
@@ -43,7 +43,7 @@ namespace WorkspaceServer.Tests
             async Task ThreadWork(string toPrint)
             {
                 barrier.SignalAndWait(1000 /*ms*/);
-                using (var console = await RedirectConsoleOutput.Acquire())
+                using (var console = await ConsoleOutput.Capture())
                 {
                     var builder = new StringBuilder();
                     for (var i = 0; i < PRINT_COUNT; i++)

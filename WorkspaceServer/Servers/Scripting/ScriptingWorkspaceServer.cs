@@ -37,7 +37,7 @@ namespace WorkspaceServer.Servers.Scripting
         public async Task<RunResult> Run(RunRequest request, TimeSpan? timeout = null)
         {
             using (Log.OnEnterAndExit())
-            using (var console = await RedirectConsoleOutput.Acquire())
+            using (var console = await ConsoleOutput.Capture())
             {
                 var options = ScriptOptions.Default
                                            .AddReferences(GetReferenceAssemblies())
