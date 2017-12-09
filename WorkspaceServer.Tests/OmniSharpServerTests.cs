@@ -68,12 +68,17 @@ namespace WorkspaceServer.Tests
             using (var omnisharp = new OmniSharpServer(project.Value.Directory))
             {
                 var output = new ConcurrentQueue<string>();
-                using (omnisharp.StandardOutput.Subscribe(s => output.Enqueue(s)))
-                using (omnisharp.StandardError.Subscribe(s => Log.Error(s)))
-                {
-                    await omnisharp.StandardInput.WriteLineAsync("/project");
 
-                    output.Should().Contain(s => s.Contains($"{nameof(OmniSharpServerTests)}.csproj"));
+                using (omnisharp.StandardOutput.Subscribe(s => output.Enqueue(s)))
+                {
+                    var projectName = $"{nameof(OmniSharpServerTests)}.csproj";
+
+                    await omnisharp
+                        .StandardOutput
+                        .FirstAsync(e => e.Contains(projectName))
+                        .Timeout(5.Seconds());
+
+                    output.Should().Contain(s => s.Contains(projectName));
                 }
             }
         }
