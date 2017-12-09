@@ -106,7 +106,7 @@ namespace WorkspaceServer.Servers.Scripting
 
                 return new RunResult(
                     succeeded: exception == null,
-                    output: console.ToString()
+                    output: console.StandardOutput
                                    .Replace("\r\n", "\n")
                                    .Split('\n', StringSplitOptions.RemoveEmptyEntries),
                     returnValue: state?.ReturnValue,

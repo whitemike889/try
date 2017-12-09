@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
@@ -10,6 +11,28 @@ namespace WorkspaceServer.Tests
 {
     public class ConsoleRedirectionTests
     {
+        [Fact]
+        public async Task StandardOutput_is_captured()
+        {
+            using (var console = await RedirectConsoleOutput.Acquire())
+            {
+                Console.WriteLine("hello");
+
+                console.StandardOutput.Should().Be("hello");
+            }
+        }
+
+        [Fact]
+        public async Task StandardError_is_captured()
+        {
+            using (var console = await RedirectConsoleOutput.Acquire())
+            {
+                Console.Error.WriteLine("oops!");
+
+                console.StandardError.Should().Be("oops!");
+            }
+        }
+
         [Fact]
         public async void Multiple_threads_each_capturing_console_dont_conflict()
         {
@@ -25,12 +48,12 @@ namespace WorkspaceServer.Tests
                     var builder = new StringBuilder();
                     for (var i = 0; i < PRINT_COUNT; i++)
                     {
-                        System.Console.Write(toPrint);
+                        Console.Write(toPrint);
                         builder.Append(toPrint);
                         await Task.Yield();
                     }
 
-                    console.ToString().Should().Be(builder.ToString());
+                    console.StandardOutput.Should().Be(builder.ToString());
                 }
             }
 

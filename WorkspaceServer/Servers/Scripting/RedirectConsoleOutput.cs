@@ -2,8 +2,6 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Pocket;
-using static Pocket.Logger<WorkspaceServer.Servers.Scripting.RedirectConsoleOutput>;
 
 namespace WorkspaceServer.Servers.Scripting
 {
@@ -59,15 +57,21 @@ namespace WorkspaceServer.Servers.Scripting
                 {
                     Console.SetError(originalErrorWriter);
                 }
-               
+
                 consoleLock.Release();
             }
         }
 
-        public override string ToString() => outputWriter.ToString().Trim();
+        public string StandardOutput => outputWriter.ToString().Trim();
 
-        public void Clear() => outputWriter.GetStringBuilder().Clear();
+        public string StandardError => errorWriter.ToString().Trim();
 
-        public bool IsEmpty() => outputWriter.ToString().Length == 0;
+        public void Clear()
+        {
+            outputWriter.GetStringBuilder().Clear();
+            errorWriter.GetStringBuilder().Clear();
+        }
+
+        public bool IsEmpty() => outputWriter.ToString().Length == 0 && errorWriter.ToString().Length == 0;
     }
 }
