@@ -1,6 +1,8 @@
 ﻿using System;
 using System.IO;
+using Pocket;
 using WorkspaceServer.Servers.Local;
+using static Pocket.Logger<WorkspaceServer.Project>;
 
 namespace WorkspaceServer
 {
@@ -20,6 +22,8 @@ namespace WorkspaceServer
                             Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
                             ".trydotnet",
                             "projects"));
+
+            Log.Info("Projects path is {DefaultProjectsDirectory}",DefaultProjectsDirectory );
         }
 
         public Project(string name) : this(new DirectoryInfo(Path.Combine(DefaultProjectsDirectory.FullName, name)))
