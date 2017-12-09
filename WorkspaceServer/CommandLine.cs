@@ -7,6 +7,7 @@ using External;
 using Pocket;
 using Recipes;
 using WorkspaceServer.Models.Execution;
+using static Pocket.Logger<WorkspaceServer.CommandLine>;
 
 namespace WorkspaceServer
 {
@@ -86,6 +87,8 @@ namespace WorkspaceServer
             Action<string> error = null)
         {
             args = args ?? "";
+
+            Log.Trace("{workingDir}> {command} {args}", workingDir == null ? "" : workingDir.FullName, command, args);
 
             var process = new Process
             {
