@@ -20,12 +20,24 @@ namespace WorkspaceServer.Servers.Scripting
 {
     public class ScriptingWorkspaceServer : IWorkspaceServer
     {
-        private static readonly TimeSpan _defaultTimeout = TimeSpan.FromSeconds(5);
+        public const int DefaultTimeoutInSeconds = 5;
+
+        private readonly TimeSpan _defaultTimeout;
+
+        public ScriptingWorkspaceServer(int defaultTimeoutInSeconds = DefaultTimeoutInSeconds)
+        {
+            if (defaultTimeoutInSeconds < 1)
+            {
+                throw new ArgumentException($"{nameof(defaultTimeoutInSeconds)} must be at least 1.");
+            }
+
+            _defaultTimeout = TimeSpan.FromSeconds(defaultTimeoutInSeconds);
+        }
 
         public async Task<RunResult> Run(RunRequest request, TimeSpan? timeout = null)
         {
-            using (var operation = Log.OnEnterAndConfirmOnExit())
-            using (var console = await RedirectConsoleOutput.Acquire())
+            using (Log.OnEnterAndExit())
+            using (var console = await ConsoleOutput.Capture())
             {
                 var options = ScriptOptions.Default
                                            .AddReferences(GetReferenceAssemblies())
@@ -62,7 +74,7 @@ namespace WorkspaceServer.Servers.Scripting
                                 if (index == sourceLines.Count - 1 &&
                                     console.IsEmpty())
                                 {
-                                    state = await EmulateConsoleMainInvocation(state, buffer, options, operation);
+                                    state = await EmulateConsoleMainInvocation(state, buffer, options);
                                 }
                             }
                             catch (CompilationErrorException ex)
@@ -71,8 +83,10 @@ namespace WorkspaceServer.Servers.Scripting
                                 {
                                     exception = ex;
 
-                                    console.WriteLines(ex.Diagnostics
-                                                         .Select(d => d.ToString()));
+                                    Console.WriteLine(
+                                        string.Join(Environment.NewLine,
+                                                    ex.Diagnostics
+                                                      .Select(d => d.ToString())));
 
                                     break;
                                 }
@@ -80,7 +94,6 @@ namespace WorkspaceServer.Servers.Scripting
                             catch (Exception ex)
                             {
                                 exception = ex;
-                                operation.Warning(ex);
                                 break;
                             }
                         }
@@ -91,11 +104,9 @@ namespace WorkspaceServer.Servers.Scripting
                     exception = timeoutException;
                 }
 
-                operation.Succeed();
-
                 return new RunResult(
                     succeeded: exception == null,
-                    output: console.ToString()
+                    output: console.StandardOutput
                                    .Replace("\r\n", "\n")
                                    .Split('\n', StringSplitOptions.RemoveEmptyEntries),
                     returnValue: state?.ReturnValue,
@@ -214,8 +225,7 @@ namespace WorkspaceServer.Servers.Scripting
         private static async Task<ScriptState<object>> EmulateConsoleMainInvocation(
             ScriptState<object> state,
             StringBuilder buffer,
-            ScriptOptions options,
-            ConfirmationLogger operation)
+            ScriptOptions options)
         {
             var script = state.Script;
             var compiled = script.Compile();
@@ -238,11 +248,6 @@ typeof({entryPointMethod.ContainingType.Name})
     .Invoke(null, {ParametersForMain()});");
 
                 state = await Run(state, buffer, options);
-
-                if (state.Exception != null)
-                {
-                    operation.Warning(state.Exception);
-                }
             }
 
             return state;

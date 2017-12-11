@@ -10,20 +10,9 @@ using WorkspaceServer.Servers.Scripting;
 using Xunit;
 using Xunit.Abstractions;
 using static Pocket.Logger<WorkspaceServer.Tests.ScriptingWorkspaceServerTests>;
-using static WorkspaceServer.Tests.RunResultExtensions;
 
 namespace WorkspaceServer.Tests
 {
-    static class RunResultExtensions
-    {
-        public static RunResult WithExceptionStacktraceRemoved(this RunResult result)
-        {
-            var exception = result.Exception.Replace("\r\n", "\n").Split('\n').First();
-            return new RunResult(result.Succeeded, result.Output, result.ReturnValue, exception, result.Variables);
-        }
-    }
-
-    [CollectionDefinition("Scripting Workspace Server Tests", DisableParallelization = true)]
     public class ScriptingWorkspaceServerTests : IDisposable
     {
         private readonly CompositeDisposable disposables = new CompositeDisposable();
@@ -33,7 +22,7 @@ namespace WorkspaceServer.Tests
             disposables.Add(LogEvents.Subscribe(e => output.WriteLine(e.ToLogString())));
         }
 
-        protected IWorkspaceServer GetWorkspaceServer() => new ScriptingWorkspaceServer();
+        protected IWorkspaceServer GetWorkspaceServer(int defaultTimeoutInSeconds = 10) => new ScriptingWorkspaceServer(defaultTimeoutInSeconds);
 
         public void Dispose() => disposables.Dispose();
 
@@ -317,7 +306,7 @@ throw new Exception(""oops!"");");
         {
             var request = new RunRequest(@"while (true) {  }");
 
-            var server = GetWorkspaceServer();
+            var server = GetWorkspaceServer(1);
 
             var result = await server.Run(request);
             result = result.WithExceptionStacktraceRemoved();
@@ -488,6 +477,19 @@ usings: new[] { "System.Threading" });
                 Output = new[] { "Hello there!" },
                 Exception = (string)null,
             }, config => config.ExcludingMissingMembers());
+        }
+
+        [Fact]
+        public async Task Diagnostic_logs_do_not_show_up_in_captured_console_output()
+        {
+            using (LogEvents.Subscribe(e => Console.WriteLine(e.ToLogString())))
+            {
+                var server = GetWorkspaceServer();
+
+                var result = await server.Run(new RunRequest("Console.WriteLine(\"hi!\");"));
+
+                result.Output.Single().Should().Be("hi!");
+            }
         }
     }
 }

@@ -1,0 +1,10 @@
+FROM microsoft/aspnetcore-build:2.0
+
+# set up OmniSharp
+RUN mkdir -p /dependencies/omnisharp
+RUN curl -SL https://github.com/OmniSharp/omnisharp-roslyn/releases/download/v1.27.2/omnisharp-linux-x64.tar.gz | tar xvz -C /dependencies/omnisharp
+ENV TRYDOTNET_OMNISHARP_PATH=/dependencies/omnisharp/
+
+# set up projects directory
+RUN mkdir -p /projects 
+ENV TRYDOTNET_PROJECTS_PATH=/projects

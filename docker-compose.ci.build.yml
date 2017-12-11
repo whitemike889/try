@@ -1,7 +1,14 @@
 version: '2'
 
 services:
+  ci-dependencies:
+    build:
+      context: .
+      dockerfile: Dockerfile.ci.dependencies
+    image: mls-ls/dependencies
   ci-restore:
+    depends_on:
+      - ci-dependencies
     build:
       context: .
       dockerfile: Dockerfile.ci.restore
@@ -33,4 +40,5 @@ services:
     image: mls-ls/built
     volumes:
       - ./WorkspaceServer.Tests/TestResults:/app/WorkspaceServer.Tests/TestResults
-    command: dotnet test /app/WorkspaceServer.Tests/WorkspaceServer.Tests.csproj --logger trx 
+    command: dotnet test /app/WorkspaceServer.Tests/WorkspaceServer.Tests.csproj --logger trx
+    

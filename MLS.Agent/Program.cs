@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using static Pocket.Logger<MLS.Agent.Program>;
 using Pocket;
@@ -7,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
 using Pocket.For.ApplicationInsights;
 
 namespace MLS.Agent
@@ -47,6 +49,11 @@ namespace MLS.Agent
 
             disposables.Add(telemetryClient.SubscribeToPocketLogger());
 
+            if (!options.IsProduction)
+            {
+                disposables.Add(LogEvents.Subscribe(e => Console.WriteLine(e.ToLogString())));
+            }
+
             Log.Event("AgentStarting");
         }
 
@@ -63,13 +70,15 @@ namespace MLS.Agent
             {
                 Log.Info("Received Key", options.Key);
             }
-
+            
             var webHost = new WebHostBuilder()
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseIISIntegration()
+                .ConfigureServices(c => c.AddSingleton(options))
                 .UseStartup<Startup>()
                 .Build();
+
             return webHost;
         }
 
