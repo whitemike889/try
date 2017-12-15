@@ -55,38 +55,38 @@ namespace WorkspaceServer.Servers.OmniSharp
             {
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-                    return AcquireForWindows();
+                    return AcquireAndExtractWithZip("omnisharp-win-x64.zip");
                 }
 
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 {
-                    return AcquireForLinux();
+                    return AcquireAndExtractWithTar("omnisharp-linux-x64.tar.gz");
                 }
-
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                 {
-                    return AcquireForOSX();
+                    return AcquireAndExtractWithTar("omnisharp-osx.tar.gz");
                 }
 
                 throw new InvalidOperationException("BeOS? You go dawg.");
             }
         }
 
-        private static FileInfo AcquireForLinux()
+        private static FileInfo AcquireAndExtractWithTar(string file)
         {
             using (var operation = Log.OnEnterAndConfirmOnExit())
             {
                 if (!_omniSharpRunScript.Exists)
                 {
-                    var downloadUri = new Uri(@"https://github.com/OmniSharp/omnisharp-roslyn/releases/download/v1.27.2/omnisharp-linux-x64.tar.gz");
+                    var downloadUri = new Uri($@"https://github.com/OmniSharp/omnisharp-roslyn/releases/download/v1.27.2/{file}");
 
                     operation.Info("OmniSharp not found at {path}. Downloading from {uri}.", _omniSharpRunScript, downloadUri);
-             
+
                     var targzFile = Download(downloadUri);
+                    _omniSharpInstallFolder.Create();
 
                     CommandLine.Execute(
                         "tar",
-                        $"xvz {targzFile.FullName} -C {_omniSharpInstallFolder}");
+                        $"xvf {targzFile.FullName} -C {_omniSharpInstallFolder}");
 
                     _omniSharpRunScript.Refresh();
 
@@ -102,18 +102,13 @@ namespace WorkspaceServer.Servers.OmniSharp
             }
         }
 
-        private static FileInfo AcquireForOSX()
-        {
-            return null;
-        }
-
-        private static FileInfo AcquireForWindows()
+        private static FileInfo AcquireAndExtractWithZip(string file)
         {
             using (var operation = Log.OnEnterAndConfirmOnExit())
             {
                 if (!_omniSharpExe.Exists)
                 {
-                    var zipFile = Download(new Uri(@"https://github.com/OmniSharp/omnisharp-roslyn/releases/download/v1.27.2/omnisharp-win-x64.zip"));
+                    var zipFile = Download(new Uri($@"https://github.com/OmniSharp/omnisharp-roslyn/releases/download/v1.27.2/${file}"));
 
                     using (var stream = zipFile.OpenRead())
                     using (var archive = new ZipArchive(stream, ZipArchiveMode.Read))
