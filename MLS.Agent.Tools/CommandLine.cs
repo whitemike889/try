@@ -3,17 +3,16 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using External;
+using MLS.Agent.Tools.External;
 using Pocket;
 using Recipes;
-using WorkspaceServer.Models.Execution;
 using static Pocket.Logger<WorkspaceServer.CommandLine>;
 
 namespace WorkspaceServer
 {
-    internal static class CommandLine
+    public static class CommandLine
     {
-        public static RunResult Execute(
+        public static CommandLineResult Execute(
             FileInfo exePath,
             string args,
             DirectoryInfo workingDir= null,
@@ -23,7 +22,7 @@ namespace WorkspaceServer
                     workingDir,
                     timeout);
 
-        public static RunResult Execute(
+        public static CommandLineResult Execute(
             string command,
             string args,
             DirectoryInfo workingDir = null,
@@ -70,8 +69,8 @@ namespace WorkspaceServer
                     operation.Fail(exception);
                 }
 
-                return new RunResult(
-                    succeeded: process.HasExited && process.ExitCode == 0,
+                return new CommandLineResult(
+                    exitCode: process.ExitCode ,
                     output: $"{stdOut}\n{stdErr}"
                         .Replace("\r\n", "\n")
                         .Split('\n'),

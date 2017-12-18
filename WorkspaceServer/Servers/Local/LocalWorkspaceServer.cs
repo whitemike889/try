@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
+using MLS.Agent.Tools;
 using Pocket;
 using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
@@ -34,7 +35,10 @@ namespace WorkspaceServer.Servers.Local
 
                 operation.Succeed();
 
-                return result;
+                return new RunResult(
+                    succeeded: result.ExitCode == 0,
+                    output: result.Output,
+                    exception: result.Exception);
             }
         }
 

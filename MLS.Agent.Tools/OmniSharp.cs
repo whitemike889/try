@@ -4,12 +4,13 @@ using System.IO.Compression;
 using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using MLS.Agent.Tools;
 using Pocket;
 using static Pocket.Logger<WorkspaceServer.Servers.OmniSharp.OmniSharp>;
 
 namespace WorkspaceServer.Servers.OmniSharp
 {
-    internal static class OmniSharp
+    public static class OmniSharp
     {
         private static readonly DirectoryInfo _omniSharpInstallFolder;
         private static readonly FileInfo _omniSharpExe;

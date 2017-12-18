@@ -1,8 +1,9 @@
 ﻿using System;
 using System.IO;
-using WorkspaceServer.Models.Execution;
+using WorkspaceServer;
+using WorkspaceServer.Servers.Local;
 
-namespace WorkspaceServer.Servers.Local
+namespace MLS.Agent.Tools
 {
     public class Dotnet
     {
@@ -32,10 +33,10 @@ namespace WorkspaceServer.Servers.Local
         public void Restore(TimeSpan? timeout = null) =>
             Execute("restore", timeout);
 
-        public RunResult Run(TimeSpan? timeout = null) =>
+        public CommandLineResult Run(TimeSpan? timeout = null) =>
             Execute("run", timeout);
 
-        public RunResult Execute(string args, TimeSpan? timeout = null)
+        public CommandLineResult Execute(string args, TimeSpan? timeout = null)
         {
             timeout = timeout ?? _defaultCommandTimeout;
 

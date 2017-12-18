@@ -7,10 +7,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using External;
 
-namespace External
+namespace MLS.Agent.Tools.External
 {
-    internal static class ProcessExtensions
+    public static class ProcessExtensions
     {
         public static void KillTree(this Process process, int timeoutMs)
         {
