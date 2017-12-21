@@ -2,7 +2,7 @@ using System;
 
 namespace OmniSharp.Client.Events
 {
-    public class ProjectAdded : OmnisharpEvent
+    public class ProjectAdded : AbstractOmniSharpEventBody
     {
         public Guid ProjectGuid { get; set; }
         public string Path { get; set; }
