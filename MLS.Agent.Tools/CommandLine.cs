@@ -3,19 +3,18 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using MLS.Agent.Tools.External;
 using Pocket;
 using Recipes;
-using static Pocket.Logger<WorkspaceServer.CommandLine>;
+using static Pocket.Logger<MLS.Agent.Tools.CommandLine>;
 
-namespace WorkspaceServer
+namespace MLS.Agent.Tools
 {
     public static class CommandLine
     {
         public static CommandLineResult Execute(
             FileInfo exePath,
             string args,
-            DirectoryInfo workingDir= null,
+            DirectoryInfo workingDir = null,
             TimeSpan? timeout = null) =>
             Execute(exePath.FullName,
                     args,
@@ -65,16 +64,15 @@ namespace WorkspaceServer
                 else
                 {
                     exception = new TimeoutException();
-                    Task.Run(() => process.KillTree(1000)).DontAwait();
+                    Task.Run(() => process.Kill()).Timeout(TimeSpan.FromSeconds(1)).DontAwait();
                     operation.Fail(exception);
                 }
 
                 return new CommandLineResult(
-                    exitCode: process.ExitCode ,
-                    output: $"{stdOut}\n{stdErr}"
-                        .Replace("\r\n", "\n")
-                        .Split('\n'),
-                    exception: exception?.ToString());
+                    exitCode: process.ExitCode,
+                    output: stdOut.Replace("\r\n", "\n").ToString().Split('\n'),
+                    error: stdErr.Replace("\r\n", "\n").ToString().Split('\n'),
+                    exception: exception);
             }
         }
 
@@ -87,7 +85,9 @@ namespace WorkspaceServer
         {
             args = args ?? "";
 
-            Log.Trace("{workingDir}> {command} {args}", workingDir == null ? "" : workingDir.FullName, command, args);
+            Log.Trace("{workingDir}> {command} {args}", workingDir == null
+                                                            ? ""
+                                                            : workingDir.FullName, command, args);
 
             var process = new Process
             {

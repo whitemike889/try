@@ -1,11 +1,8 @@
 ﻿using System;
 using System.IO;
-using MLS.Agent.Tools;
 using Pocket;
-using WorkspaceServer.Servers.Local;
-using static Pocket.Logger<WorkspaceServer.Project>;
 
-namespace WorkspaceServer
+namespace MLS.Agent.Tools
 {
     public class Project
     {
@@ -20,11 +17,11 @@ namespace WorkspaceServer
                     ? new DirectoryInfo(environmentVariable)
                     : new DirectoryInfo(
                         Path.Combine(
-                            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                            Paths.UserProfile(),
                             ".trydotnet",
                             "projects"));
 
-            Log.Info("Projects path is {DefaultProjectsDirectory}",DefaultProjectsDirectory );
+            Logger<Project>.Log.Info("Projects path is {DefaultProjectsDirectory}",DefaultProjectsDirectory );
         }
 
         public Project(string name) : this(new DirectoryInfo(Path.Combine(DefaultProjectsDirectory.FullName, name)))

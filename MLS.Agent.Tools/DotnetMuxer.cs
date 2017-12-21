@@ -6,7 +6,7 @@ using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-namespace WorkspaceServer.Servers.Local
+namespace MLS.Agent.Tools
 {
     public static class DotnetMuxer
     {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace WorkspaceServer.Servers.OmniSharp
+namespace MLS.Agent.Tools
 {
     public class OmniSharpNotFoundException : Exception
     {

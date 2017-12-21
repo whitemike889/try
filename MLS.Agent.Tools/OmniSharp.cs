@@ -4,17 +4,16 @@ using System.IO.Compression;
 using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using MLS.Agent.Tools;
 using Pocket;
-using static Pocket.Logger<WorkspaceServer.Servers.OmniSharp.OmniSharp>;
 
-namespace WorkspaceServer.Servers.OmniSharp
+namespace MLS.Agent.Tools
 {
     public static class OmniSharp
     {
         private static readonly DirectoryInfo _omniSharpInstallFolder;
         private static readonly FileInfo _omniSharpExe;
         private static readonly FileInfo _omniSharpRunScript;
+        private static readonly Logger Log = new Logger(nameof(OmniSharp));
 
         static OmniSharp()
         {
@@ -22,8 +21,7 @@ namespace WorkspaceServer.Servers.OmniSharp
 
             var omniSharpInstallPath =
                 environmentVariable ??
-                Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                Path.Combine(Paths.UserProfile(),
                     ".trydotnet",
                     "omnisharp");
 
