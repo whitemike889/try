@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using Pocket;
+using static Pocket.Logger<MLS.Agent.Tools.Project>;
 
 namespace MLS.Agent.Tools
 {
@@ -21,7 +22,7 @@ namespace MLS.Agent.Tools
                             ".trydotnet",
                             "projects"));
 
-            Logger<Project>.Log.Info("Projects path is {DefaultProjectsDirectory}",DefaultProjectsDirectory );
+            Log.Info("Projects path is {DefaultProjectsDirectory}", DefaultProjectsDirectory);
         }
 
         public Project(string name) : this(new DirectoryInfo(Path.Combine(DefaultProjectsDirectory.FullName, name)))
@@ -36,18 +37,5 @@ namespace MLS.Agent.Tools
         public DirectoryInfo Directory { get; }
 
         public static DirectoryInfo DefaultProjectsDirectory { get; }
-
-        public void IfEmptyInitializeFromDotnetTemplate(string template)
-        {
-            if (!Directory.Exists)
-            {
-                Directory.Create();
-            }
-
-            if (Directory.GetFiles().Length == 0)
-            {
-                new Dotnet(Directory).New(template);
-            }
-        }
     }
 }
