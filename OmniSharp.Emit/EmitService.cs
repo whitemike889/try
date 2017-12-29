@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Composition;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -36,10 +35,16 @@ namespace OmniSharp.Emit
 
             var compilation = await project.GetCompilationAsync();
 
-            compilation.Emit(project.OutputFilePath);
+            var errors = compilation.GetDiagnostics().Where(d => d.Severity == DiagnosticSeverity.Error).ToArray();
+
+            if (!errors.Any())
+            {
+                compilation.Emit(project.OutputFilePath);
+            }
 
             return new EmitResponse
             {
+                Errors = errors.ToArray(),
                 OutputAssemblyPath = project.OutputFilePath
             };
         }
