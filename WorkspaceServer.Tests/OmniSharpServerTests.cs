@@ -27,7 +27,7 @@ namespace WorkspaceServer.Tests
 
         public OmniSharpServerTests(ITestOutputHelper output)
         {
-            disposables.Add(LogEvents.Subscribe(e => output.WriteLine(e.ToLogString())));
+            disposables.Add(output.SubscribeToPocketLogger());
         }
 
         public void Dispose() => disposables.Dispose();
