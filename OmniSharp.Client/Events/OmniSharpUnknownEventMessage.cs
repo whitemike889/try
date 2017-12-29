@@ -6,13 +6,13 @@ namespace OmniSharp.Client.Events
     public class OmniSharpUnknownEventMessage : OmniSharpEventMessage
     {
         public OmniSharpUnknownEventMessage(
-            JObject body, 
+            JToken body, 
             string @event,
             int seq) : base(@event, seq)
         {
             Body = body;
         }
 
-        public JObject Body { get; }
+        public JToken Body { get; }
     }
 }

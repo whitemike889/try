@@ -1,4 +1,4 @@
-namespace OmniSharp.Client.Responses
+namespace OmniSharp.Client.Commands
 {
     public class EmitResponse
     {

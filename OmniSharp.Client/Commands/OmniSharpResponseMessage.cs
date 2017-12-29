@@ -1,4 +1,4 @@
-namespace OmniSharp.Client.Responses
+namespace OmniSharp.Client.Commands
 {
     public abstract class OmniSharpResponseMessage : OmniSharpMessage
     {

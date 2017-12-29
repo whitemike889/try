@@ -1,7 +1,7 @@
 namespace OmniSharp.Client.Commands
 {
-    public class Emit : IOmniSharpCommandBody
+    public class Emit : AbstractOmniSharpCommandArguments
     {
-        public string Command => "/emit";
+        public override string Command => "/emit";
     }
 }

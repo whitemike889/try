@@ -1,6 +1,6 @@
 namespace OmniSharp.Client.Commands
 {
-    public interface IOmniSharpCommandBody
+    public interface IOmniSharpCommandArguments
     {
         string Command { get; }
     }

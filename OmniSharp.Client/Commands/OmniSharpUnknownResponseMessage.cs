@@ -1,11 +1,11 @@
 ﻿using Newtonsoft.Json.Linq;
 
-namespace OmniSharp.Client.Responses
+namespace OmniSharp.Client.Commands
 {
     public class OmniSharpUnknownResponseMessage : OmniSharpResponseMessage
     {
         public OmniSharpUnknownResponseMessage(
-            JObject body,
+            JToken body,
             bool success,
             string message,
             string command,
@@ -16,6 +16,6 @@ namespace OmniSharp.Client.Responses
             Body = body;
         }
 
-        public JObject Body { get; }
+        public JToken Body { get; }
     }
 }

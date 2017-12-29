@@ -4,7 +4,6 @@ using System.Reactive.Linq;
 using Newtonsoft.Json.Linq;
 using OmniSharp.Client.Commands;
 using OmniSharp.Client.Events;
-using OmniSharp.Client.Responses;
 using Recipes;
 
 namespace OmniSharp.Client
@@ -84,9 +83,10 @@ namespace OmniSharp.Client
                     Body.ToObject<T>(),
                     Seq);
 
-            public OmniSharpResponseMessage ToCommandResponse<T>() =>
+            public OmniSharpResponseMessage ToCommandResponse<T>()
+                where T : class =>
                 new OmniSharpResponseMessage<T>(
-                    Body.ToObject<T>(),
+                    Body?.ToObject<T>(),
                     Success,
                     Message,
                     Command,

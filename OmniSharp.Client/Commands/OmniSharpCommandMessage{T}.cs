@@ -2,18 +2,15 @@ using System;
 
 namespace OmniSharp.Client.Commands
 {
-    public class OmniSharpCommandMessage<T> where T: class, IOmniSharpCommandBody
+    public class OmniSharpCommandMessage<T> : OmniSharpCommandMessage
+        where T : class, IOmniSharpCommandArguments
     {
-        public OmniSharpCommandMessage(T body, int seq)
+        public OmniSharpCommandMessage(T arguments, int seq) : 
+            base(arguments?.Command, seq)
         {
-            Body = body ?? throw new ArgumentNullException(nameof(body));
-            Seq = seq;
+            Arguments = arguments ?? throw new ArgumentNullException(nameof(arguments));
         }
 
-        public T Body { get; }
-
-        public string Command => Body.Command;
-
-        public int Seq { get; }
+        public T Arguments { get; }
     }
 }

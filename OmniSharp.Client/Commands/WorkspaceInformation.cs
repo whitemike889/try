@@ -1,6 +1,6 @@
 namespace OmniSharp.Client.Commands
 {
-    public class WorkspaceInformation : AbstractOmniSharpCommandBody
+    public class WorkspaceInformation : AbstractOmniSharpCommandArguments
     {
         public override string Command => "/projects";
     }
