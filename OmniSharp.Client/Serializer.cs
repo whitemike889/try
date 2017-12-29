@@ -15,6 +15,7 @@ namespace OmniSharp.Client
         {
             [nameof(ProjectAdded)] = envelope => envelope.ToEvent<ProjectAdded>(),
             [nameof(error)] = envelope => envelope.ToEvent<error>(),
+            [nameof(log)] = envelope => envelope.ToEvent<log>(),
         };
 
         private static readonly Dictionary<string, Func<MessageEnvelope, OmniSharpResponseMessage>> responseDeserializers =
