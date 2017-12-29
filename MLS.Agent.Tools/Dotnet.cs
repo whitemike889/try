@@ -9,13 +9,13 @@ namespace MLS.Agent.Tools
         private readonly DirectoryInfo _workingDirectory;
 
         public Dotnet(
-            DirectoryInfo workingDirectory,
+            DirectoryInfo workingDirectory = null,
             TimeSpan? defaultCommandTimeout = null)
         {
             _defaultCommandTimeout = defaultCommandTimeout ??
                                      TimeSpan.FromSeconds(10);
             _workingDirectory = workingDirectory ??
-                                throw new ArgumentNullException(nameof(workingDirectory));
+                                new DirectoryInfo(Directory.GetCurrentDirectory());
         }
 
         public void New(string templateName, TimeSpan? timeout = null)
