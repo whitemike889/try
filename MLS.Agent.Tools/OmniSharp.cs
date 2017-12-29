@@ -76,11 +76,12 @@ namespace MLS.Agent.Tools
             {
                 if (!_omniSharpRunScript.Exists)
                 {
-                    var downloadUri = new Uri($@"https://github.com/OmniSharp/omnisharp-roslyn/releases/download/v1.27.2/{file}");
+                    var downloadUri = new Uri($@"https://github.com/OmniSharp/omnisharp-roslyn/releases/download/v1.28.0/{file}");
 
                     operation.Info("OmniSharp not found at {path}. Downloading from {uri}.", _omniSharpRunScript, downloadUri);
 
                     var targzFile = Download(downloadUri);
+
                     _omniSharpInstallFolder.Create();
 
                     CommandLine.Execute(
@@ -107,7 +108,7 @@ namespace MLS.Agent.Tools
             {
                 if (!_omniSharpExe.Exists)
                 {
-                    var zipFile = Download(new Uri($@"https://github.com/OmniSharp/omnisharp-roslyn/releases/download/v1.27.2/{file}"));
+                    var zipFile = Download(new Uri($@"https://github.com/OmniSharp/omnisharp-roslyn/releases/download/v1.28.0/{file}"));
 
                     using (var stream = zipFile.OpenRead())
                     using (var archive = new ZipArchive(stream, ZipArchiveMode.Read))
