@@ -20,6 +20,7 @@
     </PackageReference>
     <PackageReference Include="System.Reactive" Version="3.1.1" />
     <PackageReference Include="System.Runtime.Loader" Version="4.3.0" />
+    <PackageReference Include="TryDotNet.OmniSharp.Emit" Version="1.27.3-beta1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -28,6 +29,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\MLS.Agent.Tools\MLS.Agent.Tools.csproj" />
+    <ProjectReference Include="..\OmniSharp.Client\OmniSharp.Client.csproj" />
   </ItemGroup>
 
 </Project>

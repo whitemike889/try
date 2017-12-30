@@ -1,16 +1,17 @@
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.IO;
 using System.Reactive.Linq;
 using FluentAssertions;
 using System.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
+using MLS.Agent.Tools;
 using Pocket;
 using WorkspaceServer.Servers.OmniSharp;
 using Xunit;
 using Xunit.Abstractions;
-using static Pocket.Logger<WorkspaceServer.Tests.OmniSharpServerTests>;
 
 namespace WorkspaceServer.Tests
 {
@@ -19,7 +20,7 @@ namespace WorkspaceServer.Tests
         private static readonly Lazy<Project> project = new Lazy<Project>(() =>
         {
             var project = new Project(nameof(OmniSharpServerTests));
-            project.IfEmptyInitializeFromDotnetTemplate("console");
+            project.EnsureCreated("console");
             return project;
         });
 
@@ -74,24 +75,73 @@ namespace WorkspaceServer.Tests
                     var projectName = $"{nameof(OmniSharpServerTests)}.csproj";
 
                     await omnisharp
-                        .StandardOutput
-                        .FirstAsync(e => e.Contains(projectName))
-                        .Timeout(5.Seconds());
+                          .StandardOutput
+                          .FirstAsync(e => e.Contains(projectName))
+                          .Timeout(5.Seconds());
 
                     output.Should().Contain(s => s.Contains(projectName));
                 }
             }
         }
 
-        [Fact(Skip = "not yet")]
-        public void Can_subscribe_to_omisharp_events()
+        [Fact]
+        public async Task Diagnostics_can_be_read_after_a_buffer_update()
         {
-            using (var omnisharp = new OmniSharpServer(project.Value.Directory))
+            using (var omnisharp = StartOmniSharp(project.Value.Directory))
             {
-            }
+                await omnisharp.ProjectLoaded();
 
-            // TODO (Can_subscribe_to_omisharp_events) write test
-            throw new NotImplementedException("Test Can_subscribe_to_omisharp_events is not written yet.");
+                var file = await omnisharp.FindFile("Program.cs");
+
+                var code = await file.ReadAsync();
+
+                await omnisharp.UpdateBuffer(
+                    file,
+                    code.Replace(";", ""));
+
+                var diagnostics = await omnisharp.CodeCheck(
+                                      file,
+                                      code.Replace(";", ""));
+
+                diagnostics.Body
+                           .QuickFixes
+                           .Should()
+                           .Contain(d => d.Text.Contains("; expected"));
+            }
         }
+
+        [Fact]
+        public async Task Workspace_information_can_be_requested()
+        {
+            using (var omnisharp = new OmniSharpServer(project.Value.Directory, logToPocketLogger: true))
+            {
+                await omnisharp.ProjectLoaded();
+
+                var response = await omnisharp.GetWorkspaceInformation();
+
+                response.Success
+                        .Should()
+                        .BeTrue();
+
+                response.Body
+                        .MSBuildSolution
+                        .Projects
+                        .Should()
+                        .HaveCount(1);
+
+                response.Body
+                        .MSBuildSolution
+                        .Projects
+                        .Single()
+                        .SourceFiles
+                        .Should()
+                        .Contain(f => f.Name == "Program.cs");
+            }
+        }
+
+        private OmniSharpServer StartOmniSharp(DirectoryInfo projectDirectory = null) =>
+            new OmniSharpServer(
+                projectDirectory ?? project.Value.Directory,
+                logToPocketLogger: true);
     }
 }

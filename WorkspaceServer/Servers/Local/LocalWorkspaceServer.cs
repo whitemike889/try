@@ -38,7 +38,7 @@ namespace WorkspaceServer.Servers.Local
                 return new RunResult(
                     succeeded: result.ExitCode == 0,
                     output: result.Output,
-                    exception: result.Exception);
+                    exception: result?.Exception.ToString());
             }
         }
 
