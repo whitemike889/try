@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using FluentAssertions;
-using System.Linq;
 using System.Threading.Tasks;
 using MLS.Agent.Tools;
 using OmniSharp.Client.Commands;
@@ -43,8 +42,6 @@ namespace WorkspaceServer.Tests
                 File.Exists(response.Body.OutputAssemblyPath).Should().BeTrue();
             }
         }
-
-     
 
         [Fact]
         public async Task Emitted_console_app_project_can_be_updated_and_rerun()
