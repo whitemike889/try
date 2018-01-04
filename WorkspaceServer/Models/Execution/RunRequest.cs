@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Linq;
+using System.Collections.Generic;
 
 namespace WorkspaceServer.Models.Execution
 {
@@ -21,26 +21,32 @@ namespace WorkspaceServer.Models.Execution
             Usings = usings ?? Array.Empty<string>();
         }
 
-        public SourceFile[] GetSourceFiles()
-            => Sources
-                .Select(source => SourceFile.Create(source))
-                .ToArray();
+        public IEnumerable<SourceFile> GetSourceFiles()
+        {
+            for (var i = 0; i < Sources.Length; i++)
+            {
+                yield return SourceFile.Create(Sources[i],
+                                               i == 0
+                                                   ? "Program.cs"
+                                                   : $"{i + 1}.cs");
+            }
+        }
 
         private static string[] GetSources(string source)
             => IsFragment(source)
-                   ? new[] { Main, AddScaffoldingToFragment(source) }
+                   ? new[] { ProgramCs, ScaffoldedSnippet(source) }
                    : new[] { source };
 
         private static bool IsFragment(string source)
             => source != null && !source.Contains("public static void Main(");
 
-        private static string AddScaffoldingToFragment(string source)
+        private static string ScaffoldedSnippet(string source)
             => $"{UsingStatements} public static class Fragment {{ public static void Invoke() {{ {source} }} }}";
 
         private const string UsingStatements = @"
 using System; using System.Collections.Generic; using System.Linq;";
 
-        private const string Main = UsingStatements + @"
+        private const string ProgramCs = UsingStatements + @"
 public class Program
 {
     public static void Main() {
