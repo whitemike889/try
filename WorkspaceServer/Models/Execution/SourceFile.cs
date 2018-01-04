@@ -1,17 +1,22 @@
 ﻿using System;
 using Microsoft.CodeAnalysis.Text;
 
-namespace WorkspaceServer
+namespace WorkspaceServer.Models.Execution
 {
     public class SourceFile
     {
         public SourceText Text { get; }
+
         public bool HasSpan { get; }
+
         public TextSpan Span { get; }
 
-        private SourceFile(SourceText text, TextSpan? span = null)
+        public string Name { get; }
+
+        private SourceFile(SourceText text, TextSpan? span = null, string name = null)
         {
             Text = text ?? throw new ArgumentNullException(nameof(text));
+            Name = name;
             HasSpan = span.HasValue;
             Span = span ?? default(TextSpan);
 
@@ -29,5 +34,8 @@ namespace WorkspaceServer
 
         public static SourceFile Create(string text)
             => new SourceFile(SourceText.From(text));
+
+        public static SourceFile Create(string text, string name)
+            => new SourceFile(SourceText.From(text), name: name);
     }
 }
