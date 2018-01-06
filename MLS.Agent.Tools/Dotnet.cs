@@ -18,14 +18,14 @@ namespace MLS.Agent.Tools
                                 new DirectoryInfo(Directory.GetCurrentDirectory());
         }
 
-        public CommandLineResult New(string templateName, TimeSpan? timeout = null)
+        public CommandLineResult New(string templateName, string args = null, TimeSpan? timeout = null)
         {
             if (string.IsNullOrWhiteSpace(templateName))
             {
                 throw new ArgumentException("Value cannot be null or whitespace.", nameof(templateName));
             }
 
-            return Execute($"new {templateName}", timeout);
+            return Execute($"new {templateName} {args}", timeout);
         }
 
         public CommandLineResult Build(TimeSpan? timeout = null) =>
