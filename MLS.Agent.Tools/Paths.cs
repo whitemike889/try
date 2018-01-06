@@ -6,13 +6,15 @@ namespace MLS.Agent.Tools
 {
     public static class Paths
     {
-        public static string UserProfile() =>
+        public static string UserProfile { get; } =
             Environment.GetEnvironmentVariable(
                 RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
                     ? "USERPROFILE"
                     : "HOME");
 
-        public static string NugetCache() =>
-            Path.Combine(UserProfile(), ".nuget", "packages");
+        public static string NugetCache { get; } =
+            Path.Combine(UserProfile, ".nuget", "packages");
+
+        public static string EmitPlugin { get; } = Path.Combine(NugetCache, "trydotnet.omnisharp.emit", "1.27.3-beta3", "lib", "net46", "OmniSharp.Emit.dll");
     }
 }

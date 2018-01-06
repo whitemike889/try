@@ -21,7 +21,7 @@ namespace MLS.Agent.Tools
 
             var omniSharpInstallPath =
                 environmentVariable ??
-                Path.Combine(Paths.UserProfile(),
+                Path.Combine(Paths.UserProfile,
                     ".trydotnet",
                     "omnisharp");
 
