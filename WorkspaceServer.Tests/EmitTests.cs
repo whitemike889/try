@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -41,9 +40,7 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task Emitted_console_app_project_can_be_updated_and_rerun()
         {
-            var project = Create.TempProject();
-
-            using (var omnisharp = StartOmniSharp(project.Directory))
+            using (var omnisharp = StartOmniSharp())
             {
                 await omnisharp.ProjectLoaded(Default.Timeout());
 
@@ -61,9 +58,9 @@ namespace WorkspaceServer.Tests
             }
         }
 
-        private OmniSharpServer StartOmniSharp(DirectoryInfo projectDirectory = null) =>
+        private OmniSharpServer StartOmniSharp() =>
             new OmniSharpServer(
-                projectDirectory,
+                Create.TempProject(nameof(EmitTests)).Directory,
                 Paths.EmitPlugin,
                 logToPocketLogger: true);
 
