@@ -10,6 +10,6 @@ namespace OmniSharp.Client.Commands
         {
         }
 
-        public override string Command => "/updatebuffer";
+        public override string Command => CommandNames.UpdateBuffer;
     }
 }

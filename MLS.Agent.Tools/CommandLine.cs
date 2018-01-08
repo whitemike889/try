@@ -54,24 +54,30 @@ namespace MLS.Agent.Tools
                                     ? (int) timeout.Value.TotalMilliseconds
                                     : int.MaxValue;
 
+                int exitCode;
+
                 if (process.WaitForExit(timeoutMs))
                 {
+                    exitCode = process.ExitCode;
+
                     operation.Succeed(
                         "{command} exited with {code}",
                         command,
-                        process.ExitCode);
+                        exitCode);
                 }
                 else
                 {
+                    exitCode = 124; // like the Linux timeout command 
+
                     exception = new TimeoutException();
                     Task.Run(() => process.Kill()).Timeout(TimeSpan.FromSeconds(1)).DontAwait();
                     operation.Fail(exception);
                 }
 
                 return new CommandLineResult(
-                    exitCode: process.ExitCode,
-                    output: stdOut.Replace("\r\n", "\n").ToString().Split('\n'),
-                    error: stdErr.Replace("\r\n", "\n").ToString().Split('\n'),
+                    exitCode: exitCode,
+                    output: stdOut.Replace("\r\n", "\n").ToString().Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries),
+                    error: stdErr.Replace("\r\n", "\n").ToString().Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries),
                     exception: exception);
             }
         }

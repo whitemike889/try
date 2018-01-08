@@ -15,12 +15,15 @@ namespace OmniSharp.Client
             [nameof(ProjectAdded)] = envelope => envelope.ToEvent<ProjectAdded>(),
             [nameof(error)] = envelope => envelope.ToEvent<error>(),
             [nameof(log)] = envelope => envelope.ToEvent<log>(),
+            [nameof(started)] = envelope => envelope.ToEvent<started>(),
         };
 
         private static readonly Dictionary<string, Func<MessageEnvelope, OmniSharpResponseMessage>> responseDeserializers =
             new Dictionary<string, Func<MessageEnvelope, OmniSharpResponseMessage>>
             {
-                [new Emit().Command] = envelope => envelope.ToCommandResponse<EmitResponse>()
+                [CommandNames.CodeCheck] = envelope => envelope.ToCommandResponse<CodeCheckResponse>(),
+                [CommandNames.Emit] = envelope => envelope.ToCommandResponse<EmitResponse>(),
+                [CommandNames.UpdateBuffer] = envelope => envelope.ToCommandResponse<bool>()
             };
 
         public static OmniSharpMessage DeserializeOmniSharpMessage(string json)
@@ -29,7 +32,8 @@ namespace OmniSharp.Client
 
             if (envelope.Type == "event")
             {
-                if (eventDeserializers.TryGetValue(envelope.Event, out var deserialize))
+                if (eventDeserializers.TryGetValue(envelope.Event, out var deserialize
+                    ))
                 {
                     return deserialize(envelope);
                 }
@@ -80,13 +84,13 @@ namespace OmniSharp.Client
             public OmniSharpEventMessage<T> ToEvent<T>()
                 where T : class, IOmniSharpEventBody =>
                 new OmniSharpEventMessage<T>(
+                    Event,
                     Body.ToObject<T>(),
                     Seq);
 
-            public OmniSharpResponseMessage ToCommandResponse<T>()
-                where T : class =>
+            public OmniSharpResponseMessage ToCommandResponse<T>() =>
                 new OmniSharpResponseMessage<T>(
-                    Body?.ToObject<T>(),
+                    Body.ToObject<T>(),
                     Success,
                     Message,
                     Command,

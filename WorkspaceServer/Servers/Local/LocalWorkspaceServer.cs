@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using MLS.Agent.Tools;
@@ -94,11 +95,11 @@ namespace WorkspaceServer.Servers.Local
             return _workingDirectory;
         }
 
-        private void WriteUserSourceFiles(SourceFile[] sourceFiles)
+        private void WriteUserSourceFiles(IEnumerable<SourceFile> sourceFiles)
         {
             using (Log.OnEnterAndExit())
             {
-                int i = 1;
+                var i = 1;
 
                 foreach (var sourceFile in sourceFiles)
                 {

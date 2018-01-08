@@ -7,7 +7,9 @@ using Newtonsoft.Json;
 using OmniSharp.Client;
 using OmniSharp.Client.Commands;
 using OmniSharp.Client.Events;
+using Pocket;
 using Recipes;
+using static Pocket.Logger<MLS.Agent.Tools.OmniSharp>;
 
 namespace WorkspaceServer.Servers.OmniSharp
 {
@@ -15,15 +17,22 @@ namespace WorkspaceServer.Servers.OmniSharp
     {
         public static async Task ProjectLoaded(
             this OmniSharpServer omniSharpServer,
-            TimeSpan? timeout = null) =>
-            await omniSharpServer.StandardOutput
-                                 .AsOmniSharpMessages()
-                                 .OfType<OmniSharpEventMessage<ProjectAdded>>()
-                                 .FirstAsync()
-                                 .Timeout(timeout ?? TimeSpan.FromSeconds(20));
+            TimeSpan? timeout = null)
+        {
+            using (var operation = Log.OnEnterAndConfirmOnExit())
+            {
+                await omniSharpServer.StandardOutput
+                                     .AsOmniSharpMessages()
+                                     .OfType<OmniSharpEventMessage<ProjectAdded>>()
+                                     .FirstAsync()
+                                     .Timeout(timeout ?? TimeSpan.FromSeconds(20));
 
-        public static async Task<FileInfo> FindFile(this OmniSharpServer omnisharp, string name) =>
-            (await omnisharp.GetWorkspaceInformation())
+                operation.Succeed();
+            }
+        }
+
+        public static async Task<FileInfo> FindFile(this OmniSharpServer omnisharp, string name, TimeSpan? timeout = null) =>
+            (await omnisharp.GetWorkspaceInformation(timeout))
             .Body
             .MSBuildSolution
             .Projects
@@ -98,17 +107,25 @@ namespace WorkspaceServer.Servers.OmniSharp
         public static Task<OmniSharpResponseMessage<CodeCheckResponse>> CodeCheck(
             this OmniSharpServer server,
             FileInfo file = null,
-            string buffer = null) =>
-            server.SendCommand<CodeCheck, CodeCheckResponse>(new CodeCheck(file, buffer));
+            string buffer = null,
+            TimeSpan? timeout = null) =>
+            server.SendCommand<CodeCheck, CodeCheckResponse>(new CodeCheck(file, buffer), timeout);
+
+        public static Task<OmniSharpResponseMessage<EmitResponse>> Emit(
+            this OmniSharpServer server,
+            TimeSpan? timeout = null) =>
+            server.SendCommand<Emit, EmitResponse>(new Emit(), timeout);
 
         public static Task<OmniSharpResponseMessage<WorkspaceInformationResponse>> GetWorkspaceInformation(
-            this OmniSharpServer server) =>
-            server.SendCommand<WorkspaceInformation, WorkspaceInformationResponse>();
+            this OmniSharpServer server,
+            TimeSpan? timeout = null) =>
+            server.SendCommand<WorkspaceInformation, WorkspaceInformationResponse>(timeout);
 
         public static Task UpdateBuffer(
             this OmniSharpServer server,
             FileInfo file,
-            string newText) =>
-            server.SendCommand<UpdateBuffer, bool>(new UpdateBuffer(file, newText));
+            string newText,
+            TimeSpan? timeout = null) =>
+            server.SendCommand<UpdateBuffer, bool>(new UpdateBuffer(file, newText), timeout);
     }
 }

@@ -85,23 +85,22 @@ namespace WorkspaceServer.Tests
         }
 
         [Fact]
-        public async Task Diagnostics_can_be_read_after_a_buffer_update()
+        public async Task CodeCheck_can_be_read_compilation_errors_after_a_buffer_update()
         {
             using (var omnisharp = StartOmniSharp(project.Value.Directory))
             {
-                await omnisharp.ProjectLoaded();
+                await omnisharp.ProjectLoaded(Default.Timeout());
 
-                var file = await omnisharp.FindFile("Program.cs");
+                var file = await omnisharp.FindFile("Program.cs", Default.Timeout());
 
                 var code = await file.ReadAsync();
 
                 await omnisharp.UpdateBuffer(
                     file,
-                    code.Replace(";", ""));
+                    code.Replace(";", ""),
+                    Default.Timeout());
 
-                var diagnostics = await omnisharp.CodeCheck(
-                                      file,
-                                      code.Replace(";", ""));
+                var diagnostics = await omnisharp.CodeCheck(timeout: Default.Timeout());
 
                 diagnostics.Body
                            .QuickFixes

@@ -1,7 +1,17 @@
+using System.Collections.Generic;
+
 namespace OmniSharp.Client.Commands
 {
     public class EmitResponse
     {
-        public string OutputAssemblyPath { get; set; }
+        public EmitResponse(string outputAssemblyPath, IReadOnlyCollection<Diagnostic> errors)
+        {
+            OutputAssemblyPath = outputAssemblyPath;
+            Errors = errors;
+        }
+
+        public string OutputAssemblyPath { get; }
+
+        public IReadOnlyCollection<Diagnostic> Errors { get; }
     }
 }

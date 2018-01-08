@@ -21,8 +21,8 @@ namespace WorkspaceServer.Servers.OmniSharp
             string pluginPath = null,
             bool logToPocketLogger = false)
         {
-            var standardOutput = new Subject<string>();
-            var standardError = new Subject<string>();
+            var standardOutput = new ReplaySubject<string>();
+            var standardError = new ReplaySubject<string>();
 
             StandardOutput = standardOutput;
             StandardError = standardError;

@@ -9,6 +9,6 @@ namespace OmniSharp.Client.Commands
         {
         }
 
-        public override string Command => "/codecheck";
+        public override string Command => CommandNames.CodeCheck;
     }
 }
