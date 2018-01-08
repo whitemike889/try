@@ -38,13 +38,12 @@ namespace WorkspaceServer.Models.Execution
                    : new[] { source };
 
         private static bool IsFragment(string source)
-            => source != null && !source.Contains("public static void Main(");
+            => source != null && !source.Contains("void Main(");
 
         private static string ScaffoldedSnippet(string source)
             => $"{UsingStatements} public static class Fragment {{ public static void Invoke() {{ {source} }} }}";
 
-        private const string UsingStatements = @"
-using System; using System.Collections.Generic; using System.Linq;";
+        private const string UsingStatements = @"using System; using System.Collections.Generic; using System.Linq;";
 
         private const string ProgramCs = UsingStatements + @"
 public class Program
