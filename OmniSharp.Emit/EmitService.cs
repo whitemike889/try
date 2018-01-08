@@ -35,7 +35,10 @@ namespace OmniSharp.Emit
 
             var compilation = await project.GetCompilationAsync();
 
-            var errors = compilation.GetDiagnostics().Where(d => d.Severity == DiagnosticSeverity.Error).ToArray();
+            var errors = compilation.GetDiagnostics()
+                                    .Where(d => d.Severity == DiagnosticSeverity.Error)
+                                    .Select(e => new Diagnostic(e))
+                                    .ToArray();
 
             if (!errors.Any())
             {
@@ -44,7 +47,7 @@ namespace OmniSharp.Emit
 
             return new EmitResponse
             {
-                Errors = errors.ToArray(),
+                Errors = errors,
                 OutputAssemblyPath = project.OutputFilePath
             };
         }
