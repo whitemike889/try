@@ -5,8 +5,6 @@ namespace WorkspaceServer.Models.Execution
 {
     public class RunRequest
     {
-        public string Language { get; }
-
         public string RawSource { get; }
 
         public string[] Sources { get; }
@@ -15,7 +13,6 @@ namespace WorkspaceServer.Models.Execution
 
         public RunRequest(string source, string[] usings = null)
         {
-            Language = "csharp";
             RawSource = source;
             Sources = GetSources(RawSource);
             Usings = usings ?? Array.Empty<string>();
