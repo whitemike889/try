@@ -62,26 +62,22 @@ namespace MLS.Agent.Tests
 
         [Theory]
         [InlineData("{}")]
+        public async Task Sending_payloads_that_dont_include_source_strings_results_in_BadRequest(string content)
+        {
+            var response = await CallRun(content);
+
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        }
+
+        [Theory]
         [InlineData("{")]
         [InlineData("")]
         [InlineData("garbage 1235")]
-        public async Task Sending_payloads_that_dont_include_source_strings_result_in_BadRequest(string content)
+        public async Task Sending_payloads_that_cannot_be_deserialized_results_in_BadRequest(string content)
         {
-            using (var agent = new AgentService())
-            {
-                var request = new HttpRequestMessage(
-                    HttpMethod.Post,
-                    @"/workspace/hello/compile")
-                {
-                    Content = new StringContent(
-                        content,
-                        Encoding.UTF8,
-                        "application/json")
-                };
+            var response = await CallRun(content);
 
-                var response = await agent.SendAsync(request);
-                response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-            }
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
 
         [Fact]
@@ -113,11 +109,33 @@ namespace MLS.Agent.Tests
             }
         }
 
+        private static async Task<HttpResponseMessage> CallRun(string content)
+        {
+            HttpResponseMessage response;
+            using (var agent = new AgentService())
+            {
+                var request = new HttpRequestMessage(
+                    HttpMethod.Post,
+                    @"/workspace/snippet/compile")
+                {
+                    Content = new StringContent(
+                        content,
+                        Encoding.UTF8,
+                        "application/json")
+                };
+
+                response = await agent.SendAsync(request);
+            }
+
+            return response;
+        }
+
         private class FailedRunResult : Exception
         {
             internal FailedRunResult(string message) : base(message)
             { }
         }
+
         private void VerifySucceeded(RunResult runResult)
         {
             if (!runResult.Succeeded)

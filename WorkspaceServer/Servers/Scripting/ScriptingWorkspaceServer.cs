@@ -56,7 +56,7 @@ namespace WorkspaceServer.Servers.Scripting
                 {
                     await Task.Run(async () =>
                     {
-                        var sourceLines = SourceFile.Create(request.RawSource).Text.Lines;
+                        var sourceLines = request.SourceFiles.Last().Text.Lines;
 
                         var buffer = new StringBuilder();
 

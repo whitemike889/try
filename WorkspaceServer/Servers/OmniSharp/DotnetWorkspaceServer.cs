@@ -31,7 +31,7 @@ namespace WorkspaceServer.Servers.OmniSharp
         {
             await _omniSharpServer.ProjectLoaded();
 
-            foreach (var sourceFile in request.GetSourceFiles())
+            foreach (var sourceFile in request.SourceFiles)
             {
                 var file = new FileInfo(Path.Combine(_project.Directory.FullName, sourceFile.Name));
 
