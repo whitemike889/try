@@ -25,6 +25,7 @@
 
   <ItemGroup>
     <Folder Include="Properties\" />
+    <Folder Include="Servers\Local\" />
   </ItemGroup>
 
   <ItemGroup>
