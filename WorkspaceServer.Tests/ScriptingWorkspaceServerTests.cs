@@ -20,6 +20,8 @@ namespace WorkspaceServer.Tests
         {
         }
 
+        protected override RunRequest CreateRunRequestContaining(string text) => new RunRequest(text);
+
         protected override IWorkspaceServer GetWorkspaceServer(
             int defaultTimeoutInSeconds = 10,
             [CallerMemberName] string testName = null) => new ScriptingWorkspaceServer(defaultTimeoutInSeconds);

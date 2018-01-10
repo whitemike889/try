@@ -19,6 +19,8 @@ namespace WorkspaceServer.Tests
             int defaultTimeoutInSeconds = 10,
             [CallerMemberName] string testName = null);
 
+        protected abstract RunRequest CreateRunRequestContaining(string text);
+
         public void Dispose() => disposables.Dispose();
 
         protected void RegisterForDisposal(IDisposable disposable) => disposables.Add(disposable);
@@ -30,7 +32,7 @@ namespace WorkspaceServer.Tests
             {
                 var server = GetWorkspaceServer();
 
-                var result = await server.Run(new RunRequest("Console.WriteLine(\"hi!\");"));
+                var result = await server.Run(CreateRunRequestContaining("Console.WriteLine(\"hi!\");"));
 
                 result.Output.Single().Should().Be("hi!");
             }
@@ -90,7 +92,7 @@ public static class Hello
         [Fact]
         public async Task Response_shows_program_output_when_compile_is_successful_and_signature_is_a_fragment_containing_console_output()
         {
-            var request = new RunRequest(@"
+            var request = CreateRunRequestContaining(@"
 var person = new { Name = ""Jeff"", Age = 20 };
 var s = $""{person.Name} is {person.Age} year(s) old"";
 Console.Write(s);");
@@ -105,7 +107,7 @@ Console.Write(s);");
         [Fact]
         public async Task When_compile_is_unsuccessful_then_no_exceptions_are_shown()
         {
-            var request = new RunRequest(@"
+            var request = CreateRunRequestContaining(@"
 Console.WriteLine(banana);");
 
             var server = GetWorkspaceServer();
@@ -123,7 +125,7 @@ Console.WriteLine(banana);");
         [Fact]
         public async Task Multi_line_console_output_is_captured_correctly()
         {
-            var request = new RunRequest(@"
+            var request = CreateRunRequestContaining(@"
 Console.WriteLine(1);
 Console.WriteLine(2);
 Console.WriteLine(3);
@@ -139,7 +141,7 @@ Console.WriteLine(4);");
         [Fact]
         public async Task Multi_line_console_output_is_captured_correctly_when_an_exception_is_thrown()
         {
-            var request = new RunRequest(@"
+            var request = CreateRunRequestContaining(@"
 Console.WriteLine(1);
 Console.WriteLine(2);
 throw new Exception(""oops!"");
@@ -158,7 +160,7 @@ Console.WriteLine(4);");
         [Fact]
         public async Task When_the_users_code_throws_on_first_line_then_it_is_returned_as_an_exception_property()
         {
-            var request = new RunRequest(@"throw new Exception(""oops!"");");
+            var request = CreateRunRequestContaining(@"throw new Exception(""oops!"");");
 
             var server = GetWorkspaceServer();
 
@@ -170,7 +172,7 @@ Console.WriteLine(4);");
         [Fact]
         public async Task When_the_users_code_throws_on_subsequent_line_then_it_is_returned_as_an_exception_property()
         {
-            var request = new RunRequest(@"
+            var request = CreateRunRequestContaining(@"
 throw new Exception(""oops!"");");
 
             var server = GetWorkspaceServer();
@@ -183,7 +185,7 @@ throw new Exception(""oops!"");");
         [Fact]
         public async Task Response_indicates_when_execution_times_out()
         {
-            var request = new RunRequest(@"while (true) {  }");
+            var request = CreateRunRequestContaining(@"while (true) {  }");
 
             var server = GetWorkspaceServer(1);
 

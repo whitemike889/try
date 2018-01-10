@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
+using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Servers.OmniSharp;
 using Xunit.Abstractions;
 
@@ -9,6 +10,15 @@ namespace WorkspaceServer.Tests
     {
         public DotnetWorkspaceServerTests(ITestOutputHelper output) : base(output)
         {
+        }
+
+        protected override RunRequest CreateRunRequestContaining(string text)
+        {
+            return new RunRequest(
+                $@"using System; using System.Linq; using System.Collections.Generic; class Program {{ static void Main() {{ {text}
+                    }}
+                }}
+");
         }
 
         protected override IWorkspaceServer GetWorkspaceServer(
