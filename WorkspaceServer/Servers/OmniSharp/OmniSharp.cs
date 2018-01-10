@@ -108,7 +108,7 @@ namespace WorkspaceServer.Servers.OmniSharp
             {
                 if (!_omniSharpExe.Exists)
                 {
-                    var zipFile = Download(new Uri($@"https://github.com/OmniSharp/omnisharp-roslyn/releases/download/v1.27.2/${file}"));
+                    var zipFile = Download(new Uri($@"https://github.com/OmniSharp/omnisharp-roslyn/releases/download/v1.27.2/{file}"));
 
                     using (var stream = zipFile.OpenRead())
                     using (var archive = new ZipArchive(stream, ZipArchiveMode.Read))
