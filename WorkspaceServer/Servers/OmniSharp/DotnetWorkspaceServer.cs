@@ -10,30 +10,30 @@ namespace WorkspaceServer.Servers.OmniSharp
 {
     public class DotnetWorkspaceServer : IWorkspaceServer, IDisposable
     {
-        private readonly Project _project;
+        private readonly Workspace workspace;
         private readonly OmniSharpServer _omniSharpServer;
 
-        public DotnetWorkspaceServer(Project project)
+        public DotnetWorkspaceServer(Workspace workspace)
         {
-            _project = project;
+            this.workspace = workspace;
 
-            _project.EnsureCreated("console");
+            this.workspace.EnsureCreated("console");
 
-            _project.EnsureBuilt();
+            this.workspace.EnsureBuilt();
 
             _omniSharpServer = new OmniSharpServer(
-                _project.Directory,
+                this.workspace.Directory,
                 Paths.EmitPlugin,
                 true);
         }
 
         public async Task<RunResult> Run(RunRequest request, TimeSpan? timeout = null)
         {
-            await _omniSharpServer.ProjectLoaded();
+            await _omniSharpServer.WorkspaceReady();
 
             foreach (var sourceFile in request.SourceFiles)
             {
-                var file = new FileInfo(Path.Combine(_project.Directory.FullName, sourceFile.Name));
+                var file = new FileInfo(Path.Combine(workspace.Directory.FullName, sourceFile.Name));
 
                 var text = sourceFile.Text.ToString();
 
@@ -54,7 +54,7 @@ namespace WorkspaceServer.Servers.OmniSharp
                     emitResponse.Body.Errors.Select(e => e.ToString()).ToArray());
             }
 
-            var dotnet = new Dotnet(_project.Directory, timeout);
+            var dotnet = new Dotnet(workspace.Directory, timeout);
 
             var result = dotnet.Execute(emitResponse.Body.OutputAssemblyPath);
 

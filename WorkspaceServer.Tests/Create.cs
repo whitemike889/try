@@ -6,15 +6,15 @@ namespace WorkspaceServer.Tests
 {
     internal static class Create
     {
-        private static readonly Lazy<Project> _templateProject = new Lazy<Project>(() =>
+        private static readonly Lazy<Workspace> _templateWorkspace = new Lazy<Workspace>(() =>
         {
-            var project = new Project("TestTemplate");
-            project.EnsureCreated("console");
-            project.EnsureBuilt();
-            return project;
+            var workspace = new Workspace("TestTemplate");
+            workspace.EnsureCreated("console");
+            workspace.EnsureBuilt();
+            return workspace;
         });
 
-        public static Project TempProject([CallerMemberName] string testName = null) =>
-            Project.Copy(_templateProject.Value, testName);
+        public static Workspace TestWorkspace([CallerMemberName] string testName = null) =>
+            Workspace.Copy(_templateWorkspace.Value, testName);
     }
 }

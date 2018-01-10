@@ -28,7 +28,7 @@ namespace WorkspaceServer.Tests
         {
             using (var omnisharp = StartOmniSharp())
             {
-                await omnisharp.ProjectLoaded();
+                await omnisharp.WorkspaceReady();
 
                 var response = await omnisharp.SendCommand<Emit, EmitResponse>(
                                    new Emit(), Default.Timeout());
@@ -42,7 +42,7 @@ namespace WorkspaceServer.Tests
         {
             using (var omnisharp = StartOmniSharp())
             {
-                await omnisharp.ProjectLoaded(Default.Timeout());
+                await omnisharp.WorkspaceReady(Default.Timeout());
 
                 var file = await omnisharp.FindFile("Program.cs");
 
@@ -60,7 +60,7 @@ namespace WorkspaceServer.Tests
 
         private OmniSharpServer StartOmniSharp() =>
             new OmniSharpServer(
-                Create.TempProject(nameof(EmitTests)).Directory,
+                Create.TestWorkspace(nameof(EmitTests)).Directory,
                 Paths.EmitPlugin,
                 logToPocketLogger: true);
 

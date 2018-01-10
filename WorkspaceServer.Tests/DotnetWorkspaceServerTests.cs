@@ -25,7 +25,7 @@ namespace WorkspaceServer.Tests
             int defaultTimeoutInSeconds = 10,
             [CallerMemberName] string testName = null)
         {
-            var project = Create.TempProject(testName);
+            var project = Create.TestWorkspace(testName);
 
             var workspaceServer = new DotnetWorkspaceServer(project);
 

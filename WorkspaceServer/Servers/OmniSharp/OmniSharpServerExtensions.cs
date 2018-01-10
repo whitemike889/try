@@ -15,7 +15,7 @@ namespace WorkspaceServer.Servers.OmniSharp
 {
     public static class OmniSharpServerExtensions
     {
-        public static async Task ProjectLoaded(
+        public static async Task WorkspaceReady(
             this OmniSharpServer omniSharpServer,
             TimeSpan? timeout = null)
         {

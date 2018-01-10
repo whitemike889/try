@@ -17,11 +17,11 @@ namespace WorkspaceServer.Tests
 {
     public class OmniSharpServerTests : IDisposable
     {
-        private static readonly Lazy<Project> project = new Lazy<Project>(() =>
+        private static readonly Lazy<Workspace> workspace = new Lazy<Workspace>(() =>
         {
-            var project = new Project(nameof(OmniSharpServerTests));
-            project.EnsureCreated("console");
-            return project;
+            var workspace = new Workspace(nameof(OmniSharpServerTests));
+            workspace.EnsureCreated("console");
+            return workspace;
         });
 
         private readonly CompositeDisposable disposables = new CompositeDisposable();
@@ -36,7 +36,7 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task OmniSharp_console_output_is_observable()
         {
-            using (var omnisharp = new OmniSharpServer(project.Value.Directory))
+            using (var omnisharp = new OmniSharpServer(workspace.Value.Directory))
             {
                 var observer = new Subject<string>();
 
@@ -54,7 +54,7 @@ namespace WorkspaceServer.Tests
 
             var omnisharpProcessCount = processCount();
 
-            using (new OmniSharpServer(project.Value.Directory))
+            using (new OmniSharpServer(workspace.Value.Directory))
             {
             }
 
@@ -66,7 +66,7 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task Omnisharp_loads_the_project_found_in_its_working_directory()
         {
-            using (var omnisharp = new OmniSharpServer(project.Value.Directory))
+            using (var omnisharp = new OmniSharpServer(workspace.Value.Directory))
             {
                 var output = new ConcurrentQueue<string>();
 
@@ -87,9 +87,9 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task CodeCheck_can_be_read_compilation_errors_after_a_buffer_update()
         {
-            using (var omnisharp = StartOmniSharp(project.Value.Directory))
+            using (var omnisharp = StartOmniSharp(workspace.Value.Directory))
             {
-                await omnisharp.ProjectLoaded(Default.Timeout());
+                await omnisharp.WorkspaceReady(Default.Timeout());
 
                 var file = await omnisharp.FindFile("Program.cs", Default.Timeout());
 
@@ -112,9 +112,9 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task Workspace_information_can_be_requested()
         {
-            using (var omnisharp = new OmniSharpServer(project.Value.Directory, logToPocketLogger: true))
+            using (var omnisharp = new OmniSharpServer(workspace.Value.Directory, logToPocketLogger: true))
             {
-                await omnisharp.ProjectLoaded();
+                await omnisharp.WorkspaceReady();
 
                 var response = await omnisharp.GetWorkspaceInformation();
 
@@ -140,7 +140,7 @@ namespace WorkspaceServer.Tests
 
         private OmniSharpServer StartOmniSharp(DirectoryInfo projectDirectory = null) =>
             new OmniSharpServer(
-                projectDirectory ?? project.Value.Directory,
+                projectDirectory ?? workspace.Value.Directory,
                 logToPocketLogger: true);
     }
 }

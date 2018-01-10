@@ -1,37 +1,37 @@
 ﻿using System;
 using System.IO;
 using Pocket;
-using static Pocket.Logger<MLS.Agent.Tools.Project>;
+using static Pocket.Logger<MLS.Agent.Tools.Workspace>;
 
 namespace MLS.Agent.Tools
 {
-    public class Project
+    public class Workspace
     {
-        static Project()
+        static Workspace()
         {
-            var omnisharpPathEnvironmentVariableName = "TRYDOTNET_PROJECTS_PATH";
+            var workspacesPathEnvironmentVariableName = "TRYDOTNET_WORKSPACES_PATH";
 
-            var environmentVariable = Environment.GetEnvironmentVariable(omnisharpPathEnvironmentVariableName);
+            var environmentVariable = Environment.GetEnvironmentVariable(workspacesPathEnvironmentVariableName);
 
-            DefaultProjectsDirectory =
+            DefaultWorkspacesDirectory =
                 environmentVariable != null
                     ? new DirectoryInfo(environmentVariable)
                     : new DirectoryInfo(
                         Path.Combine(
                             Paths.UserProfile,
                             ".trydotnet",
-                            "projects"));
+                            "workspaces"));
 
-            Log.Info("Projects path is {DefaultProjectsDirectory}", DefaultProjectsDirectory);
+            Log.Info("Workspaces path is {DefaultWorkspacesDirectory}", DefaultWorkspacesDirectory);
         }
 
-        public Project(string name) : this(
-            new DirectoryInfo(Path.Combine(DefaultProjectsDirectory.FullName, name)),
+        public Workspace(string name) : this(
+            new DirectoryInfo(Path.Combine(DefaultWorkspacesDirectory.FullName, name)),
             name)
         {
         }
 
-        public Project(DirectoryInfo directory, string name = null)
+        public Workspace(DirectoryInfo directory, string name = null)
         {
             Name = name ?? directory.Name;
             Directory = directory ?? throw new ArgumentNullException(nameof(directory));
@@ -47,7 +47,7 @@ namespace MLS.Agent.Tools
 
         public string Name { get; }
 
-        public static DirectoryInfo DefaultProjectsDirectory { get; }
+        public static DirectoryInfo DefaultWorkspacesDirectory { get; }
 
         public void EnsureCreated(string template, bool build = false)
         {
@@ -96,16 +96,16 @@ namespace MLS.Agent.Tools
             }
         }
 
-        public static Project Copy(
-            Project fromProject,
+        public static Workspace Copy(
+            Workspace fromWorkspace,
             string folderName = null)
         {
-            if (fromProject == null)
+            if (fromWorkspace == null)
             {
-                throw new ArgumentNullException(nameof(fromProject));
+                throw new ArgumentNullException(nameof(fromWorkspace));
             }
 
-            folderName = folderName ?? fromProject.Name;
+            folderName = folderName ?? fromWorkspace.Name;
 
             DirectoryInfo destination;
             var i = 0;
@@ -114,20 +114,20 @@ namespace MLS.Agent.Tools
             {
                 destination = new DirectoryInfo(
                     Path.Combine(
-                        fromProject
+                        fromWorkspace
                             .Directory
                             .Parent
                             .FullName,
                         $"{folderName}.{++i}"));
             } while (destination.Exists);
 
-            fromProject.Directory.CopyTo(destination);
+            fromWorkspace.Directory.CopyTo(destination);
 
-            var copy = new Project(destination,
-                                   folderName ?? fromProject.Name);
+            var copy = new Workspace(destination,
+                                     folderName ?? fromWorkspace.Name);
 
-            copy.IsCreated = fromProject.IsCreated;
-            copy.IsBuilt = fromProject.IsBuilt;
+            copy.IsCreated = fromWorkspace.IsCreated;
+            copy.IsBuilt = fromWorkspace.IsBuilt;
             copy.IsDirectoryCreated = true;
 
             return copy;
