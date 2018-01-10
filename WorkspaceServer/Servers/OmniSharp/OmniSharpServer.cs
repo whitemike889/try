@@ -11,7 +11,7 @@ namespace WorkspaceServer.Servers.OmniSharp
 {
     public class OmniSharpServer : IDisposable
     {
-        private static readonly Lazy<FileInfo> _omnisharpPath = new Lazy<FileInfo>(MLS.Agent.Tools.OmniSharp.GetPath);
+        private static readonly Lazy<FileInfo> _omniSharpPath = new Lazy<FileInfo>(MLS.Agent.Tools.OmniSharp.GetPath);
 
         private readonly CompositeDisposable disposables = new CompositeDisposable();
         private int seq;
@@ -28,7 +28,7 @@ namespace WorkspaceServer.Servers.OmniSharp
             StandardError = standardError;
 
             Process = CommandLine.StartProcess(
-                _omnisharpPath.Value.FullName,
+                _omniSharpPath.Value.FullName,
                 string.IsNullOrWhiteSpace(pluginPath)
                     ? ""
                     : $"-pl {pluginPath}",

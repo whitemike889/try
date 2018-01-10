@@ -26,11 +26,11 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task Console_app_project_can_be_emitted()
         {
-            using (var omnisharp = StartOmniSharp())
+            using (var omniSharp = StartOmniSharp())
             {
-                await omnisharp.WorkspaceReady();
+                await omniSharp.WorkspaceReady();
 
-                var response = await omnisharp.SendCommand<Emit, EmitResponse>(
+                var response = await omniSharp.SendCommand<Emit, EmitResponse>(
                                    new Emit(), Default.Timeout());
 
                 File.Exists(response.Body.OutputAssemblyPath).Should().BeTrue();
@@ -40,19 +40,19 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task Emitted_console_app_project_can_be_updated_and_rerun()
         {
-            using (var omnisharp = StartOmniSharp())
+            using (var omniSharp = StartOmniSharp())
             {
-                await omnisharp.WorkspaceReady(Default.Timeout());
+                await omniSharp.WorkspaceReady(Default.Timeout());
 
-                var file = await omnisharp.FindFile("Program.cs");
+                var file = await omniSharp.FindFile("Program.cs");
 
                 var code = await file.ReadAsync();
 
-                await omnisharp.UpdateBuffer(
+                await omniSharp.UpdateBuffer(
                     file,
                     code.Replace("Hello World", "Hola mundo"));
 
-                var (output, error) = await EmitAndRun(omnisharp);
+                var (output, error) = await EmitAndRun(omniSharp);
 
                 output.Should().Contain("Hola mundo!");
             }

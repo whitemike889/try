@@ -36,11 +36,11 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task OmniSharp_console_output_is_observable()
         {
-            using (var omnisharp = new OmniSharpServer(workspace.Value.Directory))
+            using (var omniSharp = new OmniSharpServer(workspace.Value.Directory))
             {
                 var observer = new Subject<string>();
 
-                using (omnisharp.StandardOutput.Subscribe(observer))
+                using (omniSharp.StandardOutput.Subscribe(observer))
                 {
                     await observer.FirstOrDefaultAsync().Timeout(5.Seconds());
                 }
@@ -66,15 +66,15 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task Omnisharp_loads_the_project_found_in_its_working_directory()
         {
-            using (var omnisharp = new OmniSharpServer(workspace.Value.Directory))
+            using (var omniSharp = new OmniSharpServer(workspace.Value.Directory))
             {
                 var output = new ConcurrentQueue<string>();
 
-                using (omnisharp.StandardOutput.Subscribe(s => output.Enqueue(s)))
+                using (omniSharp.StandardOutput.Subscribe(s => output.Enqueue(s)))
                 {
                     var projectName = $"{nameof(OmniSharpServerTests)}.csproj";
 
-                    await omnisharp
+                    await omniSharp
                           .StandardOutput
                           .FirstAsync(e => e.Contains(projectName))
                           .Timeout(5.Seconds());
@@ -87,20 +87,20 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task CodeCheck_can_be_read_compilation_errors_after_a_buffer_update()
         {
-            using (var omnisharp = StartOmniSharp(workspace.Value.Directory))
+            using (var omniSharp = StartOmniSharp(workspace.Value.Directory))
             {
-                await omnisharp.WorkspaceReady(Default.Timeout());
+                await omniSharp.WorkspaceReady(Default.Timeout());
 
-                var file = await omnisharp.FindFile("Program.cs", Default.Timeout());
+                var file = await omniSharp.FindFile("Program.cs", Default.Timeout());
 
                 var code = await file.ReadAsync();
 
-                await omnisharp.UpdateBuffer(
+                await omniSharp.UpdateBuffer(
                     file,
                     code.Replace(";", ""),
                     Default.Timeout());
 
-                var diagnostics = await omnisharp.CodeCheck(timeout: Default.Timeout());
+                var diagnostics = await omniSharp.CodeCheck(timeout: Default.Timeout());
 
                 diagnostics.Body
                            .QuickFixes
@@ -112,11 +112,11 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task Workspace_information_can_be_requested()
         {
-            using (var omnisharp = new OmniSharpServer(workspace.Value.Directory, logToPocketLogger: true))
+            using (var omniSharp = new OmniSharpServer(workspace.Value.Directory, logToPocketLogger: true))
             {
-                await omnisharp.WorkspaceReady();
+                await omniSharp.WorkspaceReady();
 
-                var response = await omnisharp.GetWorkspaceInformation();
+                var response = await omniSharp.GetWorkspaceInformation();
 
                 response.Success
                         .Should()

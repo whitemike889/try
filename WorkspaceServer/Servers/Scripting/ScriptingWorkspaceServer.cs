@@ -43,6 +43,10 @@ namespace WorkspaceServer.Servers.Scripting
             using (Log.OnEnterAndExit())
             using (var console = await ConsoleOutput.Capture())
             {
+                if (request.SourceFiles.Count != 1)
+                {
+                    throw new ArgumentException($"{nameof(request)} should have exactly one source file.");
+                }
 
                 var options = ScriptOptions.Default
                                            .AddReferences(GetReferenceAssemblies())
@@ -56,7 +60,7 @@ namespace WorkspaceServer.Servers.Scripting
                 {
                     await Task.Run(async () =>
                     {
-                        var sourceLines = request.SourceFiles.Last().Text.Lines;
+                        var sourceLines = request.SourceFiles.Single().Text.Lines;
 
                         var buffer = new StringBuilder();
 

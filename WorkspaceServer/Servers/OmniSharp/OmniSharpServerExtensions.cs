@@ -41,7 +41,7 @@ namespace WorkspaceServer.Servers.OmniSharp
             .Single(f => f.Name == name);
 
         public static async Task<OmniSharpResponseMessage> SendCommand(
-            this OmniSharpServer omnisharp,
+            this OmniSharpServer omniSharp,
             OmniSharpCommandMessage commandMessage,
             TimeSpan? timeout = null)
         {
@@ -50,9 +50,9 @@ namespace WorkspaceServer.Servers.OmniSharp
                 NullValueHandling = NullValueHandling.Ignore
             });
 
-            omnisharp.StandardInput.WriteLine(json);
+            omniSharp.StandardInput.WriteLine(json);
 
-            var received = await omnisharp.StandardOutput
+            var received = await omniSharp.StandardOutput
                                           .AsOmniSharpMessages()
                                           .OfType<OmniSharpResponseMessage>()
                                           .Where(m => m.Request_seq == commandMessage.Seq)
@@ -63,25 +63,25 @@ namespace WorkspaceServer.Servers.OmniSharp
         }
 
         public static async Task<OmniSharpResponseMessage<TResponse>> SendCommand<TCommand, TResponse>(
-            this OmniSharpServer omnisharp,
+            this OmniSharpServer omniSharp,
             TimeSpan? timeout = null,
             int? seq = null)
             where TCommand : class, IOmniSharpCommandArguments, new() =>
-            await omnisharp.SendCommand<TCommand, TResponse>(new TCommand(), timeout, seq);
+            await omniSharp.SendCommand<TCommand, TResponse>(new TCommand(), timeout, seq);
 
         public static async Task<OmniSharpResponseMessage<TResponse>> SendCommand<TCommand, TResponse>(
-            this OmniSharpServer omnisharp,
+            this OmniSharpServer omniSharp,
             TCommand command,
             TimeSpan? timeout = null,
             int? seq = null) where TCommand : class, IOmniSharpCommandArguments
         {
-            seq = seq ?? omnisharp.NextSeq();
+            seq = seq ?? omniSharp.NextSeq();
 
             var commandMessage = new OmniSharpCommandMessage<TCommand>(
                 command,
                 seq.Value);
 
-            var received = await omnisharp.SendCommand(
+            var received = await omniSharp.SendCommand(
                                commandMessage,
                                timeout);
 
