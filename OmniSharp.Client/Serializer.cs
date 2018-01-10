@@ -20,9 +20,9 @@ namespace OmniSharp.Client
 
         private class EventEnvelope
         {
-            public string Event;
-            public JObject Body;
-            public int Seq;
+            public string Event = null;
+            public JObject Body = null;
+            public int Seq = 0;
         }
     }
 }
