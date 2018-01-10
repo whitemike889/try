@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net46</TargetFramework>
+    <Version>1.27.3-beta4</Version>
+    <Authors />
+    <Company />
+    <Product />
+    <PackageId>TryDotNet.OmniSharp.Emit</PackageId>
+  </PropertyGroup>
+
+   <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="2.4.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="2.4.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="1.1.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="1.1.0" />
+  </ItemGroup>
+
+   <ItemGroup>
+     <ProjectReference Include="..\MLS.Agent.Tools\MLS.Agent.Tools.csproj" />
+   </ItemGroup>
+
+</Project>

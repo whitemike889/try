@@ -1,7 +1,7 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Pocket;
+using Recipes;
 using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Servers.Scripting;
@@ -9,6 +9,7 @@ using static Pocket.Logger<MLS.Agent.Controllers.WorkspaceController>;
 
 namespace MLS.Agent.Controllers
 {
+    [BadRequestOnInvalidModel]
     public class WorkspaceController : Controller
     {
         [HttpPost]
@@ -19,11 +20,6 @@ namespace MLS.Agent.Controllers
         {
             using (var operation = Log.ConfirmOnExit())
             {
-                if (request?.RawSource is null)
-                {
-                    return BadRequest();
-                }
-
                 var server = new ScriptingWorkspaceServer();
 
                 var result = await server.Run(request);

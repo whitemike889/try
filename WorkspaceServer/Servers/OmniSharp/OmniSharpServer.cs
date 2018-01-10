@@ -2,17 +2,24 @@
 using System.Diagnostics;
 using System.IO;
 using System.Reactive.Subjects;
-using External;
+using System.Threading;
+using MLS.Agent.Tools;
+using Pocket;
+using static Pocket.Logger<WorkspaceServer.Servers.OmniSharp.OmniSharpServer>;
 
 namespace WorkspaceServer.Servers.OmniSharp
 {
     public class OmniSharpServer : IDisposable
     {
-        private static readonly Lazy<FileInfo> _omnisharpPath = new Lazy<FileInfo>(OmniSharp.GetPath);
+        private static readonly Lazy<FileInfo> _omniSharpPath = new Lazy<FileInfo>(MLS.Agent.Tools.OmniSharp.GetPath);
 
-        private readonly Process _process;
+        private readonly CompositeDisposable disposables = new CompositeDisposable();
+        private int seq;
 
-        public OmniSharpServer(DirectoryInfo projectDirectory)
+        public OmniSharpServer(
+            DirectoryInfo projectDirectory,
+            string pluginPath = null,
+            bool logToPocketLogger = false)
         {
             var standardOutput = new ReplaySubject<string>();
             var standardError = new ReplaySubject<string>();
@@ -20,14 +27,24 @@ namespace WorkspaceServer.Servers.OmniSharp
             StandardOutput = standardOutput;
             StandardError = standardError;
 
-            _process = CommandLine.StartProcess(
-                _omnisharpPath.Value.FullName,
-                $"-lsp",
+            Process = CommandLine.StartProcess(
+                _omniSharpPath.Value.FullName,
+                string.IsNullOrWhiteSpace(pluginPath)
+                    ? ""
+                    : $"-pl {pluginPath}",
                 projectDirectory,
                 standardOutput.OnNext,
                 standardError.OnNext);
 
-            StandardInput = _process.StandardInput;
+            disposables.Add(() => Process.Kill());
+
+            if (logToPocketLogger)
+            {
+                disposables.Add(StandardOutput.Subscribe(e => Log.Info("{message}", args: e)));
+                disposables.Add(StandardError.Subscribe(e => Log.Error("{message}", args: e)));
+            }
+
+            StandardInput = Process.StandardInput;
         }
 
         public IObservable<string> StandardOutput { get; }
@@ -36,6 +53,10 @@ namespace WorkspaceServer.Servers.OmniSharp
 
         public StreamWriter StandardInput { get; }
 
-        public void Dispose() => _process.KillTree(5000);
+        public Process Process { get; }
+
+        public void Dispose() => disposables.Dispose();
+
+        public int NextSeq() => Interlocked.Increment(ref seq);
     }
 }

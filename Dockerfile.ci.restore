@@ -1,10 +1,16 @@
 FROM mls-ls/dependencies
 WORKDIR /app
-RUN mkdir MLS.Agent && mkdir MLS.Agent.Tests && mkdir OmniSharp.Client && mkdir WorkspaceServer && mkdir WorkspaceServer.Tests
+RUN mkdir MLS.Agent && \
+    mkdir MLS.Agent.Tests && \
+    mkdir MLS.Agent.Tools && \
+    mkdir OmniSharp.Client && \
+    mkdir WorkspaceServer && \
+    mkdir WorkspaceServer.Tests
 COPY NuGet.Config .
 COPY MLS-LS.sln .
 COPY MLS.Agent/MLS.Agent.csproj MLS.Agent/MLS.Agent.csproj
 COPY MLS.Agent.Tests/MLS.Agent.Tests.csproj MLS.Agent.Tests/MLS.Agent.Tests.csproj
+COPY MLS.Agent.Tools/MLS.Agent.Tools.csproj MLS.Agent.Tools/MLS.Agent.Tools.csproj
 COPY OmniSharp.Client/OmniSharp.Client.csproj OmniSharp.Client/OmniSharp.Client.csproj
 COPY WorkspaceServer/WorkspaceServer.csproj WorkspaceServer/WorkspaceServer.csproj
 COPY WorkspaceServer.Tests/WorkspaceServer.Tests.csproj WorkspaceServer.Tests/WorkspaceServer.Tests.csproj

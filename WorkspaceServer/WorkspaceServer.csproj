@@ -6,18 +6,31 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.Scripting" Version="2.4.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Features" Version="2.4.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Scripting" Version="2.6.1" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Features" Version="2.6.1" />
     <PackageReference Include="NewtonSoft.Json" Version="10.0.3" />
+    <PackageReference Include="pocket.disposable" Version="1.0.3">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="pocketlogger" Version="0.2.8">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="PocketLogger.For.MicrosoftExtensionsLogging" Version="0.1.2">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="System.Reactive" Version="3.1.1" />
     <PackageReference Include="System.Runtime.Loader" Version="4.3.0" />
+    <PackageReference Include="TryDotNet.OmniSharp.Emit" Version="1.27.3-beta4" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Properties\" />
+    <Folder Include="Servers\Local\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MLS.Agent.Tools\MLS.Agent.Tools.csproj" />
+    <ProjectReference Include="..\OmniSharp.Client\OmniSharp.Client.csproj" />
   </ItemGroup>
 
 </Project>

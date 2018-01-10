@@ -176,3 +176,5 @@ $RECYCLE.BIN/
 
 # Rider
 .idea/
+
+*.DotSettings

@@ -1,14 +1,45 @@
-﻿using System.Linq;
+﻿using System;
+using FluentAssertions;
+using System.Linq;
+using FluentAssertions.Execution;
 using WorkspaceServer.Models.Execution;
 
 namespace WorkspaceServer.Tests
 {
-    static class RunResultExtensions
+    public static class RunResultExtensions
     {
-        public static RunResult WithExceptionStacktraceRemoved(this RunResult result)
+        public static void ShouldSucceedWithOutput(this RunResult result, params string[] output)
         {
-            var exception = result.Exception.Replace("\r\n", "\n").Split('\n').First();
-            return new RunResult(result.Succeeded, result.Output, result.ReturnValue, exception, result.Variables);
+            result.ShouldBeEquivalentTo(new
+            {
+                Succeeded = true,
+                Output = output,
+                Exception = (string) null
+            }, config => config.ExcludingMissingMembers());
+        }
+
+        public static void ShouldSucceedWithNoOutput(this RunResult result) =>
+            result.ShouldSucceedWithOutput(Array.Empty<string>());
+
+        public static void ShouldFailWithExceptionContaining(this RunResult result, string text, params string[] output)
+        {
+            using (new AssertionScope("result"))
+            {
+                result.Succeeded.Should().BeFalse();
+                result.Output.Should().NotBeNull();
+                result.Output.ShouldBeEquivalentTo(output);
+                result.Exception.Should().Contain(text);
+            }
+        }
+
+        public static void ShouldSucceedWithExceptionContaining(this RunResult result, string text, params string[] output)
+        {
+            using (new AssertionScope("result"))
+            {
+                result.Succeeded.Should().BeTrue();
+                result.Output.ShouldBeEquivalentTo(output);
+                result.Exception.Should().Contain(text);
+            }
         }
     }
 }

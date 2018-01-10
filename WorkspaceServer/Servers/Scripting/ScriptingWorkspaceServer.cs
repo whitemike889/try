@@ -20,7 +20,11 @@ namespace WorkspaceServer.Servers.Scripting
 {
     public class ScriptingWorkspaceServer : IWorkspaceServer
     {
+#if DEBUG
+        public const int DefaultTimeoutInSeconds = 10;
+#else
         public const int DefaultTimeoutInSeconds = 5;
+#endif
 
         private readonly TimeSpan _defaultTimeout;
 
@@ -39,6 +43,11 @@ namespace WorkspaceServer.Servers.Scripting
             using (Log.OnEnterAndExit())
             using (var console = await ConsoleOutput.Capture())
             {
+                if (request.SourceFiles.Count != 1)
+                {
+                    throw new ArgumentException($"{nameof(request)} should have exactly one source file.");
+                }
+
                 var options = ScriptOptions.Default
                                            .AddReferences(GetReferenceAssemblies())
                                            .AddImports(GetDefultUsings().Concat(request.Usings));
@@ -51,7 +60,7 @@ namespace WorkspaceServer.Servers.Scripting
                 {
                     await Task.Run(async () =>
                     {
-                        var sourceLines = SourceFile.Create(request.RawSource).Text.Lines;
+                        var sourceLines = request.SourceFiles.Single().Text.Lines;
 
                         var buffer = new StringBuilder();
 
@@ -105,10 +114,11 @@ namespace WorkspaceServer.Servers.Scripting
                 }
 
                 return new RunResult(
-                    succeeded: exception == null,
+                    succeeded: !(exception is TimeoutException) &&
+                               !(exception is CompilationErrorException),
                     output: console.StandardOutput
                                    .Replace("\r\n", "\n")
-                                   .Split('\n', StringSplitOptions.RemoveEmptyEntries),
+                                   .Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries),
                     returnValue: state?.ReturnValue,
                     exception: ToDisplayString(exception ?? state?.Exception),
                     variables: variables.Values);
@@ -151,7 +161,7 @@ namespace WorkspaceServer.Servers.Scripting
                       options)
                 : await state.ContinueWithAsync(
                       buffer.ToString(),
-                      catchException: ex => true);
+                      catchException: ex => false);
 
         private static Assembly[] GetReferenceAssemblies() =>
             new[]
