@@ -74,7 +74,7 @@ namespace OmniSharp.Client
         {
             public string Event = null;
             public string Type = null;
-            public JObject Body = null;
+            public JToken Body = null;
             public int Seq = 0;
             public bool Success = false;
             public int Request_seq = 0;
