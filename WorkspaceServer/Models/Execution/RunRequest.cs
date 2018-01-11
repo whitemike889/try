@@ -10,7 +10,7 @@ namespace WorkspaceServer.Models.Execution
         {
             SourceFiles = string.IsNullOrWhiteSpace(source)
                               ? Array.Empty<SourceFile>()
-                              : new[] { SourceFile.Create(source,  "Program.cs") };
+                              : new[] { SourceFile.Create(source, "Program.cs") };
 
             Usings = usings ?? Array.Empty<string>();
         }
