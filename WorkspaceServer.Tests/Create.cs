@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using MLS.Agent.Tools;
 
 namespace WorkspaceServer.Tests
@@ -9,7 +10,7 @@ namespace WorkspaceServer.Tests
         private static readonly Lazy<Workspace> _templateWorkspace = new Lazy<Workspace>(() =>
         {
             var workspace = new Workspace("TestTemplate");
-            workspace.EnsureCreated("console");
+            Task.Run(() => workspace.EnsureCreated()).Wait();
             workspace.EnsureBuilt();
             return workspace;
         });

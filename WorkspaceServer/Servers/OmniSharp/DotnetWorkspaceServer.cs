@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using MLS.Agent.Tools;
@@ -14,25 +15,53 @@ namespace WorkspaceServer.Servers.OmniSharp
     public class DotnetWorkspaceServer : IWorkspaceServer, IDisposable
     {
         private readonly Workspace workspace;
-        private readonly OmniSharpServer _omniSharpServer;
+        private OmniSharpServer _omniSharpServer;
+        
+        private const int NOT_INITIALIZED = 0;
+        private const int INITIALIZED = 1;
+        private int _initialized = NOT_INITIALIZED;
 
         public DotnetWorkspaceServer(Workspace workspace)
         {
-            this.workspace = workspace;
+            this.workspace = workspace ?? throw new ArgumentNullException(nameof(workspace));
+        }
 
-            this.workspace.EnsureCreated("console");
+        public async Task EnsureInitialized()
+        {
+            if (Interlocked.CompareExchange(ref _initialized, INITIALIZED , NOT_INITIALIZED) == NOT_INITIALIZED)
+            {
+                await workspace.EnsureCreated();
 
-            this.workspace.EnsureBuilt();
+                workspace.EnsureBuilt();
 
-            _omniSharpServer = new OmniSharpServer(
-                this.workspace.Directory,
-                Paths.EmitPlugin,
-                true);
+                _omniSharpServer = new OmniSharpServer(
+                    workspace.Directory,
+                    Paths.EmitPlugin,
+                    true);
+
+                await _omniSharpServer.WorkspaceReady();
+            }
         }
 
         public async Task<RunResult> Run(RunRequest request, TimeSpan? timeout = null)
         {
-            var emitResponse = await Emit(request, timeout);
+            await EnsureInitialized();
+
+            foreach (var sourceFile in request.SourceFiles)
+            {
+                var file = new FileInfo(Path.Combine(workspace.Directory.FullName, sourceFile.Name));
+
+                var text = sourceFile.Text.ToString();
+
+                if (!file.Exists)
+                {
+                    File.WriteAllText(file.FullName, text);
+                }
+
+                await _omniSharpServer.UpdateBuffer(file, text);
+            }
+
+            var emitResponse = await _omniSharpServer.Emit(timeout);
 
             if (emitResponse.Body.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error))
             {
@@ -94,7 +123,6 @@ namespace WorkspaceServer.Servers.OmniSharp
             throw new NotImplementedException();
         }
 
-        public void Dispose() => _omniSharpServer.Dispose();
         public async Task<DiagnosticResult> GetDiagnostics(RunRequest request)
         {
             var emitResult = await Emit(request, timeout: null);
@@ -102,5 +130,6 @@ namespace WorkspaceServer.Servers.OmniSharp
             return new DiagnosticResult(diagnostics);
         }
 
+        public void Dispose() => _omniSharpServer?.Dispose();
     }
 }

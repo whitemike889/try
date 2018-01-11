@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Threading.Tasks;
 using Pocket;
 using static Pocket.Logger<MLS.Agent.Tools.Workspace>;
 
@@ -25,16 +26,25 @@ namespace MLS.Agent.Tools
             Log.Info("Workspaces path is {DefaultWorkspacesDirectory}", DefaultWorkspacesDirectory);
         }
 
-        public Workspace(string name) : this(
+        private readonly IWorkspaceInitializer _initializer;
+
+        public Workspace(
+            string name,
+            IWorkspaceInitializer initializer = null) : this(
             new DirectoryInfo(Path.Combine(DefaultWorkspacesDirectory.FullName, name)),
-            name)
+            name,
+            initializer)
         {
         }
 
-        public Workspace(DirectoryInfo directory, string name = null)
+        public Workspace(
+            DirectoryInfo directory,
+            string name = null,
+            IWorkspaceInitializer initializer = null)
         {
             Name = name ?? directory.Name;
             Directory = directory ?? throw new ArgumentNullException(nameof(directory));
+            _initializer = initializer ?? new DotnetWorkspaceInitializer("console", Name);
         }
 
         private bool IsDirectoryCreated { get; set; }
@@ -49,7 +59,7 @@ namespace MLS.Agent.Tools
 
         public static DirectoryInfo DefaultWorkspacesDirectory { get; }
 
-        public void EnsureCreated(string template, bool build = false)
+        public async Task EnsureCreated(bool build = false)
         {
             if (!IsDirectoryCreated)
             {
@@ -68,10 +78,7 @@ namespace MLS.Agent.Tools
             {
                 if (Directory.GetFiles().Length == 0)
                 {
-                    var dotnet = new Dotnet(Directory);
-                    dotnet
-                        .New(template, args: $"--name \"{Name}\" --output \"{Directory.FullName}\"")
-                        .ThrowOnFailure();
+                    await _initializer.Initialize(Directory);
 
                     if (build)
                     {
@@ -124,7 +131,8 @@ namespace MLS.Agent.Tools
             fromWorkspace.Directory.CopyTo(destination);
 
             var copy = new Workspace(destination,
-                                     folderName ?? fromWorkspace.Name);
+                                     folderName ?? fromWorkspace.Name,
+                                     fromWorkspace._initializer);
 
             copy.IsCreated = fromWorkspace.IsCreated;
             copy.IsBuilt = fromWorkspace.IsBuilt;
