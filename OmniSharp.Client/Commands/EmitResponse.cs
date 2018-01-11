@@ -4,14 +4,14 @@ namespace OmniSharp.Client.Commands
 {
     public class EmitResponse
     {
-        public EmitResponse(string outputAssemblyPath, IReadOnlyCollection<Diagnostic> errors)
+        public EmitResponse(string outputAssemblyPath, IReadOnlyCollection<Diagnostic> diagnostics)
         {
             OutputAssemblyPath = outputAssemblyPath;
-            Errors = errors;
+            Diagnostics = diagnostics;
         }
 
         public string OutputAssemblyPath { get; }
 
-        public IReadOnlyCollection<Diagnostic> Errors { get; }
+        public IReadOnlyCollection<Diagnostic> Diagnostics { get; }
     }
 }

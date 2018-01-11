@@ -3,6 +3,7 @@ using FluentAssertions;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
 using Pocket;
 using WorkspaceServer.Models.Execution;
 using Xunit;
@@ -277,6 +278,53 @@ public static class Hello
             var result = await server.Run(request);
 
             result.ShouldSucceedWithOutput("Hello there!");
+        }
+
+        [Fact]
+        public async Task Response_shows_warnings_with_successful_compilation()
+        {
+            var output = nameof(Response_shows_warnings_with_successful_compilation);
+
+            var request = new RunRequest($@"
+using System;
+using System;
+public static class Hello
+{{
+    public static void Main()
+    {{
+        Console.WriteLine(""{output}"");
+    }}
+}}");
+
+            var server = GetWorkspaceServer();
+
+            var result = await server.Run(request);
+
+            result.Diagnostics.Should().Contain(d => d.Severity == DiagnosticSeverity.Warning);
+
+        }
+
+        [Fact]
+        public async Task Response_shows_warnings_when_compilation_fails()
+        {
+            var output = nameof(Response_shows_warnings_when_compilation_fails);
+
+            var request = new RunRequest($@"
+using System;
+using System;
+public static class Hello
+{{
+    public static void Main()
+    {{
+        Console.WriteLine(""{output}"")
+    }}
+}}");
+
+            var server = GetWorkspaceServer();
+
+            var result = await server.Run(request);
+
+            result.Diagnostics.Should().Contain(d => d.Severity == DiagnosticSeverity.Warning);
         }
     }
 }

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using OmniSharp.Mef;
+using Diagnostic = MLS.Agent.Tools.Diagnostic;
 
 namespace OmniSharp.Emit
 {
@@ -35,19 +36,18 @@ namespace OmniSharp.Emit
 
             var compilation = await project.GetCompilationAsync();
 
-            var errors = compilation.GetDiagnostics()
-                                    .Where(d => d.Severity == DiagnosticSeverity.Error)
-                                    .Select(e => new Diagnostic(e))
-                                    .ToArray();
+            var diagnostics = compilation.GetDiagnostics()
+                                         .Select(e => new Diagnostic(e))
+                                         .ToArray();
 
-            if (!errors.Any())
+            if (!diagnostics.Any(e => e.Severity == DiagnosticSeverity.Error))
             {
                 compilation.Emit(project.OutputFilePath);
             }
 
             return new EmitResponse
             {
-                Errors = errors,
+                Diagnostics = diagnostics,
                 OutputAssemblyPath = project.OutputFilePath
             };
         }

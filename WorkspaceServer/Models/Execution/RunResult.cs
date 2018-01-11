@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using OmniSharp.Client;
 
 namespace WorkspaceServer.Models.Execution
 {
@@ -10,14 +11,18 @@ namespace WorkspaceServer.Models.Execution
             IReadOnlyCollection<string> output,
             object returnValue = null,
             string exception = null,
-            IReadOnlyCollection<Variable> variables = null)
+            IReadOnlyCollection<Variable> variables = null,
+            IReadOnlyCollection<Diagnostic> diagnostics = null)
         {
             Output = output ?? throw new ArgumentNullException(nameof(output));
             Succeeded = succeeded;
             Exception = exception;
             Variables = variables ?? Array.Empty<Variable>();
             ReturnValue = returnValue;
+            Diagnostics = diagnostics ?? Array.Empty<Diagnostic>();
         }
+
+        public IReadOnlyCollection<Diagnostic> Diagnostics { get; set; }
 
         public bool Succeeded { get; }
 
@@ -30,7 +35,7 @@ namespace WorkspaceServer.Models.Execution
         public string Exception { get; }
 
         public override string ToString() =>
-$@"{nameof(Succeeded)}: {Succeeded}
+            $@"{nameof(Succeeded)}: {Succeeded}
 {nameof(ReturnValue)}: {ReturnValue}
 {nameof(Output)}: {string.Join("\n", Output)}
 {nameof(Exception)}: {Exception}";

@@ -2,9 +2,11 @@
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
 using MLS.Agent.Tools;
 using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
+using Workspace = MLS.Agent.Tools.Workspace;
 
 namespace WorkspaceServer.Servers.OmniSharp
 {
@@ -47,11 +49,16 @@ namespace WorkspaceServer.Servers.OmniSharp
 
             var emitResponse = await _omniSharpServer.Emit(timeout);
 
-            if (emitResponse.Body.Errors.Any())
+            if (emitResponse.Body.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error))
             {
                 return new RunResult(
                     false,
-                    emitResponse.Body.Errors.Select(e => e.ToString()).ToArray());
+                    emitResponse.Body
+                                .Diagnostics
+                                .Where(d => d.Severity == DiagnosticSeverity.Error)
+                                .Select(e => e.ToString())
+                                .ToArray(),
+                    diagnostics: emitResponse.Body.Diagnostics);
             }
 
             var dotnet = new Dotnet(workspace.Directory, timeout);
@@ -72,7 +79,8 @@ namespace WorkspaceServer.Servers.OmniSharp
             return new RunResult(
                 succeeded: !(result.Exception is TimeoutException),
                 output: result.Output,
-                exception: exceptionMessage);
+                exception: exceptionMessage,
+                diagnostics: emitResponse.Body.Diagnostics);
         }
 
         public async Task<CompletionResult> GetCompletionList(CompletionRequest request)
