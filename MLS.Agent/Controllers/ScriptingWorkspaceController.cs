@@ -1,18 +1,17 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Pocket;
-using Recipes;
 using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Servers.Scripting;
-using static Pocket.Logger<MLS.Agent.Controllers.WorkspaceController>;
+using static Pocket.Logger<MLS.Agent.Controllers.ScriptingWorkspaceController>;
 
 namespace MLS.Agent.Controllers
 {
-    public class WorkspaceController : Controller
+    public class ScriptingWorkspaceController : Controller
     {
         [HttpPost]
-        [Route("/workspace/{workspaceId}/compile")]
+        [Route("/workspace/snippet/compile")]
         public async Task<IActionResult> Run(
             string workspaceId,
             [FromBody] RunRequest request)

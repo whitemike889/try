@@ -20,14 +20,20 @@ namespace WorkspaceServer.Servers.OmniSharp
         private const int NOT_INITIALIZED = 0;
         private const int INITIALIZED = 1;
         private int _initialized = NOT_INITIALIZED;
+        private bool _disposed;
 
         public DotnetWorkspaceServer(Workspace workspace)
         {
             this.workspace = workspace ?? throw new ArgumentNullException(nameof(workspace));
         }
 
-        public async Task EnsureInitialized()
+        public async Task EnsureInitializedAndNotDisposed()
         {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(nameof(DotnetWorkspaceServer));
+            }
+
             if (Interlocked.CompareExchange(ref _initialized, INITIALIZED , NOT_INITIALIZED) == NOT_INITIALIZED)
             {
                 await workspace.EnsureCreated();
@@ -45,7 +51,7 @@ namespace WorkspaceServer.Servers.OmniSharp
 
         public async Task<RunResult> Run(RunRequest request, TimeSpan? timeout = null)
         {
-            await EnsureInitialized();
+            await EnsureInitializedAndNotDisposed();
 
             foreach (var sourceFile in request.SourceFiles)
             {
@@ -130,6 +136,13 @@ namespace WorkspaceServer.Servers.OmniSharp
             return new DiagnosticResult(diagnostics);
         }
 
-        public void Dispose() => _omniSharpServer?.Dispose();
+        public void Dispose()
+        {
+            if (!_disposed)
+            {
+                _disposed = true;
+                _omniSharpServer?.Dispose();
+            }
+        }
     }
 }

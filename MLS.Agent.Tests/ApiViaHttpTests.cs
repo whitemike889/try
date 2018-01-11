@@ -1,15 +1,17 @@
 using System;
+using FluentAssertions;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using FluentAssertions;
 using Newtonsoft.Json;
 using Pocket;
 using Recipes;
+using WorkspaceServer;
 using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
+using WorkspaceServer.Tests;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -27,37 +29,45 @@ namespace MLS.Agent.Tests
         public void Dispose() => disposables.Dispose();
 
         [Fact]
-        public async Task When_they_load_a_snippet_then_they_can_use_the_workspace_endpoint_to_compile_their_edited_code()
+        public async Task The_workspace_snippet_endpoint_compiles_code_using_scripting()
         {
             var output = Guid.NewGuid().ToString();
-
-            using (var agent = new AgentService())
+            var code = JsonConvert.SerializeObject(new
             {
-                var request = new HttpRequestMessage(
-                    HttpMethod.Post,
-                    @"/workspace/hello/compile")
-                {
-                    Content = new StringContent(
-                        JsonConvert.SerializeObject(new
-                        {
-                            Source = $@"Console.WriteLine(""{output}"");"
-                        }),
-                        Encoding.UTF8,
-                        "application/json")
-                };
+                Source = $@"Console.WriteLine(""{output}"");"
+            });
 
-                var response = await agent.SendAsync(request);
+            var response = await CallRun(code, "snippet");
 
-                var result = await response
-                                 .EnsureSuccess()
-                                 .DeserializeAs<RunResult>();
+            var result = await response
+                               .EnsureSuccess()
+                               .DeserializeAs<RunResult>();
 
-                VerifySucceeded(result);
+            VerifySucceeded(result);
 
-                result.Output
-                      .Should()
-                      .ContainSingle(s => s == output);
-            }
+            result.ShouldSucceedWithOutput(output);
+        }
+
+        [Fact]
+        public async Task The_workspace_endpoint_compiles_code_using_dotnet_when_a_workspace_id_is_specified()
+        {
+            var workspaceId = Guid.NewGuid().ToString("N");
+            var registry = new WorkspaceServerRegistry();
+            registry.AddWorkspace(workspaceId, o => o.CreateUsingDotnet("console"));
+            disposables.Add(registry);
+
+            var output = Guid.NewGuid().ToString("N");
+            var code = Create.SimpleRunRequestJson(output);
+
+            var response = await CallRun(code, workspaceId, registry);
+
+            var result = await response
+                               .EnsureSuccess()
+                               .DeserializeAs<RunResult>();
+
+            VerifySucceeded(result);
+
+            result.ShouldSucceedWithOutput(output);
         }
 
         [Fact]
@@ -98,7 +108,7 @@ namespace MLS.Agent.Tests
         [InlineData("{}")]
         public async Task Sending_payloads_that_dont_include_source_strings_results_in_BadRequest(string content)
         {
-            var response = await CallRun(content);
+            var response = await CallRun(content, "snippet");
 
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
@@ -109,7 +119,7 @@ namespace MLS.Agent.Tests
         [InlineData("garbage 1235")]
         public async Task Sending_payloads_that_cannot_be_deserialized_results_in_BadRequest(string content)
         {
-            var response = await CallRun(content);
+            var response = await CallRun(content, "snippet");
 
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
@@ -121,7 +131,7 @@ namespace MLS.Agent.Tests
             {
                 var request = new HttpRequestMessage(
                     HttpMethod.Post,
-                    @"/workspace/hello/getCompletionItems")
+                    @"/workspace/snippet/getCompletionItems")
                 {
                     Content = new StringContent(
                         JsonConvert.SerializeObject(new
@@ -136,21 +146,24 @@ namespace MLS.Agent.Tests
                 var response = await agent.SendAsync(request);
 
                 var result = await response
-                                 .EnsureSuccess()
-                                 .DeserializeAs<CompletionResult>();
+                                   .EnsureSuccess()
+                                   .DeserializeAs<CompletionResult>();
 
                 result.Items.Should().ContainSingle(item => item.DisplayText == "WriteLine");
             }
         }
 
-        private static async Task<HttpResponseMessage> CallRun(string content)
+        private static async Task<HttpResponseMessage> CallRun(
+            string content, 
+            string workspaceId,
+            WorkspaceServerRegistry workspaceServerRegistry = null)
         {
             HttpResponseMessage response;
-            using (var agent = new AgentService())
+            using (var agent = new AgentService(workspaceServerRegistry))
             {
                 var request = new HttpRequestMessage(
                     HttpMethod.Post,
-                    @"/workspace/snippet/compile")
+                    $@"/workspace/{workspaceId}/compile")
                 {
                     Content = new StringContent(
                         content,
@@ -167,7 +180,8 @@ namespace MLS.Agent.Tests
         private class FailedRunResult : Exception
         {
             internal FailedRunResult(string message) : base(message)
-            { }
+            {
+            }
         }
 
         private void VerifySucceeded(RunResult runResult)
