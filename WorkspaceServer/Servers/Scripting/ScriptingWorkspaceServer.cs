@@ -55,7 +55,7 @@ namespace WorkspaceServer.Servers.Scripting
                 ScriptState<object> state = null;
                 var variables = new Dictionary<string, Variable>();
                 Exception exception = null;
-
+                List<Diagnostic> accumulatedDiagnostics = new List<Diagnostic>();
                 try
                 {
                     await Task.Run(async () =>
@@ -80,6 +80,10 @@ namespace WorkspaceServer.Servers.Scripting
 
                                 CaptureVariableState(state, variables, lineNumber);
 
+                                accumulatedDiagnostics.Clear();
+                                accumulatedDiagnostics.AddRange(
+                                    state.Script.GetCompilation().GetDiagnostics());
+
                                 if (index == sourceLines.Count - 1 &&
                                     console.IsEmpty())
                                 {
@@ -88,6 +92,8 @@ namespace WorkspaceServer.Servers.Scripting
                             }
                             catch (CompilationErrorException ex)
                             {
+                                accumulatedDiagnostics.AddRange(ex.Diagnostics);
+
                                 if (lineNumber == sourceLines.Count)
                                 {
                                     exception = ex;
@@ -122,9 +128,7 @@ namespace WorkspaceServer.Servers.Scripting
                     returnValue: state?.ReturnValue,
                     exception: ToDisplayString(exception ?? state?.Exception),
                     variables: variables.Values,
-                    diagnostics: state?.Script
-                                      .GetCompilation()
-                                      .GetDiagnostics()
+                    diagnostics: accumulatedDiagnostics
                                       .Select(d => new MLS.Agent.Tools.Diagnostic(d).ToJson().FromJsonTo<global::OmniSharp.Client.Diagnostic>())
                                       .ToArray()); // saves a lot of time writing constructors);
             }

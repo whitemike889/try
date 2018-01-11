@@ -60,6 +60,39 @@ namespace MLS.Agent.Tests
             }
         }
 
+        [Fact]
+        public async Task When_they_load_a_snippet_then_they_get_diagnostics_for_the_first_line()
+        {
+            var output = Guid.NewGuid().ToString();
+
+            using (var agent = new AgentService())
+            {
+                var request = new HttpRequestMessage(
+                    HttpMethod.Post,
+                    @"/workspace/snippet/compile")
+                {
+                    Content = new StringContent(
+                        JsonConvert.SerializeObject(new
+                        {
+                            Source = $@"Console.WriteLine(""{output}"""
+                        }),
+                        Encoding.UTF8,
+                        "application/json")
+                };
+
+                var response = await agent.SendAsync(request);
+
+                var result = await response
+                                 .EnsureSuccess()
+                                 .DeserializeAs<RunResult>();
+
+                result.Diagnostics.Should().Contain(d =>
+                    d.Location.SourceSpan.Start == 56 &&
+                    d.Location.SourceSpan.End == 56 &&
+                    d.Message == ") expected");
+            }
+        }
+
         [Theory]
         [InlineData("{}")]
         public async Task Sending_payloads_that_dont_include_source_strings_results_in_BadRequest(string content)
