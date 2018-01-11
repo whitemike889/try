@@ -55,7 +55,6 @@ namespace WorkspaceServer.Servers.Scripting
                 ScriptState<object> state = null;
                 var variables = new Dictionary<string, Variable>();
                 Exception exception = null;
-                List<Diagnostic> accumulatedDiagnostics = new List<Diagnostic>();
                 try
                 {
                     await Task.Run(async () =>
@@ -80,10 +79,6 @@ namespace WorkspaceServer.Servers.Scripting
 
                                 CaptureVariableState(state, variables, lineNumber);
 
-                                accumulatedDiagnostics.Clear();
-                                accumulatedDiagnostics.AddRange(
-                                    state.Script.GetCompilation().GetDiagnostics());
-
                                 if (index == sourceLines.Count - 1 &&
                                     console.IsEmpty())
                                 {
@@ -92,8 +87,6 @@ namespace WorkspaceServer.Servers.Scripting
                             }
                             catch (CompilationErrorException ex)
                             {
-                                accumulatedDiagnostics.AddRange(ex.Diagnostics);
-
                                 if (lineNumber == sourceLines.Count)
                                 {
                                     exception = ex;
@@ -128,10 +121,17 @@ namespace WorkspaceServer.Servers.Scripting
                     returnValue: state?.ReturnValue,
                     exception: ToDisplayString(exception ?? state?.Exception),
                     variables: variables.Values,
-                    diagnostics: accumulatedDiagnostics
-                                      .Select(d => new MLS.Agent.Tools.Diagnostic(d).ToJson().FromJsonTo<global::OmniSharp.Client.Diagnostic>())
+                    diagnostics: GetDiagnostics(request.SourceFiles.Single(), options)
+                                      .Select(d => new ResultDiagnostic(d))
                                       .ToArray()); // saves a lot of time writing constructors);
             }
+        }
+
+        private IEnumerable<Microsoft.CodeAnalysis.Diagnostic> GetDiagnostics(SourceFile sourceFile, ScriptOptions options)
+        {
+            return CSharpScript.Create(sourceFile.Text.ToString(), options)
+                                .GetCompilation()
+                                .GetDiagnostics();
         }
 
         private static void CaptureVariableState(ScriptState<object> state, Dictionary<string, Variable> variables, int lineNumber)

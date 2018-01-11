@@ -87,9 +87,10 @@ namespace MLS.Agent.Tests
                                  .DeserializeAs<RunResult>();
 
                 result.Diagnostics.Should().Contain(d =>
-                    d.Location.SourceSpan.Start == 56 &&
-                    d.Location.SourceSpan.End == 56 &&
-                    d.Message == ") expected");
+                    d.Start== 56 &&
+                    d.End == 56 &&
+                    d.Message == ") expected" &&
+                    d.Id == "CS1026");
             }
         }
 

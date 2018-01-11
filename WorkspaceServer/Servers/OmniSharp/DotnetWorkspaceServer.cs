@@ -58,7 +58,7 @@ namespace WorkspaceServer.Servers.OmniSharp
                                 .Where(d => d.Severity == DiagnosticSeverity.Error)
                                 .Select(e => e.ToString())
                                 .ToArray(),
-                    diagnostics: emitResponse.Body.Diagnostics);
+                    diagnostics: emitResponse.Body.Diagnostics.Select(d => new ResultDiagnostic(d)).ToArray());
             }
 
             var dotnet = new Dotnet(workspace.Directory, timeout);
@@ -80,7 +80,7 @@ namespace WorkspaceServer.Servers.OmniSharp
                 succeeded: !(result.Exception is TimeoutException),
                 output: result.Output,
                 exception: exceptionMessage,
-                diagnostics: emitResponse.Body.Diagnostics);
+                diagnostics: emitResponse.Body.Diagnostics.Select(d => new ResultDiagnostic(d)).ToArray());
         }
 
         public async Task<CompletionResult> GetCompletionList(CompletionRequest request)
