@@ -121,7 +121,12 @@ namespace WorkspaceServer.Servers.Scripting
                                    .Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries),
                     returnValue: state?.ReturnValue,
                     exception: ToDisplayString(exception ?? state?.Exception),
-                    variables: variables.Values);
+                    variables: variables.Values,
+                    diagnostics: state?.Script
+                                      .GetCompilation()
+                                      .GetDiagnostics()
+                                      .Select(d => new MLS.Agent.Tools.Diagnostic(d).ToJson().FromJsonTo<global::OmniSharp.Client.Diagnostic>())
+                                      .ToArray()); // saves a lot of time writing constructors);
             }
         }
 

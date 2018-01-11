@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using MLS.Agent.Tools;
 
 namespace OmniSharp.Emit
 {
@@ -6,6 +7,6 @@ namespace OmniSharp.Emit
     {
         public string OutputAssemblyPath { get; set; }
 
-        public IReadOnlyCollection<Diagnostic> Errors { get; set; }
+        public IReadOnlyCollection<Diagnostic> Diagnostics { get; set; }
     }
 }
