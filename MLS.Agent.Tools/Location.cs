@@ -2,7 +2,7 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 
-namespace OmniSharp.Emit
+namespace MLS.Agent.Tools
 {
     public class Location
     {

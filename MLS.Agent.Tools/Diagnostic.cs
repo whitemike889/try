@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 
-namespace OmniSharp.Emit
+namespace MLS.Agent.Tools
 {
     public class Diagnostic
     {
