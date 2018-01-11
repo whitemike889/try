@@ -59,7 +59,7 @@ namespace MLS.Agent.Tools
 
         public static DirectoryInfo DefaultWorkspacesDirectory { get; }
 
-        public async Task EnsureCreated(bool build = false)
+        public async Task EnsureCreated()
         {
             if (!IsDirectoryCreated)
             {
@@ -79,11 +79,6 @@ namespace MLS.Agent.Tools
                 if (Directory.GetFiles().Length == 0)
                 {
                     await _initializer.Initialize(Directory);
-
-                    if (build)
-                    {
-                        EnsureBuilt();
-                    }
                 }
 
                 IsCreated = true;
