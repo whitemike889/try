@@ -33,7 +33,11 @@ namespace MLS.Agent
         public void ConfigureServices(IServiceCollection services)
         {
             // Add framework services.
-            services.AddMvc(options => options.Filters.Add(new ExceptionFilter()))
+            services.AddMvc(options =>
+                    {
+                        options.Filters.Add(new ExceptionFilter());
+                        options.Filters.Add(new BadRequestOnInvalidModelFilter());
+                    })
                     .AddJsonOptions(o =>
                     {
                         o.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;

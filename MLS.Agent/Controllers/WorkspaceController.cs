@@ -9,7 +9,6 @@ using static Pocket.Logger<MLS.Agent.Controllers.WorkspaceController>;
 
 namespace MLS.Agent.Controllers
 {
-    [BadRequestOnInvalidModel]
     public class WorkspaceController : Controller
     {
         [HttpPost]
