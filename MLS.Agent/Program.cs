@@ -10,6 +10,7 @@ using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Pocket.For.ApplicationInsights;
+using WorkspaceServer;
 
 namespace MLS.Agent
 {
@@ -75,7 +76,22 @@ namespace MLS.Agent
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseIISIntegration()
-                .ConfigureServices(c => c.AddSingleton(options))
+                .ConfigureServices(c =>
+                {
+                    c.AddSingleton(options);
+
+                    c.AddSingleton(_ =>
+                    {
+                        var registry = new WorkspaceServerRegistry();
+                        registry.AddWorkspace("Twilio.Demo",
+                                            workspace =>
+                                            {
+                                                workspace.CreateUsingDotnet("console");
+                                                workspace.AddPackageReference("Twilio", "5.9.2");
+                                            });
+                        return registry;
+                    });
+                })
                 .UseStartup<Startup>()
                 .Build();
 
