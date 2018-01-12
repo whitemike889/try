@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using MLS.Agent.Tools;
 
@@ -7,6 +8,8 @@ namespace WorkspaceServer
     public class WorkspaceBuilder
     {
         private Workspace _workspace;
+
+        private readonly List<Func<Workspace, Task>> _afterCreateActions = new List<Func<Workspace, Task>>();
 
         public WorkspaceBuilder(string workspaceName)
         {
@@ -23,7 +26,19 @@ namespace WorkspaceServer
         internal IWorkspaceInitializer WorkspaceInitializer { get; private set; }
 
         public void CreateUsingDotnet(string template) =>
-            WorkspaceInitializer = new DotnetWorkspaceInitializer(template, WorkspaceName);
+            WorkspaceInitializer = new DotnetWorkspaceInitializer(
+                template,
+                WorkspaceName);
+
+        public void AddPackageReference(string packageId)
+        {
+            _afterCreateActions.Add(workspace =>
+            {
+                var dotnet = new Dotnet(workspace.Directory);
+                dotnet.Execute($"add package {packageId}");
+                return Task.CompletedTask;
+            });
+        }
 
         public async Task<Workspace> GetWorkspace()
         {
@@ -31,6 +46,12 @@ namespace WorkspaceServer
             {
                 _workspace = new Workspace(WorkspaceName);
                 await _workspace.EnsureCreated();
+
+                foreach (var action in _afterCreateActions)
+                {
+                    await action(_workspace);
+                }
+
                 _workspace.EnsureBuilt();
             }
 

@@ -6,11 +6,13 @@ namespace MLS.Agent.Tools
 {
     public class DotnetWorkspaceInitializer : IWorkspaceInitializer
     {
+        private readonly Action<Dotnet> afterCreate;
+
         public string Template { get; }
 
         public string Name { get; }
 
-        public DotnetWorkspaceInitializer(string template, string name)
+        public DotnetWorkspaceInitializer(string template, string name, Action<Dotnet> afterCreate = null)
         {
             if (string.IsNullOrWhiteSpace(template))
             {
@@ -22,6 +24,8 @@ namespace MLS.Agent.Tools
                 throw new ArgumentException("Value cannot be null or whitespace.", nameof(name));
             }
 
+            this.afterCreate = afterCreate;
+
             Template = template;
 
             Name = name;
@@ -30,11 +34,15 @@ namespace MLS.Agent.Tools
         public Task Initialize(DirectoryInfo directory)
         {
             var dotnet = new Dotnet(directory);
+
             dotnet
                 .New(Template, args: $"--name \"{Name}\" --output \"{directory.FullName}\"")
                 .ThrowOnFailure();
+
+            afterCreate?.Invoke(dotnet);
 
             return Task.CompletedTask;
         }
     }
 }
+

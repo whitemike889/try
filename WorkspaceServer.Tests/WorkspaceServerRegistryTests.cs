@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using FluentAssertions;
+using WorkspaceServer.Models.Execution;
 using Xunit;
 
 namespace WorkspaceServer.Tests
@@ -23,6 +24,54 @@ namespace WorkspaceServer.Tests
                 await workspace.EnsureCreated();
 
                 workspace.Directory.GetFiles().Length.Should().BeGreaterThan(1);
+            }
+        }
+
+        [Fact]
+        public async Task NuGet_packages_can_be_added_during_initialization()
+        {
+            using (var registry = new WorkspaceServerRegistry())
+            {
+                var workspaceId = $"{nameof(NuGet_packages_can_be_added_during_initialization)}.{Guid.NewGuid():N}";
+
+                registry.AddWorkspace(workspaceId,
+                                      options =>
+                                      {
+                                          options.CreateUsingDotnet("console");
+                                          options.AddPackageReference("Twilio");
+                                      });
+
+                var workspaceServer = await registry.GetWorkspaceServer(workspaceId);
+
+                var result = await workspaceServer.Run(new RunRequest(@"
+using System;
+using Twilio.Clients;
+using Twilio.Rest.Api.V2010.Account;
+using Twilio.Types;
+
+namespace Twilio_try.dot.net_sample
+{
+    class Program
+    {
+        static void Main()
+        {
+            var sendFromPhoneNumber = new PhoneNumber(""TWILIO_PHONE_NUMBER"");
+
+            var sendToPhoneNumber = new PhoneNumber(""RECIPIENT_PHONE_NUMBER"");
+
+            MessageResource.Create(
+                to: sendToPhoneNumber,
+                from: sendFromPhoneNumber,
+                body: ""Hello from try.dot.net!"",
+                //  mediaUrl: mediaUrl,
+                client: new TwilioRestClient(
+                    ""TWILIO_ACCOUNT_SID"",
+                    ""TWILIO_AUTH_TOKEN""));
+        }
+    }
+}"));
+
+                result.Succeeded.Should().BeTrue();
             }
         }
 
