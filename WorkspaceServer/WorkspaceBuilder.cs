@@ -30,12 +30,15 @@ namespace WorkspaceServer
                 template,
                 WorkspaceName);
 
-        public void AddPackageReference(string packageId)
+        public void AddPackageReference(string packageId, string version = null)
         {
             _afterCreateActions.Add(workspace =>
             {
-                var dotnet = new Dotnet(workspace.Directory);
-                dotnet.Execute($"add package {packageId}");
+                var dotnet = new Dotnet(workspace.Directory, defaultCommandTimeout: TimeSpan.FromSeconds(30));
+                var versionArg = string.IsNullOrWhiteSpace(version)
+                                     ? ""
+                                     : $"--version {version}";
+                dotnet.Execute($"add package {versionArg} {packageId}");
                 return Task.CompletedTask;
             });
         }

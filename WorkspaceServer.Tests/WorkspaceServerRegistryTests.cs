@@ -38,7 +38,7 @@ namespace WorkspaceServer.Tests
                                       options =>
                                       {
                                           options.CreateUsingDotnet("console");
-                                          options.AddPackageReference("Twilio");
+                                          options.AddPackageReference("Twilio", "5.9.2");
                                       });
 
                 var workspaceServer = await registry.GetWorkspaceServer(workspaceId);
