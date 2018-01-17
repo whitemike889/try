@@ -113,7 +113,13 @@ namespace WorkspaceServer.Servers.Scripting
                     returnValue: state?.ReturnValue,
                     exception: ToDisplayString(exception ?? state?.Exception),
                     variables: variables.Values,
+<<<<<<< HEAD
                     diagnostics: GetDiagnostics(request.SourceFiles.Single(), options));
+=======
+                    diagnostics: GetDiagnostics(request.SourceFiles.Single(), options)
+                                      .Select(d => new ResultDiagnostic(d))
+                                      .ToArray()); 
+>>>>>>> R: delete comment
             }
         }
 
