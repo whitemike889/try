@@ -131,7 +131,9 @@ namespace WorkspaceServer.Servers.Scripting
         {
             return CSharpScript.Create(sourceFile.Text.ToString(), options)
                                 .GetCompilation()
-                                .GetDiagnostics();
+                                .GetDiagnostics()
+                                .Where(d => d.Id != "CS7022"); // Suppress  warning CS7022: The entry point of the program is global script code; ignoring 'Main()' entry point.
+                                                               // Unlike regular CompilationOptions, ScriptOptions does't provide the ability to suppress diagnostics
         }
 
         private static void CaptureVariableState(ScriptState<object> state, Dictionary<string, Variable> variables, int lineNumber)

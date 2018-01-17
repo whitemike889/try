@@ -176,5 +176,26 @@ public static class Hello
 
             result.ShouldSucceedWithNoOutput();
         }
+
+        [Fact]
+        public async Task CS7022_not_reported_for_main_in_global_script_code()
+        {
+            var request = new RunRequest(@"
+using System;
+
+public static class Hello
+{
+    public static void Main()
+    {
+        Console.WriteLine(""Hello there!"");
+    }
+}");
+
+            var server = GetWorkspaceServer();
+
+            var result = await server.Run(request);
+
+            result.Diagnostics.Should().NotContain(d => d.Id == "CS7022");
+        }
     }
 }
