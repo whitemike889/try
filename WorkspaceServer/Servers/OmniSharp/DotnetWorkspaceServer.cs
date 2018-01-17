@@ -14,10 +14,9 @@ namespace WorkspaceServer.Servers.OmniSharp
 {
     public class DotnetWorkspaceServer : IWorkspaceServer, IDisposable
     {
-        private readonly Workspace workspace;
         private readonly TimeSpan _defaultTimeout;
+        private readonly Workspace _workspace;
         private OmniSharpServer _omniSharpServer;
-        
 
         private const int NOT_INITIALIZED = 0;
         private const int INITIALIZED = 1;
@@ -39,12 +38,12 @@ namespace WorkspaceServer.Servers.OmniSharp
 
             if (Interlocked.CompareExchange(ref _initialized, INITIALIZED , NOT_INITIALIZED) == NOT_INITIALIZED)
             {
-                await workspace.EnsureCreated();
+                await _workspace.EnsureCreated();
 
-                workspace.EnsureBuilt();
+                _workspace.EnsureBuilt();
 
                 _omniSharpServer = new OmniSharpServer(
-                    workspace.Directory,
+                    _workspace.Directory,
                     Paths.EmitPlugin,
                     true);
 
@@ -58,7 +57,7 @@ namespace WorkspaceServer.Servers.OmniSharp
 
             foreach (var sourceFile in request.SourceFiles)
             {
-                var file = new FileInfo(Path.Combine(workspace.Directory.FullName, sourceFile.Name));
+                var file = new FileInfo(Path.Combine(_workspace.Directory.FullName, sourceFile.Name));
 
                 var text = sourceFile.Text.ToString();
 
@@ -84,7 +83,7 @@ namespace WorkspaceServer.Servers.OmniSharp
                     diagnostics: emitResponse.Body.Diagnostics.Select(d => new SerializableDiagnostic(d)).ToArray());
             }
 
-            var dotnet = new Dotnet(workspace.Directory, timeout);
+            var dotnet = new Dotnet(_workspace.Directory);
 
             var result = dotnet.Execute(emitResponse.Body.OutputAssemblyPath, timeout ?? _defaultTimeout);
 
