@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Runtime.CompilerServices;
 using MLS.Agent.Tools;
 using Recipes;
@@ -8,6 +9,13 @@ namespace WorkspaceServer.Tests
 {
     public static class Create
     {
+        public static DirectoryInfo TestFolder([CallerMemberName] string testName = null)
+        {
+            var existingFolders = Workspace.DefaultWorkspacesDirectory.GetDirectories($"{testName}.*");
+
+            return Workspace.DefaultWorkspacesDirectory.CreateSubdirectory($"{testName}.{existingFolders.Length + 1}");
+        }
+
         public static Workspace TestWorkspace([CallerMemberName] string testName = null) =>
             Workspace.Copy(Default.TemplateWorkspace, testName);
 

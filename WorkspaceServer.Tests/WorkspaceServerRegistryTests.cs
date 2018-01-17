@@ -14,7 +14,7 @@ namespace WorkspaceServer.Tests
         {
             using (var registry = new WorkspaceServerRegistry())
             {
-                var workspaceId = Guid.NewGuid().ToString("N");
+                var workspaceId = Create.TestFolder().Name;
 
                 registry.AddWorkspace(workspaceId,
                                       options => options.CreateUsingDotnet("console"));
@@ -32,7 +32,7 @@ namespace WorkspaceServer.Tests
         {
             using (var registry = new WorkspaceServerRegistry())
             {
-                var workspaceId = $"{nameof(NuGet_packages_can_be_added_during_initialization)}.{Guid.NewGuid():N}";
+                var workspaceId = Create.TestFolder().Name;
 
                 registry.AddWorkspace(workspaceId,
                                       options =>
@@ -82,7 +82,7 @@ namespace Twilio_try.dot.net_sample
 
             using (var registry = new WorkspaceServerRegistry())
             {
-                var workspaceId = nameof(Workspace_servers_that_have_been_started_are_disposed_when_registry_is_disposed);
+                var workspaceId = Default.TemplateWorkspace.Name;
 
                 registry.AddWorkspace(workspaceId,
                                       options => options.CreateUsingDotnet("console"));

@@ -31,7 +31,7 @@ namespace WorkspaceServer.Tests
         {
             var project = Create.TestWorkspace(testName);
 
-            var workspaceServer = new DotnetWorkspaceServer(project);
+            var workspaceServer = new DotnetWorkspaceServer(project, defaultTimeoutInSeconds);
 
             RegisterForDisposal(workspaceServer);
 

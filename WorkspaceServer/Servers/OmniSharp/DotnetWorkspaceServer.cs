@@ -15,16 +15,19 @@ namespace WorkspaceServer.Servers.OmniSharp
     public class DotnetWorkspaceServer : IWorkspaceServer, IDisposable
     {
         private readonly Workspace workspace;
+        private readonly TimeSpan _defaultTimeout;
         private OmniSharpServer _omniSharpServer;
         
+
         private const int NOT_INITIALIZED = 0;
         private const int INITIALIZED = 1;
         private int _initialized = NOT_INITIALIZED;
         private bool _disposed;
 
-        public DotnetWorkspaceServer(Workspace workspace)
+        public DotnetWorkspaceServer(Workspace workspace, int defaultTimeoutInSeconds = WorkspaceServer.DefaultTimeoutInSeconds)
         {
-            this.workspace = workspace ?? throw new ArgumentNullException(nameof(workspace));
+            _defaultTimeout = TimeSpan.FromSeconds(defaultTimeoutInSeconds);
+            _workspace = workspace ?? throw new ArgumentNullException(nameof(workspace));
         }
 
         public async Task EnsureInitializedAndNotDisposed()
@@ -67,7 +70,7 @@ namespace WorkspaceServer.Servers.OmniSharp
                 await _omniSharpServer.UpdateBuffer(file, text);
             }
 
-            var emitResponse = await _omniSharpServer.Emit(timeout);
+            var emitResponse = await _omniSharpServer.Emit();
 
             if (emitResponse.Body.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error))
             {
@@ -83,7 +86,7 @@ namespace WorkspaceServer.Servers.OmniSharp
 
             var dotnet = new Dotnet(workspace.Directory, timeout);
 
-            var result = dotnet.Execute(emitResponse.Body.OutputAssemblyPath);
+            var result = dotnet.Execute(emitResponse.Body.OutputAssemblyPath, timeout ?? _defaultTimeout);
 
             string exceptionMessage = null;
 

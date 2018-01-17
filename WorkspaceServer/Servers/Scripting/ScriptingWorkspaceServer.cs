@@ -20,15 +20,9 @@ namespace WorkspaceServer.Servers.Scripting
 {
     public class ScriptingWorkspaceServer : IWorkspaceServer
     {
-#if DEBUG
-        public const int DefaultTimeoutInSeconds = 10;
-#else
-        public const int DefaultTimeoutInSeconds = 5;
-#endif
-
         private readonly TimeSpan _defaultTimeout;
 
-        public ScriptingWorkspaceServer(int defaultTimeoutInSeconds = DefaultTimeoutInSeconds)
+        public ScriptingWorkspaceServer(int defaultTimeoutInSeconds = WorkspaceServer.DefaultTimeoutInSeconds)
         {
             if (defaultTimeoutInSeconds < 1)
             {
