@@ -48,9 +48,7 @@ namespace WorkspaceServer.Servers.Scripting
                     throw new ArgumentException($"{nameof(request)} should have exactly one source file.");
                 }
 
-                var options = ScriptOptions.Default
-                                           .AddReferences(GetReferenceAssemblies())
-                                           .AddImports(GetDefultUsings().Concat(request.Usings));
+                ScriptOptions options = CreateOptions(request);
 
                 ScriptState<object> state = null;
                 var variables = new Dictionary<string, Variable>();
@@ -121,18 +119,23 @@ namespace WorkspaceServer.Servers.Scripting
                     returnValue: state?.ReturnValue,
                     exception: ToDisplayString(exception ?? state?.Exception),
                     variables: variables.Values,
-                    diagnostics: GetDiagnostics(request.SourceFiles.Single(), options)
-                                      .Select(d => new ResultDiagnostic(d))
-                                      .ToArray()); // saves a lot of time writing constructors);
+                    diagnostics: GetDiagnostics(request.SourceFiles.Single(), options));
             }
         }
 
-        private IEnumerable<Microsoft.CodeAnalysis.Diagnostic> GetDiagnostics(SourceFile sourceFile, ScriptOptions options)
+        private static ScriptOptions CreateOptions(RunRequest request) =>
+                        ScriptOptions.Default
+                                                   .AddReferences(GetReferenceAssemblies())
+                                                   .AddImports(GetDefultUsings().Concat(request.Usings));
+
+        private SerializableDiagnostic[] GetDiagnostics(SourceFile sourceFile, ScriptOptions options)
         {
             return CSharpScript.Create(sourceFile.Text.ToString(), options)
                                 .GetCompilation()
                                 .GetDiagnostics()
-                                .Where(d => d.Id != "CS7022"); // Suppress  warning CS7022: The entry point of the program is global script code; ignoring 'Main()' entry point.
+                                .Where(d => d.Id != "CS7022").
+                                Select(d => new SerializableDiagnostic(d))
+                                      .ToArray(); // Suppress  warning CS7022: The entry point of the program is global script code; ignoring 'Main()' entry point.
                                                                // Unlike regular CompilationOptions, ScriptOptions does't provide the ability to suppress diagnostics
         }
 
@@ -281,5 +284,8 @@ typeof({entryPointMethod.ContainingType.Name})
                                               ? "new object[]{ new string[0] }"
                                               : "null";
         }
+
+        public Task<DiagnosticResult> GetDiagnostics(RunRequest request) => 
+            Task.FromResult(new DiagnosticResult(GetDiagnostics(request.SourceFiles.Single(), CreateOptions(request))));
     }
 }

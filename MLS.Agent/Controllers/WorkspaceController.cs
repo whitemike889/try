@@ -47,5 +47,23 @@ namespace MLS.Agent.Controllers
                 return Ok(result);
             }
         }
+
+        [HttpPost]
+        [Route("/workspace/{workspaceId}/diagnostics)")]
+        public async Task<IActionResult> Diagnostics(
+            string workspaceId,
+            [FromBody] RunRequest request)
+        {
+            using (var operation = Log.ConfirmOnExit())
+            {
+                var server = new ScriptingWorkspaceServer();
+
+                var result = await server.GetDiagnostics(request);
+
+                operation.Succeed();
+
+                return Ok(result);
+            }
+        }
     }
 }

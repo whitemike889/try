@@ -7,10 +7,10 @@ using OmniSharp.Client;
 
 namespace WorkspaceServer.Models.Execution
 {
-    public class ResultDiagnostic
+    public class SerializableDiagnostic
     {
         [JsonConstructor]
-        public ResultDiagnostic(int start, int end, string message, DiagnosticSeverity severity, string id)
+        public SerializableDiagnostic(int start, int end, string message, DiagnosticSeverity severity, string id)
         {
             this.Start = start;
             this.End = end;
@@ -19,8 +19,8 @@ namespace WorkspaceServer.Models.Execution
             this.Id = id; ;
         }
 
-        public ResultDiagnostic(Microsoft.CodeAnalysis.Diagnostic d)
-            : this(d.Location.SourceSpan.Start,
+        public SerializableDiagnostic(Microsoft.CodeAnalysis.Diagnostic d)
+            : this(d.Location?.SourceSpan.Start ?? throw new ArgumentException(nameof(d.Location)),
                     d.Location.SourceSpan.End,
                     d.GetMessage(),
                     d.Severity,
@@ -28,7 +28,7 @@ namespace WorkspaceServer.Models.Execution
         {
         }
 
-        public ResultDiagnostic(OmniSharp.Client.Diagnostic d)
+        public SerializableDiagnostic(OmniSharp.Client.Diagnostic d)
             : this(d.Location.SourceSpan.Start,
                     d.Location.SourceSpan.End,
                     d.Message,

@@ -11,17 +11,17 @@ namespace WorkspaceServer.Models.Execution
             object returnValue = null,
             string exception = null,
             IReadOnlyCollection<Variable> variables = null,
-            IReadOnlyCollection<ResultDiagnostic> diagnostics = null)
+            IReadOnlyCollection<SerializableDiagnostic> diagnostics = null)
         {
             Output = output ?? throw new ArgumentNullException(nameof(output));
             Succeeded = succeeded;
             Exception = exception;
             Variables = variables ?? Array.Empty<Variable>();
             ReturnValue = returnValue;
-            Diagnostics = diagnostics ?? Array.Empty<ResultDiagnostic>();
+            Diagnostics = diagnostics ?? Array.Empty<SerializableDiagnostic>();
         }
 
-        public IReadOnlyCollection<ResultDiagnostic> Diagnostics { get; set; }
+        public IReadOnlyCollection<SerializableDiagnostic> Diagnostics { get; set; }
 
         public bool Succeeded { get; }
 

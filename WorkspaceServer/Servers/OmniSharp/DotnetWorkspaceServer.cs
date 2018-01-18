@@ -7,6 +7,7 @@ using MLS.Agent.Tools;
 using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
 using Workspace = MLS.Agent.Tools.Workspace;
+using OmnisharpEmitResponse = global::OmniSharp.Client.Commands.OmniSharpResponseMessage<OmniSharp.Client.Commands.EmitResponse>;
 
 namespace WorkspaceServer.Servers.OmniSharp
 {
@@ -31,23 +32,7 @@ namespace WorkspaceServer.Servers.OmniSharp
 
         public async Task<RunResult> Run(RunRequest request, TimeSpan? timeout = null)
         {
-            await _omniSharpServer.WorkspaceReady();
-
-            foreach (var sourceFile in request.SourceFiles)
-            {
-                var file = new FileInfo(Path.Combine(workspace.Directory.FullName, sourceFile.Name));
-
-                var text = sourceFile.Text.ToString();
-
-                if (!file.Exists)
-                {
-                    File.WriteAllText(file.FullName, text);
-                }
-
-                await _omniSharpServer.UpdateBuffer(file, text);
-            }
-
-            var emitResponse = await _omniSharpServer.Emit(timeout);
+            var emitResponse = await Emit(request, timeout);
 
             if (emitResponse.Body.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error))
             {
@@ -58,7 +43,7 @@ namespace WorkspaceServer.Servers.OmniSharp
                                 .Where(d => d.Severity == DiagnosticSeverity.Error)
                                 .Select(e => e.ToString())
                                 .ToArray(),
-                    diagnostics: emitResponse.Body.Diagnostics.Select(d => new ResultDiagnostic(d)).ToArray());
+                    diagnostics: emitResponse.Body.Diagnostics.Select(d => new SerializableDiagnostic(d)).ToArray());
             }
 
             var dotnet = new Dotnet(workspace.Directory, timeout);
@@ -80,14 +65,42 @@ namespace WorkspaceServer.Servers.OmniSharp
                 succeeded: !(result.Exception is TimeoutException),
                 output: result.Output,
                 exception: exceptionMessage,
-                diagnostics: emitResponse.Body.Diagnostics.Select(d => new ResultDiagnostic(d)).ToArray());
+                diagnostics: emitResponse.Body.Diagnostics.Select(d => new SerializableDiagnostic(d)).ToArray());
         }
 
-        public async Task<CompletionResult> GetCompletionList(CompletionRequest request)
+        private async Task<OmnisharpEmitResponse> Emit(RunRequest request, TimeSpan? timeout)
+        {
+            await _omniSharpServer.WorkspaceReady();
+
+            foreach (var sourceFile in request.SourceFiles)
+            {
+                var file = new FileInfo(Path.Combine(workspace.Directory.FullName, sourceFile.Name));
+
+                var text = sourceFile.Text.ToString();
+
+                if (!file.Exists)
+                {
+                    File.WriteAllText(file.FullName, text);
+                }
+
+                await _omniSharpServer.UpdateBuffer(file, text);
+            }
+
+            return await _omniSharpServer.Emit(timeout);
+        }
+
+        public Task<CompletionResult> GetCompletionList(CompletionRequest request)
         {
             throw new NotImplementedException();
         }
 
         public void Dispose() => _omniSharpServer.Dispose();
+        public async Task<DiagnosticResult> GetDiagnostics(RunRequest request)
+        {
+            var emitResult = await Emit(request, timeout: null);
+            var diagnostics = emitResult.Body.Diagnostics.Select(d => new SerializableDiagnostic(d)).ToArray();
+            return new DiagnosticResult(diagnostics);
+        }
+
     }
 }

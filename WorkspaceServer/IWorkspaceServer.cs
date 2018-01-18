@@ -10,5 +10,7 @@ namespace WorkspaceServer
         Task<RunResult> Run(RunRequest request, TimeSpan? timeout = null);
 
         Task<CompletionResult> GetCompletionList(CompletionRequest request);
+
+        Task<DiagnosticResult> GetDiagnostics(RunRequest request);
     }
 }
