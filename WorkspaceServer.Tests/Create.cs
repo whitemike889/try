@@ -20,17 +20,22 @@ namespace WorkspaceServer.Tests
             Workspace.Copy(Default.TemplateWorkspace, testName);
 
         public static RunRequest SimpleRunRequest(
-            string consoleOutput = "Hello!") =>
-            new RunRequest(SampleCode(consoleOutput));
+            string consoleOutput = "Hello!",
+            string workspaceType = null) =>
+            new RunRequest(SimpleConsoleAppCodeWithoutNamespaces(consoleOutput), workspaceType: workspaceType);
 
         public static string SimpleRunRequestJson(
-            string consoleOutput = "Hello!") =>
-            new
+            string consoleOutput = "Hello!",
+            string workspaceType = null)
+        {
+            return new
             {
-                Source = SampleCode(consoleOutput)
+                source = SimpleConsoleAppCodeWithoutNamespaces(consoleOutput),
+                workspaceType
             }.ToJson();
+        }
 
-        private static string SampleCode(string consoleOutput)
+        public static string SimpleConsoleAppCodeWithoutNamespaces(string consoleOutput)
         {
             return $@"
 using System;

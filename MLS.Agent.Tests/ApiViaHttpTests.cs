@@ -1,6 +1,5 @@
 using System;
 using FluentAssertions;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -29,7 +28,7 @@ namespace MLS.Agent.Tests
         public void Dispose() => disposables.Dispose();
 
         [Fact]
-        public async Task The_workspace_snippet_endpoint_compiles_code_using_scripting()
+        public async Task The_workspace_snippet_endpoint_compiles_code_using_scripting_when_a_workspace_type_is_not_specified()
         {
             var output = Guid.NewGuid().ToString();
             var code = JsonConvert.SerializeObject(new
@@ -37,7 +36,7 @@ namespace MLS.Agent.Tests
                 Source = $@"Console.WriteLine(""{output}"");"
             });
 
-            var response = await CallRun(code, "snippet");
+            var response = await CallRun(code);
 
             var result = await response
                                .EnsureSuccess()
@@ -49,17 +48,37 @@ namespace MLS.Agent.Tests
         }
 
         [Fact]
-        public async Task The_workspace_endpoint_compiles_code_using_dotnet_when_a_workspace_id_is_specified()
+        public async Task The_workspace_snippet_endpoint_compiles_code_using_scripting_when_a_workspace_type_is_specified_as_script()
         {
-            var workspaceId = Guid.NewGuid().ToString("N");
+            var output = Guid.NewGuid().ToString();
+            var requestJson = JsonConvert.SerializeObject(new
+            {
+                Source = $@"Console.WriteLine(""{output}"");",
+                WorkspaceType = "script"
+            });
+
+            var response = await CallRun(requestJson);
+
+            var result = await response
+                               .EnsureSuccess()
+                               .DeserializeAs<RunResult>();
+
+            VerifySucceeded(result);
+
+            result.ShouldSucceedWithOutput(output);
+        }
+
+        [Fact]
+        public async Task The_workspace_endpoint_compiles_code_using_dotnet_when_a_non_script_workspace_type_is_specified()
+        {
             var registry = new WorkspaceServerRegistry();
-            registry.AddWorkspace(workspaceId, o => o.CreateUsingDotnet("console"));
+            registry.AddWorkspace("console", o => o.CreateUsingDotnet("console"));
             disposables.Add(registry);
 
-            var output = Guid.NewGuid().ToString("N");
-            var code = Create.SimpleRunRequestJson(output);
+            var output = Guid.NewGuid().ToString();
+            var requestJson = Create.SimpleRunRequestJson(output, "console");
 
-            var response = await CallRun(code, workspaceId, registry);
+            var response = await CallRun(requestJson, registry);
 
             var result = await response
                                .EnsureSuccess()
@@ -108,7 +127,7 @@ namespace MLS.Agent.Tests
         [InlineData("{}")]
         public async Task Sending_payloads_that_dont_include_source_strings_results_in_BadRequest(string content)
         {
-            var response = await CallRun(content, "snippet");
+            var response = await CallRun(content);
 
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
@@ -119,7 +138,7 @@ namespace MLS.Agent.Tests
         [InlineData("garbage 1235")]
         public async Task Sending_payloads_that_cannot_be_deserialized_results_in_BadRequest(string content)
         {
-            var response = await CallRun(content, "snippet");
+            var response = await CallRun(content);
 
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
@@ -154,8 +173,7 @@ namespace MLS.Agent.Tests
         }
 
         private static async Task<HttpResponseMessage> CallRun(
-            string content, 
-            string workspaceId,
+            string content,
             WorkspaceServerRegistry workspaceServerRegistry = null)
         {
             HttpResponseMessage response;
@@ -163,7 +181,7 @@ namespace MLS.Agent.Tests
             {
                 var request = new HttpRequestMessage(
                     HttpMethod.Post,
-                    $@"/workspace/{workspaceId}/compile")
+                    @"/workspace/snippet/compile")
                 {
                     Content = new StringContent(
                         content,

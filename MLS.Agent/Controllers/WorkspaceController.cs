@@ -22,18 +22,17 @@ namespace MLS.Agent.Controllers
 
         [HttpPost]
         [Route("/workspace/run")]
-        [Route("/workspace/{workspaceType}/compile")]
+        [Route("/workspace/{DEPRECATED}/compile")] // FIX: (Run) remove this endpoint when Orchestrator no longer calls it
         public async Task<IActionResult> Run(
-            string workspaceType,
             [FromBody] RunRequest request)
         {
             using (var operation = Log.ConfirmOnExit())
             {
                 RunResult result = null;
 
-                workspaceType = workspaceType ?? request.WorkspaceType;
+                var workspaceType = request.WorkspaceType;
 
-                if (string.Equals(workspaceType, "snippet", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(workspaceType, "script", StringComparison.OrdinalIgnoreCase))
                 {
                     var server = new ScriptingWorkspaceServer();
 

@@ -6,7 +6,7 @@ namespace WorkspaceServer.Models.Execution
 {
     public class RunRequest
     {
-        private const string DefaultWorkspaceType = "snippet";
+        private const string DefaultWorkspaceType = "script";
 
         public RunRequest(
             string source,
