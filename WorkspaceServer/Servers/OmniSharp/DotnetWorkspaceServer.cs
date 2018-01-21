@@ -47,7 +47,7 @@ namespace WorkspaceServer.Servers.OmniSharp
                     Paths.EmitPlugin,
                     true);
 
-                await _omniSharpServer.WorkspaceReady(timeout ?? _defaultTimeout);
+                await _omniSharpServer.WorkspaceReady(timeout);
             }
         }
 
