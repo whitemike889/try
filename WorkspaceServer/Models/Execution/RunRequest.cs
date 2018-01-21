@@ -6,13 +6,20 @@ namespace WorkspaceServer.Models.Execution
 {
     public class RunRequest
     {
-        public RunRequest(string source, string[] usings = null)
+        private const string DefaultWorkspaceType = "snippet";
+
+        public RunRequest(
+            string source,
+            string[] usings = null,
+            string workspaceType = DefaultWorkspaceType)
         {
             SourceFiles = string.IsNullOrWhiteSpace(source)
                               ? Array.Empty<SourceFile>()
                               : new[] { SourceFile.Create(source, "Program.cs") };
 
             Usings = usings ?? Array.Empty<string>();
+
+            WorkspaceType = workspaceType ?? DefaultWorkspaceType;
         }
 
         [Required]
@@ -20,5 +27,7 @@ namespace WorkspaceServer.Models.Execution
         public IReadOnlyCollection<SourceFile> SourceFiles { get; }
 
         public string[] Usings { get; }
+
+        public string WorkspaceType { get; }
     }
 }
