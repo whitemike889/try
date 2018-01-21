@@ -12,9 +12,9 @@ namespace MLS.Agent
             string helpText, 
             bool isProduction, 
             string key, 
-            string[] omniSharpProjects)
+            string[] loadWorkspaces)
         {
-            OmniSharpProjects = omniSharpProjects;
+            LoadWorkspaces = loadWorkspaces;
             WasSuccess = wasSuccess;
             IsProduction = isProduction;
             HelpRequested = helpRequested;
@@ -27,7 +27,7 @@ namespace MLS.Agent
         public bool HelpRequested { get; }
         public string HelpText { get; }
         public string Key { get; }
-        public string[] OmniSharpProjects { get; }
+        public string[] LoadWorkspaces { get; }
 
         public static CommandLineOptions Parse(string[] args)
         {
@@ -35,7 +35,7 @@ namespace MLS.Agent
                 Create.Option("-h|--help", "Shows this help text"),
                 Create.Option("--production", "Specifies if the agent is being run using production resources or not"),
                 Create.Option("-k|--key", "The encryption key", ExactlyOneArgument()),
-                Create.Option("--omnisharp-project", "Starts OmniSharp in the specified project folder.", OneOrMoreArguments()));
+                Create.Option("--load-workspace", "Starts OmniSharp in the specified workspace folder.", OneOrMoreArguments()));
 
             var parseResult = parser.Parse(args);
             var wasSuccess = true;
@@ -66,8 +66,8 @@ namespace MLS.Agent
                 key: parseResult.HasOption("key")
                          ? parseResult["key"].Value<string>()
                          : null,
-                omniSharpProjects: parseResult.HasOption("omnisharp-project")
-                                       ? parseResult.AppliedOptions["omnisharp-project"].Value<string[]>()
+                loadWorkspaces: parseResult.HasOption("load-workspace")
+                                       ? parseResult.AppliedOptions["load-workspace"].Value<string[]>()
                                        : new string[] { });
         }
     }

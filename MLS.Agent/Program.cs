@@ -83,6 +83,11 @@ namespace MLS.Agent
                     c.AddSingleton(_ =>
                     {
                         var registry = new WorkspaceServerRegistry();
+                        registry.AddWorkspace("console",
+                                            workspace =>
+                                            {
+                                                workspace.CreateUsingDotnet("console");
+                                            });
                         registry.AddWorkspace("Twilio.Demo",
                                             workspace =>
                                             {

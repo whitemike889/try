@@ -65,5 +65,17 @@ namespace MLS.Agent.Tests
             VerifySuccessfulAndNoHelpText(options);
             options.Key.Should().Be("abc123");
         }
+
+        [Fact]
+        public void Multiple_workspaces_can_be_specified_to_be_loaded()
+        {
+            var options = CommandLineOptions.Parse(new[] { "--load-workspace", "console", "--load-workspace", "something-else" });
+
+            options.LoadWorkspaces
+                   .Should()
+                   .BeEquivalentTo(
+                       "console",
+                       "something-else");
+        }
     }
 }
