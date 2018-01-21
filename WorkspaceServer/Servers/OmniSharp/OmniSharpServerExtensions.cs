@@ -19,6 +19,11 @@ namespace WorkspaceServer.Servers.OmniSharp
             this OmniSharpServer omniSharpServer,
             TimeSpan? timeout = null)
         {
+            if (omniSharpServer == null)
+            {
+                throw new ArgumentNullException(nameof(omniSharpServer));
+            }
+
             using (var operation = Log.OnEnterAndConfirmOnExit())
             {
                 await omniSharpServer.StandardOutput

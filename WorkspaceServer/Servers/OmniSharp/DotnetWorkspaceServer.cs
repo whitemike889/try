@@ -47,7 +47,7 @@ namespace WorkspaceServer.Servers.OmniSharp
                     Paths.EmitPlugin,
                     true);
 
-                await _omniSharpServer.WorkspaceReady();
+                await _omniSharpServer.WorkspaceReady(_defaultTimeout);
             }
         }
 
@@ -55,21 +55,7 @@ namespace WorkspaceServer.Servers.OmniSharp
         {
             await EnsureInitializedAndNotDisposed();
 
-            foreach (var sourceFile in request.SourceFiles)
-            {
-                var file = new FileInfo(Path.Combine(_workspace.Directory.FullName, sourceFile.Name));
-
-                var text = sourceFile.Text.ToString();
-
-                if (!file.Exists)
-                {
-                    File.WriteAllText(file.FullName, text);
-                }
-
-                await _omniSharpServer.UpdateBuffer(file, text);
-            }
-
-            var emitResponse = await _omniSharpServer.Emit();
+            var emitResponse = await Emit(request, timeout);
 
             if (emitResponse.Body.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error))
             {
@@ -107,11 +93,11 @@ namespace WorkspaceServer.Servers.OmniSharp
 
         private async Task<OmnisharpEmitResponse> Emit(RunRequest request, TimeSpan? timeout)
         {
-            await _omniSharpServer.WorkspaceReady();
+            await EnsureInitializedAndNotDisposed();
 
             foreach (var sourceFile in request.SourceFiles)
             {
-                var file = new FileInfo(Path.Combine(workspace.Directory.FullName, sourceFile.Name));
+                var file = new FileInfo(Path.Combine(_workspace.Directory.FullName, sourceFile.Name));
 
                 var text = sourceFile.Text.ToString();
 
