@@ -56,22 +56,12 @@ namespace Twilio_try.dot.net_sample
         static void Main()
         {
             var sendFromPhoneNumber = new PhoneNumber(""TWILIO_PHONE_NUMBER"");
-
             var sendToPhoneNumber = new PhoneNumber(""RECIPIENT_PHONE_NUMBER"");
-
-            MessageResource.Create(
-                to: sendToPhoneNumber,
-                from: sendFromPhoneNumber,
-                body: ""Hello from try.dot.net!"",
-                //  mediaUrl: mediaUrl,
-                client: new TwilioRestClient(
-                    ""TWILIO_ACCOUNT_SID"",
-                    ""TWILIO_AUTH_TOKEN""));
         }
     }
 }"));
 
-                result.Succeeded.Should().BeTrue();
+                result.Succeeded.Should().BeTrue(because: "compilation can't succeed unless the NuGet package has been restored.");
             }
         }
 
