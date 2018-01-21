@@ -63,7 +63,7 @@ namespace WorkspaceServer
                 var workspaceServer = await GetWorkspaceServer(name);
                 if (workspaceServer is DotnetWorkspaceServer dotnetWorkspaceServer)
                 {
-                    await dotnetWorkspaceServer.EnsureInitializedAndNotDisposed();
+                    await dotnetWorkspaceServer.EnsureInitializedAndNotDisposed(timeout: TimeSpan.FromSeconds(30));
                 }
             }));
     }

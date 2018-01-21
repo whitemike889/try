@@ -29,7 +29,7 @@ namespace WorkspaceServer.Servers.OmniSharp
             _workspace = workspace ?? throw new ArgumentNullException(nameof(workspace));
         }
 
-        public async Task EnsureInitializedAndNotDisposed()
+        public async Task EnsureInitializedAndNotDisposed(TimeSpan? timeout =  null)
         {
             if (_disposed)
             {
@@ -47,7 +47,7 @@ namespace WorkspaceServer.Servers.OmniSharp
                     Paths.EmitPlugin,
                     true);
 
-                await _omniSharpServer.WorkspaceReady(_defaultTimeout);
+                await _omniSharpServer.WorkspaceReady(timeout ?? _defaultTimeout);
             }
         }
 
