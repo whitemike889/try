@@ -52,9 +52,9 @@ namespace MLS.Agent.Controllers
         }
 
         [HttpPost]
-        [Route("/workspace/{workspaceId}/getCompletionItems")]
-        public async Task<IActionResult> GetCompletionItems(
-            string workspaceId,
+        [Route("/workspace/completion")]
+        [Route("/workspace/{DEPRECATED}/getCompletionItems")]
+        public async Task<IActionResult> Completion(
             [FromBody] CompletionRequest request)
         {
             using (var operation = Log.ConfirmOnExit())
@@ -70,9 +70,9 @@ namespace MLS.Agent.Controllers
         }
 
         [HttpPost]
-        [Route("/workspace/{workspaceId}/diagnostics)")]
+        [Route("/workspace/diagnostics")]
+        [Route("/workspace/{DEPRECATED}/diagnostics")]
         public async Task<IActionResult> Diagnostics(
-            string workspaceId,
             [FromBody] RunRequest request)
         {
             using (var operation = Log.ConfirmOnExit())
