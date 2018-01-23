@@ -4,7 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using MLS.Agent.Tools;
+using Pocket;
 using WorkspaceServer.Servers.OmniSharp;
+using static Pocket.Logger<WorkspaceServer.WorkspaceServerRegistry>;
 
 namespace WorkspaceServer
 {
@@ -57,14 +59,21 @@ namespace WorkspaceServer
             }
         }
 
-        public async Task StartAllServers() =>
-            await Task.WhenAll(workspaceBuilders.Keys.Select(async name =>
+        public async Task StartAllServers()
+        {
+            using (var operation = Log.ConfirmOnExit())
             {
-                var workspaceServer = await GetWorkspaceServer(name);
-                if (workspaceServer is DotnetWorkspaceServer dotnetWorkspaceServer)
+                await Task.WhenAll(workspaceBuilders.Keys.Select(async name =>
                 {
-                    await dotnetWorkspaceServer.EnsureInitializedAndNotDisposed(timeout: TimeSpan.FromSeconds(30));
-                }
-            }));
+                    var workspaceServer = await GetWorkspaceServer(name);
+                    if (workspaceServer is DotnetWorkspaceServer dotnetWorkspaceServer)
+                    {
+                        await dotnetWorkspaceServer.EnsureInitializedAndNotDisposed(timeout: TimeSpan.FromSeconds(30));
+                    }
+                }));
+
+                operation.Succeed();
+            }
+        }
     }
 }
