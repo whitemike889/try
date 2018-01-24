@@ -19,7 +19,7 @@ namespace Recipes
         {
             Execute.Assertion
                    .ForCondition(_subject.IsSuccessStatusCode)
-                   .FailWith($"Expected successful response but received: {_subject}");
+                   .FailWith($"Expected successful response but received: {_subject.ToString().Replace("{", "{{").Replace("}", "}}")}");
 
             return new AndConstraint<HttpResponseMessageAssertions>(this);
         }

@@ -1,12 +1,16 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using System;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Newtonsoft.Json;
 using Pocket;
 using Recipes;
 using LoggerConfiguration = Serilog.LoggerConfiguration;
 using Serilog.Sinks.RollingFileAlternate;
+using WorkspaceServer;
 using static Pocket.Logger<MLS.Agent.Startup>;
 
 namespace MLS.Agent
@@ -33,7 +37,11 @@ namespace MLS.Agent
         public void ConfigureServices(IServiceCollection services)
         {
             // Add framework services.
-            services.AddMvc(options => options.Filters.Add(new ExceptionFilter()))
+            services.AddMvc(options =>
+                    {
+                        options.Filters.Add(new ExceptionFilter());
+                        options.Filters.Add(new BadRequestOnInvalidModelFilter());
+                    })
                     .AddJsonOptions(o =>
                     {
                         o.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
@@ -41,10 +49,15 @@ namespace MLS.Agent
                     });
 
             services.AddSingleton(Configuration);
+
+            services.TryAddSingleton<WorkspaceServerRegistry>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(
+            IApplicationBuilder app, 
+            IHostingEnvironment env,
+            IServiceProvider serviceProvider)
         {
             if (Environment.IsDevelopment())
             {
@@ -66,6 +79,10 @@ namespace MLS.Agent
             app.UseDefaultFiles()
                .UseStaticFiles()
                .UseMvc();
+
+            var workspaceServerRegistry = serviceProvider.GetRequiredService<WorkspaceServerRegistry>();
+
+            Task.Run(() => workspaceServerRegistry.StartAllServers()).Wait();
         }
     }
 }

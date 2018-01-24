@@ -1,7 +1,8 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Pocket;
-using Recipes;
+using WorkspaceServer;
 using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Servers.Scripting;
@@ -9,20 +10,40 @@ using static Pocket.Logger<MLS.Agent.Controllers.WorkspaceController>;
 
 namespace MLS.Agent.Controllers
 {
-    [BadRequestOnInvalidModel]
     public class WorkspaceController : Controller
     {
+        private readonly WorkspaceServerRegistry workspaceServerRegistry;
+
+        public WorkspaceController(WorkspaceServerRegistry workspaceServerRegistry)
+        {
+            this.workspaceServerRegistry = workspaceServerRegistry ??
+                                           throw new ArgumentNullException(nameof(workspaceServerRegistry));
+        }
+
         [HttpPost]
-        [Route("/workspace/{workspaceId}/compile")]
+        [Route("/workspace/run")]
+        [Route("/workspace/{DEPRECATED}/compile")] // FIX: (Run) remove this endpoint when Orchestrator no longer calls it
         public async Task<IActionResult> Run(
-            string workspaceId,
             [FromBody] RunRequest request)
         {
             using (var operation = Log.ConfirmOnExit())
             {
-                var server = new ScriptingWorkspaceServer();
+                RunResult result = null;
 
-                var result = await server.Run(request);
+                var workspaceType = request.WorkspaceType;
+
+                if (string.Equals(workspaceType, "script", StringComparison.OrdinalIgnoreCase))
+                {
+                    var server = new ScriptingWorkspaceServer();
+
+                    result = await server.Run(request);
+                }
+                else
+                {
+                    var server = await workspaceServerRegistry.GetWorkspaceServer(workspaceType);
+
+                    result = await server.Run(request);
+                }
 
                 operation.Succeed();
 
@@ -31,9 +52,9 @@ namespace MLS.Agent.Controllers
         }
 
         [HttpPost]
-        [Route("/workspace/{workspaceId}/getCompletionItems")]
-        public async Task<IActionResult> GetCompletionItems(
-            string workspaceId,
+        [Route("/workspace/completion")]
+        [Route("/workspace/{DEPRECATED}/getCompletionItems")]
+        public async Task<IActionResult> Completion(
             [FromBody] CompletionRequest request)
         {
             using (var operation = Log.ConfirmOnExit())
@@ -49,9 +70,9 @@ namespace MLS.Agent.Controllers
         }
 
         [HttpPost]
-        [Route("/workspace/{workspaceId}/diagnostics)")]
+        [Route("/workspace/diagnostics")]
+        [Route("/workspace/{DEPRECATED}/diagnostics")]
         public async Task<IActionResult> Diagnostics(
-            string workspaceId,
             [FromBody] RunRequest request)
         {
             using (var operation = Log.ConfirmOnExit())

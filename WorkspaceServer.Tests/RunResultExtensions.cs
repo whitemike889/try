@@ -8,6 +8,16 @@ namespace WorkspaceServer.Tests
 {
     public static class RunResultExtensions
     {
+        public static void ShouldFailWithOutput(this RunResult result, params string[] output)
+        {
+            result.ShouldBeEquivalentTo(new
+            {
+                Succeeded = false,
+                Output = output,
+                Exception = (string) null
+            }, config => config.ExcludingMissingMembers());
+        }
+
         public static void ShouldSucceedWithOutput(this RunResult result, params string[] output)
         {
             result.ShouldBeEquivalentTo(new

@@ -17,17 +17,13 @@ namespace WorkspaceServer.Tests
 {
     public class OmniSharpServerTests : IDisposable
     {
-        private static readonly Lazy<Workspace> workspace = new Lazy<Workspace>(() =>
-        {
-            var workspace = new Workspace(nameof(OmniSharpServerTests));
-            workspace.EnsureCreated("console");
-            return workspace;
-        });
+        private static readonly Workspace workspace = new Workspace(nameof(OmniSharpServerTests));
 
         private readonly CompositeDisposable disposables = new CompositeDisposable();
 
         public OmniSharpServerTests(ITestOutputHelper output)
         {
+            Task.Run(() => workspace.EnsureCreated()).Wait();
             disposables.Add(output.SubscribeToPocketLogger());
         }
 
@@ -36,7 +32,7 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task OmniSharp_console_output_is_observable()
         {
-            using (var omniSharp = new OmniSharpServer(workspace.Value.Directory))
+            using (var omniSharp = new OmniSharpServer(workspace.Directory))
             {
                 var observer = new Subject<string>();
 
@@ -54,7 +50,7 @@ namespace WorkspaceServer.Tests
 
             var omnisharpProcessCount = processCount();
 
-            using (new OmniSharpServer(workspace.Value.Directory))
+            using (new OmniSharpServer(workspace.Directory))
             {
             }
 
@@ -66,7 +62,7 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task Omnisharp_loads_the_project_found_in_its_working_directory()
         {
-            using (var omniSharp = new OmniSharpServer(workspace.Value.Directory))
+            using (var omniSharp = new OmniSharpServer(workspace.Directory))
             {
                 var output = new ConcurrentQueue<string>();
 
@@ -87,7 +83,7 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task CodeCheck_can_be_read_compilation_errors_after_a_buffer_update()
         {
-            using (var omniSharp = StartOmniSharp(workspace.Value.Directory))
+            using (var omniSharp = StartOmniSharp(workspace.Directory))
             {
                 await omniSharp.WorkspaceReady(Default.Timeout());
 
@@ -112,7 +108,7 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task Workspace_information_can_be_requested()
         {
-            using (var omniSharp = new OmniSharpServer(workspace.Value.Directory, logToPocketLogger: true))
+            using (var omniSharp = new OmniSharpServer(workspace.Directory, logToPocketLogger: true))
             {
                 await omniSharp.WorkspaceReady();
 
@@ -140,7 +136,7 @@ namespace WorkspaceServer.Tests
 
         private OmniSharpServer StartOmniSharp(DirectoryInfo projectDirectory = null) =>
             new OmniSharpServer(
-                projectDirectory ?? workspace.Value.Directory,
+                projectDirectory ?? workspace.Directory,
                 logToPocketLogger: true);
     }
 }

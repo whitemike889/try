@@ -1,11 +1,7 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
-using FluentAssertions;
-using Microsoft.CodeAnalysis;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Servers.OmniSharp;
-using Xunit;
 using Xunit.Abstractions;
 
 namespace WorkspaceServer.Tests
@@ -31,7 +27,7 @@ namespace WorkspaceServer.Tests
         {
             var project = Create.TestWorkspace(testName);
 
-            var workspaceServer = new DotnetWorkspaceServer(project);
+            var workspaceServer = new DotnetWorkspaceServer(project, defaultTimeoutInSeconds);
 
             RegisterForDisposal(workspaceServer);
 

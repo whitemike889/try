@@ -36,14 +36,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\MLS.Agent\MLS.Agent.csproj" />
+    <ProjectReference Include="..\MLS.Agent.Tools\MLS.Agent.Tools.csproj" />
+    <ProjectReference Include="..\WorkspaceServer.Tests\WorkspaceServer.Tests.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="%28Recipes%29\" />
   </ItemGroup>
 </Project>
 

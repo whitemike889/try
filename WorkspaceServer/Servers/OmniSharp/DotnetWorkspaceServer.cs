@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using MLS.Agent.Tools;
@@ -13,25 +14,47 @@ namespace WorkspaceServer.Servers.OmniSharp
 {
     public class DotnetWorkspaceServer : IWorkspaceServer, IDisposable
     {
-        private readonly Workspace workspace;
-        private readonly OmniSharpServer _omniSharpServer;
+        private readonly TimeSpan _defaultTimeout;
+        private readonly Workspace _workspace;
+        private OmniSharpServer _omniSharpServer;
 
-        public DotnetWorkspaceServer(Workspace workspace)
+        private const int NOT_INITIALIZED = 0;
+        private const int INITIALIZED = 1;
+        private int _initialized = NOT_INITIALIZED;
+        private bool _disposed;
+
+        public DotnetWorkspaceServer(Workspace workspace, int defaultTimeoutInSeconds = WorkspaceServer.DefaultTimeoutInSeconds)
         {
-            this.workspace = workspace;
+            _defaultTimeout = TimeSpan.FromSeconds(defaultTimeoutInSeconds);
+            _workspace = workspace ?? throw new ArgumentNullException(nameof(workspace));
+        }
 
-            this.workspace.EnsureCreated("console");
+        public async Task EnsureInitializedAndNotDisposed(TimeSpan? timeout =  null)
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(nameof(DotnetWorkspaceServer));
+            }
 
-            this.workspace.EnsureBuilt();
+            if (Interlocked.CompareExchange(ref _initialized, INITIALIZED , NOT_INITIALIZED) == NOT_INITIALIZED)
+            {
+                await _workspace.EnsureCreated();
 
-            _omniSharpServer = new OmniSharpServer(
-                this.workspace.Directory,
-                Paths.EmitPlugin,
-                true);
+                _workspace.EnsureBuilt();
+
+                _omniSharpServer = new OmniSharpServer(
+                    _workspace.Directory,
+                    Paths.EmitPlugin,
+                    true);
+
+                await _omniSharpServer.WorkspaceReady(timeout);
+            }
         }
 
         public async Task<RunResult> Run(RunRequest request, TimeSpan? timeout = null)
         {
+            await EnsureInitializedAndNotDisposed();
+
             var emitResponse = await Emit(request, timeout);
 
             if (emitResponse.Body.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error))
@@ -46,9 +69,9 @@ namespace WorkspaceServer.Servers.OmniSharp
                     diagnostics: emitResponse.Body.Diagnostics.Select(d => new SerializableDiagnostic(d)).ToArray());
             }
 
-            var dotnet = new Dotnet(workspace.Directory, timeout);
+            var dotnet = new Dotnet(_workspace.Directory);
 
-            var result = dotnet.Execute(emitResponse.Body.OutputAssemblyPath);
+            var result = dotnet.Execute(emitResponse.Body.OutputAssemblyPath, timeout ?? _defaultTimeout);
 
             string exceptionMessage = null;
 
@@ -70,11 +93,11 @@ namespace WorkspaceServer.Servers.OmniSharp
 
         private async Task<OmnisharpEmitResponse> Emit(RunRequest request, TimeSpan? timeout)
         {
-            await _omniSharpServer.WorkspaceReady();
+            await EnsureInitializedAndNotDisposed();
 
             foreach (var sourceFile in request.SourceFiles)
             {
-                var file = new FileInfo(Path.Combine(workspace.Directory.FullName, sourceFile.Name));
+                var file = new FileInfo(Path.Combine(_workspace.Directory.FullName, sourceFile.Name));
 
                 var text = sourceFile.Text.ToString();
 
@@ -94,7 +117,6 @@ namespace WorkspaceServer.Servers.OmniSharp
             throw new NotImplementedException();
         }
 
-        public void Dispose() => _omniSharpServer.Dispose();
         public async Task<DiagnosticResult> GetDiagnostics(RunRequest request)
         {
             var emitResult = await Emit(request, timeout: null);
@@ -102,5 +124,13 @@ namespace WorkspaceServer.Servers.OmniSharp
             return new DiagnosticResult(diagnostics);
         }
 
+        public void Dispose()
+        {
+            if (!_disposed)
+            {
+                _disposed = true;
+                _omniSharpServer?.Dispose();
+            }
+        }
     }
 }
