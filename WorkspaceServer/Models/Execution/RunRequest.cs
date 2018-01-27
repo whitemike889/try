@@ -9,13 +9,13 @@ namespace WorkspaceServer.Models.Execution
         private const string DefaultWorkspaceType = "script";
 
         public RunRequest(
-            string source,
+            string buffer,
             string[] usings = null,
             string workspaceType = DefaultWorkspaceType)
         {
-            SourceFiles = string.IsNullOrWhiteSpace(source)
+            SourceFiles = string.IsNullOrWhiteSpace(buffer)
                               ? Array.Empty<SourceFile>()
-                              : new[] { SourceFile.Create(source, "Program.cs") };
+                              : new[] { SourceFile.Create(buffer, "Program.cs") };
 
             Usings = usings ?? Array.Empty<string>();
 
