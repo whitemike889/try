@@ -24,7 +24,8 @@ namespace MLS.Agent.Tools
                 environmentVariable ??
                 Path.Combine(Paths.UserProfile,
                     ".trydotnet",
-                    "omnisharp");
+                    "omnisharp",
+                    _version);
 
             _omniSharpInstallFolder = new DirectoryInfo(omniSharpInstallPath);
 
