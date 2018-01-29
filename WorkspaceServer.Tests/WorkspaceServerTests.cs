@@ -118,7 +118,7 @@ Console.WriteLine(banana);");
             result.ShouldBeEquivalentTo(new
             {
                 Succeeded = false,
-                Output = new string[] { "(2,19): error CS0103: The name \'banana\' does not exist in the current context" },
+                Output = new[] { "(2,19): error CS0103: The name \'banana\' does not exist in the current context" },
                 Exception = (string) null, // we already display the error in Output
             }, config => config.ExcludingMissingMembers());
         }
