@@ -10,7 +10,8 @@ namespace WorkspaceServer.Models.Execution
         private const string DefaultWorkspaceType = "script";
 
         public WorkspaceRunRequest(
-        string buffer,
+        string buffer = null,
+        string source = null, // TODO: added for backward comaptibility
         string bufferid = null,
         int position = 0,
         string[] usings = null,
@@ -19,14 +20,14 @@ namespace WorkspaceServer.Models.Execution
         {
             WorkspaceType = workspaceType ?? DefaultWorkspaceType;
             Usings = usings ?? Array.Empty<string>();
-            Buffer = buffer ?? string.Empty;
+            Buffer = buffer ?? source ??string.Empty;
             BufferId = bufferid ?? string.Empty;
             Usings = usings ?? Array.Empty<string>();
             Position = position;
             var sourceFiles = files?.Select(entry => SourceFile.Create(entry[0], entry[1])).ToList() ?? new List<SourceFile>();
-            if (!string.IsNullOrWhiteSpace(buffer))
+            if (!string.IsNullOrWhiteSpace(Buffer))
             {
-                sourceFiles.Add(SourceFile.Create(buffer, "Program.cs"));
+                sourceFiles.Add(SourceFile.Create(Buffer, "Program.cs"));
             }
             SourceFiles = sourceFiles;
         }
