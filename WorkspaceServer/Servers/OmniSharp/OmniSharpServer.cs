@@ -51,7 +51,13 @@ namespace WorkspaceServer.Servers.OmniSharp
                         standardOutput.OnNext,
                         standardError.OnNext);
 
-                disposables.Add(() => process.Kill());
+                disposables.Add(() =>
+                {
+                    if (!process.HasExited)
+                    {
+                        process.Kill();
+                    }
+                });
                 disposables.Add(process);
 
                 return process;
