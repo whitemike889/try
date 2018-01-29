@@ -19,10 +19,10 @@ namespace WorkspaceServer.Tests
         public static Workspace TestWorkspace([CallerMemberName] string testName = null) =>
             Workspace.Copy(Default.TemplateWorkspace, testName);
 
-        public static RunRequest SimpleRunRequest(
+        public static WorkspaceRunRequest SimpleRunRequest(
             string consoleOutput = "Hello!",
             string workspaceType = null) =>
-            new RunRequest(SimpleConsoleAppCodeWithoutNamespaces(consoleOutput), workspaceType: workspaceType);
+            new WorkspaceRunRequest(SimpleConsoleAppCodeWithoutNamespaces(consoleOutput), workspaceType: workspaceType);
 
         public static string SimpleRunRequestJson(
             string consoleOutput = "Hello!",
@@ -30,7 +30,7 @@ namespace WorkspaceServer.Tests
         {
             return new
             {
-                source = SimpleConsoleAppCodeWithoutNamespaces(consoleOutput),
+                buffer = SimpleConsoleAppCodeWithoutNamespaces(consoleOutput),
                 workspaceType
             }.ToJson();
         }

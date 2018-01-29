@@ -12,9 +12,9 @@ namespace WorkspaceServer.Tests
         {
         }
 
-        protected override RunRequest CreateRunRequestContaining(string text)
+        protected override WorkspaceRunRequest CreateRunRequestContaining(string text)
         {
-            return new RunRequest(
+            return new WorkspaceRunRequest(
                 $@"using System; using System.Linq; using System.Collections.Generic; class Program {{ static void Main() {{ {text}
                     }}
                 }}

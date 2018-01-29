@@ -117,7 +117,7 @@ namespace WorkspaceServer.Servers.Scripting
             }
         }
 
-        private static ScriptOptions CreateOptions(RunRequest request) =>
+        private static ScriptOptions CreateOptions(WorkspaceRunRequest request) =>
                         ScriptOptions.Default
                                                    .AddReferences(GetReferenceAssemblies())
                                                    .AddImports(GetDefultUsings().Concat(request.Usings));
@@ -267,7 +267,7 @@ typeof({entryPointMethod.ContainingType.Name})
                                               : "null";
         }
 
-        public Task<DiagnosticResult> GetDiagnostics(RunRequest request) => 
+        public Task<DiagnosticResult> GetDiagnostics(WorkspaceRunRequest request) => 
             Task.FromResult(new DiagnosticResult(GetDiagnostics(request.SourceFiles.Single(), CreateOptions(request))));
     }
 }
