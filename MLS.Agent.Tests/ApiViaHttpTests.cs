@@ -22,7 +22,7 @@ namespace MLS.Agent.Tests
 
         public ApiViaHttpTests(ITestOutputHelper output)
         {
-            disposables.Add(LogEvents.Subscribe(e => output.WriteLine(e.ToLogString())));
+            disposables.Add(output.SubscribeToPocketLogger());
         }
 
         public void Dispose() => disposables.Dispose();

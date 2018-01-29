@@ -67,6 +67,7 @@ namespace MLS.Agent.Tools
 
                 if (!Directory.Exists)
                 {
+                    Log.Info("Creating directory {directory}", Directory);
                     Directory.Create();
                     Directory.Refresh();
                 }
@@ -78,6 +79,7 @@ namespace MLS.Agent.Tools
             {
                 if (Directory.GetFiles().Length == 0)
                 {
+                    Log.Info("Initializing workspace using {_initializer} in {directory}", _initializer, Directory);
                     await _initializer.Initialize(Directory);
                 }
 
@@ -91,6 +93,7 @@ namespace MLS.Agent.Tools
             {
                 if (Directory.GetFiles("*.deps.json", SearchOption.AllDirectories).Length == 0)
                 {
+                    Log.Info("Building workspace using {_initializer} in {directory}", _initializer, Directory);
                     new Dotnet(Directory).Build().ThrowOnFailure();
                 }
 
