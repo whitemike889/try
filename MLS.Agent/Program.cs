@@ -110,17 +110,17 @@ namespace MLS.Agent
                     c.AddSingleton(_ =>
                     {
                         var registry = new WorkspaceServerRegistry();
-//                        registry.AddWorkspace("console",
-//                                            workspace =>
-//                                            {
-//                                                workspace.CreateUsingDotnet("console");
-//                                            });
-//                        registry.AddWorkspace("Twilio.Demo",
-//                                            workspace =>
-//                                            {
-//                                                workspace.CreateUsingDotnet("console");
-//                                                workspace.AddPackageReference("Twilio", "5.9.2");
-//                                            });
+                        registry.AddWorkspace("console",
+                                            workspace =>
+                                            {
+                                                workspace.CreateUsingDotnet("console");
+                                            });
+                        registry.AddWorkspace("Twilio.Demo",
+                                            workspace =>
+                                            {
+                                                workspace.CreateUsingDotnet("console");
+                                                workspace.AddPackageReference("Twilio", "5.9.2");
+                                            });
                         return registry;
                     });
                 })

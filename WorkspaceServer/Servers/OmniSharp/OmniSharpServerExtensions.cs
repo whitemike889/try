@@ -6,36 +6,12 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using OmniSharp.Client;
 using OmniSharp.Client.Commands;
-using OmniSharp.Client.Events;
-using Pocket;
 using Recipes;
-using static Pocket.Logger<MLS.Agent.Tools.OmniSharp>;
 
 namespace WorkspaceServer.Servers.OmniSharp
 {
     public static class OmniSharpServerExtensions
     {
-        public static async Task WorkspaceReady(
-            this OmniSharpServer omniSharpServer,
-            TimeSpan? timeout = null)
-        {
-            if (omniSharpServer == null)
-            {
-                throw new ArgumentNullException(nameof(omniSharpServer));
-            }
-
-            using (var operation = Log.OnEnterAndConfirmOnExit())
-            {
-                await omniSharpServer.StandardOutput
-                                     .AsOmniSharpMessages()
-                                     .OfType<OmniSharpEventMessage<ProjectAdded>>()
-                                     .FirstAsync()
-                                     .Timeout(timeout ?? TimeSpan.FromSeconds(20));
-
-                operation.Succeed();
-            }
-        }
-
         public static async Task<FileInfo> FindFile(this OmniSharpServer omnisharp, string name, TimeSpan? timeout = null) =>
             (await omnisharp.GetWorkspaceInformation(timeout))
             .Body
@@ -50,6 +26,8 @@ namespace WorkspaceServer.Servers.OmniSharp
             OmniSharpCommandMessage commandMessage,
             TimeSpan? timeout = null)
         {
+            await omniSharp.WorkspaceReady();
+
             var json = commandMessage.ToJson(new JsonSerializerSettings
             {
                 NullValueHandling = NullValueHandling.Ignore

@@ -38,6 +38,7 @@ namespace WorkspaceServer.Tests
 
                 using (omniSharp.StandardOutput.Subscribe(observer))
                 {
+                    await omniSharp.WorkspaceReady();
                     await observer.FirstOrDefaultAsync().Timeout(5.Seconds());
                 }
             }
@@ -68,6 +69,7 @@ namespace WorkspaceServer.Tests
 
                 using (omniSharp.StandardOutput.Subscribe(s => output.Enqueue(s)))
                 {
+                    await omniSharp.WorkspaceReady();
                     var projectName = $"{nameof(OmniSharpServerTests)}.csproj";
 
                     await omniSharp

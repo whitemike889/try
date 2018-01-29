@@ -82,7 +82,7 @@ namespace MLS.Agent
 
             var workspaceServerRegistry = serviceProvider.GetRequiredService<WorkspaceServerRegistry>();
 
-            Task.Run(() => workspaceServerRegistry.StartAllServers()).Wait();
+            Task.Run(() => workspaceServerRegistry.StartAllServers()).DontAwait();
         }
     }
 }
