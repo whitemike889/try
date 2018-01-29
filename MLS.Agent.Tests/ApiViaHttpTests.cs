@@ -48,6 +48,26 @@ namespace MLS.Agent.Tests
         }
 
         [Fact]
+        public async Task The_workspace_snippet_endpoint_compiles_code_using_scripting_when_source_is_specified()
+        {
+            var output = Guid.NewGuid().ToString();
+            var code = JsonConvert.SerializeObject(new
+            {
+                Source = $@"Console.WriteLine(""{output}"");"
+            });
+
+            var response = await CallRun(code);
+
+            var result = await response
+                .EnsureSuccess()
+                .DeserializeAs<RunResult>();
+
+            VerifySucceeded(result);
+
+            result.ShouldSucceedWithOutput(output);
+        }
+
+        [Fact]
         public async Task The_workspace_snippet_endpoint_compiles_code_using_scripting_when_a_workspace_type_is_specified_as_script()
         {
             var output = Guid.NewGuid().ToString();
