@@ -22,7 +22,7 @@
     <PackageReference Include="pocket.disposable" Version="1.0.3">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="pocketlogger" Version="0.2.8">
+    <PackageReference Include="pocketlogger" Version="0.2.11">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="pocketlogger.for.microsoftextensionslogging" Version="0.1.2">  
