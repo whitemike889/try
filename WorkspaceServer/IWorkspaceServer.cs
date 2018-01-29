@@ -7,10 +7,10 @@ namespace WorkspaceServer
 {
     public interface IWorkspaceServer
     {
-        Task<RunResult> Run(RunRequest request, CancellationToken? cancellationToken = null);
+        Task<RunResult> Run(WorkspaceRunRequest request, CancellationToken? cancellationToken = null);
 
         Task<CompletionResult> GetCompletionList(CompletionRequest request);
 
-        Task<DiagnosticResult> GetDiagnostics(RunRequest request);
+        Task<DiagnosticResult> GetDiagnostics(WorkspaceRunRequest request);
     }
 }

@@ -43,7 +43,7 @@ namespace WorkspaceServer.Servers.OmniSharp
             await _omniSharpServer.WorkspaceReady(cancellationToken);
         }
 
-        public async Task<RunResult> Run(RunRequest request, CancellationToken? cancellationToken = null)
+        public async Task<RunResult> Run(WorkspaceRunRequest request, CancellationToken? cancellationToken = null)
         {
             await EnsureInitializedAndNotDisposed(cancellationToken);
 
@@ -83,7 +83,7 @@ namespace WorkspaceServer.Servers.OmniSharp
                 diagnostics: emitResponse.Body.Diagnostics.Select(d => new SerializableDiagnostic(d)).ToArray());
         }
 
-        private async Task<OmnisharpEmitResponse> Emit(RunRequest request, CancellationToken? cancellationToken = null)
+        private async Task<OmnisharpEmitResponse> Emit(WorkspaceRunRequest request, CancellationToken? cancellationToken = null)
         {
             await EnsureInitializedAndNotDisposed(cancellationToken);
 
@@ -109,7 +109,7 @@ namespace WorkspaceServer.Servers.OmniSharp
             throw new NotImplementedException();
         }
 
-        public async Task<DiagnosticResult> GetDiagnostics(RunRequest request)
+        public async Task<DiagnosticResult> GetDiagnostics(WorkspaceRunRequest request)
         {
             var emitResult = await Emit(request);
             var diagnostics = emitResult.Body.Diagnostics.Select(d => new SerializableDiagnostic(d)).ToArray();

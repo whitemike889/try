@@ -20,7 +20,7 @@ namespace WorkspaceServer.Tests
         {
         }
 
-        protected override RunRequest CreateRunRequestContaining(string text) => new RunRequest(text);
+        protected override WorkspaceRunRequest CreateRunRequestContaining(string text) => new WorkspaceRunRequest(text);
 
         protected override IWorkspaceServer GetWorkspaceServer(
             [CallerMemberName] string testName = null) => new ScriptingWorkspaceServer();
@@ -28,7 +28,7 @@ namespace WorkspaceServer.Tests
         [Fact]
         public void Response_shows_fragment_return_value()
         {
-            var request = new RunRequest(@"
+            var request = new WorkspaceRunRequest(@"
 var person = new { Name = ""Jeff"", Age = 20 };
 $""{person.Name} is {person.Age} year(s) old""");
 
@@ -50,7 +50,7 @@ $""{person.Name} is {person.Age} year(s) old""");
         [Fact]
         public async Task Response_indicates_when_compile_is_unsuccessful()
         {
-            var request = new RunRequest(@"
+            var request = new WorkspaceRunRequest(@"
 Console.WriteLine(banana);");
 
             var server = GetWorkspaceServer();
@@ -68,7 +68,7 @@ Console.WriteLine(banana);");
         [Fact]
         public async Task It_indicates_line_by_line_variable_values()
         {
-            var request = new RunRequest(@"
+            var request = new WorkspaceRunRequest(@"
 string name;
 name = ""Jeff"";
 name = ""Alice"";");
@@ -97,7 +97,7 @@ name = ""Alice"";");
         [Fact]
         public async Task It_indicates_final_variable_values()
         {
-            var request = new RunRequest(@"
+            var request = new WorkspaceRunRequest(@"
 string name;
 name = ""Jeff"";
 name = ""Alice"";");
@@ -128,7 +128,7 @@ name = ""Alice"";");
         [Fact]
         public async Task Additional_using_statements_from_request_are_passed_to_scripting_when_running_snippet()
         {
-            var request = new RunRequest(@"
+            var request = new WorkspaceRunRequest(@"
 using System;
 
 public static class Hello
@@ -158,7 +158,7 @@ Hello.Main();",
         [Fact]
         public async Task When_a_public_void_Main_with_non_string_parameters_is_present_it_is_not_invoked()
         {
-            var request = new RunRequest(@"
+            var request = new WorkspaceRunRequest(@"
 using System;
 
 public static class Hello
@@ -179,7 +179,7 @@ public static class Hello
         [Fact]
         public async Task CS7022_not_reported_for_main_in_global_script_code()
         {
-            var request = new RunRequest(@"
+            var request = new WorkspaceRunRequest(@"
 using System;
 
 public static class Hello

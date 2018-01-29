@@ -33,7 +33,7 @@ namespace MLS.Agent.Tests
             var output = Guid.NewGuid().ToString();
             var code = JsonConvert.SerializeObject(new
             {
-                Source = $@"Console.WriteLine(""{output}"");"
+                Buffer = $@"Console.WriteLine(""{output}"");"
             });
 
             var response = await CallRun(code);
@@ -53,7 +53,7 @@ namespace MLS.Agent.Tests
             var output = Guid.NewGuid().ToString();
             var requestJson = JsonConvert.SerializeObject(new
             {
-                Source = $@"Console.WriteLine(""{output}"");",
+                Buffer = $@"Console.WriteLine(""{output}"");",
                 WorkspaceType = "script"
             });
 
@@ -98,7 +98,7 @@ namespace MLS.Agent.Tests
 
             var requestJson = JsonConvert.SerializeObject(new
             {
-                Source = @"Console.WriteLine(""hello!"");",
+                Buffer = @"Console.WriteLine(""hello!"");",
                 WorkspaceType = "console"
             });
 
@@ -129,7 +129,7 @@ namespace MLS.Agent.Tests
                     Content = new StringContent(
                         JsonConvert.SerializeObject(new
                         {
-                            Source = $@"Console.WriteLine(""{output}"""
+                            Buffer = $@"Console.WriteLine(""{output}"""
                         }),
                         Encoding.UTF8,
                         "application/json")

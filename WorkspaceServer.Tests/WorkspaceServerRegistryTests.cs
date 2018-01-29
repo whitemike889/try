@@ -54,7 +54,7 @@ namespace WorkspaceServer.Tests
 
                 var workspaceServer = await registry.GetWorkspaceServer(workspaceId);
 
-                var result = await workspaceServer.Run(new RunRequest(@"
+                var result = await workspaceServer.Run(new WorkspaceRunRequest(@"
 using System;
 using Twilio.Clients;
 using Twilio.Rest.Api.V2010.Account;
