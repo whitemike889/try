@@ -56,8 +56,6 @@ namespace MLS.Agent.Tools
                         {
                             process.WaitForExit();
 
-                            operation.Info("PROCESS EXITED: {command} {args}", command, args);
-
                             operation.Succeed(
                                 "{command} {args} exited with {code}",
                                 command,
@@ -70,8 +68,6 @@ namespace MLS.Agent.Tools
                             cancellationToken.Value,
                             ifCancelled: () =>
                             {
-                                operation.Info("TIMEOUT CALLED: {command} {args}", command, args);
-
                                 var ex = new TimeoutException();
 
                                 Task.Run(() =>
