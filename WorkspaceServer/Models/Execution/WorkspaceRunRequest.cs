@@ -10,30 +10,39 @@ namespace WorkspaceServer.Models.Execution
         private const string DefaultWorkspaceType = "script";
 
         public WorkspaceRunRequest(
-        string buffer = null,
+        string buffer = null, // TODO: added for backward comaptibility
         string source = null, // TODO: added for backward comaptibility
-        string bufferid = null,
+        string bufferid = null, // TODO: added for backward comaptibility
         int position = 0,
         string[] usings = null,
-        string[][] files = null,
+        File[] files = null,
+        Buffer[] buffers = null,
         string workspaceType = DefaultWorkspaceType)
         {
             WorkspaceType = workspaceType ?? DefaultWorkspaceType;
             Usings = usings ?? Array.Empty<string>();
-            Buffer = buffer ?? source ??string.Empty;
-            BufferId = bufferid ?? string.Empty;
+            var code  = buffer ?? source ??string.Empty;
+            var id = bufferid ?? string.Empty;
+
             Usings = usings ?? Array.Empty<string>();
-            Position = position;
-            var sourceFiles = files?.Select(entry => SourceFile.Create(entry[0], entry[1])).ToList() ?? new List<SourceFile>();
-            if (!string.IsNullOrWhiteSpace(Buffer))
+          
+            var sourceFiles = files?.Select(entry => SourceFile.Create(entry.Name, entry.Text)).ToList() ?? new List<SourceFile>();
+            
+            var localBuffers = buffers?.ToList() ?? new List<Buffer>();
+
+            if (!string.IsNullOrWhiteSpace(code))
             {
-                sourceFiles.Add(SourceFile.Create(Buffer, "Program.cs"));
+                localBuffers.Add(new Buffer(id,code,position));
+                sourceFiles.Add(SourceFile.Create(code, "Program.cs"));
+            }
+
+            Buffers = localBuffers;
+            if (sourceFiles.Count == 0)
+            {
+                sourceFiles.Add(SourceFile.Create(localBuffers[0].Content, "Program.cs"));
             }
             SourceFiles = sourceFiles;
         }
-        public string BufferId { get; }
-
-        public string Buffer { get; }
 
         [Required]
         [MinLength(1)]
@@ -43,6 +52,35 @@ namespace WorkspaceServer.Models.Execution
 
         public string WorkspaceType { get; }
 
-        public int Position { get; }
+        [Required]
+        [MinLength(1)]
+        public IReadOnlyCollection<Buffer> Buffers { get; }
+
+        public class File
+        {
+            public File(string name, string text)
+            {
+                Name = name;
+                Text = text;
+            }
+
+            public string Name { get; }
+            public string Text { get; }
+        }
+
+        public class Buffer
+        {
+            public Buffer(string id, string content, int position)
+            {
+                Id = id;
+                Content = content;
+                Position = position;
+            }
+
+            public string Id { get; }
+            public string Content { get; }
+
+            public int Position { get; }
+        }
     }
 }
