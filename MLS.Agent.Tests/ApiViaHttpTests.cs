@@ -218,6 +218,23 @@ namespace MLS.Agent.Tests
             }
         }
 
+        [Fact]
+        public async Task When_invoked_with_workspace_request_it_executes_correctly()
+        {
+            var output ="1";
+            var requestJson = @"{ ""Buffers"":[{""Id"":"""",""Content"":""using System;\nusing System.Linq;\n\npublic class Program\n{\n  public static void Main()\n  {\n    foreach (var i in Fibonacci().Take(1))\n    {\n      Console.WriteLine(i);\n    }\n  }\n\n  private static IEnumerable<int> Fibonacci()\n  {\n    int current = 1, next = 1;\n\n    while (true) \n    {\n      yield return current;\n      next = current + (current = next);\n    }\n  }\n}\n"",""Position"":0}],""Usings"":[],""WorkspaceType"":""script"",""Files"":[]}";
+
+            var response = await CallRun(requestJson);
+
+            var result = await response
+                .EnsureSuccess()
+                .DeserializeAs<RunResult>();
+
+            VerifySucceeded(result);
+
+            result.ShouldSucceedWithOutput(output);
+        }
+
         private static async Task<HttpResponseMessage> CallRun(
             string content,
             WorkspaceServerRegistry workspaceServerRegistry = null)
