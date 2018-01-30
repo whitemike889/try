@@ -30,8 +30,7 @@ namespace WorkspaceServer.Tests
             {
                 await omniSharp.WorkspaceReady();
 
-                var response = await omniSharp.SendCommand<Emit, EmitResponse>(
-                                   new Emit(), Default.Timeout());
+                var response = await omniSharp.SendCommand<Emit, EmitResponse>(new Emit());
 
                 File.Exists(response.Body.OutputAssemblyPath).Should().BeTrue();
             }
@@ -42,7 +41,7 @@ namespace WorkspaceServer.Tests
         {
             using (var omniSharp = StartOmniSharp())
             {
-                await omniSharp.WorkspaceReady(Default.Timeout());
+                await omniSharp.WorkspaceReady();
 
                 var file = await omniSharp.FindFile("Program.cs");
 
@@ -74,7 +73,7 @@ namespace WorkspaceServer.Tests
         private async Task<(IReadOnlyCollection<string> output, IReadOnlyCollection<string> error)> EmitAndRun(
             OmniSharpServer omnisharp)
         {
-            var response = await omnisharp.Emit(Default.Timeout());
+            var response = await omnisharp.Emit();
 
             return ExecuteEmittedAssembly(response.Body.OutputAssemblyPath);
         }

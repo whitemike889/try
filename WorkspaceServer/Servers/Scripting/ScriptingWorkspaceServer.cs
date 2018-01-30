@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using Clockwise;
 using Microsoft.CodeAnalysis;
+using Diagnostic = Microsoft.CodeAnalysis.Diagnostic;
 using Microsoft.CodeAnalysis.Completion;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
@@ -15,6 +18,7 @@ using Recipes;
 using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
 using static Pocket.Logger<WorkspaceServer.Servers.Scripting.ScriptingWorkspaceServer>;
+using MLS.Agent.Tools;
 
 namespace WorkspaceServer.Servers.Scripting
 {
@@ -32,7 +36,7 @@ namespace WorkspaceServer.Servers.Scripting
             _defaultTimeout = TimeSpan.FromSeconds(defaultTimeoutInSeconds);
         }
 
-        public async Task<RunResult> Run(RunRequest request, TimeSpan? timeout = null)
+        public async Task<RunResult> Run(RunRequest request, CancellationToken? cancellationToken = null)
         {
             using (Log.OnEnterAndExit())
             using (var console = await ConsoleOutput.Capture())
@@ -97,9 +101,13 @@ namespace WorkspaceServer.Servers.Scripting
                                 break;
                             }
                         }
-                    }).Timeout(timeout ?? _defaultTimeout);
+                    }).CancelAfter(cancellationToken ?? Clock.Current.CreateCancellationToken(_defaultTimeout));
                 }
                 catch (TimeoutException timeoutException)
+                {
+                    exception = timeoutException;
+                }
+                catch (TaskCanceledException timeoutException)
                 {
                     exception = timeoutException;
                 }

@@ -3,9 +3,6 @@
   <PropertyGroup>
     <TargetFramework>net46</TargetFramework>
     <Version>1.29.0-beta2</Version>
-    <Authors />
-    <Company />
-    <Product />
     <PackageId>TryDotNet.OmniSharp.Emit</PackageId>
   </PropertyGroup>
 
@@ -19,6 +16,7 @@
     <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="2.4.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="1.1.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="1.1.0" />
+    <PackageReference Include="trydotnet.omnisharp.dependencies" Version="1.27.3-beta1" />
   </ItemGroup>
 
 </Project>

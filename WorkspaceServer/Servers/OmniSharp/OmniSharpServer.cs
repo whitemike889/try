@@ -3,12 +3,15 @@ using System.Diagnostics;
 using System.IO;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.Reactive.Threading.Tasks;
 using System.Threading;
 using System.Threading.Tasks;
+using Clockwise;
 using MLS.Agent.Tools;
 using OmniSharp.Client;
 using OmniSharp.Client.Events;
 using Pocket;
+using Recipes;
 using static Pocket.Logger<WorkspaceServer.Servers.OmniSharp.OmniSharpServer>;
 
 namespace WorkspaceServer.Servers.OmniSharp
@@ -19,7 +22,7 @@ namespace WorkspaceServer.Servers.OmniSharp
 
         private bool _ready;
         private readonly CompositeDisposable disposables = new CompositeDisposable();
-        private int seq;
+        private int _seq;
         private readonly Lazy<Process> _process;
 
         public OmniSharpServer(
@@ -72,14 +75,16 @@ namespace WorkspaceServer.Servers.OmniSharp
 
         public void Dispose() => disposables.Dispose();
 
-        public int NextSeq() => Interlocked.Increment(ref seq);
+        public int NextSeq() => Interlocked.Increment(ref _seq);
 
-        public async Task WorkspaceReady(TimeSpan? timeout = null)
+        public async Task WorkspaceReady(CancellationToken? cancellationToken = null)
         {
             if (_ready)
             {
                 return;
             }
+
+            cancellationToken = cancellationToken ?? Clock.Current.CreateCancellationToken(TimeSpan.FromSeconds(30));
 
             var _ = _process.Value;
 
@@ -89,7 +94,7 @@ namespace WorkspaceServer.Servers.OmniSharp
                       .AsOmniSharpMessages()
                       .OfType<OmniSharpEventMessage<ProjectAdded>>()
                       .FirstAsync()
-                      .Timeout(timeout ?? TimeSpan.FromSeconds(20));
+                      .ToTask(cancellationToken);
 
                 _ready = true;
 

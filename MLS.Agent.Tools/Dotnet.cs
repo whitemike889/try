@@ -1,51 +1,43 @@
 ﻿using System;
 using System.IO;
+using System.Threading;
+using Clockwise;
 
 namespace MLS.Agent.Tools
 {
     public class Dotnet
     {
-        private readonly TimeSpan _defaultCommandTimeout;
         private readonly DirectoryInfo _workingDirectory;
 
-        public Dotnet(
-            DirectoryInfo workingDirectory = null,
-            TimeSpan? defaultCommandTimeout = null)
+        public Dotnet(DirectoryInfo workingDirectory = null)
         {
-            _defaultCommandTimeout = defaultCommandTimeout ??
-                                     TimeSpan.FromSeconds(10);
             _workingDirectory = workingDirectory ??
                                 new DirectoryInfo(Directory.GetCurrentDirectory());
         }
 
-        public CommandLineResult New(string templateName, string args = null, TimeSpan? timeout = null)
+        public CommandLineResult New(string templateName, string args = null, CancellationToken? cancellationToken = null)
         {
             if (string.IsNullOrWhiteSpace(templateName))
             {
                 throw new ArgumentException("Value cannot be null or whitespace.", nameof(templateName));
             }
 
-            return Execute($"new {templateName} {args}", timeout);
+            return Execute($"new {templateName} {args}",
+                           cancellationToken ??
+                           Clock.Current.CreateCancellationToken(TimeSpan.FromSeconds(10)));
         }
 
-        public CommandLineResult Build(TimeSpan? timeout = null) =>
-            Execute("build", timeout);
+        public CommandLineResult Build(CancellationToken? cancellationToken = null) =>
+            Execute("build",
+                    cancellationToken ??
+                    Clock.Current.CreateCancellationToken(TimeSpan.FromSeconds(20)));
 
-        public CommandLineResult Restore(TimeSpan? timeout = null) =>
-            Execute("restore", timeout);
-
-        public CommandLineResult Run(TimeSpan? timeout = null) =>
-            Execute("run", timeout);
-
-        public CommandLineResult Execute(string args, TimeSpan? timeout = null)
-        {
-            timeout = timeout ?? _defaultCommandTimeout;
-
-            return CommandLine.Execute(
+        public CommandLineResult Execute(string args, CancellationToken? cancellationToken = null) =>
+            CommandLine.Execute(
                 DotnetMuxer.Path,
                 args,
                 _workingDirectory,
-                timeout);
-        }
+                cancellationToken ??
+                Clock.Current.CreateCancellationToken(TimeSpan.FromSeconds(10)));
     }
 }

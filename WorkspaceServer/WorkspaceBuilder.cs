@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
+using Clockwise;
 using MLS.Agent.Tools;
 
 namespace WorkspaceServer
@@ -9,7 +11,7 @@ namespace WorkspaceServer
     {
         private Workspace _workspace;
 
-        private readonly List<Func<Workspace, Task>> _afterCreateActions = new List<Func<Workspace, Task>>();
+        private readonly List<Func<Workspace, CancellationToken, Task>> _afterCreateActions = new List<Func<Workspace, CancellationToken, Task>>();
 
         public WorkspaceBuilder(string workspaceName)
         {
@@ -32,33 +34,45 @@ namespace WorkspaceServer
 
         public void AddPackageReference(string packageId, string version = null)
         {
-            _afterCreateActions.Add(workspace =>
+            _afterCreateActions.Add((workspace, cancellationToken) =>
             {
-                var dotnet = new Dotnet(workspace.Directory, defaultCommandTimeout: TimeSpan.FromSeconds(30));
+                var dotnet = new Dotnet(workspace.Directory);
+
                 var versionArg = string.IsNullOrWhiteSpace(version)
                                      ? ""
                                      : $"--version {version}";
-                dotnet.Execute($"add package {versionArg} {packageId}");
+
+                dotnet.Execute($"add package {versionArg} {packageId}",
+                               cancellationToken);
+
                 return Task.CompletedTask;
             });
         }
 
-        public async Task<Workspace> GetWorkspace()
+        public async Task<Workspace> GetWorkspace(CancellationToken? cancellationToken = null)
         {
             if (_workspace == null)
             {
-                _workspace = new Workspace(WorkspaceName);
-                await _workspace.EnsureCreated();
-
-                foreach (var action in _afterCreateActions)
-                {
-                    await action(_workspace);
-                }
-
-                _workspace.EnsureBuilt();
+                await BuildWorkspace(cancellationToken);
             }
 
             return _workspace;
+        }
+
+        private async Task BuildWorkspace(CancellationToken? cancellationToken)
+        {
+            cancellationToken = cancellationToken ?? Clock.Current.CreateCancellationToken(TimeSpan.FromSeconds(55));
+
+            _workspace = new Workspace(WorkspaceName);
+
+            await _workspace.EnsureCreated(cancellationToken);
+
+            foreach (var action in _afterCreateActions)
+            {
+                await action(_workspace, cancellationToken.Value);
+            }
+
+            _workspace.EnsureBuilt(cancellationToken);
         }
     }
 }

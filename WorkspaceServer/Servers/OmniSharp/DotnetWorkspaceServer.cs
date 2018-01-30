@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using MLS.Agent.Tools;
@@ -31,7 +32,7 @@ namespace WorkspaceServer.Servers.OmniSharp
                 true);
         }
 
-        public async Task EnsureInitializedAndNotDisposed(TimeSpan? timeout = null)
+        public async Task EnsureInitializedAndNotDisposed(CancellationToken? cancellationToken = null)
         {
             if (_disposed)
             {
@@ -42,14 +43,14 @@ namespace WorkspaceServer.Servers.OmniSharp
 
             _workspace.EnsureBuilt();
 
-            await _omniSharpServer.WorkspaceReady(timeout);
+            await _omniSharpServer.WorkspaceReady(cancellationToken);
         }
 
-        public async Task<RunResult> Run(RunRequest request, TimeSpan? timeout = null)
+        public async Task<RunResult> Run(RunRequest request, CancellationToken? cancellationToken = null)
         {
-            await EnsureInitializedAndNotDisposed();
+            await EnsureInitializedAndNotDisposed(cancellationToken);
 
-            var emitResponse = await Emit(request, timeout);
+            var emitResponse = await Emit(request, cancellationToken);
 
             if (emitResponse.Body.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error))
             {
@@ -65,7 +66,7 @@ namespace WorkspaceServer.Servers.OmniSharp
 
             var dotnet = new Dotnet(_workspace.Directory);
 
-            var result = dotnet.Execute(emitResponse.Body.OutputAssemblyPath, timeout ?? _defaultTimeout);
+            var result = dotnet.Execute(emitResponse.Body.OutputAssemblyPath, cancellationToken);
 
             string exceptionMessage = null;
 
@@ -85,9 +86,9 @@ namespace WorkspaceServer.Servers.OmniSharp
                 diagnostics: emitResponse.Body.Diagnostics.Select(d => new SerializableDiagnostic(d)).ToArray());
         }
 
-        private async Task<OmnisharpEmitResponse> Emit(RunRequest request, TimeSpan? timeout)
+        private async Task<OmnisharpEmitResponse> Emit(RunRequest request, CancellationToken? cancellationToken = null)
         {
-            await EnsureInitializedAndNotDisposed();
+            await EnsureInitializedAndNotDisposed(cancellationToken);
 
             foreach (var sourceFile in request.SourceFiles)
             {
@@ -103,7 +104,7 @@ namespace WorkspaceServer.Servers.OmniSharp
                 await _omniSharpServer.UpdateBuffer(file, text);
             }
 
-            return await _omniSharpServer.Emit(timeout);
+            return await _omniSharpServer.Emit(cancellationToken);
         }
 
         public Task<CompletionResult> GetCompletionList(CompletionRequest request)
@@ -113,7 +114,7 @@ namespace WorkspaceServer.Servers.OmniSharp
 
         public async Task<DiagnosticResult> GetDiagnostics(RunRequest request)
         {
-            var emitResult = await Emit(request, timeout: null);
+            var emitResult = await Emit(request);
             var diagnostics = emitResult.Body.Diagnostics.Select(d => new SerializableDiagnostic(d)).ToArray();
             return new DiagnosticResult(diagnostics);
         }

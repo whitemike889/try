@@ -1,6 +1,8 @@
 ﻿using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
+using Clockwise;
 using Pocket;
 using static Pocket.Logger<MLS.Agent.Tools.Workspace>;
 
@@ -59,8 +61,10 @@ namespace MLS.Agent.Tools
 
         public static DirectoryInfo DefaultWorkspacesDirectory { get; }
 
-        public async Task EnsureCreated()
+        public async Task EnsureCreated(CancellationToken? cancellationToken = null)
         {
+            cancellationToken = cancellationToken ?? Clock.Current.CreateCancellationToken(TimeSpan.FromSeconds(45));
+
             if (!IsDirectoryCreated)
             {
                 Directory.Refresh();
@@ -80,21 +84,21 @@ namespace MLS.Agent.Tools
                 if (Directory.GetFiles().Length == 0)
                 {
                     Log.Info("Initializing workspace using {_initializer} in {directory}", _initializer, Directory);
-                    await _initializer.Initialize(Directory);
+                    await _initializer.Initialize(Directory, cancellationToken);
                 }
 
                 IsCreated = true;
             }
         }
 
-        public void EnsureBuilt()
+        public void EnsureBuilt(CancellationToken? cancellationToken = null)
         {
             if (!IsBuilt)
             {
                 if (Directory.GetFiles("*.deps.json", SearchOption.AllDirectories).Length == 0)
                 {
                     Log.Info("Building workspace using {_initializer} in {directory}", _initializer, Directory);
-                    new Dotnet(Directory).Build().ThrowOnFailure();
+                    new Dotnet(Directory).Build(cancellationToken).ThrowOnFailure();
                 }
 
                 IsBuilt = true;

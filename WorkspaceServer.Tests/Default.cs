@@ -1,7 +1,5 @@
 using System;
-using System.Diagnostics;
 using System.Threading.Tasks;
-using FluentAssertions;
 using MLS.Agent.Tools;
 
 namespace WorkspaceServer.Tests
@@ -17,10 +15,5 @@ namespace WorkspaceServer.Tests
         });
 
         public static Workspace TemplateWorkspace => _templateWorkspace.Value;
-
-        public static TimeSpan Timeout() =>
-            Debugger.IsAttached
-                ? 10.Minutes()
-                : 20.Seconds();
     }
 }
