@@ -9,15 +9,16 @@
     <PackageId>TryDotNet.OmniSharp.Emit</PackageId>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Include="..\MLS.Agent.Tools\Diagnostic.cs" Link="Diagnostic.cs" />
+    <Compile Include="..\MLS.Agent.Tools\Location.cs" Link="Location.cs" />
+  </ItemGroup>
+
    <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="2.4.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="2.4.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="1.1.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="1.1.0" />
   </ItemGroup>
-
-   <ItemGroup>
-     <ProjectReference Include="..\MLS.Agent.Tools\MLS.Agent.Tools.csproj" />
-   </ItemGroup>
 
 </Project>
