@@ -1,6 +1,5 @@
 ﻿using System;
 using FluentAssertions;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -35,7 +34,7 @@ namespace WorkspaceServer.Tests
 
                 var result = await server.Run(CreateRunRequestContaining("Console.WriteLine(\"hi!\");"));
 
-                result.Output.Single().Should().Be("hi!");
+                result.Output.Should().BeEquivalentTo("hi!");
             }
         }
 
