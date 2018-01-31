@@ -2,13 +2,24 @@ using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Pocket;
 using WorkspaceServer.Models.Execution;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace WorkspaceServer.Tests
 {
-    public class WorkspaceServerRegistryTests
+    public class WorkspaceServerRegistryTests : IDisposable
     {
+        private readonly CompositeDisposable disposables = new CompositeDisposable();
+
+        public WorkspaceServerRegistryTests(ITestOutputHelper output)
+        {
+            disposables.Add(output.SubscribeToPocketLogger());
+        }
+
+        public void Dispose() => disposables.Dispose();
+
         [Fact]
         public async Task Workspaces_can_be_registered_to_be_created_using_dotnet_new()
         {

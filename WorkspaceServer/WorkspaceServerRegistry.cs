@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using MLS.Agent.Tools;
 using Pocket;
@@ -33,22 +34,19 @@ namespace WorkspaceServer
             workspaceBuilders.Add(name, options);
         }
 
-        public Task<Workspace> GetWorkspace(string workspaceId) =>
-            workspaceBuilders[workspaceId].GetWorkspace();
+        public Task<Workspace> GetWorkspace(string workspaceId, CancellationToken? cancellationToken = null) =>
+            workspaceBuilders[workspaceId].GetWorkspace(cancellationToken);
 
-        public async Task<IWorkspaceServer> GetWorkspaceServer(string name)
+        public async Task<IWorkspaceServer> GetWorkspaceServer(string name, CancellationToken? cancellationToken = null)
         {
             if (string.IsNullOrWhiteSpace(name))
             {
                 throw new ArgumentException("Value cannot be null or whitespace.", nameof(name));
             }
 
-            var workspace = await GetWorkspace(name);
+            var workspace = await GetWorkspace(name, cancellationToken);
 
-            return workspaceServers.GetOrAdd(name, _ =>
-            {
-                return new DotnetWorkspaceServer(workspace);
-            });
+            return workspaceServers.GetOrAdd(name, _ => new DotnetWorkspaceServer(workspace));
         }
 
         public void Dispose()
@@ -59,7 +57,7 @@ namespace WorkspaceServer
             }
         }
 
-        public async Task StartAllServers()
+        public async Task StartAllServers(CancellationToken? cancellationToken = null)
         {
             using (var operation = Log.ConfirmOnExit())
             {
@@ -68,7 +66,7 @@ namespace WorkspaceServer
                     var workspaceServer = await GetWorkspaceServer(name);
                     if (workspaceServer is DotnetWorkspaceServer dotnetWorkspaceServer)
                     {
-                        await dotnetWorkspaceServer.EnsureInitializedAndNotDisposed(timeout: TimeSpan.FromSeconds(30));
+                        await dotnetWorkspaceServer.EnsureInitializedAndNotDisposed(cancellationToken);
                     }
                 }));
 

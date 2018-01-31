@@ -1,7 +1,9 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Pocket;
 using Recipes;
@@ -15,19 +17,20 @@ namespace MLS.Agent.Tools
             FileInfo exePath,
             string args,
             DirectoryInfo workingDir = null,
-            TimeSpan? timeout = null) =>
+            CancellationToken? cancellationToken = null) =>
             Execute(exePath.FullName,
                     args,
                     workingDir,
-                    timeout);
+                    cancellationToken);
 
         public static CommandLineResult Execute(
             string command,
             string args,
             DirectoryInfo workingDir = null,
-            TimeSpan? timeout = null)
+            CancellationToken? cancellationToken = null)
         {
             args = args ?? "";
+            cancellationToken = cancellationToken ?? CancellationToken.None;
 
             var stdOut = new StringBuilder();
             var stdErr = new StringBuilder();
@@ -48,31 +51,37 @@ namespace MLS.Agent.Tools
                     operation.Error("{x}", args: data);
                 }))
             {
-                Exception exception = null;
+                (int exitCode, Exception exception) =
+                    Task.Run(() =>
+                        {
+                            process.WaitForExit();
 
-                int timeoutMs = timeout.HasValue
-                                    ? (int) timeout.Value.TotalMilliseconds
-                                    : int.MaxValue;
+                            operation.Succeed(
+                                "{command} {args} exited with {code}",
+                                command,
+                                args,
+                                process.ExitCode);
 
-                int exitCode;
+                            return (process.ExitCode, (Exception) null);
+                        })
+                        .CancelAfter(
+                            cancellationToken.Value,
+                            ifCancelled: () =>
+                            {
+                                var ex = new TimeoutException();
 
-                if (process.WaitForExit(timeoutMs))
-                {
-                    exitCode = process.ExitCode;
+                                Task.Run(() =>
+                                {
+                                    if (!process.HasExited)
+                                    {
+                                        process.Kill();
+                                    }
+                                }).DontAwait();
 
-                    operation.Succeed(
-                        "{command} exited with {code}",
-                        command,
-                        exitCode);
-                }
-                else
-                {
-                    exitCode = 124; // like the Linux timeout command 
+                                operation.Fail(ex);
 
-                    exception = new TimeoutException();
-                    Task.Run(() => process.Kill()).Timeout(TimeSpan.FromSeconds(1)).DontAwait();
-                    operation.Fail(exception);
-                }
+                                return (124, ex); // like the Linux timeout command 
+                            }).Result;
 
                 return new CommandLineResult(
                     exitCode: exitCode,
@@ -140,7 +149,9 @@ namespace MLS.Agent.Tools
 
         private static ConfirmationLogger LogConfirm(
             object command,
-            string args) => new ConfirmationLogger(
+            string args,
+            [CallerMemberName] string operationName = null) => new ConfirmationLogger(
+            operationName: operationName,
             category: Logger.Log.Category,
             message: "Invoking {command} {args}",
             args: new[] { command, args },

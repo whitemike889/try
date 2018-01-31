@@ -63,20 +63,21 @@ namespace MLS.Agent.Tools
                 {
                     return AcquireAndExtractWithTar("omnisharp-linux-x64.tar.gz");
                 }
-                else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                 {
                     return AcquireAndExtractWithTar("omnisharp-osx.tar.gz");
                 }
 
-                throw new InvalidOperationException("BeOS? You go dawg.");
+                throw new InvalidOperationException($"Unrecognized OS: {RuntimeInformation.OSDescription}");
             }
         }
 
         private static FileInfo AcquireAndExtractWithTar(string file)
         {
-            using (var operation = Log.OnEnterAndConfirmOnExit())
+            if (!_omniSharpRunScript.Exists)
             {
-                if (!_omniSharpRunScript.Exists)
+                using (var operation = Log.OnEnterAndConfirmOnExit())
                 {
                     var downloadUri = new Uri($@"https://github.com/OmniSharp/omnisharp-roslyn/releases/download/{_version}/{file}");
 
@@ -96,19 +97,19 @@ namespace MLS.Agent.Tools
                     {
                         return null;
                     }
+
+                    operation.Succeed();
                 }
-
-                operation.Succeed();
-
-                return _omniSharpRunScript;
             }
+
+            return _omniSharpRunScript;
         }
 
         private static FileInfo AcquireAndExtractWithZip(string file)
         {
-            using (var operation = Log.OnEnterAndConfirmOnExit())
+            if (!_omniSharpExe.Exists)
             {
-                if (!_omniSharpExe.Exists)
+                using (var operation = Log.OnEnterAndConfirmOnExit())
                 {
                     var zipFile = Download(new Uri($@"https://github.com/OmniSharp/omnisharp-roslyn/releases/download/{_version}/{file}"));
 
@@ -124,12 +125,12 @@ namespace MLS.Agent.Tools
                     {
                         return null;
                     }
+
+                    operation.Succeed();
                 }
-
-                operation.Succeed();
-
-                return _omniSharpExe;
             }
+
+            return _omniSharpExe;
         }
 
         private static FileInfo Download(Uri uri)

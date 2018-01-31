@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MLS.Agent.Tools
@@ -31,12 +32,16 @@ namespace MLS.Agent.Tools
             Name = name;
         }
 
-        public Task Initialize(DirectoryInfo directory)
+        public Task Initialize(
+            DirectoryInfo directory,
+            CancellationToken? cancellationToken = null)
         {
             var dotnet = new Dotnet(directory);
 
             dotnet
-                .New(Template, args: $"--name \"{Name}\" --output \"{directory.FullName}\"")
+                .New(Template, 
+                     args: $"--name \"{Name}\" --output \"{directory.FullName}\"",
+                     cancellationToken: cancellationToken)
                 .ThrowOnFailure();
 
             afterCreate?.Invoke(dotnet);

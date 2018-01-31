@@ -1,9 +1,10 @@
 ﻿using System;
 using FluentAssertions;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using Clockwise;
 using Microsoft.CodeAnalysis;
+using MLS.Agent.Tools;
 using Pocket;
 using WorkspaceServer.Models.Execution;
 using Xunit;
@@ -17,7 +18,6 @@ namespace WorkspaceServer.Tests
         private readonly CompositeDisposable disposables = new CompositeDisposable();
 
         protected abstract IWorkspaceServer GetWorkspaceServer(
-            int defaultTimeoutInSeconds = 10,
             [CallerMemberName] string testName = null);
 
         protected abstract RunRequest CreateRunRequestContaining(string text);
@@ -35,7 +35,7 @@ namespace WorkspaceServer.Tests
 
                 var result = await server.Run(CreateRunRequestContaining("Console.WriteLine(\"hi!\");"));
 
-                result.Output.Single().Should().Be("hi!");
+                result.Output.Should().BeEquivalentTo("hi!");
             }
         }
 
@@ -188,9 +188,9 @@ throw new Exception(""oops!"");");
         {
             var request = CreateRunRequestContaining(@"while (true) {  }");
 
-            var server = GetWorkspaceServer(1);
+            var server = GetWorkspaceServer();
 
-            var result = await server.Run(request);
+            var result = await server.Run(request, Clock.Current.CreateCancellationToken(1.Seconds()));
 
             result.ShouldFailWithExceptionContaining("System.TimeoutException: The operation has timed out.");
         }

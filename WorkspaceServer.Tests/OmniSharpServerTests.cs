@@ -5,7 +5,6 @@ using System.IO;
 using System.Reactive.Linq;
 using FluentAssertions;
 using System.Linq;
-using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using MLS.Agent.Tools;
 using Pocket;
@@ -32,14 +31,10 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task OmniSharp_console_output_is_observable()
         {
-            using (var omniSharp = new OmniSharpServer(workspace.Directory))
+            using (var omniSharp = new OmniSharpServer(workspace.Directory, logToPocketLogger: true))
             {
-                var observer = new Subject<string>();
-
-                using (omniSharp.StandardOutput.Subscribe(observer))
-                {
-                    await observer.FirstOrDefaultAsync().Timeout(5.Seconds());
-                }
+                await omniSharp.WorkspaceReady();
+                await omniSharp.StandardOutput.FirstOrDefaultAsync().Timeout(10.Seconds());
             }
         }
 
@@ -68,6 +63,7 @@ namespace WorkspaceServer.Tests
 
                 using (omniSharp.StandardOutput.Subscribe(s => output.Enqueue(s)))
                 {
+                    await omniSharp.WorkspaceReady();
                     var projectName = $"{nameof(OmniSharpServerTests)}.csproj";
 
                     await omniSharp
@@ -85,18 +81,17 @@ namespace WorkspaceServer.Tests
         {
             using (var omniSharp = StartOmniSharp(workspace.Directory))
             {
-                await omniSharp.WorkspaceReady(Default.Timeout());
+                await omniSharp.WorkspaceReady();
 
-                var file = await omniSharp.FindFile("Program.cs", Default.Timeout());
+                var file = await omniSharp.FindFile("Program.cs");
 
                 var code = await file.ReadAsync();
 
                 await omniSharp.UpdateBuffer(
                     file,
-                    code.Replace(";", ""),
-                    Default.Timeout());
+                    code.Replace(";", ""));
 
-                var diagnostics = await omniSharp.CodeCheck(timeout: Default.Timeout());
+                var diagnostics = await omniSharp.CodeCheck();
 
                 diagnostics.Body
                            .QuickFixes

@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Clockwise;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using MLS.Agent.Tools;
 using Newtonsoft.Json;
 using Pocket;
 using Recipes;
@@ -80,9 +82,10 @@ namespace MLS.Agent
                .UseStaticFiles()
                .UseMvc();
 
-            var workspaceServerRegistry = serviceProvider.GetRequiredService<WorkspaceServerRegistry>();
-
-            Task.Run(() => workspaceServerRegistry.StartAllServers()).Wait();
+            serviceProvider
+                .GetRequiredService<WorkspaceServerRegistry>()
+                .StartAllServers(Clock.Current.CreateCancellationToken(TimeSpan.FromSeconds(30)))
+                .DontAwait();
         }
     }
 }
