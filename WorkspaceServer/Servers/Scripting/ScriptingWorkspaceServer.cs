@@ -24,18 +24,6 @@ namespace WorkspaceServer.Servers.Scripting
 {
     public class ScriptingWorkspaceServer : IWorkspaceServer
     {
-        private readonly TimeSpan _defaultTimeout;
-
-        public ScriptingWorkspaceServer(int defaultTimeoutInSeconds = WorkspaceServer.DefaultTimeoutInSeconds)
-        {
-            if (defaultTimeoutInSeconds < 1)
-            {
-                throw new ArgumentException($"{nameof(defaultTimeoutInSeconds)} must be at least 1.");
-            }
-
-            _defaultTimeout = TimeSpan.FromSeconds(defaultTimeoutInSeconds);
-        }
-
         public async Task<RunResult> Run(RunRequest request, CancellationToken? cancellationToken = null)
         {
             using (Log.OnEnterAndExit())
@@ -101,7 +89,7 @@ namespace WorkspaceServer.Servers.Scripting
                                 break;
                             }
                         }
-                    }).CancelAfter(cancellationToken ?? Clock.Current.CreateCancellationToken(_defaultTimeout));
+                    }).CancelAfter(cancellationToken ?? Clock.Current.CreateCancellationToken(TimeSpan.FromSeconds(5)));
                 }
                 catch (TimeoutException timeoutException)
                 {

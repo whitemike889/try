@@ -14,16 +14,13 @@ namespace WorkspaceServer.Servers.OmniSharp
 {
     public class DotnetWorkspaceServer : IWorkspaceServer, IDisposable
     {
-        private readonly TimeSpan _defaultTimeout;
         private readonly Workspace _workspace;
         private readonly OmniSharpServer _omniSharpServer;
 
         private bool _disposed;
 
-        public DotnetWorkspaceServer(Workspace workspace, int defaultTimeoutInSeconds = WorkspaceServer.DefaultTimeoutInSeconds)
+        public DotnetWorkspaceServer(Workspace workspace)
         {
-            _defaultTimeout = TimeSpan.FromSeconds(defaultTimeoutInSeconds);
-
             _workspace = workspace ?? throw new ArgumentNullException(nameof(workspace));
 
             _omniSharpServer = new OmniSharpServer(

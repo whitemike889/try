@@ -23,8 +23,7 @@ namespace WorkspaceServer.Tests
         protected override RunRequest CreateRunRequestContaining(string text) => new RunRequest(text);
 
         protected override IWorkspaceServer GetWorkspaceServer(
-            int defaultTimeoutInSeconds = 10,
-            [CallerMemberName] string testName = null) => new ScriptingWorkspaceServer(defaultTimeoutInSeconds);
+            [CallerMemberName] string testName = null) => new ScriptingWorkspaceServer();
 
         [Fact]
         public void Response_shows_fragment_return_value()

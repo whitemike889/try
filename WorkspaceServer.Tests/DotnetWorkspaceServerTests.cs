@@ -22,12 +22,11 @@ namespace WorkspaceServer.Tests
         }
 
         protected override IWorkspaceServer GetWorkspaceServer(
-            int defaultTimeoutInSeconds = 10,
             [CallerMemberName] string testName = null)
         {
             var project = Create.TestWorkspace(testName);
 
-            var workspaceServer = new DotnetWorkspaceServer(project, defaultTimeoutInSeconds);
+            var workspaceServer = new DotnetWorkspaceServer(project);
 
             RegisterForDisposal(workspaceServer);
 
