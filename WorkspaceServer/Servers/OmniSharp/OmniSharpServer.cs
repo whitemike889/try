@@ -84,7 +84,8 @@ namespace WorkspaceServer.Servers.OmniSharp
                 return;
             }
 
-            cancellationToken = cancellationToken ?? Clock.Current.CreateCancellationToken(TimeSpan.FromSeconds(30));
+            cancellationToken = cancellationToken ??
+                                Clock.Current.CreateCancellationToken(TimeSpan.FromMinutes(2));
 
             var _ = _process.Value;
 
