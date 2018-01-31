@@ -28,18 +28,18 @@ namespace WorkspaceServer.Models.Execution
           
             var sourceFiles = files?.Select(entry => SourceFile.Create(entry.Name, entry.Text)).ToList() ?? new List<SourceFile>();
             
-            var localBuffers = buffers?.ToList() ?? new List<Buffer>();
+            var bufferList = buffers?.ToList() ?? new List<Buffer>();
 
             if (!string.IsNullOrWhiteSpace(code))
             {
-                localBuffers.Add(new Buffer(id,code,position));
+                bufferList.Add(new Buffer(id,code,position));
                 sourceFiles.Add(SourceFile.Create(code, "Program.cs"));
             }
 
-            Buffers = localBuffers;
+            Buffers = bufferList;
             if (sourceFiles.Count == 0)
             {
-                sourceFiles.Add(SourceFile.Create(localBuffers[0].Content, "Program.cs"));
+                sourceFiles.Add(SourceFile.Create(bufferList[0].Content, "Program.cs"));
             }
             SourceFiles = sourceFiles;
         }
