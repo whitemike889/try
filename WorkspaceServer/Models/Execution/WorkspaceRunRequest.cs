@@ -45,7 +45,6 @@ namespace WorkspaceServer.Models.Execution
         }
 
         [Required]
-        [MinLength(1)]
         public IReadOnlyCollection<SourceFile> SourceFiles { get; }
 
         public string[] Usings { get; }
