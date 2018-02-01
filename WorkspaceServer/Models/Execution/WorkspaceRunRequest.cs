@@ -26,7 +26,7 @@ namespace WorkspaceServer.Models.Execution
 
             Usings = usings ?? Array.Empty<string>();
           
-            var sourceFiles = files?.Select(entry => SourceFile.Create(entry.Name, entry.Text)).ToList() ?? new List<SourceFile>();
+            var sourceFiles = files?.Select(entry => SourceFile.Create(entry.Text, entry.Name)).ToList() ?? new List<SourceFile>();
             
             var bufferList = buffers?.ToList() ?? new List<Buffer>();
 
