@@ -1,0 +1,18 @@
+using System;
+
+namespace ConsoleProgramSingleRegion
+{
+    public class Program
+    {
+        public static void Main(string[] args)
+        {
+            #region alpha
+            var a = 10;
+            #endregion
+
+            #region alpha
+            var b = 10;
+            #endregion
+        }
+    }
+}

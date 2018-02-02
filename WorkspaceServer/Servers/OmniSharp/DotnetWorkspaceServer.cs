@@ -7,6 +7,7 @@ using Microsoft.CodeAnalysis;
 using MLS.Agent.Tools;
 using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
+using WorkspaceServer.Processors;
 using Workspace = MLS.Agent.Tools.Workspace;
 using OmnisharpEmitResponse = OmniSharp.Client.Commands.OmniSharpResponseMessage<OmniSharp.Client.Commands.EmitResponse>;
 
@@ -45,9 +46,11 @@ namespace WorkspaceServer.Servers.OmniSharp
 
         public async Task<RunResult> Run(WorkspaceRunRequest request, CancellationToken? cancellationToken = null)
         {
+            var processor = new BufferInliningProcessor();
+            var processedRequest = await processor.ProcessAsync(request);
             await EnsureInitializedAndNotDisposed(cancellationToken);
 
-            var emitResponse = await Emit(request, cancellationToken);
+            var emitResponse = await Emit(processedRequest, cancellationToken);
 
             if (emitResponse.Body.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error))
             {
