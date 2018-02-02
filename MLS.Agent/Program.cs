@@ -121,6 +121,12 @@ namespace MLS.Agent
                                                 workspace.CreateUsingDotnet("console");
                                                 workspace.AddPackageReference("Twilio", "5.9.2");
                                             });
+                        registry.AddWorkspace("jsonDotNet",
+                            workspace =>
+                            {
+                                workspace.CreateUsingDotnet("console");
+                                workspace.AddPackageReference("Newtonsoft.Json", "10.0.3");
+                            });
                         return registry;
                     });
                 })
