@@ -18,14 +18,15 @@ using Recipes;
 using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
 using static Pocket.Logger<WorkspaceServer.Servers.Scripting.ScriptingWorkspaceServer>;
-using MLS.Agent.Tools;
 
 namespace WorkspaceServer.Servers.Scripting
 {
     public class ScriptingWorkspaceServer : IWorkspaceServer
     {
-        public async Task<RunResult> Run(RunRequest request, CancellationToken? cancellationToken = null)
+        public async Task<RunResult> Run(RunRequest request, TimeBudget budget = null)
         {
+            budget = budget ?? TimeBudget.Unlimited();
+
             using (Log.OnEnterAndExit())
             using (var console = await ConsoleOutput.Capture())
             {
@@ -89,7 +90,7 @@ namespace WorkspaceServer.Servers.Scripting
                                 break;
                             }
                         }
-                    }).CancelAfter(cancellationToken ?? Clock.Current.CreateCancellationToken(TimeSpan.FromSeconds(5)));
+                    }).CancelIfExceeds(budget);
                 }
                 catch (TimeoutException timeoutException)
                 {

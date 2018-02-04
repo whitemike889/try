@@ -3,8 +3,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
+using Clockwise;
 using Pocket;
 using Recipes;
 using static Pocket.Logger<MLS.Agent.Tools.CommandLine>;
@@ -17,20 +17,20 @@ namespace MLS.Agent.Tools
             FileInfo exePath,
             string args,
             DirectoryInfo workingDir = null,
-            CancellationToken? cancellationToken = null) =>
+            TimeBudget budget = null) =>
             Execute(exePath.FullName,
                     args,
                     workingDir,
-                    cancellationToken);
+                    budget);
 
         public static CommandLineResult Execute(
             string command,
             string args,
             DirectoryInfo workingDir = null,
-            CancellationToken? cancellationToken = null)
+            TimeBudget budget = null)
         {
             args = args ?? "";
-            cancellationToken = cancellationToken ?? CancellationToken.None;
+            budget = budget ?? TimeBudget.Unlimited();
 
             var stdOut = new StringBuilder();
             var stdErr = new StringBuilder();
@@ -64,8 +64,8 @@ namespace MLS.Agent.Tools
 
                             return (process.ExitCode, (Exception) null);
                         })
-                        .CancelAfter(
-                            cancellationToken.Value,
+                        .CancelIfExceeds(
+                            budget,
                             ifCancelled: () =>
                             {
                                 var ex = new TimeoutException();

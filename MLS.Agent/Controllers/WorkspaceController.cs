@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Clockwise;
 using Microsoft.AspNetCore.Mvc;
 using Pocket;
 using WorkspaceServer;
@@ -32,17 +33,19 @@ namespace MLS.Agent.Controllers
 
                 var workspaceType = request.WorkspaceType;
 
+                var budget = new TimeBudget(TimeSpan.FromSeconds(7));
+
                 if (string.Equals(workspaceType, "script", StringComparison.OrdinalIgnoreCase))
                 {
                     var server = new ScriptingWorkspaceServer();
 
-                    result = await server.Run(request);
+                    result = await server.Run(request, budget);
                 }
                 else
                 {
                     var server = await workspaceServerRegistry.GetWorkspaceServer(workspaceType);
 
-                    result = await server.Run(request);
+                    result = await server.Run(request, budget);
                 }
 
                 operation.Succeed();
