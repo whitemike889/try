@@ -13,6 +13,12 @@ namespace MLS.Agent.Controllers
 {
     public class WorkspaceController : Controller
     {
+#if DEBUG
+        private static readonly TimeSpan _defaultBudgetDuration = TimeSpan.FromSeconds(20);
+#else
+        private static readonly TimeSpan _defaultBudgetDuration = TimeSpan.FromSeconds(7);
+#endif
+
         private readonly WorkspaceServerRegistry workspaceServerRegistry;
 
         public WorkspaceController(WorkspaceServerRegistry workspaceServerRegistry)
@@ -33,7 +39,7 @@ namespace MLS.Agent.Controllers
 
                 var workspaceType = request.WorkspaceType;
 
-                var budget = new TimeBudget(TimeSpan.FromSeconds(7));
+                var budget = new TimeBudget(_defaultBudgetDuration);
 
                 if (string.Equals(workspaceType, "script", StringComparison.OrdinalIgnoreCase))
                 {
