@@ -6,12 +6,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using MLS.Agent.Tools;
 using Newtonsoft.Json;
 using Pocket;
 using Recipes;
-using LoggerConfiguration = Serilog.LoggerConfiguration;
-using Serilog.Sinks.RollingFileAlternate;
 using WorkspaceServer;
 using static Pocket.Logger<MLS.Agent.Startup>;
 
@@ -19,8 +16,6 @@ namespace MLS.Agent
 {
     public class Startup
     {
-        private readonly CompositeDisposable _disposables = new CompositeDisposable();
-
         public Startup(IHostingEnvironment env)
         {
             Environment = env;
@@ -61,19 +56,6 @@ namespace MLS.Agent
             IHostingEnvironment env,
             IServiceProvider serviceProvider)
         {
-            if (Environment.IsDevelopment())
-            {
-                var log = new LoggerConfiguration()
-                    .WriteTo
-                    .RollingFileAlternate("logs", outputTemplate: "{Message}{NewLine}")
-                    .CreateLogger();
-
-                var subscription = LogEvents.Subscribe(e => log.Information(e.ToLogString()));
-
-                _disposables.Add(subscription);
-                _disposables.Add(log);
-            }
-
             Log.Info("Agent version {orchestrator_version} starting in environment {environment}",
                      AssemblyVersionSensor.Version().AssemblyInformationalVersion,
                      Environment.EnvironmentName);
@@ -84,7 +66,7 @@ namespace MLS.Agent
 
             serviceProvider
                 .GetRequiredService<WorkspaceServerRegistry>()
-                .StartAllServers(Clock.Current.CreateCancellationToken(TimeSpan.FromSeconds(30)))
+                .StartAllServers()
                 .DontAwait();
         }
     }
