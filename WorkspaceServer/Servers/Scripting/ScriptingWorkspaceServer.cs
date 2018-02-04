@@ -96,9 +96,13 @@ namespace WorkspaceServer.Servers.Scripting
                 {
                     exception = timeoutException;
                 }
-                catch (TaskCanceledException timeoutException)
+                catch (TimeBudgetExceededException)
                 {
-                    exception = timeoutException;
+                    exception = new TimeoutException(); 
+                }
+                catch (TaskCanceledException taskCanceledException)
+                {
+                    exception = taskCanceledException;
                 }
 
                 return new RunResult(
