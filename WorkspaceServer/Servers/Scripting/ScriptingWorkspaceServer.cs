@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.CodeAnalysis;
@@ -112,7 +111,7 @@ namespace WorkspaceServer.Servers.Scripting
                                    .Replace("\r\n", "\n")
                                    .Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries),
                     returnValue: state?.ReturnValue,
-                    exception: ToDisplayString(exception ?? state?.Exception),
+                    exception: (exception ?? state?.Exception).ToDisplayString(),
                     variables: variables.Values,
                     diagnostics: GetDiagnostics(request.SourceFiles.Single(), options)); 
             }
@@ -145,18 +144,6 @@ namespace WorkspaceServer.Servers.Scripting
                                  lineNumber,
                                  scriptVariable.Value,
                                  scriptVariable.Type));
-            }
-        }
-
-        internal static string ToDisplayString(Exception exception)
-        {
-            switch (exception)
-            {
-                case CompilationErrorException _:
-                    return null;
-
-                default:
-                    return exception?.ToString();
             }
         }
 
