@@ -91,7 +91,8 @@ namespace WorkspaceServer.Servers.OmniSharp
                       .AsOmniSharpMessages()
                       .OfType<OmniSharpEventMessage<ProjectAdded>>()
                       .FirstAsync()
-                      .ToTask(budget ?? TimeBudget.Unlimited());
+                      .ToTask()
+                      .CancelIfExceeds(budget ?? TimeBudget.Unlimited());
 
                 _ready = true;
 

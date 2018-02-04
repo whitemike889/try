@@ -35,7 +35,7 @@ namespace MLS.Agent.Tools
             var stdOut = new StringBuilder();
             var stdErr = new StringBuilder();
 
-            using (var operation = LogConfirm(command, args))
+            using (var operation = CheckBudgetAndStartConfirmationLogger(command, args, budget))
             using (var process = StartProcess(
                 command,
                 args,
@@ -78,7 +78,7 @@ namespace MLS.Agent.Tools
                                     }
                                 }).DontAwait();
 
-                                operation.Fail(ex);
+                                operation.Fail(new TimeBudgetExceededException(budget));
 
                                 return (124, ex); // like the Linux timeout command 
                             }).Result;
@@ -147,14 +147,20 @@ namespace MLS.Agent.Tools
             return process;
         }
 
-        private static ConfirmationLogger LogConfirm(
+        private static ConfirmationLogger CheckBudgetAndStartConfirmationLogger(
             object command,
             string args,
-            [CallerMemberName] string operationName = null) => new ConfirmationLogger(
-            operationName: operationName,
-            category: Logger.Log.Category,
-            message: "Invoking {command} {args}",
-            args: new[] { command, args },
-            logOnStart: true);
+            TimeBudget budget,
+            [CallerMemberName] string operationName = null)
+        {
+            budget?.RecordEntryAndThrowIfBudgetExceeded($"{command} {args}");
+
+            return new ConfirmationLogger(
+                operationName: operationName,
+                category: Logger.Log.Category,
+                message: "Invoking {command} {args}",
+                args: new[] { command, args },
+                logOnStart: true);
+        }
     }
 }

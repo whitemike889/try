@@ -1,10 +1,10 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Scripting;
 using MLS.Agent.Tools;
 using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
@@ -37,6 +37,8 @@ namespace WorkspaceServer.Servers.OmniSharp
                 throw new ObjectDisposedException(nameof(DotnetWorkspaceServer));
             }
 
+            budget?.RecordEntryAndThrowIfBudgetExceeded();
+
             await _workspace.EnsureCreated(budget);
 
             _workspace.EnsureBuilt(budget);
@@ -46,42 +48,63 @@ namespace WorkspaceServer.Servers.OmniSharp
 
         public async Task<RunResult> Run(RunRequest request, TimeBudget budget = null)
         {
-            await EnsureInitializedAndNotDisposed(budget);
+            budget = budget ?? TimeBudget.Unlimited();
 
-            var emitResponse = await Emit(request, budget);
-
-            if (emitResponse.Body.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error))
-            {
-                return new RunResult(
-                    false,
-                    emitResponse.Body
-                                .Diagnostics
-                                .Where(d => d.Severity == DiagnosticSeverity.Error)
-                                .Select(e => e.ToString())
-                                .ToArray(),
-                    diagnostics: emitResponse.Body.Diagnostics.Select(d => new SerializableDiagnostic(d)).ToArray());
-            }
-
-            var dotnet = new Dotnet(_workspace.Directory);
-
-            var result = dotnet.Execute(emitResponse.Body.OutputAssemblyPath, budget);
-
+            CommandLineResult result = null;
+            Exception exception = null;
             string exceptionMessage = null;
+            OmnisharpEmitResponse emitResponse = null;
 
-            if (result.Exception != null)
+            try
             {
-                exceptionMessage = result.Exception.ToString();
+                await EnsureInitializedAndNotDisposed(budget);
+
+                emitResponse = await Emit(request, budget);
+
+                if (emitResponse.Body.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error))
+                {
+                    return new RunResult(
+                        false,
+                        emitResponse.Body
+                                    .Diagnostics
+                                    .Where(d => d.Severity == DiagnosticSeverity.Error)
+                                    .Select(e => e.ToString())
+                                    .ToArray(),
+                        diagnostics: emitResponse.Body.Diagnostics.Select(d => new SerializableDiagnostic(d)).ToArray());
+                }
+
+                var dotnet = new Dotnet(_workspace.Directory);
+
+                result = dotnet.Execute(emitResponse.Body.OutputAssemblyPath, budget);
+
+                if (result.Exception != null)
+                {
+                    exceptionMessage = result.Exception.ToString();
+                }
+                else if (result.Error.Count > 0)
+                {
+                    exceptionMessage = string.Join(Environment.NewLine, result.Error);
+                }
             }
-            else if (result.Error.Count > 0)
+            catch (TimeoutException timeoutException)
             {
-                exceptionMessage = string.Join(Environment.NewLine, result.Error);
+                exception = timeoutException;
+            }
+            catch (TimeBudgetExceededException)
+            {
+                exception = new TimeoutException(); 
+            }
+            catch (TaskCanceledException taskCanceledException)
+            {
+                exception = taskCanceledException;
             }
 
             return new RunResult(
-                succeeded: !(result.Exception is TimeoutException),
-                output: result.Output,
-                exception: exceptionMessage,
-                diagnostics: emitResponse.Body.Diagnostics.Select(d => new SerializableDiagnostic(d)).ToArray());
+                succeeded:  !(exception is TimeoutException) &&
+                            !(exception is CompilationErrorException),
+                output: result?.Output,
+                exception: exceptionMessage ?? exception.ToDisplayString(),
+                diagnostics: emitResponse?.Body.Diagnostics.Select(d => new SerializableDiagnostic(d)).ToArray());
         }
 
         private async Task<OmnisharpEmitResponse> Emit(RunRequest request, TimeBudget budget = null)
