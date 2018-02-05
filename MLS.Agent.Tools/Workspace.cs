@@ -24,6 +24,11 @@ namespace MLS.Agent.Tools
                             ".trydotnet",
                             "workspaces"));
 
+            if (!DefaultWorkspacesDirectory.Exists)
+            {
+                DefaultWorkspacesDirectory.Create();
+            }
+
             Log.Info("Workspaces path is {DefaultWorkspacesDirectory}", DefaultWorkspacesDirectory);
         }
 
