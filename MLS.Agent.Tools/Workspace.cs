@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
 using Clockwise;
 using Pocket;
@@ -24,6 +23,11 @@ namespace MLS.Agent.Tools
                             Paths.UserProfile,
                             ".trydotnet",
                             "workspaces"));
+
+            if (!DefaultWorkspacesDirectory.Exists)
+            {
+                DefaultWorkspacesDirectory.Create();
+            }
 
             Log.Info("Workspaces path is {DefaultWorkspacesDirectory}", DefaultWorkspacesDirectory);
         }
@@ -61,10 +65,8 @@ namespace MLS.Agent.Tools
 
         public static DirectoryInfo DefaultWorkspacesDirectory { get; }
 
-        public async Task EnsureCreated(CancellationToken? cancellationToken = null)
+        public async Task EnsureCreated(TimeBudget budget = null)
         {
-            cancellationToken = cancellationToken ?? Clock.Current.CreateCancellationToken(TimeSpan.FromSeconds(45));
-
             if (!IsDirectoryCreated)
             {
                 Directory.Refresh();
@@ -84,21 +86,21 @@ namespace MLS.Agent.Tools
                 if (Directory.GetFiles().Length == 0)
                 {
                     Log.Info("Initializing workspace using {_initializer} in {directory}", _initializer, Directory);
-                    await _initializer.Initialize(Directory, cancellationToken);
+                    await _initializer.Initialize(Directory, budget);
                 }
 
                 IsCreated = true;
             }
         }
 
-        public void EnsureBuilt(CancellationToken? cancellationToken = null)
+        public void EnsureBuilt(TimeBudget budget = null)
         {
             if (!IsBuilt)
             {
                 if (Directory.GetFiles("*.deps.json", SearchOption.AllDirectories).Length == 0)
                 {
                     Log.Info("Building workspace using {_initializer} in {directory}", _initializer, Directory);
-                    new Dotnet(Directory).Build(cancellationToken).ThrowOnFailure();
+                    new Dotnet(Directory).Build(budget).ThrowOnFailure();
                 }
 
                 IsBuilt = true;

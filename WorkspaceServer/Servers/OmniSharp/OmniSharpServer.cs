@@ -11,7 +11,6 @@ using MLS.Agent.Tools;
 using OmniSharp.Client;
 using OmniSharp.Client.Events;
 using Pocket;
-using Recipes;
 using static Pocket.Logger<WorkspaceServer.Servers.OmniSharp.OmniSharpServer>;
 
 namespace WorkspaceServer.Servers.OmniSharp
@@ -77,15 +76,12 @@ namespace WorkspaceServer.Servers.OmniSharp
 
         public int NextSeq() => Interlocked.Increment(ref _seq);
 
-        public async Task WorkspaceReady(CancellationToken? cancellationToken = null)
+        public async Task WorkspaceReady(TimeBudget budget = null)
         {
             if (_ready)
             {
                 return;
             }
-
-            cancellationToken = cancellationToken ??
-                                Clock.Current.CreateCancellationToken(TimeSpan.FromMinutes(2));
 
             var _ = _process.Value;
 
@@ -95,7 +91,8 @@ namespace WorkspaceServer.Servers.OmniSharp
                       .AsOmniSharpMessages()
                       .OfType<OmniSharpEventMessage<ProjectAdded>>()
                       .FirstAsync()
-                      .ToTask(cancellationToken);
+                      .ToTask()
+                      .CancelIfExceeds(budget ?? TimeBudget.Unlimited());
 
                 _ready = true;
 

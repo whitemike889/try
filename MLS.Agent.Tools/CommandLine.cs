@@ -3,8 +3,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
+using Clockwise;
 using Pocket;
 using Recipes;
 using static Pocket.Logger<MLS.Agent.Tools.CommandLine>;
@@ -17,25 +17,25 @@ namespace MLS.Agent.Tools
             FileInfo exePath,
             string args,
             DirectoryInfo workingDir = null,
-            CancellationToken? cancellationToken = null) =>
+            TimeBudget budget = null) =>
             Execute(exePath.FullName,
                     args,
                     workingDir,
-                    cancellationToken);
+                    budget);
 
         public static CommandLineResult Execute(
             string command,
             string args,
             DirectoryInfo workingDir = null,
-            CancellationToken? cancellationToken = null)
+            TimeBudget budget = null)
         {
             args = args ?? "";
-            cancellationToken = cancellationToken ?? CancellationToken.None;
+            budget = budget ?? TimeBudget.Unlimited();
 
             var stdOut = new StringBuilder();
             var stdErr = new StringBuilder();
 
-            using (var operation = LogConfirm(command, args))
+            using (var operation = CheckBudgetAndStartConfirmationLogger(command, args, budget))
             using (var process = StartProcess(
                 command,
                 args,
@@ -64,8 +64,8 @@ namespace MLS.Agent.Tools
 
                             return (process.ExitCode, (Exception) null);
                         })
-                        .CancelAfter(
-                            cancellationToken.Value,
+                        .CancelIfExceeds(
+                            budget,
                             ifCancelled: () =>
                             {
                                 var ex = new TimeoutException();
@@ -78,7 +78,7 @@ namespace MLS.Agent.Tools
                                     }
                                 }).DontAwait();
 
-                                operation.Fail(ex);
+                                operation.Fail(new TimeBudgetExceededException(budget));
 
                                 return (124, ex); // like the Linux timeout command 
                             }).Result;
@@ -147,14 +147,20 @@ namespace MLS.Agent.Tools
             return process;
         }
 
-        private static ConfirmationLogger LogConfirm(
+        private static ConfirmationLogger CheckBudgetAndStartConfirmationLogger(
             object command,
             string args,
-            [CallerMemberName] string operationName = null) => new ConfirmationLogger(
-            operationName: operationName,
-            category: Logger.Log.Category,
-            message: "Invoking {command} {args}",
-            args: new[] { command, args },
-            logOnStart: true);
+            TimeBudget budget,
+            [CallerMemberName] string operationName = null)
+        {
+            budget?.RecordEntryAndThrowIfBudgetExceeded($"{command} {args}");
+
+            return new ConfirmationLogger(
+                operationName: operationName,
+                category: Logger.Log.Category,
+                message: "Invoking {command} {args}",
+                args: new[] { command, args },
+                logOnStart: true);
+        }
     }
 }

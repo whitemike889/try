@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Clockwise;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
@@ -11,13 +12,15 @@ namespace WorkspaceServer.Processors
 {
     public class BufferInliningProcessor : IWorksapceProcessor
     {
-        public async Task<WorkspaceRunRequest> ProcessAsync(WorkspaceRunRequest source)
+        private static readonly string processorName = typeof(BufferInliningProcessor).Name;
+
+        public async Task<WorkspaceRunRequest> ProcessAsync(WorkspaceRunRequest source, TimeBudget timeBudget = null)
         {
             if (source == null) throw new ArgumentNullException(nameof(source));
 
-            var results = await InlineBuffersAsync(source);
+            var results = await InlineBuffersAsync(source, timeBudget);
 
-            return new WorkspaceRunRequest(workspaceType: source.WorkspaceType, files: results);
+            return new WorkspaceRunRequest(workspaceType: source.WorkspaceType, files: results.files, buffers: results.buffers);
         }
 
         public Dictionary<string, (SourceFile Destination, TextSpan Region)> ExtractViewPorts(WorkspaceRunRequest ws)
@@ -28,9 +31,10 @@ namespace WorkspaceServer.Processors
 
             return ExtractViewPorts(files);
         }
-        private static async Task<WorkspaceRunRequest.File[]> InlineBuffersAsync(WorkspaceRunRequest source)
+        private static async Task<(WorkspaceRunRequest.File[] files, WorkspaceRunRequest.Buffer[] buffers)> InlineBuffersAsync(WorkspaceRunRequest source, TimeBudget timeBudget)
         {
             var files = source.SourceFiles.ToDictionary(f => f.Name);
+            var buffers = new List<WorkspaceRunRequest.Buffer>();
             foreach (var sourceBuffer in source.Buffers)
             {
                 var viewPorts = ExtractViewPorts(files.Values);
@@ -40,13 +44,15 @@ namespace WorkspaceServer.Processors
                     var textChange = new TextChange(
                         viewPort.Region,
                         $"{Environment.NewLine}{sourceBuffer.Content}{Environment.NewLine}");
+                    
 
-                    var txt = tree.GetText()
-                        .WithChanges(
-                            textChange);
+                    var txt = tree.WithChangedText(tree.GetText().WithChanges(textChange));
 
-                    var newCode = txt.ToString();
+                    var offset = tree.GetChangedSpans(txt).FirstOrDefault().Start;
 
+                    var newCode = (await txt.GetTextAsync()).ToString();
+
+                    buffers.Add(new WorkspaceRunRequest.Buffer(sourceBuffer.Id, sourceBuffer.Content, offset));
                     files[viewPort.Destination.Name] = SourceFile.Create(newCode, viewPort.Destination.Name);
                 }
                 else if (sourceBuffer.Id == string.Empty)
@@ -55,7 +61,10 @@ namespace WorkspaceServer.Processors
                 }
             }
 
-            return files.Values.Select(sf => new WorkspaceRunRequest.File(sf.Name, sf.Text.ToString())).ToArray();
+            var processedFiles = files.Values.Select(sf => new WorkspaceRunRequest.File(sf.Name, sf.Text.ToString())).ToArray();
+            var processedBuffers = buffers.ToArray();
+            timeBudget?.RecordEntry(processorName);
+            return (processedFiles, processedBuffers);
         }
 
 

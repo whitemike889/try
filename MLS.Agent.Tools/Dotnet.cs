@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Threading;
 using Clockwise;
 
 namespace MLS.Agent.Tools
@@ -15,29 +14,24 @@ namespace MLS.Agent.Tools
                                 new DirectoryInfo(Directory.GetCurrentDirectory());
         }
 
-        public CommandLineResult New(string templateName, string args = null, CancellationToken? cancellationToken = null)
+        public CommandLineResult New(string templateName, string args = null, TimeBudget budget = null)
         {
             if (string.IsNullOrWhiteSpace(templateName))
             {
                 throw new ArgumentException("Value cannot be null or whitespace.", nameof(templateName));
             }
 
-            return Execute($"new {templateName} {args}",
-                           cancellationToken ??
-                           Clock.Current.CreateCancellationToken(TimeSpan.FromSeconds(10)));
+            return Execute($"new {templateName} {args}", budget);
         }
 
-        public CommandLineResult Build(CancellationToken? cancellationToken = null) =>
-            Execute("build",
-                    cancellationToken ??
-                    Clock.Current.CreateCancellationToken(TimeSpan.FromSeconds(20)));
+        public CommandLineResult Build(TimeBudget budget = null) =>
+            Execute("build", budget);
 
-        public CommandLineResult Execute(string args, CancellationToken? cancellationToken = null) =>
+        public CommandLineResult Execute(string args, TimeBudget budget = null) =>
             CommandLine.Execute(
                 DotnetMuxer.Path,
                 args,
                 _workingDirectory,
-                cancellationToken ??
-                Clock.Current.CreateCancellationToken(TimeSpan.FromSeconds(10)));
+                budget);
     }
 }

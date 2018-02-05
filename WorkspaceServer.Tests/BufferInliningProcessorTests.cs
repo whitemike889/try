@@ -85,6 +85,9 @@ namespace WorkspaceServer.Tests
                 .NotBe(ws.SourceFiles.ElementAt(0).Text.ToString());
             processed.SourceFiles.ElementAt(0).Text.ToString().Should().Contain("var newValue = 1000;");
 
+            processed.Buffers.Count.Should().Be(ws.Buffers.Count);
+            processed.Buffers.ElementAt(0).Position.Should().BeGreaterThan(ws.Buffers.ElementAt(0).Position);
+
         }
 
         [Fact]

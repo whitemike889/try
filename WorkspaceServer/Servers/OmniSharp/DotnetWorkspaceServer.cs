@@ -1,9 +1,10 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
+using Clockwise;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Scripting;
 using MLS.Agent.Tools;
 using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
@@ -30,65 +31,88 @@ namespace WorkspaceServer.Servers.OmniSharp
                 true);
         }
 
-        public async Task EnsureInitializedAndNotDisposed(CancellationToken? cancellationToken = null)
+        public async Task EnsureInitializedAndNotDisposed(TimeBudget budget = null)
         {
             if (_disposed)
             {
                 throw new ObjectDisposedException(nameof(DotnetWorkspaceServer));
             }
 
-            await _workspace.EnsureCreated();
+            budget?.RecordEntryAndThrowIfBudgetExceeded();
 
-            _workspace.EnsureBuilt();
+            await _workspace.EnsureCreated(budget);
 
-            await _omniSharpServer.WorkspaceReady(cancellationToken);
+            _workspace.EnsureBuilt(budget);
+
+            await _omniSharpServer.WorkspaceReady(budget);
         }
 
-        public async Task<RunResult> Run(WorkspaceRunRequest request, CancellationToken? cancellationToken = null)
+        public async Task<RunResult> Run(WorkspaceRunRequest request, TimeBudget budget = null)
         {
+            budget = budget ?? TimeBudget.Unlimited();
             var processor = new BufferInliningProcessor();
             var processedRequest = await processor.ProcessAsync(request);
-            await EnsureInitializedAndNotDisposed(cancellationToken);
 
-            var emitResponse = await Emit(processedRequest, cancellationToken);
-
-            if (emitResponse.Body.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error))
-            {
-                return new RunResult(
-                    false,
-                    emitResponse.Body
-                                .Diagnostics
-                                .Where(d => d.Severity == DiagnosticSeverity.Error)
-                                .Select(e => e.ToString())
-                                .ToArray(),
-                    diagnostics: emitResponse.Body.Diagnostics.Select(d => new SerializableDiagnostic(d)).ToArray());
-            }
-
-            var dotnet = new Dotnet(_workspace.Directory);
-
-            var result = dotnet.Execute(emitResponse.Body.OutputAssemblyPath, cancellationToken);
-
+            CommandLineResult result = null;
+            Exception exception = null;
             string exceptionMessage = null;
+            OmnisharpEmitResponse emitResponse = null;
 
-            if (result.Exception != null)
+            try
             {
-                exceptionMessage = result.Exception.ToString();
+                await EnsureInitializedAndNotDisposed(budget);
+
+                emitResponse = await Emit(processedRequest, budget);
+
+                if (emitResponse.Body.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error))
+                {
+                    return new RunResult(
+                        false,
+                        emitResponse.Body
+                                    .Diagnostics
+                                    .Where(d => d.Severity == DiagnosticSeverity.Error)
+                                    .Select(e => e.ToString())
+                                    .ToArray(),
+                        diagnostics: emitResponse.Body.Diagnostics.Select(d => new SerializableDiagnostic(d)).ToArray());
+                }
+
+                var dotnet = new Dotnet(_workspace.Directory);
+
+                result = dotnet.Execute(emitResponse.Body.OutputAssemblyPath, budget);
+
+                if (result.Exception != null)
+                {
+                    exceptionMessage = result.Exception.ToString();
+                }
+                else if (result.Error.Count > 0)
+                {
+                    exceptionMessage = string.Join(Environment.NewLine, result.Error);
+                }
             }
-            else if (result.Error.Count > 0)
+            catch (TimeoutException timeoutException)
             {
-                exceptionMessage = string.Join(Environment.NewLine, result.Error);
+                exception = timeoutException;
+            }
+            catch (TimeBudgetExceededException)
+            {
+                exception = new TimeoutException(); 
+            }
+            catch (TaskCanceledException taskCanceledException)
+            {
+                exception = taskCanceledException;
             }
 
             return new RunResult(
-                succeeded: !(result.Exception is TimeoutException),
-                output: result.Output,
-                exception: exceptionMessage,
-                diagnostics: emitResponse.Body.Diagnostics.Select(d => new SerializableDiagnostic(d)).ToArray());
+                succeeded:  !(exception is TimeoutException) &&
+                            !(exception is CompilationErrorException),
+                output: result?.Output,
+                exception: exceptionMessage ?? exception.ToDisplayString(),
+                diagnostics: emitResponse?.Body.Diagnostics.Select(d => new SerializableDiagnostic(d)).ToArray());
         }
 
-        private async Task<OmnisharpEmitResponse> Emit(WorkspaceRunRequest request, CancellationToken? cancellationToken = null)
+        private async Task<OmnisharpEmitResponse> Emit(WorkspaceRunRequest request, TimeBudget budget = null)
         {
-            await EnsureInitializedAndNotDisposed(cancellationToken);
+            await EnsureInitializedAndNotDisposed(budget);
 
             foreach (var sourceFile in request.SourceFiles)
             {
@@ -104,7 +128,7 @@ namespace WorkspaceServer.Servers.OmniSharp
                 await _omniSharpServer.UpdateBuffer(file, text);
             }
 
-            return await _omniSharpServer.Emit(cancellationToken);
+            return await _omniSharpServer.Emit(budget);
         }
 
         public Task<CompletionResult> GetCompletionList(CompletionRequest request)

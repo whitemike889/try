@@ -179,7 +179,7 @@ throw new Exception(""oops!"");");
             var server = GetWorkspaceServer();
 
             var result = await server.Run(request);
-
+            
             result.ShouldSucceedWithExceptionContaining("System.Exception: oops!");
         }
 
@@ -190,7 +190,7 @@ throw new Exception(""oops!"");");
 
             var server = GetWorkspaceServer();
 
-            var result = await server.Run(request, Clock.Current.CreateCancellationToken(1.Seconds()));
+            var result = await server.Run(request, new TimeBudget(1.Seconds()));
 
             result.ShouldFailWithExceptionContaining("System.TimeoutException: The operation has timed out.");
         }
