@@ -1,6 +1,6 @@
 using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
+using Clockwise;
 using MLS.Agent.Tools;
 
 namespace WorkspaceServer.Tests
@@ -9,7 +9,7 @@ namespace WorkspaceServer.Tests
     {
         public int InitializeCount { get; private set; }
 
-        public Task Initialize(DirectoryInfo directory, CancellationToken? cancellationToken = null)
+        public Task Initialize(DirectoryInfo directory, TimeBudget budget = null)
         {
             InitializeCount++;
             return Task.CompletedTask;

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using static Pocket.Logger<MLS.Agent.Program>;
@@ -14,7 +13,6 @@ using MLS.Agent.Tools;
 using Pocket.For.ApplicationInsights;
 using Recipes;
 using Serilog.Sinks.RollingFileAlternate;
-using WorkspaceServer;
 using WorkspaceServer.Servers.OmniSharp;
 using SerilogLoggerConfiguration = Serilog.LoggerConfiguration;
 
@@ -102,27 +100,11 @@ namespace MLS.Agent
             var webHost = new WebHostBuilder()
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
                 .ConfigureServices(c =>
                 {
                     c.AddSingleton(options);
 
-                    c.AddSingleton(_ =>
-                    {
-                        var registry = new WorkspaceServerRegistry();
-                        registry.AddWorkspace("console",
-                                            workspace =>
-                                            {
-                                                workspace.CreateUsingDotnet("console");
-                                            });
-                        registry.AddWorkspace("Twilio.Demo",
-                                            workspace =>
-                                            {
-                                                workspace.CreateUsingDotnet("console");
-                                                workspace.AddPackageReference("Twilio", "5.9.2");
-                                            });
-                        return registry;
-                    });
+                    c.AddSingleton(_ => DefaultWorkspaces.CreateWorkspaceServerRegistry());
                 })
                 .UseStartup<Startup>()
                 .Build();

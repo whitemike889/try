@@ -2,6 +2,7 @@
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Clockwise;
 
 namespace MLS.Agent.Tools
 {
@@ -34,14 +35,14 @@ namespace MLS.Agent.Tools
 
         public Task Initialize(
             DirectoryInfo directory,
-            CancellationToken? cancellationToken = null)
+            TimeBudget budget = null)
         {
             var dotnet = new Dotnet(directory);
 
             dotnet
-                .New(Template, 
+                .New(Template,
                      args: $"--name \"{Name}\" --output \"{directory.FullName}\"",
-                     cancellationToken: cancellationToken)
+                     budget: budget)
                 .ThrowOnFailure();
 
             afterCreate?.Invoke(dotnet);

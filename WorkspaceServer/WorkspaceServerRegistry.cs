@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Clockwise;
 using MLS.Agent.Tools;
 using Pocket;
 using WorkspaceServer.Servers.OmniSharp;
@@ -34,17 +35,17 @@ namespace WorkspaceServer
             workspaceBuilders.Add(name, options);
         }
 
-        public Task<Workspace> GetWorkspace(string workspaceId, CancellationToken? cancellationToken = null) =>
-            workspaceBuilders[workspaceId].GetWorkspace(cancellationToken);
+        public Task<Workspace> GetWorkspace(string workspaceId, TimeBudget budget = null) =>
+            workspaceBuilders[workspaceId].GetWorkspace(budget);
 
-        public async Task<IWorkspaceServer> GetWorkspaceServer(string name, CancellationToken? cancellationToken = null)
+        public async Task<IWorkspaceServer> GetWorkspaceServer(string name, TimeBudget budget = null)
         {
             if (string.IsNullOrWhiteSpace(name))
             {
                 throw new ArgumentException("Value cannot be null or whitespace.", nameof(name));
             }
 
-            var workspace = await GetWorkspace(name, cancellationToken);
+            var workspace = await GetWorkspace(name, budget);
 
             return workspaceServers.GetOrAdd(name, _ => new DotnetWorkspaceServer(workspace));
         }
@@ -57,7 +58,7 @@ namespace WorkspaceServer
             }
         }
 
-        public async Task StartAllServers(CancellationToken? cancellationToken = null)
+        public async Task StartAllServers(TimeBudget budget = null)
         {
             using (var operation = Log.ConfirmOnExit())
             {
@@ -66,7 +67,7 @@ namespace WorkspaceServer
                     var workspaceServer = await GetWorkspaceServer(name);
                     if (workspaceServer is DotnetWorkspaceServer dotnetWorkspaceServer)
                     {
-                        await dotnetWorkspaceServer.EnsureInitializedAndNotDisposed(cancellationToken);
+                        await dotnetWorkspaceServer.EnsureInitializedAndNotDisposed(budget);
                     }
                 }));
 
