@@ -66,54 +66,6 @@ Console.WriteLine(banana);");
         }
 
         [Fact]
-        public async Task It_indicates_line_by_line_variable_values()
-        {
-            var request = new WorkspaceRunRequest(@"
-string name;
-name = ""Jeff"";
-name = ""Alice"";");
-
-            var server = GetWorkspaceServer();
-
-            var result = await server.Run(request);
-
-            var states = result.Variables.Single(v => v.Name == "name").States;
-
-            Log.Trace(result.ToString());
-
-            states.Select(s => s.LineNumber)
-                  .Should()
-                  .BeEquivalentTo(2, 3, 4);
-
-            var values = states.Select(s => s.Value).Cast<string>().ToArray();
-
-            Log.Trace(new { result }.ToJson());
-
-            values
-                .Should()
-                .BeEquivalentTo(null, "Jeff", "Alice");
-        }
-
-        [Fact]
-        public async Task It_indicates_final_variable_values()
-        {
-            var request = new WorkspaceRunRequest(@"
-string name;
-name = ""Jeff"";
-name = ""Alice"";");
-
-            var server = GetWorkspaceServer();
-
-            var result = await server.Run(request);
-
-            var name = result.Variables.Single(v => v.Name == "name").Value;
-
-            Log.Trace(result.ToString());
-
-            name.Should().Be("Alice");
-        }
-
-        [Fact]
         public async Task Get_completion_for_console()
         {
             var request = new CompletionRequest("Console.", position: 8);

@@ -10,13 +10,11 @@ namespace WorkspaceServer.Models.Execution
             IReadOnlyCollection<string> output = null,
             object returnValue = null,
             string exception = null,
-            IReadOnlyCollection<Variable> variables = null,
             IReadOnlyCollection<SerializableDiagnostic> diagnostics = null)
         {
             Output = output ?? Array.Empty<string>();
             Succeeded = succeeded;
             Exception = exception;
-            Variables = variables ?? Array.Empty<Variable>();
             ReturnValue = returnValue;
             Diagnostics = diagnostics ?? Array.Empty<SerializableDiagnostic>();
         }
@@ -28,8 +26,6 @@ namespace WorkspaceServer.Models.Execution
         public IReadOnlyCollection<string> Output { get; }
 
         public object ReturnValue { get; }
-
-        public IReadOnlyCollection<Variable> Variables { get; }
 
         public string Exception { get; }
 
