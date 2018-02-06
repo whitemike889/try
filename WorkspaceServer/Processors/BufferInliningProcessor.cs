@@ -58,6 +58,7 @@ namespace WorkspaceServer.Processors
                 else if (sourceBuffer.Id == string.Empty)
                 {
                     files["Program.cs"] = SourceFile.Create(sourceBuffer.Content, "Program.cs");
+                    buffers.Add(new WorkspaceRunRequest.Buffer(sourceBuffer.Id, sourceBuffer.Content, 0));
                 }
             }
 
