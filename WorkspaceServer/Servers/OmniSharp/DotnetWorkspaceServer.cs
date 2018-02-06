@@ -1,16 +1,21 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Completion;
 using Microsoft.CodeAnalysis.Scripting;
 using MLS.Agent.Tools;
+using OmniSharp.Client;
 using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Processors;
+using Diagnostic = OmniSharp.Client.Diagnostic;
 using Workspace = MLS.Agent.Tools.Workspace;
 using OmnisharpEmitResponse = OmniSharp.Client.Commands.OmniSharpResponseMessage<OmniSharp.Client.Commands.EmitResponse>;
+using TextSpan = Microsoft.CodeAnalysis.Text.TextSpan;
 
 namespace WorkspaceServer.Servers.OmniSharp
 {
@@ -52,11 +57,12 @@ namespace WorkspaceServer.Servers.OmniSharp
             budget = budget ?? TimeBudget.Unlimited();
             var processor = new BufferInliningProcessor();
             var processedRequest = await processor.ProcessAsync(request);
-
+            var viewPorts = processor.ExtractViewPorts(processedRequest);
             CommandLineResult result = null;
             Exception exception = null;
             string exceptionMessage = null;
             OmnisharpEmitResponse emitResponse = null;
+            IEnumerable<(SerializableDiagnostic Diagnostic,string ErrorMessage)> processedDiagnostics;
 
             try
             {
@@ -66,14 +72,15 @@ namespace WorkspaceServer.Servers.OmniSharp
 
                 if (emitResponse.Body.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error))
                 {
+                    
+                    processedDiagnostics = ReconstructDiagnosticLocations(emitResponse.Body.Diagnostics, viewPorts, BufferInliningProcessor.PaddingSize).ToArray();
                     return new RunResult(
                         false,
-                        emitResponse.Body
-                                    .Diagnostics
-                                    .Where(d => d.Severity == DiagnosticSeverity.Error)
-                                    .Select(e => e.ToString())
+                        processedDiagnostics
+                                    .Where(d => d.Diagnostic.Severity == DiagnosticSeverity.Error)
+                                    .Select(d => d.ErrorMessage)
                                     .ToArray(),
-                        diagnostics: emitResponse.Body.Diagnostics.Select(d => new SerializableDiagnostic(d)).ToArray());
+                        diagnostics: processedDiagnostics.Select(d => d.Diagnostic).ToArray());
                 }
 
                 var dotnet = new Dotnet(_workspace.Directory);
@@ -102,12 +109,73 @@ namespace WorkspaceServer.Servers.OmniSharp
                 exception = taskCanceledException;
             }
 
+            processedDiagnostics = ReconstructDiagnosticLocations(emitResponse?.Body.Diagnostics, viewPorts, BufferInliningProcessor.PaddingSize).ToArray();
             return new RunResult(
                 succeeded:  !(exception is TimeoutException) &&
                             !(exception is CompilationErrorException),
                 output: result?.Output,
                 exception: exceptionMessage ?? exception.ToDisplayString(),
-                diagnostics: emitResponse?.Body.Diagnostics.Select(d => new SerializableDiagnostic(d)).ToArray());
+                diagnostics: processedDiagnostics.Select(d => d.Diagnostic).ToArray());
+        }
+
+        private static IEnumerable<(SerializableDiagnostic ,string)> ReconstructDiagnosticLocations(IEnumerable<Diagnostic> bodyDiagnostics,
+            Dictionary<string, (SourceFile Destination, TextSpan Region)> viewPorts, int paddingSize)
+        {
+            var diagnostics = bodyDiagnostics ?? Enumerable.Empty<Diagnostic>();
+            foreach (var diagnostic in diagnostics)
+            {
+                var diagnosticPath = diagnostic.Location.MappedLineSpan.Path;
+                var target = viewPorts
+                    .Where(e => diagnosticPath.EndsWith(e.Value.Destination.Name))
+                    .FirstOrDefault(e=>e.Value.Region.Contains(diagnostic.Location.SourceSpan.Start));
+
+                if (!target.Value.Region.IsEmpty)
+                {
+                    // offest of the buffer int othe original source file
+                    var offset = target.Value.Region.Start;
+                    // span of content injected in the buffer viewport
+                    var selectionSpan = new TextSpan(offset + paddingSize, target.Value.Region.Length - (2*paddingSize));
+                  
+                    // aligned offset of the diagnostic entry
+                    var start = diagnostic.Location.SourceSpan.Start - selectionSpan.Start;
+                    var end = diagnostic.Location.SourceSpan.End - selectionSpan.Start;
+                    // line containing the diagnostic in the original source file
+                    var line = target.Value.Destination.Text.Lines[diagnostic.Location.MappedLineSpan.StartLinePosition.Line];
+              
+
+                    // first line of the region from the soruce file
+                    var lineOffest = 0;
+
+                    foreach (var regionLine in target.Value.Destination.Text.GetSubText(selectionSpan).Lines)
+                    {
+                        if (regionLine.ToString() == line.ToString())
+                        {
+                            break;
+                        }
+
+                        lineOffest++;
+                    }
+             
+                    var bufferTextSource = SourceFile.Create(target.Value.Destination.Text.GetSubText(selectionSpan).ToString());
+                    var charOffset = bufferTextSource.Text.Lines[lineOffest].ToString().IndexOf(line.ToString().Substring(diagnostic.Location.MappedLineSpan.Span.Start.Character), StringComparison.Ordinal);
+                    var location = new { Line = lineOffest + 1, Char = charOffset + 1 };
+
+                    var errorMessage = $"({location.Line},{location.Char}): error {diagnostic.Id}: {diagnostic.Message}";
+
+                    yield return (new SerializableDiagnostic(
+                            start,
+                            end,
+                            diagnostic.Message,
+                            diagnostic.Severity,
+                            diagnostic.Id),
+                        errorMessage);
+                }
+                else
+                {
+                    var errorMessage = diagnostic.ToString();
+                    yield return (new SerializableDiagnostic(diagnostic), errorMessage);
+                }
+            }
         }
 
         private async Task<OmnisharpEmitResponse> Emit(WorkspaceRunRequest request, TimeBudget budget = null)

@@ -122,6 +122,7 @@ Console.WriteLine(banana);");
                 Exception = (string) null, // we already display the error in Output
             }, config => config.ExcludingMissingMembers());
         }
+        
 
         [Fact]
         public async Task Multi_line_console_output_is_captured_correctly()

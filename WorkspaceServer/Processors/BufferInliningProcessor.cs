@@ -13,7 +13,8 @@ namespace WorkspaceServer.Processors
     public class BufferInliningProcessor : IWorksapceProcessor
     {
         private static readonly string processorName = typeof(BufferInliningProcessor).Name;
-
+        private static string padding = Environment.NewLine;
+        public static int PaddingSize => padding.Length;
         public async Task<WorkspaceRunRequest> ProcessAsync(WorkspaceRunRequest source, TimeBudget timeBudget = null)
         {
             if (source == null) throw new ArgumentNullException(nameof(source));
@@ -43,7 +44,7 @@ namespace WorkspaceServer.Processors
                     var tree = CSharpSyntaxTree.ParseText(viewPort.Destination.Text.ToString());
                     var textChange = new TextChange(
                         viewPort.Region,
-                        $"{Environment.NewLine}{sourceBuffer.Content}{Environment.NewLine}");
+                        $"{padding}{sourceBuffer.Content}{padding}");
                     
 
                     var txt = tree.WithChangedText(tree.GetText().WithChanges(textChange));

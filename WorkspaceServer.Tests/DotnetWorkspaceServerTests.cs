@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
+using FluentAssertions;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Servers.OmniSharp;
+using Xunit;
 using Xunit.Abstractions;
 
 namespace WorkspaceServer.Tests
@@ -19,6 +22,46 @@ namespace WorkspaceServer.Tests
                     }}
                 }}
 ");
+        }
+
+        [Fact]
+        public async Task When_compile_is_unsuccessful_diagnostic_are_aligned_with_buffer_span()
+        {
+            var request = new WorkspaceRunRequest(
+                workspaceType: "console",
+                files: new[] { new WorkspaceRunRequest.File("Program.cs", Properties.Resources.ConsoleProgramSingleRegion) },
+                buffers: new[] { new WorkspaceRunRequest.Buffer("alpha", @"Console.WriteLine(banana);", 0) });
+
+            var server = GetWorkspaceServer();
+
+            var result = await server.Run(request);
+
+            result.ShouldBeEquivalentTo(new
+            {
+                Succeeded = false,
+                Output = new[] { "(1,19): error CS0103: The name \'banana\' does not exist in the current context" },
+                Exception = (string)null, // we already display the error in Output
+            }, config => config.ExcludingMissingMembers());
+        }
+
+        [Fact]
+        public async Task When_compile_is_unsuccessful_diagnostic_are_aligned_with_buffer_span_when_code_is_multi_line()
+        {
+            var request = new WorkspaceRunRequest(
+                workspaceType: "console",
+                files: new[] { new WorkspaceRunRequest.File("Program.cs", Properties.Resources.ConsoleProgramSingleRegion) },
+                buffers: new[] { new WorkspaceRunRequest.Buffer("alpha", @"var a = 10;"+Environment.NewLine+"Console.WriteLine(banana);", 0) });
+
+            var server = GetWorkspaceServer();
+
+            var result = await server.Run(request);
+
+            result.ShouldBeEquivalentTo(new
+            {
+                Succeeded = false,
+                Output = new[] { "(2,19): error CS0103: The name \'banana\' does not exist in the current context" },
+                Exception = (string)null, // we already display the error in Output
+            }, config => config.ExcludingMissingMembers());
         }
 
         protected override IWorkspaceServer GetWorkspaceServer(
