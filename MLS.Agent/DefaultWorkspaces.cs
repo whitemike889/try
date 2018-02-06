@@ -12,6 +12,7 @@ namespace MLS.Agent
                                   workspace =>
                                   {
                                       workspace.CreateUsingDotnet("console");
+                                      workspace.AddPackageReference("Microsoft.Net.Http");
                                   });
 
             return registry;
