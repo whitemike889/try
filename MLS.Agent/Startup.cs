@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Threading.Tasks;
-using Clockwise;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -33,41 +31,51 @@ namespace MLS.Agent
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            // Add framework services.
-            services.AddMvc(options =>
-                    {
-                        options.Filters.Add(new ExceptionFilter());
-                        options.Filters.Add(new BadRequestOnInvalidModelFilter());
-                    })
-                    .AddJsonOptions(o =>
-                    {
-                        o.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
-                        o.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
-                    });
+            using (var operation = Log.OnEnterAndConfirmOnExit())
+            {
+                // Add framework services.
+                services.AddMvc(options =>
+                        {
+                            options.Filters.Add(new ExceptionFilter());
+                            options.Filters.Add(new BadRequestOnInvalidModelFilter());
+                        })
+                        .AddJsonOptions(o =>
+                        {
+                            o.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+                            o.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
+                        });
 
-            services.AddSingleton(Configuration);
+                services.AddSingleton(Configuration);
 
-            services.TryAddSingleton<WorkspaceServerRegistry>();
+                services.TryAddSingleton<WorkspaceServerRegistry>();
+
+                operation.Succeed();
+            }
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(
-            IApplicationBuilder app, 
+            IApplicationBuilder app,
             IHostingEnvironment env,
             IServiceProvider serviceProvider)
         {
-            Log.Info("Agent version {orchestrator_version} starting in environment {environment}",
-                     AssemblyVersionSensor.Version().AssemblyInformationalVersion,
-                     Environment.EnvironmentName);
+            using (var operation = Log.OnEnterAndConfirmOnExit())
+            {
+                operation.Info("Agent version {orchestrator_version} starting in environment {environment}",
+                               AssemblyVersionSensor.Version().AssemblyInformationalVersion,
+                               Environment.EnvironmentName);
 
-            app.UseDefaultFiles()
-               .UseStaticFiles()
-               .UseMvc();
+                app.UseDefaultFiles()
+                   .UseStaticFiles()
+                   .UseMvc();
 
-            serviceProvider
-                .GetRequiredService<WorkspaceServerRegistry>()
-                .StartAllServers()
-                .DontAwait();
+                serviceProvider
+                    .GetRequiredService<WorkspaceServerRegistry>()
+                    .StartAllServers()
+                    .DontAwait();
+
+                operation.Succeed();
+            }
         }
     }
 }

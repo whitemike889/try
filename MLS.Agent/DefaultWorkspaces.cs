@@ -12,6 +12,8 @@ namespace MLS.Agent
                                   workspace =>
                                   {
                                       workspace.CreateUsingDotnet("console");
+                                      workspace.AddPackageReference("Microsoft.Net.Http");
+                                      workspace.AddPackageReference("Newtonsoft.Json");
                                   });
 
             return registry;
