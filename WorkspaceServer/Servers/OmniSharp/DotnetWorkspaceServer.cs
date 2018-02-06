@@ -33,7 +33,7 @@ namespace WorkspaceServer.Servers.OmniSharp
             _omniSharpServer = new OmniSharpServer(
                 _workspace.Directory,
                 Paths.EmitPlugin,
-                true);
+                logToPocketLogger: false);
         }
 
         public async Task EnsureInitializedAndNotDisposed(TimeBudget budget = null)
