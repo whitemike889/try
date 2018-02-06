@@ -4,7 +4,6 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.CodeAnalysis;
-using MLS.Agent.Tools;
 using Pocket;
 using WorkspaceServer.Models.Execution;
 using Xunit;
@@ -20,7 +19,7 @@ namespace WorkspaceServer.Tests
         protected abstract IWorkspaceServer GetWorkspaceServer(
             [CallerMemberName] string testName = null);
 
-        protected abstract RunRequest CreateRunRequestContaining(string text);
+        protected abstract WorkspaceRunRequest CreateRunRequestContaining(string text);
 
         public void Dispose() => disposables.Dispose();
 
@@ -47,7 +46,7 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task Response_indicates_when_compile_is_successful_and_signature_is_like_a_console_app()
         {
-            var request = new RunRequest(@"
+            var request = new WorkspaceRunRequest(@"
 using System;
 
 public static class Hello
@@ -72,7 +71,7 @@ public static class Hello
         {
             var output = nameof(Response_shows_program_output_when_compile_is_successful_and_signature_is_like_a_console_app);
 
-            var request = new RunRequest($@"
+            var request = new WorkspaceRunRequest($@"
 using System;
 
 public static class Hello
@@ -118,7 +117,7 @@ Console.WriteLine(banana);");
             result.ShouldBeEquivalentTo(new
             {
                 Succeeded = false,
-                Output = new string[] { "(2,19): error CS0103: The name \'banana\' does not exist in the current context" },
+                Output = new[] { "(2,19): error CS0103: The name \'banana\' does not exist in the current context" },
                 Exception = (string) null, // we already display the error in Output
             }, config => config.ExcludingMissingMembers());
         }
@@ -198,7 +197,7 @@ throw new Exception(""oops!"");");
         [Fact]
         public async Task When_a_public_void_Main_with_no_parameters_is_present_it_is_invoked()
         {
-            var request = new RunRequest($@"
+            var request = new WorkspaceRunRequest($@"
 using System;
 
 public static class Hello
@@ -218,7 +217,7 @@ public static class Hello
         [Fact]
         public async Task When_a_public_void_Main_with_parameters_is_present_it_is_invoked()
         {
-            var request = new RunRequest(@"
+            var request = new WorkspaceRunRequest(@"
 using System;
 
 public static class Hello
@@ -239,7 +238,7 @@ public static class Hello
         [Fact]
         public async Task When_an_internal_void_Main_with_no_parameters_is_present_it_is_invoked()
         {
-            var request = new RunRequest(@"
+            var request = new WorkspaceRunRequest(@"
 using System;
 
 public static class Hello
@@ -262,7 +261,7 @@ public static class Hello
         [Fact]
         public async Task When_an_internal_void_Main_with_parameters_is_present_it_is_invoked()
         {
-            var request = new RunRequest(@"
+            var request = new WorkspaceRunRequest(@"
 using System;
 
 public static class Hello
@@ -285,7 +284,7 @@ public static class Hello
         {
             var output = nameof(Response_shows_warnings_with_successful_compilation);
 
-            var request = new RunRequest($@"
+            var request = new WorkspaceRunRequest($@"
 using System;
 using System;
 public static class Hello
@@ -309,7 +308,7 @@ public static class Hello
         {
             var output = nameof(Response_shows_warnings_when_compilation_fails);
 
-            var request = new RunRequest($@"
+            var request = new WorkspaceRunRequest($@"
 using System;
 using System;
 public static class Hello
@@ -330,7 +329,7 @@ public static class Hello
         [Fact]
         public async Task Get_diagnostics_produces_appropriate_diagnostics_for_display_to_user()
         {
-            var request = new RunRequest(@"
+            var request = new WorkspaceRunRequest(@"
 using System;
 
 public static class Hello

@@ -22,7 +22,7 @@ namespace WorkspaceServer.Servers.Scripting
 {
     public class ScriptingWorkspaceServer : IWorkspaceServer
     {
-        public async Task<RunResult> Run(RunRequest request, TimeBudget budget = null)
+        public async Task<RunResult> Run(WorkspaceRunRequest request, TimeBudget budget = null)
         {
             budget = budget ?? TimeBudget.Unlimited();
 
@@ -34,7 +34,7 @@ namespace WorkspaceServer.Servers.Scripting
                     throw new ArgumentException($"{nameof(request)} should have exactly one source file.");
                 }
 
-                ScriptOptions options = CreateOptions(request);
+                var options = CreateOptions(request);
 
                 ScriptState<object> state = null;
                 var variables = new Dictionary<string, Variable>();
@@ -117,7 +117,7 @@ namespace WorkspaceServer.Servers.Scripting
             }
         }
 
-        private static ScriptOptions CreateOptions(RunRequest request) =>
+        private static ScriptOptions CreateOptions(WorkspaceRunRequest request) =>
                         ScriptOptions.Default
                                                    .AddReferences(GetReferenceAssemblies())
                                                    .AddImports(GetDefultUsings().Concat(request.Usings));
@@ -267,7 +267,7 @@ typeof({entryPointMethod.ContainingType.Name})
                                               : "null";
         }
 
-        public Task<DiagnosticResult> GetDiagnostics(RunRequest request) => 
+        public Task<DiagnosticResult> GetDiagnostics(WorkspaceRunRequest request) => 
             Task.FromResult(new DiagnosticResult(GetDiagnostics(request.SourceFiles.Single(), CreateOptions(request))));
     }
 }

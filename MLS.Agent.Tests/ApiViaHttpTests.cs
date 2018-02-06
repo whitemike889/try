@@ -33,7 +33,7 @@ namespace MLS.Agent.Tests
             var output = Guid.NewGuid().ToString();
             var code = JsonConvert.SerializeObject(new
             {
-                Source = $@"Console.WriteLine(""{output}"");"
+                Buffer = $@"Console.WriteLine(""{output}"");"
             });
 
             var response = await CallRun(code);
@@ -48,12 +48,32 @@ namespace MLS.Agent.Tests
         }
 
         [Fact]
+        public async Task The_workspace_snippet_endpoint_compiles_code_using_scripting_when_source_is_specified()
+        {
+            var output = Guid.NewGuid().ToString();
+            var code = JsonConvert.SerializeObject(new
+            {
+                Source = $@"Console.WriteLine(""{output}"");"
+            });
+
+            var response = await CallRun(code);
+
+            var result = await response
+                .EnsureSuccess()
+                .DeserializeAs<RunResult>();
+
+            VerifySucceeded(result);
+
+            result.ShouldSucceedWithOutput(output);
+        }
+
+        [Fact]
         public async Task The_workspace_snippet_endpoint_compiles_code_using_scripting_when_a_workspace_type_is_specified_as_script()
         {
             var output = Guid.NewGuid().ToString();
             var requestJson = JsonConvert.SerializeObject(new
             {
-                Source = $@"Console.WriteLine(""{output}"");",
+                Buffer = $@"Console.WriteLine(""{output}"");",
                 WorkspaceType = "script"
             });
 
@@ -98,7 +118,7 @@ namespace MLS.Agent.Tests
 
             var requestJson = JsonConvert.SerializeObject(new
             {
-                Source = @"Console.WriteLine(""hello!"");",
+                Buffer = @"Console.WriteLine(""hello!"");",
                 WorkspaceType = "console"
             });
 
@@ -129,7 +149,7 @@ namespace MLS.Agent.Tests
                     Content = new StringContent(
                         JsonConvert.SerializeObject(new
                         {
-                            Source = $@"Console.WriteLine(""{output}"""
+                            Buffer = $@"Console.WriteLine(""{output}"""
                         }),
                         Encoding.UTF8,
                         "application/json")
@@ -196,6 +216,23 @@ namespace MLS.Agent.Tests
 
                 result.Items.Should().ContainSingle(item => item.DisplayText == "WriteLine");
             }
+        }
+
+        [Fact]
+        public async Task When_invoked_with_workspace_request_it_executes_correctly()
+        {
+            var output ="1";
+            var requestJson = @"{ ""Buffers"":[{""Id"":"""",""Content"":""using System;\nusing System.Linq;\n\npublic class Program\n{\n  public static void Main()\n  {\n    foreach (var i in Fibonacci().Take(1))\n    {\n      Console.WriteLine(i);\n    }\n  }\n\n  private static IEnumerable<int> Fibonacci()\n  {\n    int current = 1, next = 1;\n\n    while (true) \n    {\n      yield return current;\n      next = current + (current = next);\n    }\n  }\n}\n"",""Position"":0}],""Usings"":[],""WorkspaceType"":""script"",""Files"":[]}";
+
+            var response = await CallRun(requestJson);
+
+            var result = await response
+                .EnsureSuccess()
+                .DeserializeAs<RunResult>();
+
+            VerifySucceeded(result);
+
+            result.ShouldSucceedWithOutput(output);
         }
 
         private static async Task<HttpResponseMessage> CallRun(

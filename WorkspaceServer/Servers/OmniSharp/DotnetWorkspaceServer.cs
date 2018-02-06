@@ -46,7 +46,7 @@ namespace WorkspaceServer.Servers.OmniSharp
             await _omniSharpServer.WorkspaceReady(budget);
         }
 
-        public async Task<RunResult> Run(RunRequest request, TimeBudget budget = null)
+        public async Task<RunResult> Run(WorkspaceRunRequest request, TimeBudget budget = null)
         {
             budget = budget ?? TimeBudget.Unlimited();
 
@@ -107,7 +107,7 @@ namespace WorkspaceServer.Servers.OmniSharp
                 diagnostics: emitResponse?.Body.Diagnostics.Select(d => new SerializableDiagnostic(d)).ToArray());
         }
 
-        private async Task<OmnisharpEmitResponse> Emit(RunRequest request, TimeBudget budget = null)
+        private async Task<OmnisharpEmitResponse> Emit(WorkspaceRunRequest request, TimeBudget budget = null)
         {
             await EnsureInitializedAndNotDisposed(budget);
 
@@ -133,7 +133,7 @@ namespace WorkspaceServer.Servers.OmniSharp
             throw new NotImplementedException();
         }
 
-        public async Task<DiagnosticResult> GetDiagnostics(RunRequest request)
+        public async Task<DiagnosticResult> GetDiagnostics(WorkspaceRunRequest request)
         {
             var emitResult = await Emit(request);
             var diagnostics = emitResult.Body.Diagnostics.Select(d => new SerializableDiagnostic(d)).ToArray();
