@@ -29,7 +29,7 @@ namespace WorkspaceServer.Tests
         }
 
         [Fact]
-        public void Can_parse_workspace_without_files_request()
+        public void Can_parse_workspace_without_files()
         {
             var request = JsonConvert.DeserializeObject<WorkspaceRunRequest>(@"{ workspaceType: ""console"", buffers: [{content: ""code"", id:""test"", position: 12}] }");
             request.Buffers.Should().NotBeNullOrEmpty();
@@ -39,7 +39,7 @@ namespace WorkspaceServer.Tests
         }
 
         [Fact]
-        public void Can_parse_workspace_with_files_request()
+        public void Can_parse_workspace_with_files()
         {
             var request = JsonConvert.DeserializeObject<WorkspaceRunRequest>(@"{ workspaceType: ""console"", buffers: [{content: ""code"", id:""test"", position: 12}], files:[{name: ""filedOne.cs"", text:""some value""}] }");
             request.Buffers.Should().NotBeNullOrEmpty();
@@ -47,6 +47,18 @@ namespace WorkspaceServer.Tests
             request.WorkspaceType.Should().Be("console");
             request.Buffers.FirstOrDefault(b => b.Id == "test").Should().NotBeNull();
             request.SourceFiles.FirstOrDefault(b => b.Name == "filedOne.cs").Should().NotBeNull();
+        }
+
+        [Fact]
+        public void Can_parse_workspace_with_usings()
+        {
+            var request = JsonConvert.DeserializeObject<WorkspaceRunRequest>(@"{ usings: [""using System1;"", ""using System2;""], workspaceType: ""console"", buffers: [{content: ""code"", id:""test"", position: 12}], files:[{name: ""filedOne.cs"", text:""some value""}] }");
+            request.Buffers.Should().NotBeNullOrEmpty();
+            request.SourceFiles.Should().NotBeNullOrEmpty();
+            request.WorkspaceType.Should().Be("console");
+            request.Buffers.FirstOrDefault(b => b.Id == "test").Should().NotBeNull();
+            request.SourceFiles.FirstOrDefault(b => b.Name == "filedOne.cs").Should().NotBeNull();
+            request.Usings.ShouldBeEquivalentTo(new []{ "using System1;", "using System2;"});
         }
     }
 }
