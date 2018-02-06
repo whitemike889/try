@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -61,17 +62,14 @@ namespace MLS.Agent
         {
             using (var operation = Log.OnEnterAndConfirmOnExit())
             {
-                operation.Info("Agent version {orchestrator_version} starting in environment {environment}",
-                               AssemblyVersionSensor.Version().AssemblyInformationalVersion,
-                               Environment.EnvironmentName);
-
                 app.UseDefaultFiles()
                    .UseStaticFiles()
                    .UseMvc();
 
-                serviceProvider
-                    .GetRequiredService<WorkspaceServerRegistry>()
-                    .StartAllServers()
+                Task.Run(() =>
+                             serviceProvider
+                                 .GetRequiredService<WorkspaceServerRegistry>()
+                                 .StartAllServers())
                     .DontAwait();
 
                 operation.Succeed();
