@@ -80,6 +80,32 @@ namespace WorkspaceServer.Tests.Properties {
         ///    }
         ///}.
         /// </summary>
+        internal static string ConflictingRegionCode {
+            get {
+                return ResourceManager.GetString("ConflictingRegionCode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to using System;
+        ///
+        ///namespace ConsoleProgramSingleRegion
+        ///{
+        ///    public class Program
+        ///    {
+        ///        public static void Main(string[] args)
+        ///        {
+        ///            #region alpha
+        ///            var a = 10;
+        ///            #endregion
+        ///
+        ///            #region alpha
+        ///            var b = 10;
+        ///            #endregion
+        ///        }
+        ///    }
+        ///}.
+        /// </summary>
         internal static string ConsoleProgramCollidingRegions {
             get {
                 return ResourceManager.GetString("ConsoleProgramCollidingRegions", resourceCulture);
@@ -106,6 +132,28 @@ namespace WorkspaceServer.Tests.Properties {
         internal static string ConsoleProgramSingleRegion {
             get {
                 return ResourceManager.GetString("ConsoleProgramSingleRegion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to using System;
+        ///
+        ///namespace ConsoleProgramSingleRegion
+        ///{
+        ///    public class Program
+        ///    {
+        ///        public static void Main(string[] args)
+        ///        {
+        ///            #region alpha
+        ///            var a = 10;
+        ///            #endregion
+        ///        }
+        ///    }
+        ///}.
+        /// </summary>
+        internal static string SingleRegionCode {
+            get {
+                return ResourceManager.GetString("SingleRegionCode", resourceCulture);
             }
         }
     }

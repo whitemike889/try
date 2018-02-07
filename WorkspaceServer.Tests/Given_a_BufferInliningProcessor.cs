@@ -15,7 +15,7 @@ namespace WorkspaceServer.Tests
         {
             var ws = new WorkspaceRunRequest(files: new[]
             {
-                new WorkspaceRunRequest.File("Program.cs", Properties.Resources.ConsoleProgramSingleRegion)
+                new WorkspaceRunRequest.File("Program.cs", Properties.Resources.SingleRegionCode)
             });
             var processor = new BufferInliningProcessor();
             var viewPorts = processor.ExtractViewPorts(ws);
@@ -28,7 +28,7 @@ namespace WorkspaceServer.Tests
         {
             var ws = new WorkspaceRunRequest(files: new[]
             {
-                new WorkspaceRunRequest.File("Program.cs", Properties.Resources.ConsoleProgramCollidingRegions)
+                new WorkspaceRunRequest.File("Program.cs", Properties.Resources.ConflictingRegionCode)
             });
             var processor = new BufferInliningProcessor();
             Action extraction = () => processor.ExtractViewPorts(ws);
@@ -40,8 +40,8 @@ namespace WorkspaceServer.Tests
         {
             var ws = new WorkspaceRunRequest(files: new[]
             {
-                new WorkspaceRunRequest.File("ProgramA.cs", Properties.Resources.ConsoleProgramSingleRegion),
-                new WorkspaceRunRequest.File("ProgramB.cs", Properties.Resources.ConsoleProgramSingleRegion)
+                new WorkspaceRunRequest.File("ProgramA.cs", Properties.Resources.SingleRegionCode),
+                new WorkspaceRunRequest.File("ProgramB.cs", Properties.Resources.SingleRegionCode)
             });
             var processor = new BufferInliningProcessor();
             Action extraction = () => processor.ExtractViewPorts(ws);
@@ -70,7 +70,7 @@ namespace WorkspaceServer.Tests
             var ws = new WorkspaceRunRequest(
                 files: new[]
                 {
-                    new WorkspaceRunRequest.File("Program.cs", Properties.Resources.ConsoleProgramSingleRegion)
+                    new WorkspaceRunRequest.File("Program.cs", Properties.Resources.SingleRegionCode)
                 },
                 buffers: new[]
                 {
