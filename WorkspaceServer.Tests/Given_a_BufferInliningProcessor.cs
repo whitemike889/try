@@ -97,7 +97,7 @@ namespace WorkspaceServer.Tests
             var ws = new WorkspaceRunRequest(
                 buffers: new[]
                 {
-                    new WorkspaceRunRequest.Buffer("", Properties.Resources.ConsoleProgramSingleRegion, 0)
+                    new WorkspaceRunRequest.Buffer("", Properties.Resources.SingleRegionCode, 0)
                 });
             var processor = new BufferInliningProcessor();
 
@@ -105,7 +105,7 @@ namespace WorkspaceServer.Tests
             processed.Should().NotBeNull();
             processed.SourceFiles.Should().NotBeEmpty();
             var newCode = processed.SourceFiles.ElementAt(0).Text.ToString();
-            newCode.Should().Contain(Properties.Resources.ConsoleProgramSingleRegion);
+            newCode.Should().Contain(Properties.Resources.SingleRegionCode);
 
         }
     }

@@ -29,7 +29,7 @@ namespace WorkspaceServer.Tests
         {
             var request = new WorkspaceRunRequest(
                 workspaceType: "console",
-                files: new[] { new WorkspaceRunRequest.File("Program.cs", Properties.Resources.ConsoleProgramSingleRegion) },
+                files: new[] { new WorkspaceRunRequest.File("Program.cs", Properties.Resources.SingleRegionCode) },
                 buffers: new[] { new WorkspaceRunRequest.Buffer("alpha", @"Console.WriteLine(banana);", 0) });
 
             var server = GetWorkspaceServer();
@@ -49,7 +49,7 @@ namespace WorkspaceServer.Tests
         {
             var request = new WorkspaceRunRequest(
                 workspaceType: "console",
-                files: new[] { new WorkspaceRunRequest.File("Program.cs", Properties.Resources.ConsoleProgramSingleRegion) },
+                files: new[] { new WorkspaceRunRequest.File("Program.cs", Properties.Resources.SingleRegionCode) },
                 buffers: new[] { new WorkspaceRunRequest.Buffer("alpha", @"var a = 10;"+Environment.NewLine+"Console.WriteLine(banana);", 0) });
 
             var server = GetWorkspaceServer();
