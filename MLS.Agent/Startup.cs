@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Clockwise;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Newtonsoft.Json;
 using Pocket;
 using Recipes;
@@ -15,6 +15,8 @@ namespace MLS.Agent
 {
     public class Startup
     {
+        private readonly CompositeDisposable _disposables = new CompositeDisposable();
+
         public Startup(IHostingEnvironment env)
         {
             Environment = env;
@@ -48,7 +50,7 @@ namespace MLS.Agent
 
                 services.AddSingleton(Configuration);
 
-                services.TryAddSingleton<WorkspaceServerRegistry>();
+                services.AddSingleton(_ => DefaultWorkspaces.CreateWorkspaceServerRegistry());
 
                 operation.Succeed();
             }
@@ -57,19 +59,26 @@ namespace MLS.Agent
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(
             IApplicationBuilder app,
+            IApplicationLifetime lifetime,
             IHostingEnvironment env,
             IServiceProvider serviceProvider)
         {
             using (var operation = Log.OnEnterAndConfirmOnExit())
             {
+                lifetime.ApplicationStopping.Register(() => _disposables.Dispose());
+
                 app.UseDefaultFiles()
                    .UseStaticFiles()
                    .UseMvc();
 
+                var budget = TimeBudget.Unlimited();
+
+                _disposables.Add(() => budget.Cancel());
+
                 Task.Run(() =>
                              serviceProvider
                                  .GetRequiredService<WorkspaceServerRegistry>()
-                                 .StartAllServers())
+                                 .StartAllServers(budget))
                     .DontAwait();
 
                 operation.Succeed();
