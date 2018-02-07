@@ -8,10 +8,10 @@ using Xunit;
 
 namespace WorkspaceServer.Tests
 {
-    public class BufferInliningProcessorTests
+    public class Given_a_BufferInliningProcessor
     {
         [Fact]
-        public void Extracts_viewPorts_when_files_declare_region()
+        public void It_extracts_viewPorts_when_files_declare_region()
         {
             var ws = new WorkspaceRunRequest(files: new[]
             {
@@ -81,9 +81,10 @@ namespace WorkspaceServer.Tests
             var processed = await processor.ProcessAsync(ws);
             processed.Should().NotBeNull();
             processed.SourceFiles.Should().NotBeEmpty();
-            processed.SourceFiles.ElementAt(0).Text.ToString().Should()
-                .NotBe(ws.SourceFiles.ElementAt(0).Text.ToString());
-            processed.SourceFiles.ElementAt(0).Text.ToString().Should().Contain("var newValue = 1000;");
+            var newCode = processed.SourceFiles.ElementAt(0).Text.ToString();
+
+            newCode.Should().NotBe(ws.SourceFiles.ElementAt(0).Text.ToString());
+            newCode.Should().Contain("var newValue = 1000;");
 
             processed.Buffers.Count.Should().Be(ws.Buffers.Count);
             processed.Buffers.ElementAt(0).Position.Should().BeGreaterThan(ws.Buffers.ElementAt(0).Position);
@@ -103,7 +104,8 @@ namespace WorkspaceServer.Tests
             var processed = await processor.ProcessAsync(ws);
             processed.Should().NotBeNull();
             processed.SourceFiles.Should().NotBeEmpty();
-            processed.SourceFiles.ElementAt(0).Text.ToString().Should().Contain(Properties.Resources.ConsoleProgramSingleRegion);
+            var newCode = processed.SourceFiles.ElementAt(0).Text.ToString();
+            newCode.Should().Contain(Properties.Resources.ConsoleProgramSingleRegion);
 
         }
     }
