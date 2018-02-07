@@ -133,7 +133,11 @@ namespace MLS.Agent.Tools
                     if (Directory.GetFiles("*.deps.json", SearchOption.AllDirectories).Length == 0)
                     {
                         Log.Info("Building workspace using {_initializer} in {directory}", _initializer, Directory);
-                        new Dotnet(Directory).Build(budget: budget).ThrowOnFailure();
+                        new Dotnet(Directory)
+                            .Build(
+                                args: "--no-dependencies",
+                                budget: budget)
+                            .ThrowOnFailure();
                     }
 
                     IsBuilt = true;
