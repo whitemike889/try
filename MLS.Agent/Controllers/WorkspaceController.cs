@@ -6,6 +6,7 @@ using Pocket;
 using WorkspaceServer;
 using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
+using WorkspaceServer.Servers.OmniSharp;
 using WorkspaceServer.Servers.Scripting;
 using static Pocket.Logger<MLS.Agent.Controllers.WorkspaceController>;
 
@@ -13,12 +14,6 @@ namespace MLS.Agent.Controllers
 {
     public class WorkspaceController : Controller
     {
-#if DEBUG
-        private static readonly TimeSpan _defaultBudgetDuration = TimeSpan.FromSeconds(20);
-#else
-        private static readonly TimeSpan _defaultBudgetDuration = TimeSpan.FromSeconds(7);
-#endif
-
         private readonly WorkspaceServerRegistry workspaceServerRegistry;
 
         public WorkspaceController(WorkspaceServerRegistry workspaceServerRegistry)
@@ -39,19 +34,25 @@ namespace MLS.Agent.Controllers
 
                 var workspaceType = request.WorkspaceType;
 
-                var budget = new TimeBudget(_defaultBudgetDuration);
-
                 if (string.Equals(workspaceType, "script", StringComparison.OrdinalIgnoreCase))
                 {
                     var server = new ScriptingWorkspaceServer();
 
-                    result = await server.Run(request, budget);
+                    result = await server.Run(request, new TimeBudget(TimeSpan.FromSeconds(7)));
                 }
                 else
                 {
                     var server = await workspaceServerRegistry.GetWorkspaceServer(workspaceType);
 
-                    result = await server.Run(request, budget);
+                    if (server is DotnetWorkspaceServer dotnetWorkspaceServer)
+                    {
+                        await dotnetWorkspaceServer.EnsureInitializedAndNotDisposed(
+                            new TimeBudget(TimeSpan.FromSeconds(30)));
+                    }
+
+                    result = await server.Run(
+                                 request,
+                                 new TimeBudget(TimeSpan.FromSeconds(7)));
                 }
 
                 operation.Succeed();
