@@ -32,6 +32,8 @@ namespace MLS.Agent.Tools
             Log.Info("Workspaces path is {DefaultWorkspacesDirectory}", DefaultWorkspacesDirectory);
         }
 
+        private Task _buildIsDone;
+        private Task _createIsDone;
         private readonly IWorkspaceInitializer _initializer;
 
         public Workspace(
@@ -67,22 +69,19 @@ namespace MLS.Agent.Tools
 
         private readonly object lockObj = new object();
 
-        private Task creating;
-        private Task building;
-
         public async Task EnsureCreated(TimeBudget budget = null)
         {
             lock (lockObj)
             {
-                if (creating == null)
+                if (_createIsDone == null)
                 {
-                    creating = Create();
+                    _createIsDone = VerifyOrCreate();
                 }
             }
 
-            await creating;
+            await _createIsDone;
 
-            async Task Create()
+            async Task VerifyOrCreate()
             {
                 if (!IsDirectoryCreated)
                 {
@@ -117,15 +116,15 @@ namespace MLS.Agent.Tools
 
             lock (lockObj)
             {
-                if (building == null)
+                if (_buildIsDone == null)
                 {
-                    building = TryBuild();
+                    _buildIsDone = VerifyOrBuild();
                 }
             }
 
-            await building;
+            await _buildIsDone;
 
-            async Task TryBuild()
+            async Task VerifyOrBuild()
             {
                 await Task.Yield();
 
