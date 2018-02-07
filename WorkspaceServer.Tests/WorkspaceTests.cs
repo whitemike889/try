@@ -62,6 +62,7 @@ namespace WorkspaceServer.Tests
 
             async Task EnsureBuilt()
             {
+                await Task.Yield();
                 barrier.SignalAndWait(20.Seconds());
                 await workspace.EnsureBuilt();
             }
