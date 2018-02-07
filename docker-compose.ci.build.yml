@@ -17,6 +17,9 @@ services:
     depends_on:
       - ci-restore
     build:
+      args:
+        - BUILD_BUILDNUMBER
+        - BUILD_SOURCEVERSION    
       context: .
       dockerfile: Dockerfile.ci.build
     image: mls-ls/built
