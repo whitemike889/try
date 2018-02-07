@@ -9,8 +9,11 @@ namespace WorkspaceServer.Tests
         private static readonly Lazy<Workspace> _templateWorkspace = new Lazy<Workspace>(() =>
         {
             var workspace = new Workspace("TestTemplate");
-            Task.Run(() => workspace.EnsureCreated()).Wait();
-            workspace.EnsureBuilt();
+            Task.Run(async () =>
+            {
+                await workspace.EnsureCreated();
+                await workspace.EnsureBuilt();
+            }).Wait();
             return workspace;
         });
 

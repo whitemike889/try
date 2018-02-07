@@ -147,6 +147,11 @@ namespace MLS.Agent.Tools
             return process;
         }
 
+        internal static string AppendArgs(this string initial, string append = null) =>
+            string.IsNullOrWhiteSpace(append)
+                ? initial
+                : $"{initial} {append}";
+
         private static ConfirmationLogger CheckBudgetAndStartConfirmationLogger(
             object command,
             string args,
