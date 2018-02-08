@@ -103,8 +103,6 @@ namespace MLS.Agent
                 .ConfigureServices(c =>
                 {
                     c.AddSingleton(options);
-
-                    c.AddSingleton(_ => DefaultWorkspaces.CreateWorkspaceServerRegistry());
                 })
                 .UseStartup<Startup>()
                 .Build();

@@ -1,13 +1,25 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using MLS.Agent.Tools;
+using Pocket;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace WorkspaceServer.Tests
 {
-    public class WorkspaceTests
+    public class WorkspaceTests: IDisposable
     {
+        private readonly CompositeDisposable disposables = new CompositeDisposable();
+
+        public WorkspaceTests(ITestOutputHelper output)
+        {
+            disposables.Add(output.SubscribeToPocketLogger());
+        }
+
+        public void Dispose() => disposables.Dispose();
+    
         [Fact]
         public async Task A_workspace_is_not_initialized_more_than_once()
         {
@@ -39,6 +51,44 @@ namespace WorkspaceServer.Tests
             await copy.EnsureCreated();
 
             initializer.InitializeCount.Should().Be(1);
+        }
+
+        [Fact]
+        public async Task EnsureBuilt_is_safe_for_concurrency()
+        {
+            var workspace = new Workspace($"{nameof(EnsureBuilt_is_safe_for_concurrency)}.{DateTime.Now.ToString("MM-dd-hh-ss")}");
+
+            var barrier = new Barrier(2);
+
+            async Task EnsureBuilt()
+            {
+                await Task.Yield();
+                barrier.SignalAndWait(20.Seconds());
+                await workspace.EnsureBuilt();
+            }
+
+            await Task.WhenAll(
+                EnsureBuilt(),
+                EnsureBuilt());
+        }
+
+        [Fact]
+        public async Task EnsureCreated_is_safe_for_concurrency()
+        {
+            var workspace = new Workspace($"{nameof(EnsureCreated_is_safe_for_concurrency)}.{DateTime.Now.ToString("MM-dd-hh-ss")}");
+
+            var barrier = new Barrier(2);
+
+            async Task EnsureCreated()
+            {
+                await Task.Yield();
+                barrier.SignalAndWait(20.Seconds());
+                await workspace.EnsureCreated();
+            }
+
+            await Task.WhenAll(
+                EnsureCreated(),
+                EnsureCreated());
         }
     }
 }

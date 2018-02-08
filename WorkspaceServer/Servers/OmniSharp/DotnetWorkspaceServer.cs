@@ -41,7 +41,7 @@ namespace WorkspaceServer.Servers.OmniSharp
 
             await _workspace.EnsureCreated(budget);
 
-            _workspace.EnsureBuilt(budget);
+            await _workspace.EnsureBuilt(budget);
 
             await _omniSharpServer.WorkspaceReady(budget);
         }

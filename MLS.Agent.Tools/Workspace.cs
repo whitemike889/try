@@ -32,6 +32,8 @@ namespace MLS.Agent.Tools
             Log.Info("Workspaces path is {DefaultWorkspacesDirectory}", DefaultWorkspacesDirectory);
         }
 
+        private Task _buildIsDone;
+        private Task _createIsDone;
         private readonly IWorkspaceInitializer _initializer;
 
         public Workspace(
@@ -65,45 +67,81 @@ namespace MLS.Agent.Tools
 
         public static DirectoryInfo DefaultWorkspacesDirectory { get; }
 
+        private readonly object lockObj = new object();
+
         public async Task EnsureCreated(TimeBudget budget = null)
         {
-            if (!IsDirectoryCreated)
+            lock (lockObj)
             {
-                Directory.Refresh();
-
-                if (!Directory.Exists)
+                if (_createIsDone == null)
                 {
-                    Log.Info("Creating directory {directory}", Directory);
-                    Directory.Create();
-                    Directory.Refresh();
+                    _createIsDone = VerifyOrCreate();
                 }
-
-                IsDirectoryCreated = true;
             }
 
-            if (!IsCreated)
+            await _createIsDone;
+
+            async Task VerifyOrCreate()
             {
-                if (Directory.GetFiles().Length == 0)
+                if (!IsDirectoryCreated)
                 {
-                    Log.Info("Initializing workspace using {_initializer} in {directory}", _initializer, Directory);
-                    await _initializer.Initialize(Directory, budget);
+                    Directory.Refresh();
+
+                    if (!Directory.Exists)
+                    {
+                        Log.Info("Creating directory {directory}", Directory);
+                        Directory.Create();
+                        Directory.Refresh();
+                    }
+
+                    IsDirectoryCreated = true;
                 }
 
-                IsCreated = true;
+                if (!IsCreated)
+                {
+                    if (Directory.GetFiles().Length == 0)
+                    {
+                        Log.Info("Initializing workspace using {_initializer} in {directory}", _initializer, Directory);
+                        await _initializer.Initialize(Directory, budget);
+                    }
+
+                    IsCreated = true;
+                }
             }
         }
 
-        public void EnsureBuilt(TimeBudget budget = null)
+        public async Task EnsureBuilt(TimeBudget budget = null)
         {
-            if (!IsBuilt)
-            {
-                if (Directory.GetFiles("*.deps.json", SearchOption.AllDirectories).Length == 0)
-                {
-                    Log.Info("Building workspace using {_initializer} in {directory}", _initializer, Directory);
-                    new Dotnet(Directory).Build(budget).ThrowOnFailure();
-                }
+            await EnsureCreated(budget);
 
-                IsBuilt = true;
+            lock (lockObj)
+            {
+                if (_buildIsDone == null)
+                {
+                    _buildIsDone = VerifyOrBuild();
+                }
+            }
+
+            await _buildIsDone;
+
+            async Task VerifyOrBuild()
+            {
+                await Task.Yield();
+
+                if (!IsBuilt)
+                {
+                    if (Directory.GetFiles("*.deps.json", SearchOption.AllDirectories).Length == 0)
+                    {
+                        Log.Info("Building workspace using {_initializer} in {directory}", _initializer, Directory);
+                        new Dotnet(Directory)
+                            .Build(
+                                args: "--no-dependencies",
+                                budget: budget)
+                            .ThrowOnFailure();
+                    }
+
+                    IsBuilt = true;
+                }
             }
         }
 

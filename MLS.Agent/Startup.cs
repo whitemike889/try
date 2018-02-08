@@ -1,9 +1,10 @@
 ﻿using System;
+using System.Threading.Tasks;
+using Clockwise;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Newtonsoft.Json;
 using Pocket;
 using Recipes;
@@ -14,6 +15,11 @@ namespace MLS.Agent
 {
     public class Startup
     {
+        private readonly CompositeDisposable _disposables = new CompositeDisposable
+        {
+            () => Logger<Program>.Log.Event("AgentStopping")
+        };
+
         public Startup(IHostingEnvironment env)
         {
             Environment = env;
@@ -47,7 +53,7 @@ namespace MLS.Agent
 
                 services.AddSingleton(Configuration);
 
-                services.TryAddSingleton<WorkspaceServerRegistry>();
+                services.AddSingleton(_ => DefaultWorkspaces.CreateWorkspaceServerRegistry());
 
                 operation.Succeed();
             }
@@ -56,22 +62,26 @@ namespace MLS.Agent
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(
             IApplicationBuilder app,
+            IApplicationLifetime lifetime,
             IHostingEnvironment env,
             IServiceProvider serviceProvider)
         {
             using (var operation = Log.OnEnterAndConfirmOnExit())
             {
-                operation.Info("Agent version {orchestrator_version} starting in environment {environment}",
-                               AssemblyVersionSensor.Version().AssemblyInformationalVersion,
-                               Environment.EnvironmentName);
+                lifetime.ApplicationStopping.Register(() => _disposables.Dispose());
 
                 app.UseDefaultFiles()
                    .UseStaticFiles()
                    .UseMvc();
 
-                serviceProvider
-                    .GetRequiredService<WorkspaceServerRegistry>()
-                    .StartAllServers()
+                var budget = TimeBudget.Unlimited();
+
+                _disposables.Add(() => budget.Cancel());
+
+                Task.Run(() =>
+                             serviceProvider
+                                 .GetRequiredService<WorkspaceServerRegistry>()
+                                 .StartAllServers(budget))
                     .DontAwait();
 
                 operation.Succeed();
