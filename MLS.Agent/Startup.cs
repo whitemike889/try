@@ -15,7 +15,10 @@ namespace MLS.Agent
 {
     public class Startup
     {
-        private readonly CompositeDisposable _disposables = new CompositeDisposable();
+        private readonly CompositeDisposable _disposables = new CompositeDisposable
+        {
+            () => Logger<Program>.Log.Event("AgentStopping")
+        };
 
         public Startup(IHostingEnvironment env)
         {
