@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Reflection;
 using System.Linq;
 using System.Text;
@@ -13,7 +12,6 @@ using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.Scripting;
 using Pocket;
-using Recipes;
 using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
 using static Pocket.Logger<WorkspaceServer.Servers.Scripting.ScriptingWorkspaceServer>;
@@ -37,7 +35,6 @@ namespace WorkspaceServer.Servers.Scripting
                 var options = CreateOptions(request);
 
                 ScriptState<object> state = null;
-                var variables = new Dictionary<string, Variable>();
                 Exception exception = null;
                 try
                 {
@@ -60,8 +57,6 @@ namespace WorkspaceServer.Servers.Scripting
                                 console.Clear();
 
                                 state = await Run(state, buffer, options);
-
-                                CaptureVariableState(state, variables, lineNumber);
 
                                 if (index == sourceLines.Count - 1 &&
                                     console.IsEmpty())
@@ -112,7 +107,6 @@ namespace WorkspaceServer.Servers.Scripting
                                    .Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries),
                     returnValue: state?.ReturnValue,
                     exception: (exception ?? state?.Exception).ToDisplayString(),
-                    variables: variables.Values,
                     diagnostics: GetDiagnostics(request.SourceFiles.Single(), options)); 
             }
         }
@@ -131,20 +125,6 @@ namespace WorkspaceServer.Servers.Scripting
                                 Select(d => new SerializableDiagnostic(d))
                                       .ToArray(); // Suppress  warning CS7022: The entry point of the program is global script code; ignoring 'Main()' entry point.
                                                                // Unlike regular CompilationOptions, ScriptOptions does't provide the ability to suppress diagnostics
-        }
-
-        private static void CaptureVariableState(ScriptState<object> state, Dictionary<string, Variable> variables, int lineNumber)
-        {
-            foreach (var scriptVariable in state.Variables)
-            {
-                variables.GetOrAdd(scriptVariable.Name,
-                                   name => new Variable(name))
-                         .TryAddState(
-                             new VariableState(
-                                 lineNumber,
-                                 scriptVariable.Value,
-                                 scriptVariable.Type));
-            }
         }
 
         private static async Task<ScriptState<object>> Run(
