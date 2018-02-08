@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Clockwise" Version="1.0.106-beta" />
+    <PackageReference Include="Clockwise" Version="1.0.112-beta" />
     <PackageReference Include="Microsoft.CodeAnalysis.Scripting" Version="2.6.1" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Features" Version="2.6.1" />
     <PackageReference Include="NewtonSoft.Json" Version="10.0.3" />

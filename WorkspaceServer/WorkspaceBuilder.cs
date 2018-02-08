@@ -70,7 +70,7 @@ namespace WorkspaceServer
                 await action(_workspace, budget);
             }
 
-            _workspace.EnsureBuilt(budget);
+            await _workspace.EnsureBuilt(budget);
         }
     }
 }

@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Pocket;
 using Recipes;
-using WorkspaceServer;
 using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Tests;
@@ -91,14 +90,10 @@ namespace MLS.Agent.Tests
         [Fact]
         public async Task The_workspace_endpoint_compiles_code_using_dotnet_when_a_non_script_workspace_type_is_specified()
         {
-            var registry = new WorkspaceServerRegistry();
-            registry.AddWorkspace("console", o => o.CreateUsingDotnet("console"));
-            disposables.Add(registry);
-
             var output = Guid.NewGuid().ToString();
             var requestJson = Create.SimpleRunRequestJson(output, "console");
 
-            var response = await CallRun(requestJson, registry);
+            var response = await CallRun(requestJson);
 
             var result = await response
                                .EnsureSuccess()
@@ -112,9 +107,7 @@ namespace MLS.Agent.Tests
         [Fact]
         public async Task When_a_non_script_workspace_type_is_specified_then_code_fragments_cannot_be_compiled_successfully()
         {
-            var registry = new WorkspaceServerRegistry();
-            registry.AddWorkspace("console", o => o.CreateUsingDotnet("console"));
-            disposables.Add(registry);
+          
 
             var requestJson = JsonConvert.SerializeObject(new
             {
@@ -122,7 +115,7 @@ namespace MLS.Agent.Tests
                 WorkspaceType = "console"
             });
 
-            var response = await CallRun(requestJson, registry);
+            var response = await CallRun(requestJson);
 
             var result = await response
                                .EnsureSuccess()
@@ -235,12 +228,10 @@ namespace MLS.Agent.Tests
             result.ShouldSucceedWithOutput(output);
         }
 
-        private static async Task<HttpResponseMessage> CallRun(
-            string content,
-            WorkspaceServerRegistry workspaceServerRegistry = null)
+        private static async Task<HttpResponseMessage> CallRun(string content)
         {
             HttpResponseMessage response;
-            using (var agent = new AgentService(workspaceServerRegistry))
+            using (var agent = new AgentService())
             {
                 var request = new HttpRequestMessage(
                     HttpMethod.Post,

@@ -24,8 +24,8 @@ namespace MLS.Agent.Tools
             return Execute($"new {templateName} {args}", budget);
         }
 
-        public CommandLineResult Build(TimeBudget budget = null) =>
-            Execute("build", budget);
+        public CommandLineResult Build(string args = null, TimeBudget budget = null) =>
+            Execute("build".AppendArgs(args), budget);
 
         public CommandLineResult Execute(string args, TimeBudget budget = null) =>
             CommandLine.Execute(
