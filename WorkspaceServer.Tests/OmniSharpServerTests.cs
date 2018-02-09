@@ -8,7 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using MLS.Agent.Tools;
 using Pocket;
-using WorkspaceServer.Servers.OmniSharp;
+using WorkspaceServer.Servers.Dotnet;
 using Xunit;
 using Xunit.Abstractions;
 

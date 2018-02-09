@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 using WorkspaceServer.Models.Execution;
-using WorkspaceServer.Servers.OmniSharp;
+using WorkspaceServer.Servers.Dotnet;
 using Xunit.Abstractions;
 
 namespace WorkspaceServer.Tests

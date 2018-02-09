@@ -13,7 +13,7 @@ using MLS.Agent.Tools;
 using Pocket.For.ApplicationInsights;
 using Recipes;
 using Serilog.Sinks.RollingFileAlternate;
-using WorkspaceServer.Servers.OmniSharp;
+using WorkspaceServer.Servers.Dotnet;
 using SerilogLoggerConfiguration = Serilog.LoggerConfiguration;
 
 namespace MLS.Agent
@@ -34,10 +34,6 @@ namespace MLS.Agent
 
         private static void StartLogging(CompositeDisposable disposables, CommandLineOptions options)
         {
-            var instrumentationKey = options.IsProduction
-                                         ? "1bca19cc-3417-462c-bb60-7337605fee38"
-                                         : "6c13142c-8ddf-4335-b857-9d3e0cbb1ea1";
-
             if (options.IsProduction)
             {
                 var applicationVersion = AssemblyVersionSensor.Version().AssemblyInformationalVersion;
@@ -64,7 +60,9 @@ namespace MLS.Agent
                 disposables.Add(subscription);
                 disposables.Add(log);
 
-                disposables.Add(LogEvents.Subscribe(e => Console.WriteLine(e.ToLogString())));
+                disposables.Add(
+                    LogEvents.Subscribe(e => Console.WriteLine(e.ToLogString()),
+                                        assembliesEmittingPocketLoggerLogs));
             }
 
             TaskScheduler.UnobservedTaskException += (sender, args) =>
@@ -73,15 +71,18 @@ namespace MLS.Agent
                 args.SetObserved();
             };
 
-            var telemetryClient = new TelemetryClient(new TelemetryConfiguration(instrumentationKey))
-            {
-                InstrumentationKey = instrumentationKey
-            };
+            var telemetryClient = new TelemetryClient(
+                new TelemetryConfiguration(GetInstrumentationKey(options.IsProduction)));
 
-            disposables.Add(telemetryClient.SubscribeToPocketLogger());
+            disposables.Add(telemetryClient.SubscribeToPocketLogger(assembliesEmittingPocketLoggerLogs));
 
             Log.Event("AgentStarting");
         }
+
+        public static string GetInstrumentationKey(bool isProduction) =>
+            isProduction
+                ? "1bca19cc-3417-462c-bb60-7337605fee38"
+                : "6c13142c-8ddf-4335-b857-9d3e0cbb1ea1";
 
         public static IWebHost ConstructWebHost(CommandLineOptions options)
         {
@@ -104,6 +105,9 @@ namespace MLS.Agent
                 {
                     c.AddSingleton(options);
                 })
+                .UseEnvironment(options.IsProduction 
+                                      ? EnvironmentName.Production 
+                                      : EnvironmentName.Development) 
                 .UseStartup<Startup>()
                 .Build();
 
