@@ -13,7 +13,7 @@ using MLS.Agent.Tools;
 using Pocket.For.ApplicationInsights;
 using Recipes;
 using Serilog.Sinks.RollingFileAlternate;
-using WorkspaceServer.Servers.OmniSharp;
+using WorkspaceServer.Servers.Dotnet;
 using SerilogLoggerConfiguration = Serilog.LoggerConfiguration;
 
 namespace MLS.Agent

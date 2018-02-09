@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Clockwise;
 using MLS.Agent.Tools;
 using Pocket;
-using WorkspaceServer.Servers.OmniSharp;
+using WorkspaceServer.Servers.Dotnet;
 using static Pocket.Logger<WorkspaceServer.WorkspaceServerRegistry>;
 
 namespace WorkspaceServer

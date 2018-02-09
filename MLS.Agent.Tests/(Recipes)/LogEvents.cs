@@ -2,7 +2,7 @@
 using MLS.Agent;
 using MLS.Agent.Tools;
 using OmniSharp.Client;
-using WorkspaceServer.Servers.OmniSharp;
+using WorkspaceServer.Servers.Dotnet;
 using Xunit.Abstractions;
 
 namespace Pocket
