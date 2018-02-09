@@ -5,11 +5,11 @@ using System.Linq;
 
 namespace WorkspaceServer.Models.Execution
 {
-    public class WorkspaceRunRequest
+    public class Workspace
     {
         private const string DefaultWorkspaceType = "script";
 
-        public WorkspaceRunRequest(
+        public Workspace(
         string buffer = null, // TODO: added for backward comaptibility
         string source = null, // TODO: added for backward comaptibility
         string bufferid = null, // TODO: added for backward comaptibility

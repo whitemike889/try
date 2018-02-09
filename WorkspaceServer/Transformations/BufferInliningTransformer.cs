@@ -7,24 +7,25 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 using WorkspaceServer.Models.Execution;
+using Workspace = WorkspaceServer.Models.Execution.Workspace;
 
-namespace WorkspaceServer.Processors
+namespace WorkspaceServer.Transformations
 {
-    public class BufferInliningProcessor : IWorksapceProcessor
+    public class BufferInliningTransformer : IWorksapceTransformer
     {
-        private static readonly string processorName = typeof(BufferInliningProcessor).Name;
+        private static readonly string processorName = typeof(BufferInliningTransformer).Name;
         private static string padding = Environment.NewLine;
         public static int PaddingSize => padding.Length;
-        public async Task<WorkspaceRunRequest> ProcessAsync(WorkspaceRunRequest source, TimeBudget timeBudget = null)
+        public async Task<Workspace> ProcessAsync(Workspace source, TimeBudget timeBudget = null)
         {
             if (source == null) throw new ArgumentNullException(nameof(source));
 
             var results = await InlineBuffersAsync(source, timeBudget);
 
-            return new WorkspaceRunRequest(workspaceType: source.WorkspaceType, files: results.files, buffers: results.buffers);
+            return new Workspace(workspaceType: source.WorkspaceType, files: results.files, buffers: results.buffers);
         }
 
-        public Dictionary<string, (SourceFile Destination, TextSpan Region)> ExtractViewPorts(WorkspaceRunRequest ws)
+        public Dictionary<string, (SourceFile Destination, TextSpan Region)> ExtractViewPorts(Workspace ws)
         {
             if (ws == null) throw new ArgumentNullException(nameof(ws));
 
@@ -32,10 +33,10 @@ namespace WorkspaceServer.Processors
 
             return ExtractViewPorts(files);
         }
-        private static async Task<(WorkspaceRunRequest.File[] files, WorkspaceRunRequest.Buffer[] buffers)> InlineBuffersAsync(WorkspaceRunRequest source, TimeBudget timeBudget)
+        private static async Task<(Workspace.File[] files, Workspace.Buffer[] buffers)> InlineBuffersAsync(Workspace source, TimeBudget timeBudget)
         {
             var files = source.SourceFiles.ToDictionary(f => f.Name);
-            var buffers = new List<WorkspaceRunRequest.Buffer>();
+            var buffers = new List<Workspace.Buffer>();
             foreach (var sourceBuffer in source.Buffers)
             {
                 var viewPorts = ExtractViewPorts(files.Values);
@@ -53,17 +54,17 @@ namespace WorkspaceServer.Processors
 
                     var newCode = (await txt.GetTextAsync()).ToString();
 
-                    buffers.Add(new WorkspaceRunRequest.Buffer(sourceBuffer.Id, sourceBuffer.Content, offset));
+                    buffers.Add(new Workspace.Buffer(sourceBuffer.Id, sourceBuffer.Content, offset));
                     files[viewPort.Destination.Name] = SourceFile.Create(newCode, viewPort.Destination.Name);
                 }
                 else if (sourceBuffer.Id == string.Empty)
                 {
                     files["Program.cs"] = SourceFile.Create(sourceBuffer.Content, "Program.cs");
-                    buffers.Add(new WorkspaceRunRequest.Buffer(sourceBuffer.Id, sourceBuffer.Content, 0));
+                    buffers.Add(new Workspace.Buffer(sourceBuffer.Id, sourceBuffer.Content, 0));
                 }
             }
 
-            var processedFiles = files.Values.Select(sf => new WorkspaceRunRequest.File(sf.Name, sf.Text.ToString())).ToArray();
+            var processedFiles = files.Values.Select(sf => new Workspace.File(sf.Name, sf.Text.ToString())).ToArray();
             var processedBuffers = buffers.ToArray();
             timeBudget?.RecordEntry(processorName);
             return (processedFiles, processedBuffers);

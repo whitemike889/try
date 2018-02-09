@@ -5,13 +5,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Completion;
 using Microsoft.CodeAnalysis.Scripting;
 using MLS.Agent.Tools;
-using OmniSharp.Client;
 using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
-using WorkspaceServer.Processors;
+using WorkspaceServer.Transformations;
 using Diagnostic = OmniSharp.Client.Diagnostic;
 using Workspace = MLS.Agent.Tools.Workspace;
 using OmnisharpEmitResponse = OmniSharp.Client.Commands.OmniSharpResponseMessage<OmniSharp.Client.Commands.EmitResponse>;
@@ -52,10 +50,10 @@ namespace WorkspaceServer.Servers.OmniSharp
             await _omniSharpServer.WorkspaceReady(budget);
         }
 
-        public async Task<RunResult> Run(WorkspaceRunRequest request, TimeBudget budget = null)
+        public async Task<RunResult> Run(Models.Execution.Workspace request, TimeBudget budget = null)
         {
             budget = budget ?? TimeBudget.Unlimited();
-            var processor = new BufferInliningProcessor();
+            var processor = new BufferInliningTransformer();
             var processedRequest = await processor.ProcessAsync(request);
             var viewPorts = processor.ExtractViewPorts(processedRequest);
             CommandLineResult result = null;
@@ -73,7 +71,7 @@ namespace WorkspaceServer.Servers.OmniSharp
                 if (emitResponse.Body.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error))
                 {
                     
-                    processedDiagnostics = ReconstructDiagnosticLocations(emitResponse.Body.Diagnostics, viewPorts, BufferInliningProcessor.PaddingSize).ToArray();
+                    processedDiagnostics = ReconstructDiagnosticLocations(emitResponse.Body.Diagnostics, viewPorts, BufferInliningTransformer.PaddingSize).ToArray();
                     return new RunResult(
                         false,
                         processedDiagnostics
@@ -109,7 +107,7 @@ namespace WorkspaceServer.Servers.OmniSharp
                 exception = taskCanceledException;
             }
 
-            processedDiagnostics = ReconstructDiagnosticLocations(emitResponse?.Body.Diagnostics, viewPorts, BufferInliningProcessor.PaddingSize).ToArray();
+            processedDiagnostics = ReconstructDiagnosticLocations(emitResponse?.Body.Diagnostics, viewPorts, BufferInliningTransformer.PaddingSize).ToArray();
             return new RunResult(
                 succeeded:  !(exception is TimeoutException) &&
                             !(exception is CompilationErrorException),
@@ -178,7 +176,7 @@ namespace WorkspaceServer.Servers.OmniSharp
             }
         }
 
-        private async Task<OmnisharpEmitResponse> Emit(WorkspaceRunRequest request, TimeBudget budget = null)
+        private async Task<OmnisharpEmitResponse> Emit(Models.Execution.Workspace request, TimeBudget budget = null)
         {
             await EnsureInitializedAndNotDisposed(budget);
 
@@ -204,7 +202,7 @@ namespace WorkspaceServer.Servers.OmniSharp
             throw new NotImplementedException();
         }
 
-        public async Task<DiagnosticResult> GetDiagnostics(WorkspaceRunRequest request)
+        public async Task<DiagnosticResult> GetDiagnostics(Models.Execution.Workspace request)
         {
             var emitResult = await Emit(request);
             var diagnostics = emitResult.Body.Diagnostics.Select(d => new SerializableDiagnostic(d)).ToArray();

@@ -11,7 +11,7 @@ namespace WorkspaceServer.Tests
         [Fact]
         public void Can_parse_simple_code_source_request()
         {
-            var request = JsonConvert.DeserializeObject<WorkspaceRunRequest>(@"{ source : ""code""}");
+            var request = JsonConvert.DeserializeObject<Workspace>(@"{ source : ""code""}");
             request.Buffers.Should().NotBeNullOrEmpty();
             request.SourceFiles.Should().NotBeNullOrEmpty();
             request.WorkspaceType.Should().Be("script");
@@ -21,7 +21,7 @@ namespace WorkspaceServer.Tests
         [Fact]
         public void Can_parse_buffer_request()
         {
-            var request = JsonConvert.DeserializeObject<WorkspaceRunRequest>(@"{ buffer : ""code"", bufferId:""test"", position: 12}");
+            var request = JsonConvert.DeserializeObject<Workspace>(@"{ buffer : ""code"", bufferId:""test"", position: 12}");
             request.Buffers.Should().NotBeNullOrEmpty();
             request.SourceFiles.Should().NotBeNullOrEmpty();
             request.WorkspaceType.Should().Be("script");
@@ -31,7 +31,7 @@ namespace WorkspaceServer.Tests
         [Fact]
         public void Can_parse_workspace_without_files()
         {
-            var request = JsonConvert.DeserializeObject<WorkspaceRunRequest>(@"{ workspaceType: ""console"", buffers: [{content: ""code"", id:""test"", position: 12}] }");
+            var request = JsonConvert.DeserializeObject<Workspace>(@"{ workspaceType: ""console"", buffers: [{content: ""code"", id:""test"", position: 12}] }");
             request.Buffers.Should().NotBeNullOrEmpty();
             request.SourceFiles.Should().NotBeNullOrEmpty();
             request.WorkspaceType.Should().Be("console");
@@ -41,7 +41,7 @@ namespace WorkspaceServer.Tests
         [Fact]
         public void Can_parse_workspace_with_files()
         {
-            var request = JsonConvert.DeserializeObject<WorkspaceRunRequest>(@"{ workspaceType: ""console"", buffers: [{content: ""code"", id:""test"", position: 12}], files:[{name: ""filedOne.cs"", text:""some value""}] }");
+            var request = JsonConvert.DeserializeObject<Workspace>(@"{ workspaceType: ""console"", buffers: [{content: ""code"", id:""test"", position: 12}], files:[{name: ""filedOne.cs"", text:""some value""}] }");
             request.Buffers.Should().NotBeNullOrEmpty();
             request.SourceFiles.Should().NotBeNullOrEmpty();
             request.WorkspaceType.Should().Be("console");
@@ -52,7 +52,7 @@ namespace WorkspaceServer.Tests
         [Fact]
         public void Can_parse_workspace_with_usings()
         {
-            var request = JsonConvert.DeserializeObject<WorkspaceRunRequest>(@"{ usings: [""using System1;"", ""using System2;""], workspaceType: ""console"", buffers: [{content: ""code"", id:""test"", position: 12}], files:[{name: ""filedOne.cs"", text:""some value""}] }");
+            var request = JsonConvert.DeserializeObject<Workspace>(@"{ usings: [""using System1;"", ""using System2;""], workspaceType: ""console"", buffers: [{content: ""code"", id:""test"", position: 12}], files:[{name: ""filedOne.cs"", text:""some value""}] }");
             request.Buffers.Should().NotBeNullOrEmpty();
             request.SourceFiles.Should().NotBeNullOrEmpty();
             request.WorkspaceType.Should().Be("console");

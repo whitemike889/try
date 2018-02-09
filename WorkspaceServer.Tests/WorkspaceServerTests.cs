@@ -10,6 +10,7 @@ using Xunit;
 using Xunit.Abstractions;
 using static Pocket.Logger<WorkspaceServer.Tests.WorkspaceServerTests>;
 
+
 namespace WorkspaceServer.Tests
 {
     public abstract class WorkspaceServerTests : IDisposable
@@ -19,7 +20,7 @@ namespace WorkspaceServer.Tests
         protected abstract IWorkspaceServer GetWorkspaceServer(
             [CallerMemberName] string testName = null);
 
-        protected abstract WorkspaceRunRequest CreateRunRequestContaining(string text);
+        protected abstract Models.Execution.Workspace CreateRunRequestContaining(string text);
 
         public void Dispose() => disposables.Dispose();
 
@@ -46,7 +47,7 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task Response_indicates_when_compile_is_successful_and_signature_is_like_a_console_app()
         {
-            var request = new WorkspaceRunRequest(@"
+            var request = new Models.Execution.Workspace(@"
 using System;
 
 public static class Hello
@@ -71,7 +72,7 @@ public static class Hello
         {
             var output = nameof(Response_shows_program_output_when_compile_is_successful_and_signature_is_like_a_console_app);
 
-            var request = new WorkspaceRunRequest($@"
+            var request = new Models.Execution.Workspace($@"
 using System;
 
 public static class Hello
@@ -198,7 +199,7 @@ throw new Exception(""oops!"");");
         [Fact]
         public async Task When_a_public_void_Main_with_no_parameters_is_present_it_is_invoked()
         {
-            var request = new WorkspaceRunRequest($@"
+            var request = new Models.Execution.Workspace($@"
 using System;
 
 public static class Hello
@@ -218,7 +219,7 @@ public static class Hello
         [Fact]
         public async Task When_a_public_void_Main_with_parameters_is_present_it_is_invoked()
         {
-            var request = new WorkspaceRunRequest(@"
+            var request = new Models.Execution.Workspace(@"
 using System;
 
 public static class Hello
@@ -239,7 +240,7 @@ public static class Hello
         [Fact]
         public async Task When_an_internal_void_Main_with_no_parameters_is_present_it_is_invoked()
         {
-            var request = new WorkspaceRunRequest(@"
+            var request = new Models.Execution.Workspace(@"
 using System;
 
 public static class Hello
@@ -262,7 +263,7 @@ public static class Hello
         [Fact]
         public async Task When_an_internal_void_Main_with_parameters_is_present_it_is_invoked()
         {
-            var request = new WorkspaceRunRequest(@"
+            var request = new Models.Execution.Workspace(@"
 using System;
 
 public static class Hello
@@ -285,7 +286,7 @@ public static class Hello
         {
             var output = nameof(Response_shows_warnings_with_successful_compilation);
 
-            var request = new WorkspaceRunRequest($@"
+            var request = new Models.Execution.Workspace($@"
 using System;
 using System;
 public static class Hello
@@ -309,7 +310,7 @@ public static class Hello
         {
             var output = nameof(Response_shows_warnings_when_compilation_fails);
 
-            var request = new WorkspaceRunRequest($@"
+            var request = new Models.Execution.Workspace($@"
 using System;
 using System;
 public static class Hello
@@ -330,7 +331,7 @@ public static class Hello
         [Fact]
         public async Task Get_diagnostics_produces_appropriate_diagnostics_for_display_to_user()
         {
-            var request = new WorkspaceRunRequest(@"
+            var request = new Models.Execution.Workspace(@"
 using System;
 
 public static class Hello

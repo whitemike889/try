@@ -15,9 +15,9 @@ namespace WorkspaceServer.Tests
         {
         }
 
-        protected override WorkspaceRunRequest CreateRunRequestContaining(string text)
+        protected override Workspace CreateRunRequestContaining(string text)
         {
-            return new WorkspaceRunRequest(
+            return new Workspace(
                 $@"using System; using System.Linq; using System.Collections.Generic; class Program {{ static void Main() {{ {text}
                     }}
                 }}
@@ -27,10 +27,10 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task When_compile_is_unsuccessful_diagnostic_are_aligned_with_buffer_span()
         {
-            var request = new WorkspaceRunRequest(
+            var request = new Workspace(
                 workspaceType: "console",
-                files: new[] { new WorkspaceRunRequest.File("Program.cs", Properties.Resources.SingleRegionCode) },
-                buffers: new[] { new WorkspaceRunRequest.Buffer("alpha", @"Console.WriteLine(banana);", 0) });
+                files: new[] { new Workspace.File("Program.cs", Properties.Resources.SingleRegionCode) },
+                buffers: new[] { new Workspace.Buffer("alpha", @"Console.WriteLine(banana);", 0) });
 
             var server = GetWorkspaceServer();
 
@@ -47,10 +47,10 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task When_compile_is_unsuccessful_diagnostic_are_aligned_with_buffer_span_when_code_is_multi_line()
         {
-            var request = new WorkspaceRunRequest(
+            var request = new Workspace(
                 workspaceType: "console",
-                files: new[] { new WorkspaceRunRequest.File("Program.cs", Properties.Resources.SingleRegionCode) },
-                buffers: new[] { new WorkspaceRunRequest.Buffer("alpha", @"var a = 10;"+Environment.NewLine+"Console.WriteLine(banana);", 0) });
+                files: new[] { new Workspace.File("Program.cs", Properties.Resources.SingleRegionCode) },
+                buffers: new[] { new Workspace.Buffer("alpha", @"var a = 10;"+Environment.NewLine+"Console.WriteLine(banana);", 0) });
 
             var server = GetWorkspaceServer();
 

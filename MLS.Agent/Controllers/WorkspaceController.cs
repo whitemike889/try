@@ -26,7 +26,7 @@ namespace MLS.Agent.Controllers
         [Route("/workspace/run")]
         [Route("/workspace/{DEPRECATED}/compile")] // FIX: (Run) remove this endpoint when Orchestrator no longer calls it
         public async Task<IActionResult> Run(
-            [FromBody] WorkspaceRunRequest request)
+            [FromBody] Workspace request)
         {
             using (var operation = Log.ConfirmOnExit())
             {
@@ -83,7 +83,7 @@ namespace MLS.Agent.Controllers
         [Route("/workspace/diagnostics")]
         [Route("/workspace/{DEPRECATED}/diagnostics")]
         public async Task<IActionResult> Diagnostics(
-            [FromBody] WorkspaceRunRequest request)
+            [FromBody] Workspace request)
         {
             using (var operation = Log.ConfirmOnExit())
             {

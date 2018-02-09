@@ -1,7 +1,5 @@
-using System;
 using System.IO;
 using System.Runtime.CompilerServices;
-using MLS.Agent.Tools;
 using Recipes;
 using WorkspaceServer.Models.Execution;
 
@@ -11,18 +9,18 @@ namespace WorkspaceServer.Tests
     {
         public static DirectoryInfo TestFolder([CallerMemberName] string testName = null)
         {
-            var existingFolders = Workspace.DefaultWorkspacesDirectory.GetDirectories($"{testName}.*");
+            var existingFolders = MLS.Agent.Tools.Workspace.DefaultWorkspacesDirectory.GetDirectories($"{testName}.*");
 
-            return Workspace.DefaultWorkspacesDirectory.CreateSubdirectory($"{testName}.{existingFolders.Length + 1}");
+            return MLS.Agent.Tools.Workspace.DefaultWorkspacesDirectory.CreateSubdirectory($"{testName}.{existingFolders.Length + 1}");
         }
 
-        public static Workspace TestWorkspace([CallerMemberName] string testName = null) =>
-            Workspace.Copy(Default.TemplateWorkspace, testName);
+        public static MLS.Agent.Tools.Workspace TestWorkspace([CallerMemberName] string testName = null) =>
+            MLS.Agent.Tools.Workspace.Copy(Default.TemplateWorkspace, testName);
 
-        public static WorkspaceRunRequest SimpleRunRequest(
+        public static Workspace SimpleRunRequest(
             string consoleOutput = "Hello!",
             string workspaceType = null) =>
-            new WorkspaceRunRequest(SimpleConsoleAppCodeWithoutNamespaces(consoleOutput), workspaceType: workspaceType);
+            new Workspace(SimpleConsoleAppCodeWithoutNamespaces(consoleOutput), workspaceType: workspaceType);
 
         public static string SimpleRunRequestJson(
             string consoleOutput = "Hello!",
