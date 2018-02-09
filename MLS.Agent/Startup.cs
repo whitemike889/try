@@ -39,6 +39,10 @@ namespace MLS.Agent
         {
             using (var operation = Log.OnEnterAndConfirmOnExit())
             {
+                services.AddApplicationInsightsTelemetry(
+                    Program.GetInstrumentationKey(
+                        Environment.IsProduction()));
+
                 // Add framework services.
                 services.AddMvc(options =>
                         {

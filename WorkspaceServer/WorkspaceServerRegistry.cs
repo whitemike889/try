@@ -59,7 +59,7 @@ namespace WorkspaceServer
 
         public async Task StartAllServers(TimeBudget budget = null)
         {
-            using (var operation = Log.ConfirmOnExit())
+            using (var operation = Log.OnEnterAndConfirmOnExit())
             {
                 await Task.WhenAll(workspaceBuilders.Keys.Select(async name =>
                 {
