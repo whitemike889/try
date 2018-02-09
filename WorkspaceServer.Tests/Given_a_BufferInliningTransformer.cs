@@ -15,7 +15,7 @@ namespace WorkspaceServer.Tests
         {
             var ws = new Workspace(files: new[]
             {
-                new Workspace.File("Program.cs", Properties.Resources.SingleRegionCode)
+                new Workspace.File("Program.cs", CodeSamples.SourceCodeProvider.ConsoleProgramSingleRegion)
             });
             var processor = new BufferInliningTransformer();
             var viewPorts = processor.ExtractViewPorts(ws);
@@ -28,7 +28,7 @@ namespace WorkspaceServer.Tests
         {
             var ws = new Workspace(files: new[]
             {
-                new Workspace.File("Program.cs", Properties.Resources.ConflictingRegionCode)
+                new Workspace.File("Program.cs", CodeSamples.SourceCodeProvider.ConsoleProgramCollidingRegions)
             });
             var processor = new BufferInliningTransformer();
             Action extraction = () => processor.ExtractViewPorts(ws);
@@ -40,8 +40,8 @@ namespace WorkspaceServer.Tests
         {
             var ws = new Workspace(files: new[]
             {
-                new Workspace.File("ProgramA.cs", Properties.Resources.SingleRegionCode),
-                new Workspace.File("ProgramB.cs", Properties.Resources.SingleRegionCode)
+                new Workspace.File("ProgramA.cs", CodeSamples.SourceCodeProvider.ConsoleProgramSingleRegion),
+                new Workspace.File("ProgramB.cs", CodeSamples.SourceCodeProvider.ConsoleProgramSingleRegion)
             });
             var processor = new BufferInliningTransformer();
             Action extraction = () => processor.ExtractViewPorts(ws);
@@ -70,7 +70,7 @@ namespace WorkspaceServer.Tests
             var ws = new Workspace(
                 files: new[]
                 {
-                    new Workspace.File("Program.cs", Properties.Resources.SingleRegionCode)
+                    new Workspace.File("Program.cs", CodeSamples.SourceCodeProvider.ConsoleProgramSingleRegion)
                 },
                 buffers: new[]
                 {
@@ -97,7 +97,7 @@ namespace WorkspaceServer.Tests
             var ws = new Workspace(
                 buffers: new[]
                 {
-                    new Workspace.Buffer("", Properties.Resources.SingleRegionCode, 0)
+                    new Workspace.Buffer("", CodeSamples.SourceCodeProvider.ConsoleProgramSingleRegion, 0)
                 });
             var processor = new BufferInliningTransformer();
 
@@ -105,7 +105,7 @@ namespace WorkspaceServer.Tests
             processed.Should().NotBeNull();
             processed.SourceFiles.Should().NotBeEmpty();
             var newCode = processed.SourceFiles.ElementAt(0).Text.ToString();
-            newCode.Should().Contain(Properties.Resources.SingleRegionCode);
+            newCode.Should().Contain(CodeSamples.SourceCodeProvider.ConsoleProgramSingleRegion);
 
         }
     }
