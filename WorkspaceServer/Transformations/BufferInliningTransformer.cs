@@ -14,7 +14,7 @@ namespace WorkspaceServer.Transformations
     public class BufferInliningTransformer : IWorksapceTransformer
     {
         private static readonly string processorName = typeof(BufferInliningTransformer).Name;
-        private static string padding = Environment.NewLine;
+        private static readonly string padding = Environment.NewLine;
         public static int PaddingSize => padding.Length;
         public async Task<Workspace> ProcessAsync(Workspace source, TimeBudget timeBudget = null)
         {
