@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
-using System.Reactive.Linq;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
 using System.Threading.Tasks;
 using Clockwise;
@@ -10,7 +10,7 @@ using OmniSharp.Client;
 using OmniSharp.Client.Commands;
 using Recipes;
 
-namespace WorkspaceServer.Servers.OmniSharp
+namespace WorkspaceServer.Servers.Dotnet
 {
     public static class OmniSharpServerExtensions
     {

@@ -15,7 +15,7 @@ using Workspace = MLS.Agent.Tools.Workspace;
 using OmnisharpEmitResponse = OmniSharp.Client.Commands.OmniSharpResponseMessage<OmniSharp.Client.Commands.EmitResponse>;
 using TextSpan = Microsoft.CodeAnalysis.Text.TextSpan;
 
-namespace WorkspaceServer.Servers.OmniSharp
+namespace WorkspaceServer.Servers.Dotnet
 {
     public class DotnetWorkspaceServer : IWorkspaceServer, IDisposable
     {
@@ -81,7 +81,7 @@ namespace WorkspaceServer.Servers.OmniSharp
                         diagnostics: processedDiagnostics.Select(d => d.Diagnostic).ToArray());
                 }
 
-                var dotnet = new Dotnet(_workspace.Directory);
+                var dotnet = new MLS.Agent.Tools.Dotnet(_workspace.Directory);
 
                 result = dotnet.Execute(emitResponse.Body.OutputAssemblyPath, budget);
 

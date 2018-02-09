@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Clockwise;
 using MLS.Agent.Tools;
 using Pocket;
-using WorkspaceServer.Servers.OmniSharp;
+using WorkspaceServer.Servers.Dotnet;
 using static Pocket.Logger<WorkspaceServer.WorkspaceServerRegistry>;
 
 namespace WorkspaceServer
@@ -59,7 +59,7 @@ namespace WorkspaceServer
 
         public async Task StartAllServers(TimeBudget budget = null)
         {
-            using (var operation = Log.ConfirmOnExit())
+            using (var operation = Log.OnEnterAndConfirmOnExit())
             {
                 await Task.WhenAll(workspaceBuilders.Keys.Select(async name =>
                 {

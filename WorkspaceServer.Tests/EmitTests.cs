@@ -6,7 +6,7 @@ using FluentAssertions;
 using MLS.Agent.Tools;
 using OmniSharp.Client.Commands;
 using Pocket;
-using WorkspaceServer.Servers.OmniSharp;
+using WorkspaceServer.Servers.Dotnet;
 using Xunit;
 using Xunit.Abstractions;
 

@@ -11,9 +11,8 @@ using MLS.Agent.Tools;
 using OmniSharp.Client;
 using OmniSharp.Client.Events;
 using Pocket;
-using static Pocket.Logger<WorkspaceServer.Servers.OmniSharp.OmniSharpServer>;
 
-namespace WorkspaceServer.Servers.OmniSharp
+namespace WorkspaceServer.Servers.Dotnet
 {
     public class OmniSharpServer : IDisposable
     {
@@ -37,8 +36,8 @@ namespace WorkspaceServer.Servers.OmniSharp
 
             if (logToPocketLogger)
             {
-                disposables.Add(StandardOutput.Subscribe(e => Log.Info("{message}", args: e)));
-                disposables.Add(StandardError.Subscribe(e => Log.Error("{message}", args: e)));
+                disposables.Add(StandardOutput.Subscribe(e => Logger<OmniSharpServer>.Log.Info("{message}", args: e)));
+                disposables.Add(StandardError.Subscribe(e => Logger<OmniSharpServer>.Log.Error("{message}", args: e)));
             }
 
             _process = new Lazy<Process>(() =>
@@ -85,7 +84,7 @@ namespace WorkspaceServer.Servers.OmniSharp
 
             var _ = _process.Value;
 
-            using (var operation = Log.OnEnterAndConfirmOnExit())
+            using (var operation = Logger<OmniSharpServer>.Log.OnEnterAndConfirmOnExit())
             {
                 await StandardOutput
                       .AsOmniSharpMessages()
