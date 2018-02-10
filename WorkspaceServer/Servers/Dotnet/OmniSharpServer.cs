@@ -16,6 +16,8 @@ namespace WorkspaceServer.Servers.Dotnet
 {
     public class OmniSharpServer : IDisposable
     {
+        private readonly DirectoryInfo _projectDirectory;
+        private readonly string _pluginPath;
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
         private int _seq;
         private readonly ReplaySubject<string> _standardOutput = new ReplaySubject<string>();
@@ -27,6 +29,11 @@ namespace WorkspaceServer.Servers.Dotnet
             string pluginPath = null,
             bool logToPocketLogger = false)
         {
+            _projectDirectory = projectDirectory ??
+                                throw new ArgumentNullException(nameof(projectDirectory));
+
+            _pluginPath = pluginPath;
+
             if (logToPocketLogger)
             {
                 _disposables.Add(StandardOutput.Subscribe(e => Log.Info("{message}", args: e)));
@@ -34,42 +41,42 @@ namespace WorkspaceServer.Servers.Dotnet
             }
 
             _omnisharpProcess = new AsyncLazy<Process>(StartOmniSharp);
+        }
 
-            async Task<Process> StartOmniSharp()
+        private async Task<Process> StartOmniSharp()
+        {
+            using (var operation = Log.OnEnterAndConfirmOnExit())
             {
-                using (var operation = Log.OnEnterAndConfirmOnExit())
+                var omnisharpExe = await MLS.Agent.Tools.OmniSharp.EnsureInstalledOrAcquire();
+
+                var process =
+                    CommandLine.StartProcess(
+                        omnisharpExe.FullName,
+                        string.IsNullOrWhiteSpace(_pluginPath)
+                            ? ""
+                            : $"-pl {_pluginPath}",
+                        _projectDirectory,
+                        _standardOutput.OnNext,
+                        _standardError.OnNext);
+
+                _disposables.Add(() =>
                 {
-                    var omnisharpExe = await MLS.Agent.Tools.OmniSharp.EnsureInstalledOrAcquire();
-
-                    var process =
-                        CommandLine.StartProcess(
-                            omnisharpExe.FullName,
-                            string.IsNullOrWhiteSpace(pluginPath)
-                                ? ""
-                                : $"-pl {pluginPath}",
-                            projectDirectory,
-                            _standardOutput.OnNext,
-                            _standardError.OnNext);
-
-                    _disposables.Add(() =>
+                    if (!process.HasExited)
                     {
-                        if (!process.HasExited)
-                        {
-                            process.Kill();
-                        }
-                    });
+                        process.Kill();
+                    }
+                });
 
-                    _disposables.Add(process);
+                _disposables.Add(process);
 
-                    await StandardOutput
-                          .AsOmniSharpMessages()
-                          .OfType<OmniSharpEventMessage<ProjectAdded>>()
-                          .FirstAsync();
+                await StandardOutput
+                      .AsOmniSharpMessages()
+                      .OfType<OmniSharpEventMessage<ProjectAdded>>()
+                      .FirstAsync();
 
-                    operation.Succeed();
+                operation.Succeed();
 
-                    return process;
-                }
+                return process;
             }
         }
 
