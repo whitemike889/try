@@ -17,33 +17,45 @@ namespace WorkspaceServer.Servers.Dotnet
     {
         private readonly Workspace _workspace;
         private readonly OmniSharpServer _omniSharpServer;
-
+        private readonly AsyncLazy<bool> _initialized;
         private bool _disposed;
 
         public DotnetWorkspaceServer(Workspace workspace)
         {
             _workspace = workspace ?? throw new ArgumentNullException(nameof(workspace));
 
+
+#if DEBUG
+            var logToPocketLogger = true;
+
+#else
+            var logToPocketLogger = false;
+#endif
+
             _omniSharpServer = new OmniSharpServer(
                 _workspace.Directory,
                 Paths.EmitPlugin,
-                logToPocketLogger: false);
+                logToPocketLogger: logToPocketLogger);
+
+            _initialized = new AsyncLazy<bool>(async () =>
+            {
+                await _workspace.EnsureBuilt();
+                await _omniSharpServer.WorkspaceReady();
+                return true;
+            });
         }
 
         public async Task EnsureInitializedAndNotDisposed(TimeBudget budget = null)
         {
+            budget?.RecordEntryAndThrowIfBudgetExceeded();
+
             if (_disposed)
             {
                 throw new ObjectDisposedException(nameof(DotnetWorkspaceServer));
             }
 
-            budget?.RecordEntryAndThrowIfBudgetExceeded();
-
-            await _workspace.EnsureCreated(budget);
-
-            await _workspace.EnsureBuilt(budget);
-
-            await _omniSharpServer.WorkspaceReady(budget);
+            await _initialized.ValueAsync()
+                              .CancelIfExceeds(budget ?? TimeBudget.Unlimited());
         }
 
         public async Task<RunResult> Run(WorkspaceRunRequest request, TimeBudget budget = null)
@@ -57,8 +69,6 @@ namespace WorkspaceServer.Servers.Dotnet
 
             try
             {
-                await EnsureInitializedAndNotDisposed(budget);
-
                 emitResponse = await Emit(request, budget);
 
                 if (emitResponse.Body.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error))
@@ -75,7 +85,7 @@ namespace WorkspaceServer.Servers.Dotnet
 
                 var dotnet = new MLS.Agent.Tools.Dotnet(_workspace.Directory);
 
-                result = dotnet.Execute(emitResponse.Body.OutputAssemblyPath, budget);
+                result = await dotnet.Execute(emitResponse.Body.OutputAssemblyPath, budget);
 
                 if (result.Exception != null)
                 {

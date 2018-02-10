@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Threading.Tasks;
 using Clockwise;
 
 namespace MLS.Agent.Tools
@@ -14,7 +15,7 @@ namespace MLS.Agent.Tools
                                 new DirectoryInfo(Directory.GetCurrentDirectory());
         }
 
-        public CommandLineResult New(string templateName, string args = null, TimeBudget budget = null)
+        public Task<CommandLineResult> New(string templateName, string args = null, TimeBudget budget = null)
         {
             if (string.IsNullOrWhiteSpace(templateName))
             {
@@ -24,10 +25,10 @@ namespace MLS.Agent.Tools
             return Execute($"new {templateName} {args}", budget);
         }
 
-        public CommandLineResult Build(string args = null, TimeBudget budget = null) =>
+        public Task<CommandLineResult> Build(string args = null, TimeBudget budget = null) =>
             Execute("build".AppendArgs(args), budget);
 
-        public CommandLineResult Execute(string args, TimeBudget budget = null) =>
+        public Task<CommandLineResult> Execute(string args, TimeBudget budget = null) =>
             CommandLine.Execute(
                 DotnetMuxer.Path,
                 args,

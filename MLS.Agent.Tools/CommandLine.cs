@@ -13,7 +13,7 @@ namespace MLS.Agent.Tools
 {
     public static class CommandLine
     {
-        public static CommandLineResult Execute(
+        public static Task<CommandLineResult> Execute(
             FileInfo exePath,
             string args,
             DirectoryInfo workingDir = null,
@@ -23,7 +23,7 @@ namespace MLS.Agent.Tools
                     workingDir,
                     budget);
 
-        public static CommandLineResult Execute(
+        public static async Task<CommandLineResult> Execute(
             string command,
             string args,
             DirectoryInfo workingDir = null,
@@ -52,36 +52,36 @@ namespace MLS.Agent.Tools
                 }))
             {
                 (int exitCode, Exception exception) =
-                    Task.Run(() =>
-                        {
-                            process.WaitForExit();
+                    await Task.Run(() =>
+                              {
+                                  process.WaitForExit();
 
-                            operation.Succeed(
-                                "{command} {args} exited with {code}",
-                                command,
-                                args,
-                                process.ExitCode);
+                                  operation.Succeed(
+                                      "{command} {args} exited with {code}",
+                                      command,
+                                      args,
+                                      process.ExitCode);
 
-                            return (process.ExitCode, (Exception) null);
-                        })
-                        .CancelIfExceeds(
-                            budget,
-                            ifCancelled: () =>
-                            {
-                                var ex = new TimeoutException();
+                                  return (process.ExitCode, (Exception) null);
+                              })
+                              .CancelIfExceeds(
+                                  budget,
+                                  ifCancelled: () =>
+                                  {
+                                      var ex = new TimeoutException();
 
-                                Task.Run(() =>
-                                {
-                                    if (!process.HasExited)
-                                    {
-                                        process.Kill();
-                                    }
-                                }).DontAwait();
+                                      Task.Run(() =>
+                                      {
+                                          if (!process.HasExited)
+                                          {
+                                              process.Kill();
+                                          }
+                                      }).DontAwait();
 
-                                operation.Fail(new TimeBudgetExceededException(budget));
+                                      operation.Fail(new TimeBudgetExceededException(budget));
 
-                                return (124, ex); // like the Linux timeout command 
-                            }).Result;
+                                      return (124, ex); // like the Linux timeout command 
+                                  });
 
                 return new CommandLineResult(
                     exitCode: exitCode,

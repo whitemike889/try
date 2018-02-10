@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Servers.Dotnet;
 using Xunit.Abstractions;
@@ -21,10 +22,10 @@ namespace WorkspaceServer.Tests
 ");
         }
 
-        protected override IWorkspaceServer GetWorkspaceServer(
+        protected override async Task<IWorkspaceServer> GetWorkspaceServer(
             [CallerMemberName] string testName = null)
         {
-            var project = Create.TestWorkspace(testName);
+            var project = await Create.TestWorkspace(testName);
 
             var workspaceServer = new DotnetWorkspaceServer(project);
 
