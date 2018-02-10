@@ -95,7 +95,7 @@ namespace MLS.Agent
             }
             else
             {
-                Log.Info("Received Key", options.Key);
+                Log.Info("Received Key: {key}", options.Key);
             }
             
             var webHost = new WebHostBuilder()
