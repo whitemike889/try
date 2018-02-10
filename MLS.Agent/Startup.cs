@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.AspNetCore.Builder;
@@ -82,11 +83,13 @@ namespace MLS.Agent
 
                 _disposables.Add(() => budget.Cancel());
 
-                Task.Run(() =>
-                             serviceProvider
-                                 .GetRequiredService<WorkspaceServerRegistry>()
-                                 .StartAllServers(budget))
-                    .DontAwait();
+                var workspaceServerRegistry = serviceProvider.GetRequiredService<WorkspaceServerRegistry>();
+
+                Task.Factory
+                    .StartNew(() => workspaceServerRegistry.StartAllServers(budget),
+                              CancellationToken.None,
+                              TaskCreationOptions.LongRunning,
+                              TaskScheduler.Default);
 
                 operation.Succeed();
             }
