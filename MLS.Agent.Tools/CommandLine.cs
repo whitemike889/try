@@ -158,14 +158,15 @@ namespace MLS.Agent.Tools
             TimeBudget budget,
             [CallerMemberName] string operationName = null)
         {
-            budget?.RecordEntryAndThrowIfBudgetExceeded($"{command} {args}");
+            budget.RecordEntryAndThrowIfBudgetExceeded($"{command} {args}");
 
             return new ConfirmationLogger(
                 operationName: operationName,
                 category: Logger.Log.Category,
                 message: "Invoking {command} {args}",
                 args: new[] { command, args },
-                logOnStart: true);
+                logOnStart: true,
+                exitArgs: () => new[] { ( "budget", (object) budget ) });
         }
     }
 }
