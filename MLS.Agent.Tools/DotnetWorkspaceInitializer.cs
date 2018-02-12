@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
 using Clockwise;
 
@@ -33,21 +32,19 @@ namespace MLS.Agent.Tools
             Name = name;
         }
 
-        public Task Initialize(
+        public async Task Initialize(
             DirectoryInfo directory,
             TimeBudget budget = null)
         {
             var dotnet = new Dotnet(directory);
 
-            dotnet
-                .New(Template,
-                     args: $"--name \"{Name}\" --output \"{directory.FullName}\"",
-                     budget: budget)
-                .ThrowOnFailure();
+            var result = await dotnet
+                             .New(Template,
+                                  args: $"--name \"{Name}\" --output \"{directory.FullName}\"",
+                                  budget: budget);
+            result.ThrowOnFailure();
 
             afterCreate?.Invoke(dotnet);
-
-            return Task.CompletedTask;
         }
     }
 }

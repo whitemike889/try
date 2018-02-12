@@ -1,4 +1,5 @@
 using System;
+using Clockwise;
 using Microsoft.CodeAnalysis.Scripting;
 
 namespace WorkspaceServer
@@ -9,6 +10,9 @@ namespace WorkspaceServer
         {
             switch (exception)
             {
+                case TimeBudgetExceededException _:
+                    return new TimeoutException().ToString();
+
                 case CompilationErrorException _:
                     return null;
 
@@ -16,5 +20,10 @@ namespace WorkspaceServer
                     return exception?.ToString();
             }
         }
+
+        public static bool IsConsideredRunFailure(this Exception exception) =>
+            exception is TimeoutException ||
+            exception is TimeBudgetExceededException ||
+            exception is CompilationErrorException;
     }
 }

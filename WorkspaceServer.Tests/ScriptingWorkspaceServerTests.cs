@@ -22,19 +22,20 @@ namespace WorkspaceServer.Tests
 
         protected override WorkspaceRunRequest CreateRunRequestContaining(string text) => new WorkspaceRunRequest(text);
 
-        protected override IWorkspaceServer GetWorkspaceServer(
-            [CallerMemberName] string testName = null) => new ScriptingWorkspaceServer();
+        protected override Task<IWorkspaceServer> GetWorkspaceServer(
+            [CallerMemberName] string testName = null) =>
+            Task.FromResult<IWorkspaceServer>(new ScriptingWorkspaceServer());
 
         [Fact]
-        public void Response_shows_fragment_return_value()
+        public async Task Response_shows_fragment_return_value()
         {
             var request = new WorkspaceRunRequest(@"
 var person = new { Name = ""Jeff"", Age = 20 };
 $""{person.Name} is {person.Age} year(s) old""");
 
-            var server = GetWorkspaceServer();
+            var server = await GetWorkspaceServer();
 
-            var result = server.Run(request).Result;
+            var result = await server.Run(request);
 
             Log.Trace(result.ToJson());
 
@@ -53,7 +54,7 @@ $""{person.Name} is {person.Age} year(s) old""");
             var request = new WorkspaceRunRequest(@"
 Console.WriteLine(banana);");
 
-            var server = GetWorkspaceServer();
+            var server = await GetWorkspaceServer();
 
             var result = await server.Run(request);
 
@@ -70,7 +71,7 @@ Console.WriteLine(banana);");
         {
             var request = new CompletionRequest("Console.", position: 8);
 
-            var server = GetWorkspaceServer();
+            var server = await GetWorkspaceServer();
 
             var result = await server.GetCompletionList(request);
 
@@ -95,7 +96,7 @@ public static class Hello
 Hello.Main();",
                                          usings: new[] { "System.Threading" });
 
-            var server = GetWorkspaceServer();
+            var server = await GetWorkspaceServer();
 
             var result = await server.Run(request);
 
@@ -121,7 +122,7 @@ public static class Hello
     }
 }");
 
-            var server = GetWorkspaceServer();
+            var server = await GetWorkspaceServer();
 
             var result = await server.Run(request);
 
@@ -142,7 +143,7 @@ public static class Hello
     }
 }");
 
-            var server = GetWorkspaceServer();
+            var server = await GetWorkspaceServer();
 
             var result = await server.Run(request);
 
