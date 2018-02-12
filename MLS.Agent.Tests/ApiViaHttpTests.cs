@@ -107,8 +107,6 @@ namespace MLS.Agent.Tests
         [Fact]
         public async Task When_a_non_script_workspace_type_is_specified_then_code_fragments_cannot_be_compiled_successfully()
         {
-          
-
             var requestJson = JsonConvert.SerializeObject(new
             {
                 Buffer = @"Console.WriteLine(""hello!"");",
