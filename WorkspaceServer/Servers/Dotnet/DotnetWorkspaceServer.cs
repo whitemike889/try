@@ -122,7 +122,7 @@ namespace WorkspaceServer.Servers.Dotnet
             }
         }
 
-        private async Task<OmnisharpEmitResponse> Emit(WorkspaceRunRequest request, TimeBudget budget = null)
+        private async Task<OmnisharpEmitResponse> Emit(WorkspaceRunRequest request, TimeBudget budget)
         {
             await EnsureInitializedAndNotDisposed(budget);
 
@@ -140,7 +140,11 @@ namespace WorkspaceServer.Servers.Dotnet
                 await _omniSharpServer.UpdateBuffer(file, text);
             }
 
-            return await _omniSharpServer.Emit(budget);
+            var emitResponse = await _omniSharpServer.Emit(budget);
+
+            budget.RecordEntryAndThrowIfBudgetExceeded();
+
+            return emitResponse;
         }
 
         public Task<CompletionResult> GetCompletionList(CompletionRequest request)
@@ -150,7 +154,7 @@ namespace WorkspaceServer.Servers.Dotnet
 
         public async Task<DiagnosticResult> GetDiagnostics(WorkspaceRunRequest request)
         {
-            var emitResult = await Emit(request);
+            var emitResult = await Emit(request, TimeBudget.Unlimited());
             var diagnostics = emitResult.Body.Diagnostics.Select(d => new SerializableDiagnostic(d)).ToArray();
             return new DiagnosticResult(diagnostics);
         }
