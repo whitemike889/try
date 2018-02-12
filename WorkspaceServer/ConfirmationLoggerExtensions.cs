@@ -10,7 +10,7 @@ namespace WorkspaceServer
             this ConfirmationLogger logger,
             RunResult result,
             TimeBudget budget) =>
-            logger.Succeed("Completed with result {succeeded} and budget {budget}",
+            logger.Succeed("Completed with result {succeeded} and {budget}",
                            result.Succeeded,
                            budget);
     }
