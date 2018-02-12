@@ -4,8 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Scripting;
 using MLS.Agent.Tools;
+using Pocket;
 using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
 using Workspace = MLS.Agent.Tools.Workspace;
@@ -27,7 +27,6 @@ namespace WorkspaceServer.Servers.Dotnet
 
 #if DEBUG
             var logToPocketLogger = true;
-
 #else
             var logToPocketLogger = false;
 #endif
@@ -60,61 +59,67 @@ namespace WorkspaceServer.Servers.Dotnet
 
         public async Task<RunResult> Run(WorkspaceRunRequest request, TimeBudget budget = null)
         {
-            budget = budget ?? new TimeBudget(TimeSpan.FromSeconds(30));
-
-            CommandLineResult result = null;
-            Exception exception = null;
-            string exceptionMessage = null;
-            OmnisharpEmitResponse emitResponse = null;
-
-            try
+            using (var operation = Logger<DotnetWorkspaceServer>.Log.OnEnterAndConfirmOnExit())
             {
-                emitResponse = await Emit(request, budget);
+                budget = budget ?? new TimeBudget(TimeSpan.FromSeconds(30));
 
-                if (emitResponse.Body.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error))
+                CommandLineResult commandLineResult = null;
+                Exception exception = null;
+                string exceptionMessage = null;
+                OmnisharpEmitResponse emitResponse = null;
+
+                try
                 {
-                    return new RunResult(
-                        false,
-                        emitResponse.Body
-                                    .Diagnostics
-                                    .Where(d => d.Severity == DiagnosticSeverity.Error)
-                                    .Select(e => e.ToString())
-                                    .ToArray(),
-                        diagnostics: emitResponse.Body.Diagnostics.Select(d => new SerializableDiagnostic(d)).ToArray());
+                    emitResponse = await Emit(request, budget);
+
+                    if (emitResponse.Body.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error))
+                    {
+                        return new RunResult(
+                            false,
+                            emitResponse.Body
+                                        .Diagnostics
+                                        .Where(d => d.Severity == DiagnosticSeverity.Error)
+                                        .Select(e => e.ToString())
+                                        .ToArray(),
+                            diagnostics: emitResponse.Body.Diagnostics.Select(d => new SerializableDiagnostic(d)).ToArray());
+                    }
+
+                    var dotnet = new MLS.Agent.Tools.Dotnet(_workspace.Directory);
+
+                    commandLineResult = await dotnet.Execute(emitResponse.Body.OutputAssemblyPath, budget);
+
+                    if (commandLineResult.Exception != null)
+                    {
+                        exceptionMessage = commandLineResult.Exception.ToString();
+                    }
+                    else if (commandLineResult.Error.Count > 0)
+                    {
+                        exceptionMessage = string.Join(Environment.NewLine, commandLineResult.Error);
+                    }
+                }
+                catch (TimeoutException timeoutException)
+                {
+                    exception = timeoutException;
+                }
+                catch (TimeBudgetExceededException timeBudgetExceededException)
+                {
+                    exception = timeBudgetExceededException; 
+                }
+                catch (TaskCanceledException taskCanceledException)
+                {
+                    exception = taskCanceledException;
                 }
 
-                var dotnet = new MLS.Agent.Tools.Dotnet(_workspace.Directory);
+                var runResult = new RunResult(
+                    succeeded: !exception.IsConsideredRunFailure(),
+                    output: commandLineResult?.Output,
+                    exception: exceptionMessage ?? exception.ToDisplayString(),
+                    diagnostics: emitResponse?.Body.Diagnostics.Select(d => new SerializableDiagnostic(d)).ToArray());
 
-                result = await dotnet.Execute(emitResponse.Body.OutputAssemblyPath, budget);
+                operation.Complete(runResult, budget);
 
-                if (result.Exception != null)
-                {
-                    exceptionMessage = result.Exception.ToString();
-                }
-                else if (result.Error.Count > 0)
-                {
-                    exceptionMessage = string.Join(Environment.NewLine, result.Error);
-                }
+                return runResult;
             }
-            catch (TimeoutException timeoutException)
-            {
-                exception = timeoutException;
-            }
-            catch (TimeBudgetExceededException)
-            {
-                exception = new TimeoutException(); 
-            }
-            catch (TaskCanceledException taskCanceledException)
-            {
-                exception = taskCanceledException;
-            }
-
-            return new RunResult(
-                succeeded:  !(exception is TimeoutException) &&
-                            !(exception is CompilationErrorException),
-                output: result?.Output,
-                exception: exceptionMessage ?? exception.ToDisplayString(),
-                diagnostics: emitResponse?.Body.Diagnostics.Select(d => new SerializableDiagnostic(d)).ToArray());
         }
 
         private async Task<OmnisharpEmitResponse> Emit(WorkspaceRunRequest request, TimeBudget budget = null)

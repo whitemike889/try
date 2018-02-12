@@ -43,12 +43,12 @@ namespace MLS.Agent.Tools
                 output: data =>
                 {
                     stdOut.AppendLine(data);
-                    operation.Info("{x}", data);
+                    operation.Info("{data}", data);
                 },
                 error: data =>
                 {
                     stdErr.AppendLine(data);
-                    operation.Error("{x}", args: data);
+                    operation.Error("{data}", args: data);
                 }))
             {
                 (int exitCode, Exception exception) =
@@ -70,7 +70,7 @@ namespace MLS.Agent.Tools
                                   budget,
                                   ifCancelled: () =>
                                   {
-                                      var ex = new TimeoutException();
+                                      var ex = new TimeBudgetExceededException(budget);
 
                                       Task.Run(() =>
                                       {
@@ -80,7 +80,7 @@ namespace MLS.Agent.Tools
                                           }
                                       }).DontAwait();
 
-                                      operation.Fail(new TimeBudgetExceededException(budget));
+                                      operation.Fail(ex);
 
                                       return (124, ex); // like the Linux timeout command 
                                   });

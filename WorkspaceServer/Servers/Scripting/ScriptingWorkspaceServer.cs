@@ -24,7 +24,7 @@ namespace WorkspaceServer.Servers.Scripting
         {
             budget = budget ?? TimeBudget.Unlimited();
 
-            using (Log.OnEnterAndExit())
+            using (var operation = Log.OnEnterAndConfirmOnExit())
             using (var console = await ConsoleOutput.Capture())
             {
                 if (request.SourceFiles.Count != 1)
@@ -90,31 +90,34 @@ namespace WorkspaceServer.Servers.Scripting
                 {
                     exception = timeoutException;
                 }
-                catch (TimeBudgetExceededException)
+                catch (TimeBudgetExceededException timeBudgetExceededException)
                 {
-                    exception = new TimeoutException(); 
+                    exception = timeBudgetExceededException; 
                 }
                 catch (TaskCanceledException taskCanceledException)
                 {
                     exception = taskCanceledException;
                 }
 
-                return new RunResult(
-                    succeeded: !(exception is TimeoutException) &&
-                               !(exception is CompilationErrorException),
+                var result = new RunResult(
+                    succeeded: !exception.IsConsideredRunFailure(),
                     output: console.StandardOutput
                                    .Replace("\r\n", "\n")
                                    .Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries),
                     returnValue: state?.ReturnValue,
                     exception: (exception ?? state?.Exception).ToDisplayString(),
-                    diagnostics: GetDiagnostics(request.SourceFiles.Single(), options)); 
+                    diagnostics: GetDiagnostics(request.SourceFiles.Single(), options));
+
+                operation.Complete(result, budget);
+
+                return result; 
             }
         }
 
         private static ScriptOptions CreateOptions(WorkspaceRunRequest request) =>
-                        ScriptOptions.Default
-                                                   .AddReferences(GetReferenceAssemblies())
-                                                   .AddImports(GetDefultUsings().Concat(request.Usings));
+            ScriptOptions.Default
+                         .AddReferences(GetReferenceAssemblies())
+                         .AddImports(GetDefultUsings().Concat(request.Usings));
 
         private SerializableDiagnostic[] GetDiagnostics(SourceFile sourceFile, ScriptOptions options)
         {
