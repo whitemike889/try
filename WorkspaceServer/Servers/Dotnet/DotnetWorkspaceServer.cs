@@ -8,6 +8,7 @@ using MLS.Agent.Tools;
 using Pocket;
 using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
+using static Pocket.Logger<WorkspaceServer.Servers.Dotnet.DotnetWorkspaceServer>;
 using Workspace = MLS.Agent.Tools.Workspace;
 using OmnisharpEmitResponse = OmniSharp.Client.Commands.OmniSharpResponseMessage<OmniSharp.Client.Commands.EmitResponse>;
 
@@ -59,7 +60,7 @@ namespace WorkspaceServer.Servers.Dotnet
 
         public async Task<RunResult> Run(WorkspaceRunRequest request, TimeBudget budget = null)
         {
-            using (var operation = Logger<DotnetWorkspaceServer>.Log.OnEnterAndConfirmOnExit())
+            using (var operation = Log.OnEnterAndConfirmOnExit())
             {
                 budget = budget ?? new TimeBudget(TimeSpan.FromSeconds(30));
 
