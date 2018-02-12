@@ -85,7 +85,7 @@ namespace MLS.Agent.Tools
             budget.IsUnlimited
                 ? -1
                 : budget.RemainingDuration
-                        .Subtract(TimeSpan.FromMilliseconds(500))
+                        .Subtract(TimeSpan.FromMilliseconds(100))
                         .Milliseconds;
 
         public static Process StartProcess(
