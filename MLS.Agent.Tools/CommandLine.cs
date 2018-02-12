@@ -35,6 +35,8 @@ namespace MLS.Agent.Tools
             var stdOut = new StringBuilder();
             var stdErr = new StringBuilder();
 
+            await Task.Yield();
+
             using (var operation = CheckBudgetAndStartConfirmationLogger(command, args, budget))
             using (var process = StartProcess(
                 command,
@@ -51,44 +53,23 @@ namespace MLS.Agent.Tools
                     operation.Error("{data}", args: data);
                 }))
             {
-                (int exitCode, Exception exception) =
-                    await Task.Run(() =>
-                              {
-                                  var timeToWaitInMs = budget.TimeToWaitInMs();
+                var timeToWaitInMs = budget.TimeToWaitInMs();
 
-                                  operation.Trace("Waiting up to {timeToWaitInMs}ms for process to exit", timeToWaitInMs);
+                operation.Trace("Waiting up to {timeToWaitInMs}ms for process to exit (remaining budget is {remainingBudgetMs}ms)",
+                                timeToWaitInMs,
+                                budget.RemainingDuration.Milliseconds);
 
-                                  process.WaitForExit(timeToWaitInMs);
+                var exited = process.WaitForExit(timeToWaitInMs);
 
-                                  operation.Succeed(
-                                      "{command} {args} exited with {code}",
-                                      command,
-                                      args,
-                                      process.ExitCode);
+                var exitCode = exited
+                                   ? process.ExitCode
+                                   : 124;
 
-                                  return (process.ExitCode, (Exception) null);
-                              })
-                              .CancelIfExceeds(
-                                  budget,
-                                  ifCancelled: () =>
-                                  {
-                                      var ex = new TimeBudgetExceededException(budget);
-
-                                      Task.Run(() =>
-                                      {
-                                          if (!process.HasExited)
-                                          {
-                                              using (operation.OnEnterAndConfirmOnExit("process.Kill"))
-                                              {
-                                                  process.Kill();
-                                              }
-                                          }
-                                      }).DontAwait();
-
-                                      operation.Fail(ex);
-
-                                      return (124, ex); // like the Linux timeout command 
-                                  });
+                operation.Succeed(
+                    "{command} {args} exited with {code}",
+                    command,
+                    args,
+                    exitCode);
 
                 operation.Trace("Returning");
 
@@ -96,29 +77,16 @@ namespace MLS.Agent.Tools
                     exitCode: exitCode,
                     output: stdOut.Replace("\r\n", "\n").ToString().Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries),
                     error: stdErr.Replace("\r\n", "\n").ToString().Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries),
-                    exception: exception);
+                    exception: null);
             }
         }
 
-        private static int TimeToWaitInMs(this TimeBudget budget)
-        {
-            int timeToWaitInMs;
-            if (!budget.IsUnlimited)
-            {
-                timeToWaitInMs = (int) Math.Round(
-                    budget.RemainingDuration
-                          .Subtract(TimeSpan.FromSeconds(1))
-                          .TotalMilliseconds,
-                    0,
-                    MidpointRounding.AwayFromZero);
-            }
-            else
-            {
-                timeToWaitInMs = -1;
-            }
-
-            return timeToWaitInMs;
-        }
+        private static int TimeToWaitInMs(this TimeBudget budget) =>
+            budget.IsUnlimited
+                ? -1
+                : budget.RemainingDuration
+                        .Subtract(TimeSpan.FromMilliseconds(500))
+                        .Milliseconds;
 
         public static Process StartProcess(
             string command,
@@ -187,7 +155,7 @@ namespace MLS.Agent.Tools
             TimeBudget budget,
             [CallerMemberName] string operationName = null)
         {
-            budget.RecordEntryAndThrowIfBudgetExceeded($"{command} {args}");
+            budget.RecordEntryAndThrowIfBudgetExceeded($"Execute ({command} {args})");
 
             return new ConfirmationLogger(
                 operationName: operationName,
