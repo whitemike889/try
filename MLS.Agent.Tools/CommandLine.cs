@@ -54,7 +54,9 @@ namespace MLS.Agent.Tools
                 (int exitCode, Exception exception) =
                     await Task.Run(() =>
                               {
-                                  process.WaitForExit();
+                                  var timeToWaitInMs = budget.TimeToWaitInMs();
+
+                                  process.WaitForExit(timeToWaitInMs);
 
                                   operation.Succeed(
                                       "{command} {args} exited with {code}",
@@ -89,6 +91,26 @@ namespace MLS.Agent.Tools
                     error: stdErr.Replace("\r\n", "\n").ToString().Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries),
                     exception: exception);
             }
+        }
+
+        private static int TimeToWaitInMs(this TimeBudget budget)
+        {
+            int timeToWaitInMs;
+            if (!budget.IsUnlimited)
+            {
+                timeToWaitInMs = (int) Math.Round(
+                    budget.RemainingDuration
+                          .Subtract(TimeSpan.FromSeconds(1))
+                          .TotalMilliseconds,
+                    0,
+                    MidpointRounding.AwayFromZero);
+            }
+            else
+            {
+                timeToWaitInMs = -1;
+            }
+
+            return timeToWaitInMs;
         }
 
         public static Process StartProcess(
@@ -162,7 +184,7 @@ namespace MLS.Agent.Tools
 
             return new ConfirmationLogger(
                 operationName: operationName,
-                category: Logger.Log.Category,
+                category: Log.Category,
                 message: "Invoking {command} {args}",
                 args: new[] { command, args },
                 logOnStart: true,

@@ -60,7 +60,7 @@ namespace WorkspaceServer.Servers.Dotnet
 
         public async Task<RunResult> Run(WorkspaceRunRequest request, TimeBudget budget = null)
         {
-            budget = budget ?? TimeBudget.Unlimited();
+            budget = budget ?? new TimeBudget(TimeSpan.FromSeconds(30));
 
             CommandLineResult result = null;
             Exception exception = null;
