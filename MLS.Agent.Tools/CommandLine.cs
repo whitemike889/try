@@ -56,6 +56,8 @@ namespace MLS.Agent.Tools
                               {
                                   var timeToWaitInMs = budget.TimeToWaitInMs();
 
+                                  operation.Trace("Waiting up to {timeToWaitInMs}ms for process to exit", timeToWaitInMs);
+
                                   process.WaitForExit(timeToWaitInMs);
 
                                   operation.Succeed(
@@ -76,7 +78,10 @@ namespace MLS.Agent.Tools
                                       {
                                           if (!process.HasExited)
                                           {
-                                              process.Kill();
+                                              using (operation.OnEnterAndConfirmOnExit("process.Kill"))
+                                              {
+                                                  process.Kill();
+                                              }
                                           }
                                       }).DontAwait();
 
@@ -84,6 +89,8 @@ namespace MLS.Agent.Tools
 
                                       return (124, ex); // like the Linux timeout command 
                                   });
+
+                operation.Trace("Returning");
 
                 return new CommandLineResult(
                     exitCode: exitCode,
