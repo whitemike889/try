@@ -75,7 +75,7 @@ namespace MLS.Agent.Tools
             await _created.ValueAsync()
                           .CancelIfExceeds(budget ?? TimeBudget.Unlimited());
 
-        private async Task<Boolean> VerifyOrCreate()
+        private async Task<bool> VerifyOrCreate()
         {
             if (!IsDirectoryCreated)
             {
