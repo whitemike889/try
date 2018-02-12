@@ -19,12 +19,6 @@ namespace MLS.Agent.Tools
             lazy = new Lazy<Task<T>>(initialize);
         }
 
-        public Task<T> ValueAsync()
-        {
-            lock (_lockObj)
-            {
-                return lazy.Value;
-            }
-        }
+        public Task<T> ValueAsync() => lazy.Value;
     }
 }
