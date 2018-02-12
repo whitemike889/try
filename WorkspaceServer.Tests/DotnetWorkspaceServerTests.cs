@@ -31,6 +31,8 @@ namespace WorkspaceServer.Tests
 
             RegisterForDisposal(workspaceServer);
 
+            await workspaceServer.EnsureInitializedAndNotDisposed();
+
             return workspaceServer;
         }
     }
