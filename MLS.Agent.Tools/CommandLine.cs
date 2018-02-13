@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Clockwise;
 using Pocket;
+using Recipes;
 using static Pocket.Logger<MLS.Agent.Tools.CommandLine>;
 
 namespace MLS.Agent.Tools
@@ -34,8 +35,6 @@ namespace MLS.Agent.Tools
             var stdOut = new StringBuilder();
             var stdErr = new StringBuilder();
 
-            await Task.Yield();
-
             using (var operation = CheckBudgetAndStartConfirmationLogger(command, args, budget))
             using (var process = StartProcess(
                 command,
@@ -52,24 +51,37 @@ namespace MLS.Agent.Tools
                     operation.Error("{data}", args: data);
                 }))
             {
-                var timeToWaitInMs = budget.TimeToWaitInMs();
+                (int exitCode, Exception exception) =
+                    await Task.Run(() =>
+                              {
+                                  process.WaitForExit();
 
-                operation.Trace("Waiting up to {timeToWaitInMs}ms for process to exit (remaining budget is {remainingBudgetMs}ms)",
-                                timeToWaitInMs,
-                                budget.RemainingDuration.Milliseconds);
+                                  operation.Succeed(
+                                      "{command} {args} exited with {code}",
+                                      command,
+                                      args,
+                                      process.ExitCode);
 
-                var exited = process.WaitForExit(timeToWaitInMs);
+                                  return (process.ExitCode, (Exception) null);
+                              })
+                              .CancelIfExceeds(
+                                  budget,
+                                  ifCancelled: () =>
+                                  {
+                                      var ex = new TimeBudgetExceededException(budget);
 
-                var exitCode = exited
-                                   ? process.ExitCode
-                                   : 124;
+                                      Task.Run(() =>
+                                      {
+                                          if (!process.HasExited)
+                                          {
+                                              process.Kill();
+                                          }
+                                      }).DontAwait();
 
-                operation.Succeed(
-                    "{command} {args} exited with {code}",
-                    command,
-                    args,
-                    exitCode, 
-                    budget);
+                                      operation.Fail(ex);
+
+                                      return (124, ex); // like the Linux timeout command 
+                                  });
 
                 return new CommandLineResult(
                     exitCode: exitCode,
@@ -77,11 +89,6 @@ namespace MLS.Agent.Tools
                     error: stdErr.Replace("\r\n", "\n").ToString().Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries));
             }
         }
-
-        private static int TimeToWaitInMs(this TimeBudget budget) =>
-            budget.IsUnlimited
-                ? -1
-                : (int) budget.RemainingDuration.TotalMilliseconds;
 
         public static Process StartProcess(
             string command,
