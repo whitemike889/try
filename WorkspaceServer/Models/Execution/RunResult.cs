@@ -7,17 +7,19 @@ namespace WorkspaceServer.Models.Execution
     {
         public RunResult(
             bool succeeded,
-            IReadOnlyCollection<string> output,
+            IReadOnlyCollection<string> output = null,
             object returnValue = null,
             string exception = null,
-            IReadOnlyCollection<Variable> variables = null)
+            IReadOnlyCollection<SerializableDiagnostic> diagnostics = null)
         {
-            Output = output ?? throw new ArgumentNullException(nameof(output));
+            Output = output ?? Array.Empty<string>();
             Succeeded = succeeded;
             Exception = exception;
-            Variables = variables ?? Array.Empty<Variable>();
             ReturnValue = returnValue;
+            Diagnostics = diagnostics ?? Array.Empty<SerializableDiagnostic>();
         }
+
+        public IReadOnlyCollection<SerializableDiagnostic> Diagnostics { get; set; }
 
         public bool Succeeded { get; }
 
@@ -25,12 +27,10 @@ namespace WorkspaceServer.Models.Execution
 
         public object ReturnValue { get; }
 
-        public IReadOnlyCollection<Variable> Variables { get; }
-
         public string Exception { get; }
 
         public override string ToString() =>
-$@"{nameof(Succeeded)}: {Succeeded}
+            $@"{nameof(Succeeded)}: {Succeeded}
 {nameof(ReturnValue)}: {ReturnValue}
 {nameof(Output)}: {string.Join("\n", Output)}
 {nameof(Exception)}: {Exception}";

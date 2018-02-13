@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Clockwise;
 using Microsoft.AspNetCore.Mvc;
 using Pocket;
+using WorkspaceServer;
 using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
+using WorkspaceServer.Servers.Dotnet;
 using WorkspaceServer.Servers.Scripting;
 using static Pocket.Logger<MLS.Agent.Controllers.WorkspaceController>;
 
@@ -11,22 +14,46 @@ namespace MLS.Agent.Controllers
 {
     public class WorkspaceController : Controller
     {
+        private readonly WorkspaceServerRegistry workspaceServerRegistry;
+
+        public WorkspaceController(WorkspaceServerRegistry workspaceServerRegistry)
+        {
+            this.workspaceServerRegistry = workspaceServerRegistry ??
+                                           throw new ArgumentNullException(nameof(workspaceServerRegistry));
+        }
+
         [HttpPost]
-        [Route("/workspace/{workspaceId}/compile")]
+        [Route("/workspace/run")]
+        [Route("/workspace/{DEPRECATED}/compile")] // FIX: (Run) remove this endpoint when Orchestrator no longer calls it
         public async Task<IActionResult> Run(
-            string workspaceId,
-            [FromBody] RunRequest request)
+            [FromBody] WorkspaceRunRequest request)
         {
             using (var operation = Log.ConfirmOnExit())
             {
-                if (request?.RawSource is null)
+                RunResult result = null;
+
+                var workspaceType = request.WorkspaceType;
+
+                if (string.Equals(workspaceType, "script", StringComparison.OrdinalIgnoreCase))
                 {
-                    return BadRequest();
+                    var server = new ScriptingWorkspaceServer();
+
+                    result = await server.Run(request, new TimeBudget(TimeSpan.FromSeconds(10)));
                 }
+                else
+                {
+                    var server = await workspaceServerRegistry.GetWorkspaceServer(workspaceType);
 
-                var server = new ScriptingWorkspaceServer();
+                    if (server is DotnetWorkspaceServer dotnetWorkspaceServer)
+                    {
+                        await dotnetWorkspaceServer.EnsureInitializedAndNotDisposed(
+                            new TimeBudget(TimeSpan.FromSeconds(30)));
+                    }
 
-                var result = await server.Run(request);
+                    result = await server.Run(
+                                 request,
+                                 new TimeBudget(TimeSpan.FromSeconds(10)));
+                }
 
                 operation.Succeed();
 
@@ -35,9 +62,9 @@ namespace MLS.Agent.Controllers
         }
 
         [HttpPost]
-        [Route("/workspace/{workspaceId}/getCompletionItems")]
-        public async Task<IActionResult> GetCompletionItems(
-            string workspaceId,
+        [Route("/workspace/completion")]
+        [Route("/workspace/{DEPRECATED}/getCompletionItems")]
+        public async Task<IActionResult> Completion(
             [FromBody] CompletionRequest request)
         {
             using (var operation = Log.ConfirmOnExit())
@@ -45,6 +72,24 @@ namespace MLS.Agent.Controllers
                 var server = new ScriptingWorkspaceServer();
 
                 var result = await server.GetCompletionList(request);
+
+                operation.Succeed();
+
+                return Ok(result);
+            }
+        }
+
+        [HttpPost]
+        [Route("/workspace/diagnostics")]
+        [Route("/workspace/{DEPRECATED}/diagnostics")]
+        public async Task<IActionResult> Diagnostics(
+            [FromBody] WorkspaceRunRequest request)
+        {
+            using (var operation = Log.ConfirmOnExit())
+            {
+                var server = new ScriptingWorkspaceServer();
+
+                var result = await server.GetDiagnostics(request);
 
                 operation.Succeed();
 

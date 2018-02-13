@@ -13,14 +13,21 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="clockwise" Version="1.0.124-beta" />
     <PackageReference Include="fluentassertions" Version="4.19.4" />
-    <PackageReference Include="Microsoft.CodeAnalysis" Version="2.4.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="2.4.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="2.4.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="2.4.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Scripting" Version="2.4.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis" Version="2.6.1" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="2.6.1" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="2.6.1" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="2.6.1" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Scripting" Version="2.6.1" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.5.0" />
-    <PackageReference Include="pocketlogger" Version="0.2.8">
+    <PackageReference Include="pocket.disposable" Version="1.0.3">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="pocketlogger" Version="0.2.11">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="pocketlogger.for.microsoftextensionslogging" Version="0.1.2">  
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="pocketlogger.for.microsoftextensionslogging" Version="0.1.2">
@@ -32,11 +39,14 @@
     <PackageReference Include="pocketlogger.subscribe" Version="0.5.1">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="System.Reactive" Version="3.1.1" />
     <PackageReference Include="xunit" Version="2.3.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.3.1" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\MLS.Agent.Tools\MLS.Agent.Tools.csproj" />
+    <ProjectReference Include="..\OmniSharp.Client\OmniSharp.Client.csproj" />
     <ProjectReference Include="..\WorkspaceServer\WorkspaceServer.csproj" />
   </ItemGroup>
 

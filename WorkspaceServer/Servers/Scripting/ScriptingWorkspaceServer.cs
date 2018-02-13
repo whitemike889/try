@@ -1,17 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Reflection;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Clockwise;
 using Microsoft.CodeAnalysis;
+using Diagnostic = Microsoft.CodeAnalysis.Diagnostic;
 using Microsoft.CodeAnalysis.Completion;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.Scripting;
 using Pocket;
-using Recipes;
 using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
 using static Pocket.Logger<WorkspaceServer.Servers.Scripting.ScriptingWorkspaceServer>;
@@ -20,26 +20,27 @@ namespace WorkspaceServer.Servers.Scripting
 {
     public class ScriptingWorkspaceServer : IWorkspaceServer
     {
-        private static readonly TimeSpan _defaultTimeout = TimeSpan.FromSeconds(5);
-
-        public async Task<RunResult> Run(RunRequest request, TimeSpan? timeout = null)
+        public async Task<RunResult> Run(WorkspaceRunRequest request, TimeBudget budget = null)
         {
+            budget = budget ?? TimeBudget.Unlimited();
+
             using (var operation = Log.OnEnterAndConfirmOnExit())
-            using (var console = await RedirectConsoleOutput.Acquire())
+            using (var console = await ConsoleOutput.Capture())
             {
-                var options = ScriptOptions.Default
-                                           .AddReferences(GetReferenceAssemblies())
-                                           .AddImports(GetDefultUsings().Concat(request.Usings));
+                if (request.SourceFiles.Count != 1)
+                {
+                    throw new ArgumentException($"{nameof(request)} should have exactly one source file.");
+                }
+
+                var options = CreateOptions(request);
 
                 ScriptState<object> state = null;
-                var variables = new Dictionary<string, Variable>();
                 Exception exception = null;
-
                 try
                 {
                     await Task.Run(async () =>
                     {
-                        var sourceLines = SourceFile.Create(request.RawSource).Text.Lines;
+                        var sourceLines = request.SourceFiles.Single().Text.Lines;
 
                         var buffer = new StringBuilder();
 
@@ -57,12 +58,10 @@ namespace WorkspaceServer.Servers.Scripting
 
                                 state = await Run(state, buffer, options);
 
-                                CaptureVariableState(state, variables, lineNumber);
-
                                 if (index == sourceLines.Count - 1 &&
                                     console.IsEmpty())
                                 {
-                                    state = await EmulateConsoleMainInvocation(state, buffer, options, operation);
+                                    state = await EmulateConsoleMainInvocation(state, buffer, options);
                                 }
                             }
                             catch (CompilationErrorException ex)
@@ -71,8 +70,10 @@ namespace WorkspaceServer.Servers.Scripting
                                 {
                                     exception = ex;
 
-                                    console.WriteLines(ex.Diagnostics
-                                                         .Select(d => d.ToString()));
+                                    Console.WriteLine(
+                                        string.Join(Environment.NewLine,
+                                                    ex.Diagnostics
+                                                      .Select(d => d.ToString())));
 
                                     break;
                                 }
@@ -80,54 +81,53 @@ namespace WorkspaceServer.Servers.Scripting
                             catch (Exception ex)
                             {
                                 exception = ex;
-                                operation.Warning(ex);
                                 break;
                             }
                         }
-                    }).Timeout(timeout ?? _defaultTimeout);
+                    }).CancelIfExceeds(budget);
                 }
                 catch (TimeoutException timeoutException)
                 {
                     exception = timeoutException;
                 }
+                catch (TimeBudgetExceededException timeBudgetExceededException)
+                {
+                    exception = timeBudgetExceededException; 
+                }
+                catch (TaskCanceledException taskCanceledException)
+                {
+                    exception = taskCanceledException;
+                }
 
-                operation.Succeed();
-
-                return new RunResult(
-                    succeeded: exception == null,
-                    output: console.ToString()
+                var result = new RunResult(
+                    succeeded: !exception.IsConsideredRunFailure(),
+                    output: console.StandardOutput
                                    .Replace("\r\n", "\n")
-                                   .Split('\n', StringSplitOptions.RemoveEmptyEntries),
+                                   .Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries),
                     returnValue: state?.ReturnValue,
-                    exception: ToDisplayString(exception ?? state?.Exception),
-                    variables: variables.Values);
+                    exception: (exception ?? state?.Exception).ToDisplayString(),
+                    diagnostics: GetDiagnostics(request.SourceFiles.Single(), options));
+
+                operation.Complete(result, budget);
+
+                return result; 
             }
         }
 
-        private static void CaptureVariableState(ScriptState<object> state, Dictionary<string, Variable> variables, int lineNumber)
-        {
-            foreach (var scriptVariable in state.Variables)
-            {
-                variables.GetOrAdd(scriptVariable.Name,
-                                   name => new Variable(name))
-                         .TryAddState(
-                             new VariableState(
-                                 lineNumber,
-                                 scriptVariable.Value,
-                                 scriptVariable.Type));
-            }
-        }
+        private static ScriptOptions CreateOptions(WorkspaceRunRequest request) =>
+            ScriptOptions.Default
+                         .AddReferences(GetReferenceAssemblies())
+                         .AddImports(GetDefultUsings().Concat(request.Usings));
 
-        internal static string ToDisplayString(Exception exception)
+        private SerializableDiagnostic[] GetDiagnostics(SourceFile sourceFile, ScriptOptions options)
         {
-            switch (exception)
-            {
-                case CompilationErrorException _:
-                    return null;
-
-                default:
-                    return exception?.ToString();
-            }
+            return CSharpScript.Create(sourceFile.Text.ToString(), options)
+                                .GetCompilation()
+                                .GetDiagnostics()
+                                .Where(d => d.Id != "CS7022").
+                                Select(d => new SerializableDiagnostic(d))
+                                      .ToArray(); // Suppress  warning CS7022: The entry point of the program is global script code; ignoring 'Main()' entry point.
+                                                               // Unlike regular CompilationOptions, ScriptOptions does't provide the ability to suppress diagnostics
         }
 
         private static async Task<ScriptState<object>> Run(
@@ -140,7 +140,7 @@ namespace WorkspaceServer.Servers.Scripting
                       options)
                 : await state.ContinueWithAsync(
                       buffer.ToString(),
-                      catchException: ex => true);
+                      catchException: ex => false);
 
         private static Assembly[] GetReferenceAssemblies() =>
             new[]
@@ -214,8 +214,7 @@ namespace WorkspaceServer.Servers.Scripting
         private static async Task<ScriptState<object>> EmulateConsoleMainInvocation(
             ScriptState<object> state,
             StringBuilder buffer,
-            ScriptOptions options,
-            ConfirmationLogger operation)
+            ScriptOptions options)
         {
             var script = state.Script;
             var compiled = script.Compile();
@@ -238,11 +237,6 @@ typeof({entryPointMethod.ContainingType.Name})
     .Invoke(null, {ParametersForMain()});");
 
                 state = await Run(state, buffer, options);
-
-                if (state.Exception != null)
-                {
-                    operation.Warning(state.Exception);
-                }
             }
 
             return state;
@@ -255,5 +249,8 @@ typeof({entryPointMethod.ContainingType.Name})
                                               ? "new object[]{ new string[0] }"
                                               : "null";
         }
+
+        public Task<DiagnosticResult> GetDiagnostics(WorkspaceRunRequest request) => 
+            Task.FromResult(new DiagnosticResult(GetDiagnostics(request.SourceFiles.Single(), CreateOptions(request))));
     }
 }

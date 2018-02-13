@@ -8,6 +8,7 @@ artifacts/
 *.suo
 *.user
 *.sln.docstates
+*NCrunch*
 
 # Build results
 [Bb]inaries/
@@ -175,3 +176,5 @@ $RECYCLE.BIN/
 
 # Rider
 .idea/
+
+*.DotSettings

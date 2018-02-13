@@ -1,7 +1,14 @@
 version: '2'
 
 services:
+  ci-dependencies:
+    build:
+      context: .
+      dockerfile: Dockerfile.ci.dependencies
+    image: mls-ls/dependencies
   ci-restore:
+    depends_on:
+      - ci-dependencies
     build:
       context: .
       dockerfile: Dockerfile.ci.restore
@@ -10,6 +17,9 @@ services:
     depends_on:
       - ci-restore
     build:
+      args:
+        - BUILD_BUILDNUMBER
+        - BUILD_SOURCEVERSION    
       context: .
       dockerfile: Dockerfile.ci.build
     image: mls-ls/built
@@ -26,11 +36,12 @@ services:
     image: mls-ls/built
     volumes:
       - ./MLS.Agent.Tests/TestResults:/app/MLS.Agent.Tests/TestResults
-    command: dotnet test /app/MLS.Agent.Tests/MLS.Agent.Tests.csproj --logger trx 
+    command: dotnet test /app/MLS.Agent.Tests/MLS.Agent.Tests.csproj --logger trx -c Release
   ci-test-workspaceserver:
     depends_on:
       - ci-build
     image: mls-ls/built
     volumes:
       - ./WorkspaceServer.Tests/TestResults:/app/WorkspaceServer.Tests/TestResults
-    command: dotnet test /app/WorkspaceServer.Tests/WorkspaceServer.Tests.csproj --logger trx 
+    command: dotnet test /app/WorkspaceServer.Tests/WorkspaceServer.Tests.csproj --logger trx -c Release
+    

@@ -3,6 +3,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
 using Pocket;
 using Recipes;
 
@@ -28,10 +29,14 @@ namespace MLS.Agent.Tests
 
         private TestServer CreateTestServer() => new TestServer(CreateWebHostBuilder());
 
-        private IWebHostBuilder CreateWebHostBuilder() =>
-            new WebHostBuilder()
-                .UseTestEnvironment()
-                .UseStartup<Startup>();
+        private IWebHostBuilder CreateWebHostBuilder()
+        {
+            var builder = new WebHostBuilder()
+                          .UseTestEnvironment()
+                          .UseStartup<Startup>();
+
+            return builder;
+        }
 
         public Task<HttpResponseMessage> SendAsync(HttpRequestMessage request) =>
             client.SendAsync(request);

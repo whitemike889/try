@@ -1,6 +1,7 @@
 ﻿using System;
 using FluentAssertions;
 using Microsoft.CodeAnalysis.Text;
+using WorkspaceServer.Models.Execution;
 using Xunit;
 
 namespace WorkspaceServer.Tests

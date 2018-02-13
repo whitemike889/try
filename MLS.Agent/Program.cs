@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using static Pocket.Logger<MLS.Agent.Program>;
 using Pocket;
@@ -7,7 +8,13 @@ using System.Threading.Tasks;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+using MLS.Agent.Tools;
 using Pocket.For.ApplicationInsights;
+using Recipes;
+using Serilog.Sinks.RollingFileAlternate;
+using WorkspaceServer.Servers.Dotnet;
+using SerilogLoggerConfiguration = Serilog.LoggerConfiguration;
 
 namespace MLS.Agent
 {
@@ -19,21 +26,45 @@ namespace MLS.Agent
             return new X509Certificate2(bytes);
         }
 
+        private static readonly Assembly[] assembliesEmittingPocketLoggerLogs = {
+            typeof(Startup).Assembly,
+            typeof(Dotnet).Assembly,
+            typeof(DotnetWorkspaceServer).Assembly
+        };
+
         private static void StartLogging(CompositeDisposable disposables, CommandLineOptions options)
         {
-            var instrumentationKey = options.IsProduction ?
-                "1bca19cc-3417-462c-bb60-7337605fee38" :
-                "6c13142c-8ddf-4335-b857-9d3e0cbb1ea1";
+            if (options.IsProduction)
+            {
+                var applicationVersion = AssemblyVersionSensor.Version().AssemblyInformationalVersion;
+                var websiteSiteName = Environment.GetEnvironmentVariable("WEBSITE_SITE_NAME") ?? "UNKNOWN-AGENT";
 
-            var applicationVersion = Recipes.AssemblyVersionSensor.Version().AssemblyInformationalVersion;
-            var websiteSiteName = Environment.GetEnvironmentVariable("WEBSITE_SITE_NAME") ?? "UNKNOWN-AGENT";
+                disposables.Add(
+                    LogEvents.Enrich(a =>
+                    {
+                        a(("applicationVersion", applicationVersion));
+                        a(("websiteSiteName", websiteSiteName));
+                    }));
+            }
+            
+            if (options.WriteFileLog)
+            {
+                var log = new SerilogLoggerConfiguration()
+                          .WriteTo
+                          .RollingFileAlternate("./logs", outputTemplate: "{Message}{NewLine}")
+                          .CreateLogger();
 
-            disposables.Add(
-                LogEvents.Enrich(a =>
-                {
-                    a(("applicationVersion", applicationVersion));
-                    a(("websiteSiteName", websiteSiteName));
-                }));
+                var subscription = LogEvents.Subscribe(
+                    e => log.Information(e.ToLogString()),
+                    assembliesEmittingPocketLoggerLogs);
+
+                disposables.Add(subscription);
+                disposables.Add(log);
+
+                disposables.Add(
+                    LogEvents.Subscribe(e => Console.WriteLine(e.ToLogString()),
+                                        assembliesEmittingPocketLoggerLogs));
+            }
 
             TaskScheduler.UnobservedTaskException += (sender, args) =>
             {
@@ -41,14 +72,18 @@ namespace MLS.Agent
                 args.SetObserved();
             };
 
-            //TODO: Re-add serilog logging
-            var telemetryClient = new TelemetryClient(new TelemetryConfiguration(instrumentationKey));
-            telemetryClient.InstrumentationKey = instrumentationKey;
+            var telemetryClient = new TelemetryClient(
+                new TelemetryConfiguration(GetInstrumentationKey(options.IsProduction)));
 
-            disposables.Add(telemetryClient.SubscribeToPocketLogger());
+            disposables.Add(telemetryClient.SubscribeToPocketLogger(assembliesEmittingPocketLoggerLogs));
 
             Log.Event("AgentStarting");
         }
+
+        public static string GetInstrumentationKey(bool isProduction) =>
+            isProduction
+                ? "1bca19cc-3417-462c-bb60-7337605fee38"
+                : "6c13142c-8ddf-4335-b857-9d3e0cbb1ea1";
 
         public static IWebHost ConstructWebHost(CommandLineOptions options)
         {
@@ -61,15 +96,22 @@ namespace MLS.Agent
             }
             else
             {
-                Log.Info("Received Key", options.Key);
+                Log.Info("Received Key: {key}", options.Key);
             }
-
+            
             var webHost = new WebHostBuilder()
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
+                .ConfigureServices(c =>
+                {
+                    c.AddSingleton(options);
+                })
+                .UseEnvironment(options.IsProduction 
+                                      ? EnvironmentName.Production 
+                                      : EnvironmentName.Development) 
                 .UseStartup<Startup>()
                 .Build();
+
             return webHost;
         }
 

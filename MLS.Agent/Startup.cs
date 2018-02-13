@@ -1,24 +1,25 @@
-﻿using Microsoft.ApplicationInsights;
-using Microsoft.ApplicationInsights.AspNetCore.Extensions;
-using Microsoft.ApplicationInsights.Extensibility;
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Clockwise;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Pocket;
-using Pocket.For.ApplicationInsights;
 using Recipes;
-using LoggerConfiguration = Serilog.LoggerConfiguration;
-using Serilog.Sinks.RollingFileAlternate;
+using WorkspaceServer;
 using static Pocket.Logger<MLS.Agent.Startup>;
-using System.Threading.Tasks;
 
 namespace MLS.Agent
 {
     public class Startup
     {
-        private readonly CompositeDisposable _disposables = new CompositeDisposable();
+        private readonly CompositeDisposable _disposables = new CompositeDisposable
+        {
+            () => Logger<Program>.Log.Event("AgentStopping")
+        };
 
         public Startup(IHostingEnvironment env)
         {
@@ -37,43 +38,61 @@ namespace MLS.Agent
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            // Add framework services.
-            services.AddMvc(options => options.Filters.Add(new ExceptionFilter()))
-                    .AddJsonOptions(o =>
-                    {
-                        o.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
-                        o.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
-                    });
+            using (var operation = Log.OnEnterAndConfirmOnExit())
+            {
+                services.AddApplicationInsightsTelemetry(
+                    Program.GetInstrumentationKey(
+                        Environment.IsProduction()));
 
-            services.AddSingleton(Configuration);
+                // Add framework services.
+                services.AddMvc(options =>
+                        {
+                            options.Filters.Add(new ExceptionFilter());
+                            options.Filters.Add(new BadRequestOnInvalidModelFilter());
+                        })
+                        .AddJsonOptions(o =>
+                        {
+                            o.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+                            o.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
+                        });
+
+                services.AddSingleton(Configuration);
+
+                services.AddSingleton(_ => DefaultWorkspaces.CreateWorkspaceServerRegistry());
+
+                operation.Succeed();
+            }
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(
+            IApplicationBuilder app,
+            IApplicationLifetime lifetime,
+            IHostingEnvironment env,
+            IServiceProvider serviceProvider)
         {
-            if (Environment.IsDevelopment())
+            using (var operation = Log.OnEnterAndConfirmOnExit())
             {
-                var log = new LoggerConfiguration()
-                    .WriteTo
-                    .RollingFileAlternate("logs", outputTemplate: "{Message}{NewLine}")
-                    .CreateLogger();
+                lifetime.ApplicationStopping.Register(() => _disposables.Dispose());
 
-                var subscription = LogEvents.Subscribe(e => log.Information(e.ToLogString()));
+                app.UseDefaultFiles()
+                   .UseStaticFiles()
+                   .UseMvc();
 
-                _disposables.Add(subscription);
-                _disposables.Add(log);
+                var budget = TimeBudget.Unlimited();
+
+                _disposables.Add(() => budget.Cancel());
+
+                var workspaceServerRegistry = serviceProvider.GetRequiredService<WorkspaceServerRegistry>();
+
+                Task.Factory
+                    .StartNew(() => workspaceServerRegistry.StartAllServers(budget),
+                              CancellationToken.None,
+                              TaskCreationOptions.LongRunning,
+                              TaskScheduler.Default);
+
+                operation.Succeed();
             }
-
-            var operationLogger = Log.OnEnterAndExit()
-                                     .Info("Agent version {orchestrator_version} starting in environment {environment}",
-                                           AssemblyVersionSensor.Version().AssemblyInformationalVersion,
-                                           Environment.EnvironmentName);
-
-            _disposables.Add(operationLogger);
-
-            app.UseDefaultFiles()
-               .UseStaticFiles()
-               .UseMvc();
         }
     }
 }
