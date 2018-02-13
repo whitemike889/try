@@ -77,7 +77,7 @@ namespace MLS.Agent
 
             var telemetryClient = new TelemetryClient(new TelemetryConfiguration(instrumentationKey))
             {
-                InstrumentationKey = instrumentationKey
+                InstrumentationKey = options.ApplicationInsightsKey ?? instrumentationKey
             };
 
             disposables.Add(telemetryClient.SubscribeToPocketLogger());

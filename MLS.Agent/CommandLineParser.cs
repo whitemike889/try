@@ -12,7 +12,8 @@ namespace MLS.Agent
             string helpText, 
             bool isProduction, 
             string key, 
-            string[] loadWorkspaces)
+            string[] loadWorkspaces,
+            string applicationInsightsKey = null)
         {
             LoadWorkspaces = loadWorkspaces;
             WasSuccess = wasSuccess;
@@ -20,6 +21,7 @@ namespace MLS.Agent
             HelpRequested = helpRequested;
             HelpText = helpText;
             Key = key;
+            ApplicationInsightsKey = applicationInsightsKey;
         }
 
         public bool WasSuccess { get; }
@@ -27,6 +29,7 @@ namespace MLS.Agent
         public bool HelpRequested { get; }
         public string HelpText { get; }
         public string Key { get; }
+        public string ApplicationInsightsKey { get; }
         public string[] LoadWorkspaces { get; }
 
         public static CommandLineOptions Parse(string[] args)
@@ -35,6 +38,7 @@ namespace MLS.Agent
                 Create.Option("-h|--help", "Shows this help text"),
                 Create.Option("--production", "Specifies if the agent is being run using production resources or not"),
                 Create.Option("-k|--key", "The encryption key", ExactlyOneArgument()),
+                Create.Option("--ai-key", "Application Insights key"),
                 Create.Option("--load-workspace", "Starts OmniSharp in the specified workspace folder.", OneOrMoreArguments()));
 
             var parseResult = parser.Parse(args);
@@ -68,7 +72,8 @@ namespace MLS.Agent
                          : null,
                 loadWorkspaces: parseResult.HasOption("load-workspace")
                                        ? parseResult.AppliedOptions["load-workspace"].Value<string[]>()
-                                       : new string[] { });
+                                       : new string[] { },
+                applicationInsightsKey: parseResult.HasOption("ai-key") ? parseResult["ai-key"].Value<string>() : null);
         }
     }
 }
