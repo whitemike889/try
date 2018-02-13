@@ -141,6 +141,50 @@ namespace WorkspaceServer.Servers.Dotnet
         private static IEnumerable<(SerializableDiagnostic ,string)> ReconstructDiagnosticLocations(IEnumerable<Diagnostic> bodyDiagnostics,
             Dictionary<string, (SourceFile Destination, TextSpan Region)> viewPorts, int paddingSize)
         {
+            (SerializableDiagnostic, string) ProcesseDiagnostic(KeyValuePair<string, (SourceFile Destination, TextSpan Region)> target, Diagnostic diagnostic)
+            {
+                // offest of the buffer int othe original source file
+                var offset = target.Value.Region.Start;
+                // span of content injected in the buffer viewport
+                var selectionSpan = new TextSpan(offset + paddingSize, target.Value.Region.Length - (2 * paddingSize));
+
+                // aligned offset of the diagnostic entry
+                var start = diagnostic.Location.SourceSpan.Start - selectionSpan.Start;
+                var end = diagnostic.Location.SourceSpan.End - selectionSpan.Start;
+                // line containing the diagnostic in the original source file
+                var line = target.Value.Destination.Text.Lines[diagnostic.Location.MappedLineSpan.StartLinePosition.Line];
+
+                // first line of the region from the soruce file
+                var lineOffest = 0;
+
+                foreach (var regionLine in target.Value.Destination.Text.GetSubText(selectionSpan).Lines)
+                {
+                    if (regionLine.ToString() == line.ToString())
+                    {
+                        break;
+                    }
+
+                    lineOffest++;
+                }
+
+                var bufferTextSource = SourceFile.Create(target.Value.Destination.Text.GetSubText(selectionSpan).ToString());
+                var lineText = line.ToString();
+                var partToFind = lineText.Substring(diagnostic.Location.MappedLineSpan.Span.Start.Character);
+                var charOffset = bufferTextSource.Text.Lines[lineOffest].ToString().IndexOf(partToFind, StringComparison.Ordinal);
+                var location = new { Line = lineOffest + 1, Char = charOffset + 1 };
+
+                var errorMessage = $"({location.Line},{location.Char}): error {diagnostic.Id}: {diagnostic.Message}";
+
+                var processedDiagnostic = (new SerializableDiagnostic(
+                        start,
+                        end,
+                        diagnostic.Message,
+                        diagnostic.Severity,
+                        diagnostic.Id),
+                    errorMessage);
+                return processedDiagnostic;
+            }
+
             var diagnostics = bodyDiagnostics ?? Enumerable.Empty<Diagnostic>();
             foreach (var diagnostic in diagnostics)
             {
@@ -158,46 +202,8 @@ namespace WorkspaceServer.Servers.Dotnet
 
                     if (!target.Value.Region.IsEmpty)
                     {
-                        // offest of the buffer int othe original source file
-                        var offset = target.Value.Region.Start;
-                        // span of content injected in the buffer viewport
-                        var selectionSpan = new TextSpan(offset + paddingSize, target.Value.Region.Length - (2 * paddingSize));
-
-                        // aligned offset of the diagnostic entry
-                        var start = diagnostic.Location.SourceSpan.Start - selectionSpan.Start;
-                        var end = diagnostic.Location.SourceSpan.End - selectionSpan.Start;
-                        // line containing the diagnostic in the original source file
-                        var line = target.Value.Destination.Text.Lines[diagnostic.Location.MappedLineSpan.StartLinePosition.Line];
-
-
-                        // first line of the region from the soruce file
-                        var lineOffest = 0;
-
-                        foreach (var regionLine in target.Value.Destination.Text.GetSubText(selectionSpan).Lines)
-                        {
-                            if (regionLine.ToString() == line.ToString())
-                            {
-                                break;
-                            }
-
-                            lineOffest++;
-                        }
-
-                        var bufferTextSource = SourceFile.Create(target.Value.Destination.Text.GetSubText(selectionSpan).ToString());
-                        var lineText = line.ToString();
-                        var partToFind = lineText.Substring(diagnostic.Location.MappedLineSpan.Span.Start.Character);
-                        var charOffset = bufferTextSource.Text.Lines[lineOffest].ToString().IndexOf(partToFind, StringComparison.Ordinal);
-                        var location = new { Line = lineOffest + 1, Char = charOffset + 1 };
-
-                        var errorMessage = $"({location.Line},{location.Char}): error {diagnostic.Id}: {diagnostic.Message}";
-
-                        yield return (new SerializableDiagnostic(
-                                start,
-                                end,
-                                diagnostic.Message,
-                                diagnostic.Severity,
-                                diagnostic.Id),
-                            errorMessage);
+                        var processedDiagnostic = ProcesseDiagnostic(target, diagnostic);
+                        yield return processedDiagnostic;
                     }
                     else
                     {
