@@ -36,10 +36,6 @@ namespace MLS.Agent
 
         private static void StartLogging(CompositeDisposable disposables, CommandLineOptions options)
         {
-            var instrumentationKey = options.IsProduction
-                                         ? "1bca19cc-3417-462c-bb60-7337605fee38"
-                                         : "6c13142c-8ddf-4335-b857-9d3e0cbb1ea1";
-
             if (options.IsProduction)
             {
                 var applicationVersion = AssemblyVersionSensor.Version().AssemblyInformationalVersion;
@@ -75,12 +71,16 @@ namespace MLS.Agent
                 args.SetObserved();
             };
 
-            var telemetryClient = new TelemetryClient(new TelemetryConfiguration(instrumentationKey))
+            if (options.ApplicationInsightsKey != null)
             {
-                InstrumentationKey = options.ApplicationInsightsKey ?? instrumentationKey
-            };
+                var telemetryClient = new TelemetryClient(new TelemetryConfiguration(options.ApplicationInsightsKey))
+                {
+                    InstrumentationKey = options.ApplicationInsightsKey
+                };
+                disposables.Add(telemetryClient.SubscribeToPocketLogger());
+            }
 
-            disposables.Add(telemetryClient.SubscribeToPocketLogger());
+
 
             Log.Event("AgentStarting");
         }
@@ -98,7 +98,7 @@ namespace MLS.Agent
             {
                 Log.Info("Received Key", options.Key);
             }
-            
+
             var webHost = new WebHostBuilder()
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
