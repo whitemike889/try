@@ -4,6 +4,7 @@
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <AssemblyName>OmniSharp.Client</AssemblyName>
     <RootNamespace>OmniSharp.Client</RootNamespace>
+    <LangVersion>Latest</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>

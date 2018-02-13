@@ -1,5 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <LangVersion>Latest</LangVersion>
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <AssetTargetFallback>$(AssetTargetFallback);dotnet5.4;portable-net45+win8</AssetTargetFallback>
   </PropertyGroup>
