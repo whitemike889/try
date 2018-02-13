@@ -30,7 +30,7 @@ namespace WorkspaceServer.Tests
             var request = new Workspace(
                 workspaceType: "console",
                 files: new[] { new Workspace.File("Program.cs", CodeSamples.SourceCodeProvider.ConsoleProgramSingleRegion) },
-                buffers: new[] { new Workspace.Buffer("alpha", @"Console.WriteLine(banana);", 0) });
+                buffers: new[] { new Workspace.Buffer("Program.cs@alpha", @"Console.WriteLine(banana);", 0) });
 
             var server = await GetWorkspaceServer();
 
@@ -50,7 +50,7 @@ namespace WorkspaceServer.Tests
             var request = new Workspace(
                 workspaceType: "console",
                 files: new[] { new Workspace.File("Program.cs", CodeSamples.SourceCodeProvider.ConsoleProgramSingleRegion) },
-                buffers: new[] { new Workspace.Buffer("alpha", @"var a = 10;"+Environment.NewLine+"Console.WriteLine(banana);", 0) });
+                buffers: new[] { new Workspace.Buffer("Program.cs@alpha", @"var a = 10;"+Environment.NewLine+"Console.WriteLine(banana);", 0) });
 
             var server = await GetWorkspaceServer();
 

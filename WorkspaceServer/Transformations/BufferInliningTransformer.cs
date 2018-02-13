@@ -62,6 +62,11 @@ namespace WorkspaceServer.Transformations
                     files["Program.cs"] = SourceFile.Create(sourceBuffer.Content, "Program.cs");
                     buffers.Add(new Workspace.Buffer(sourceBuffer.Id, sourceBuffer.Content, 0));
                 }
+                else
+                {
+                    files[sourceBuffer.Id] = SourceFile.Create(sourceBuffer.Content, sourceBuffer.Id);
+                    buffers.Add(new Workspace.Buffer(sourceBuffer.Id, sourceBuffer.Content, 0));
+                }
             }
 
             var processedFiles = files.Values.Select(sf => new Workspace.File(sf.Name, sf.Text.ToString())).ToArray();
@@ -82,8 +87,8 @@ namespace WorkspaceServer.Transformations
             foreach (var sourceFile in files)
             {
                 var code = sourceFile.Text;
-
-                var regions = ExtractRegions(code);
+                var fileName = sourceFile.Name;
+                var regions = ExtractRegions(code, fileName);
 
                 foreach (var region in regions)
                 {
@@ -94,7 +99,7 @@ namespace WorkspaceServer.Transformations
             return viewPorts;
         }
 
-        private static IEnumerable<(string regionName, TextSpan span)> ExtractRegions(SourceText code)
+        private static IEnumerable<(string regionName, TextSpan span)> ExtractRegions(SourceText code, string fileName)
         {
             List<(SyntaxTrivia startRegion, SyntaxTrivia endRegion, string label)> FindRegions(SyntaxNode syntaxNode)
             {
@@ -106,7 +111,7 @@ namespace WorkspaceServer.Transformations
                           leadingTrivia.Kind() == SyntaxKind.EndRegionDirectiveTrivia
                     select node;
 
-                var triviaToRemove = new List<(SyntaxTrivia startRegion, SyntaxTrivia endRegion, string label)>();
+                var viewPorts = new List<(SyntaxTrivia startRegion, SyntaxTrivia endRegion, string label)>();
                 var stack = new Stack<SyntaxTrivia>();
                 var processedSpans = new HashSet<TextSpan>();
                 foreach (var nodeWithRegionDirective in nodesWithRegionDirectives)
@@ -124,13 +129,15 @@ namespace WorkspaceServer.Transformations
                         else if (currentTrivia.Kind() == SyntaxKind.EndRegionDirectiveTrivia)
                         {
                             var start = stack.Pop();
-                            triviaToRemove.Add(
-                                (start, currentTrivia, start.ToFullString().Replace("#region", string.Empty).Trim()));
+                            var regionName = start.ToFullString().Replace("#region", string.Empty).Trim();
+                            var viewPortId = $"{fileName}@{regionName}";
+                            viewPorts.Add(
+                                (start, currentTrivia, viewPortId));
                         }
                     }
                 }
 
-                return triviaToRemove;
+                return viewPorts;
             }
 
             var sourceCodeText = code.ToString();

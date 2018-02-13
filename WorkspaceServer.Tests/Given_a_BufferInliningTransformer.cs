@@ -20,7 +20,7 @@ namespace WorkspaceServer.Tests
             var processor = new BufferInliningTransformer();
             var viewPorts = processor.ExtractViewPorts(ws);
             viewPorts.Should().NotBeEmpty();
-            viewPorts.Keys.ShouldAllBeEquivalentTo(new[] { "alpha" });
+            viewPorts.Keys.ShouldAllBeEquivalentTo(new[] { "Program.cs@alpha" });
         }
 
         [Fact]
@@ -45,7 +45,7 @@ namespace WorkspaceServer.Tests
             });
             var processor = new BufferInliningTransformer();
             Action extraction = () => processor.ExtractViewPorts(ws);
-            extraction.ShouldThrow<ArgumentException>();
+            extraction.ShouldNotThrow<ArgumentException>();
         }
 
         [Fact]
@@ -74,7 +74,7 @@ namespace WorkspaceServer.Tests
                 },
                 buffers: new[]
                 {
-                    new Workspace.Buffer("alpha", "var newValue = 1000;", 0)
+                    new Workspace.Buffer("Program.cs@alpha", "var newValue = 1000;", 0)
                 });
             var processor = new BufferInliningTransformer();
 
@@ -89,6 +89,32 @@ namespace WorkspaceServer.Tests
             processed.Buffers.Count.Should().Be(ws.Buffers.Count);
             processed.Buffers.ElementAt(0).Position.Should().BeGreaterThan(ws.Buffers.ElementAt(0).Position);
 
+        }
+
+        [Fact]
+        public async Task Processed_workspace_files_are_replaced_by_buffer_when_id_is_just_file_name()
+        {
+            var ws = new Workspace(
+                files: new[]
+                {
+                    new Workspace.File("Program.cs", CodeSamples.SourceCodeProvider.ConsoleProgramSingleRegion)
+                },
+                buffers: new[]
+                {
+                    new Workspace.Buffer("Program.cs", "var newValue = 1000;", 0)
+                });
+            var processor = new BufferInliningTransformer();
+
+            var processed = await processor.ProcessAsync(ws);
+            processed.Should().NotBeNull();
+            processed.SourceFiles.Should().NotBeEmpty();
+            var newCode = processed.SourceFiles.ElementAt(0).Text.ToString();
+
+            newCode.Should().NotBe(ws.SourceFiles.ElementAt(0).Text.ToString());
+            newCode.Should().Be("var newValue = 1000;");
+
+            processed.Buffers.Count.Should().Be(ws.Buffers.Count);
+            processed.Buffers.ElementAt(0).Position.Should().Be(0);
         }
 
         [Fact]
