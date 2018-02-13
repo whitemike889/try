@@ -12,9 +12,11 @@ namespace MLS.Agent
             string helpText, 
             bool isProduction, 
             string key, 
-            string[] loadWorkspaces)
+            string[] loadWorkspaces,
+            bool writeFileLog = false)
         {
             LoadWorkspaces = loadWorkspaces;
+            WriteFileLog = writeFileLog;
             WasSuccess = wasSuccess;
             IsProduction = isProduction;
             HelpRequested = helpRequested;
@@ -28,6 +30,7 @@ namespace MLS.Agent
         public string HelpText { get; }
         public string Key { get; }
         public string[] LoadWorkspaces { get; }
+        public bool WriteFileLog { get; }
 
         public static CommandLineOptions Parse(string[] args)
         {
