@@ -93,10 +93,6 @@ namespace MLS.Agent.Tools
         {
             args = args ?? "";
 
-            Log.Trace("{workingDir}> {command} {args}", workingDir == null
-                                                            ? ""
-                                                            : workingDir.FullName, command, args);
-
             var process = new Process
             {
                 StartInfo =
@@ -136,6 +132,8 @@ namespace MLS.Agent.Tools
 
             process.BeginOutputReadLine();
             process.BeginErrorReadLine();
+
+            process.PriorityClass = ProcessPriorityClass.RealTime;
 
             return process;
         }
