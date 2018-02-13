@@ -45,12 +45,12 @@ namespace MLS.Agent.Tools
                 output: data =>
                 {
                     stdOut.AppendLine(data);
-                    operation.Info("Out: {data}", data);
+                    operation.Info("{data}", data);
                 },
                 error: data =>
                 {
                     stdErr.AppendLine(data);
-                    operation.Error("Err: {data}", args: data);
+                    operation.Error("{data}", args: data);
                 }))
             {
                 var timeToWaitInMs = budget.TimeToWaitInMs();
