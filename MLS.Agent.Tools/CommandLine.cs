@@ -81,7 +81,7 @@ namespace MLS.Agent.Tools
         private static int TimeToWaitInMs(this TimeBudget budget) =>
             budget.IsUnlimited
                 ? -1
-                : budget.RemainingDuration.Milliseconds;
+                : (int) budget.RemainingDuration.TotalMilliseconds;
 
         public static Process StartProcess(
             string command,
