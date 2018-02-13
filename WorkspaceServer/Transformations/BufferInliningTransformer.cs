@@ -16,7 +16,7 @@ namespace WorkspaceServer.Transformations
         private static readonly string processorName = typeof(BufferInliningTransformer).Name;
         private static readonly string padding = Environment.NewLine;
         public static int PaddingSize => padding.Length;
-        public async Task<Workspace> ProcessAsync(Workspace source, TimeBudget timeBudget = null)
+        public async Task<Workspace> TransformAsync(Workspace source, TimeBudget timeBudget = null)
         {
             if (source == null) throw new ArgumentNullException(nameof(source));
 
@@ -39,23 +39,27 @@ namespace WorkspaceServer.Transformations
             var buffers = new List<Workspace.Buffer>();
             foreach (var sourceBuffer in source.Buffers)
             {
-                var viewPorts = ExtractViewPorts(files.Values);
-                if (viewPorts.TryGetValue(sourceBuffer.Id, out var viewPort))
+                if (sourceBuffer.Id.Contains("@"))
                 {
-                    var tree = CSharpSyntaxTree.ParseText(viewPort.Destination.Text.ToString());
-                    var textChange = new TextChange(
-                        viewPort.Region,
-                        $"{padding}{sourceBuffer.Content}{padding}");
-                    
+                    var viewPorts = ExtractViewPorts(files.Values);
+                    if (viewPorts.TryGetValue(sourceBuffer.Id, out var viewPort))
+                    {
+                        var tree = CSharpSyntaxTree.ParseText(viewPort.Destination.Text.ToString());
+                        var textChange = new TextChange(
+                            viewPort.Region,
+                            $"{padding}{sourceBuffer.Content}{padding}");
 
-                    var txt = tree.WithChangedText(tree.GetText().WithChanges(textChange));
 
-                    var offset = tree.GetChangedSpans(txt).FirstOrDefault().Start;
+                        var txt = tree.WithChangedText(tree.GetText().WithChanges(textChange));
 
-                    var newCode = (await txt.GetTextAsync()).ToString();
+                        var offset = tree.GetChangedSpans(txt).FirstOrDefault().Start;
 
-                    buffers.Add(new Workspace.Buffer(sourceBuffer.Id, sourceBuffer.Content, offset));
-                    files[viewPort.Destination.Name] = SourceFile.Create(newCode, viewPort.Destination.Name);
+                        var newCode = (await txt.GetTextAsync()).ToString();
+
+                        buffers.Add(new Workspace.Buffer(sourceBuffer.Id, sourceBuffer.Content, offset));
+                        files[viewPort.Destination.Name] = SourceFile.Create(newCode, viewPort.Destination.Name);
+                    }
+                   
                 }
                 else if (sourceBuffer.Id == string.Empty)
                 {

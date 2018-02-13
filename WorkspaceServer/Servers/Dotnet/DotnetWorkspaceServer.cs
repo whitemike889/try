@@ -66,7 +66,7 @@ namespace WorkspaceServer.Servers.Dotnet
         {
             using (var operation = Log.OnEnterAndConfirmOnExit()) { 
             var processor = new BufferInliningTransformer();
-            var processedRequest = await processor.ProcessAsync(request);
+            var processedRequest = await processor.TransformAsync(request);
             Dictionary<string, (SourceFile Destination, TextSpan Region)> viewPorts = null;
             IEnumerable<(SerializableDiagnostic Diagnostic,string ErrorMessage)> processedDiagnostics;
            

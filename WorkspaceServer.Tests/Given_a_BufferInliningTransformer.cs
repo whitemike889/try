@@ -60,7 +60,7 @@ namespace WorkspaceServer.Tests
         public void Processing_fails_with_null_workspace()
         {
             var processor = new BufferInliningTransformer();
-            Func<Task> extraction = () => processor.ProcessAsync(null);
+            Func<Task> extraction = () => processor.TransformAsync(null);
             extraction.ShouldThrow<ArgumentNullException>();
         }
 
@@ -78,7 +78,7 @@ namespace WorkspaceServer.Tests
                 });
             var processor = new BufferInliningTransformer();
 
-            var processed = await processor.ProcessAsync(ws);
+            var processed = await processor.TransformAsync(ws);
             processed.Should().NotBeNull();
             processed.SourceFiles.Should().NotBeEmpty();
             var newCode = processed.SourceFiles.ElementAt(0).Text.ToString();
@@ -105,7 +105,7 @@ namespace WorkspaceServer.Tests
                 });
             var processor = new BufferInliningTransformer();
 
-            var processed = await processor.ProcessAsync(ws);
+            var processed = await processor.TransformAsync(ws);
             processed.Should().NotBeNull();
             processed.SourceFiles.Should().NotBeEmpty();
             var newCode = processed.SourceFiles.ElementAt(0).Text.ToString();
@@ -127,7 +127,7 @@ namespace WorkspaceServer.Tests
                 });
             var processor = new BufferInliningTransformer();
 
-            var processed = await processor.ProcessAsync(ws);
+            var processed = await processor.TransformAsync(ws);
             processed.Should().NotBeNull();
             processed.SourceFiles.Should().NotBeEmpty();
             var newCode = processed.SourceFiles.ElementAt(0).Text.ToString();
