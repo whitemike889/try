@@ -13,7 +13,12 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task AsyncLazy_returns_the_specified_value()
         {
-            var lazy = new AsyncLazy<string>(async () => "hello!");
+            var lazy = new AsyncLazy<string>(async () =>
+            {
+                await Task.Yield();
+
+                return "hello!";
+            });
 
             var value = await lazy.ValueAsync();
 
@@ -29,6 +34,8 @@ namespace WorkspaceServer.Tests
 
             var lazy = new AsyncLazy<string>(async () =>
             {
+                await Task.Yield();
+
                 barrier.SignalAndWait(2000);
 
                 Interlocked.Increment(ref callCount);

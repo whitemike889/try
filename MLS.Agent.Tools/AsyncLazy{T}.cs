@@ -5,8 +5,6 @@ namespace MLS.Agent.Tools
 {
     public class AsyncLazy<T>
     {
-        private readonly object _lockObj = new object();
-
         private readonly Lazy<Task<T>> lazy;
 
         public AsyncLazy(Func<Task<T>> initialize)
