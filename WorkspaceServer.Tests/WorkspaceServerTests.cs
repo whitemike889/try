@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.CodeAnalysis;
 using Pocket;
-using WorkspaceServer.Models.Execution;
 using Xunit;
 using Xunit.Abstractions;
 using static Pocket.Logger<WorkspaceServer.Tests.WorkspaceServerTests>;
@@ -15,16 +14,16 @@ namespace WorkspaceServer.Tests
 {
     public abstract class WorkspaceServerTests : IDisposable
     {
-        private readonly CompositeDisposable disposables = new CompositeDisposable();
+        private readonly CompositeDisposable _disposables = new CompositeDisposable();
 
         protected abstract Task<IWorkspaceServer> GetWorkspaceServer(
             [CallerMemberName] string testName = null);
 
         protected abstract Models.Execution.Workspace CreateRunRequestContaining(string text);
 
-        public void Dispose() => disposables.Dispose();
+        public void Dispose() => _disposables.Dispose();
 
-        protected void RegisterForDisposal(IDisposable disposable) => disposables.Add(disposable);
+        protected void RegisterForDisposal(IDisposable disposable) => _disposables.Add(disposable);
 
         [Fact]
         public async Task Diagnostic_logs_do_not_show_up_in_captured_console_output()
@@ -41,7 +40,7 @@ namespace WorkspaceServer.Tests
 
         protected WorkspaceServerTests(ITestOutputHelper output)
         {
-            disposables.Add(LogEvents.Subscribe(e => output.WriteLine(e.ToLogString())));
+            _disposables.Add(LogEvents.Subscribe(e => output.WriteLine(e.ToLogString())));
         }
 
         [Fact]
