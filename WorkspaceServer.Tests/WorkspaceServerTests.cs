@@ -8,7 +8,7 @@ using Pocket;
 using Xunit;
 using Xunit.Abstractions;
 using static Pocket.Logger<WorkspaceServer.Tests.WorkspaceServerTests>;
-
+using Workspace = WorkspaceServer.Models.Execution.Workspace;
 
 namespace WorkspaceServer.Tests
 {
@@ -305,6 +305,9 @@ public static class Hello
             result.Diagnostics.Should().Contain(d => d.Severity == DiagnosticSeverity.Warning);
 
         }
+
+     
+
 
         [Fact]
         public async Task Response_shows_warnings_when_compilation_fails()

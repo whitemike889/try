@@ -56,8 +56,7 @@ namespace MLS.Agent.Tools
                 var timeToWaitInMs = budget.TimeToWaitInMs();
 
                 operation.Trace("Waiting up to {timeToWaitInMs}ms for process to exit (remaining budget is {remainingBudgetMs}ms)",
-                                timeToWaitInMs,
-                                budget.RemainingDuration.Milliseconds);
+                                timeToWaitInMs, timeToWaitInMs);
 
                 var exited = process.WaitForExit(timeToWaitInMs);
 
@@ -82,7 +81,7 @@ namespace MLS.Agent.Tools
         private static int TimeToWaitInMs(this TimeBudget budget) =>
             budget.IsUnlimited
                 ? -1
-                : budget.RemainingDuration.Milliseconds;
+                : (int)Math.Floor(budget.RemainingDuration.TotalMilliseconds);
 
         public static Process StartProcess(
             string command,
