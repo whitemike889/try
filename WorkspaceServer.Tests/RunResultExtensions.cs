@@ -10,22 +10,22 @@ namespace WorkspaceServer.Tests
     {
         public static void ShouldFailWithOutput(this RunResult result, params string[] output)
         {
-            result.ShouldBeEquivalentTo(new
+            using (new AssertionScope("result"))
             {
-                Succeeded = false,
-                Output = output,
-                Exception = (string) null
-            }, config => config.ExcludingMissingMembers());
+                result.Succeeded.Should().BeFalse();
+                result.Output.ShouldBeEquivalentTo(output);
+                result.Exception.Should().BeNull();
+            }
         }
 
         public static void ShouldSucceedWithOutput(this RunResult result, params string[] output)
         {
-            result.ShouldBeEquivalentTo(new
+            using (new AssertionScope("result"))
             {
-                Succeeded = true,
-                Output = output,
-                Exception = (string) null
-            }, config => config.ExcludingMissingMembers());
+                result.Succeeded.Should().BeTrue();
+                result.Output.ShouldBeEquivalentTo(output);
+                result.Exception.Should().BeNull();
+            }
         }
 
         public static void ShouldSucceedWithNoOutput(this RunResult result) =>

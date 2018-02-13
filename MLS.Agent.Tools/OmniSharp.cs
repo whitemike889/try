@@ -12,8 +12,7 @@ namespace MLS.Agent.Tools
     {
         private static readonly DirectoryInfo _omniSharpInstallFolder;
         private static readonly string _version = @"v1.29.0-beta1";
-        private static readonly FileInfo _omniSharpExe;
-        private static readonly FileInfo _omniSharpRunScript;
+        private static readonly AsyncLazy<FileInfo> _omniSharp;
         private static readonly Logger Log = new Logger(nameof(OmniSharp));
 
         static OmniSharp()
@@ -23,77 +22,78 @@ namespace MLS.Agent.Tools
             var omniSharpInstallPath =
                 environmentVariable ??
                 Path.Combine(Paths.UserProfile,
-                    ".trydotnet",
-                    "omnisharp",
-                    _version);
+                             ".trydotnet",
+                             "omnisharp",
+                             _version);
 
             _omniSharpInstallFolder = new DirectoryInfo(omniSharpInstallPath);
 
-            _omniSharpRunScript = new FileInfo(
+            _omniSharp = new AsyncLazy<FileInfo>(CheckInstallationAndAcquireIfNeeded);
+
+            async Task<FileInfo> CheckInstallationAndAcquireIfNeeded()
+            {
+                using (Log.OnEnterAndExit())
+                {
+                    FileInfo fileInfo;
+
+                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                    {
+                        fileInfo = await AcquireAndExtractWithZip("omnisharp-win-x64.zip");
+                    }
+                    else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                    {
+                        fileInfo = await AcquireAndExtractWithTar("omnisharp-linux-x64.tar.gz");
+                    }
+                    else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                    {
+                        fileInfo = await AcquireAndExtractWithTar("omnisharp-osx.tar.gz");
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException($"Unrecognized OS: {RuntimeInformation.OSDescription}");
+                    }
+
+                    if (fileInfo == null)
+                    {
+                        throw new OmniSharpNotFoundException("Failed to locate or acquire OmniSharp.");
+                    }
+
+                    Log.Info("Using OmniSharp at {path}", fileInfo);
+
+                    return fileInfo;
+                }
+            }
+        }
+
+        public static async Task<FileInfo> EnsureInstalledOrAcquire() => 
+            await _omniSharp.ValueAsync();
+
+        private static async Task<FileInfo> AcquireAndExtractWithTar(string file)
+        {
+            var omniSharpRunScript = new FileInfo(
                 Path.Combine(
                     _omniSharpInstallFolder.FullName,
                     "run"));
 
-            _omniSharpExe = new FileInfo(
-                Path.Combine(
-                    _omniSharpInstallFolder.FullName,
-                    "OmniSharp.exe"));
-        }
-
-        public static FileInfo GetPath()
-        {
-            var fileInfo = EnsureInstalledOrAcquire() ??
-                           throw new OmniSharpNotFoundException("Failed to locate or acquire OmniSharp.");
-
-            Log.Info("Using OmniSharp at {path}", fileInfo);
-
-            return fileInfo;
-        }
-
-        private static FileInfo EnsureInstalledOrAcquire()
-        {
-            using (Log.OnEnterAndExit())
-            {
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                {
-                    return AcquireAndExtractWithZip("omnisharp-win-x64.zip");
-                }
-
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                {
-                    return AcquireAndExtractWithTar("omnisharp-linux-x64.tar.gz");
-                }
-
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                {
-                    return AcquireAndExtractWithTar("omnisharp-osx.tar.gz");
-                }
-
-                throw new InvalidOperationException($"Unrecognized OS: {RuntimeInformation.OSDescription}");
-            }
-        }
-
-        private static FileInfo AcquireAndExtractWithTar(string file)
-        {
-            if (!_omniSharpRunScript.Exists)
+            if (!omniSharpRunScript.Exists)
             {
                 using (var operation = Log.OnEnterAndConfirmOnExit())
                 {
                     var downloadUri = new Uri($@"https://github.com/OmniSharp/omnisharp-roslyn/releases/download/{_version}/{file}");
 
-                    operation.Info("OmniSharp not found at {path}. Downloading from {uri}.", _omniSharpRunScript, downloadUri);
+                    operation.Info("OmniSharp not found at {path}. Downloading from {uri}.", omniSharpRunScript, downloadUri);
 
-                    var targzFile = Download(downloadUri);
+                    var targzFile = await Download(downloadUri);
 
                     _omniSharpInstallFolder.Create();
 
-                    CommandLine.Execute(
+                    await CommandLine.Execute(
                         "tar",
                         $"xvf {targzFile.FullName} -C {_omniSharpInstallFolder}");
 
-                    _omniSharpRunScript.Refresh();
+                    omniSharpRunScript.Refresh();
 
-                    if (!_omniSharpRunScript.Exists)
+                    if (!omniSharpRunScript.Exists)
                     {
                         return null;
                     }
@@ -102,16 +102,21 @@ namespace MLS.Agent.Tools
                 }
             }
 
-            return _omniSharpRunScript;
+            return omniSharpRunScript;
         }
 
-        private static FileInfo AcquireAndExtractWithZip(string file)
+        private static async Task<FileInfo> AcquireAndExtractWithZip(string file)
         {
-            if (!_omniSharpExe.Exists)
+            var omniSharpExe = new FileInfo(
+                Path.Combine(
+                    _omniSharpInstallFolder.FullName,
+                    "OmniSharp.exe"));
+
+            if (!omniSharpExe.Exists)
             {
                 using (var operation = Log.OnEnterAndConfirmOnExit())
                 {
-                    var zipFile = Download(new Uri($@"https://github.com/OmniSharp/omnisharp-roslyn/releases/download/{_version}/{file}"));
+                    var zipFile = await Download(new Uri($@"https://github.com/OmniSharp/omnisharp-roslyn/releases/download/{_version}/{file}"));
 
                     using (var stream = zipFile.OpenRead())
                     using (var archive = new ZipArchive(stream, ZipArchiveMode.Read))
@@ -119,9 +124,9 @@ namespace MLS.Agent.Tools
                         archive.ExtractToDirectory(_omniSharpInstallFolder.FullName);
                     }
 
-                    _omniSharpExe.Refresh();
+                    omniSharpExe.Refresh();
 
-                    if (!_omniSharpExe.Exists)
+                    if (!omniSharpExe.Exists)
                     {
                         return null;
                     }
@@ -130,24 +135,21 @@ namespace MLS.Agent.Tools
                 }
             }
 
-            return _omniSharpExe;
+            return omniSharpExe;
         }
 
-        private static FileInfo Download(Uri uri)
+        private static async Task<FileInfo> Download(Uri uri)
         {
-            return Task.Run(async () =>
+            var fileToWriteTo = Path.GetTempFileName();
+
+            using (var httpClient = new HttpClient())
+            using (var response = await httpClient.GetStreamAsync(uri))
+            using (Stream streamToWriteTo = File.Open(fileToWriteTo, FileMode.Create))
             {
-                var fileToWriteTo = Path.GetTempFileName();
+                await response.CopyToAsync(streamToWriteTo);
+            }
 
-                using (var httpClient = new HttpClient())
-                using (var response = await httpClient.GetStreamAsync(uri))
-                using (Stream streamToWriteTo = File.Open(fileToWriteTo, FileMode.Create))
-                {
-                    await response.CopyToAsync(streamToWriteTo);
-                }
-
-                return new FileInfo(fileToWriteTo);
-            }).Result;
+            return new FileInfo(fileToWriteTo);
         }
     }
 }

@@ -33,7 +33,7 @@ namespace WorkspaceServer
 
         public void AddPackageReference(string packageId, string version = null)
         {
-            _afterCreateActions.Add((workspace, budget) =>
+            _afterCreateActions.Add(async (workspace, budget) =>
             {
                 var dotnet = new Dotnet(workspace.Directory);
 
@@ -41,9 +41,7 @@ namespace WorkspaceServer
                                      ? ""
                                      : $"--version {version}";
 
-                dotnet.Execute($"add package {versionArg} {packageId}", budget);
-
-                return Task.CompletedTask;
+                await dotnet.Execute($"add package {versionArg} {packageId}", budget);
             });
         }
 

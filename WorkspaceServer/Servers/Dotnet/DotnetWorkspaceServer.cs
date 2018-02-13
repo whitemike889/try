@@ -5,12 +5,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Scripting;
 using MLS.Agent.Tools;
+using Pocket;
 using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Transformations;
 using Diagnostic = OmniSharp.Client.Diagnostic;
+using static Pocket.Logger<WorkspaceServer.Servers.Dotnet.DotnetWorkspaceServer>;
 using Workspace = MLS.Agent.Tools.Workspace;
 using OmnisharpEmitResponse = OmniSharp.Client.Commands.OmniSharpResponseMessage<OmniSharp.Client.Commands.EmitResponse>;
 using TextSpan = Microsoft.CodeAnalysis.Text.TextSpan;
@@ -21,99 +22,115 @@ namespace WorkspaceServer.Servers.Dotnet
     {
         private readonly Workspace _workspace;
         private readonly OmniSharpServer _omniSharpServer;
-
+        private readonly AsyncLazy<bool> _initialized;
         private bool _disposed;
 
         public DotnetWorkspaceServer(Workspace workspace)
         {
             _workspace = workspace ?? throw new ArgumentNullException(nameof(workspace));
 
+
+#if DEBUG
+            var logToPocketLogger = true;
+#else
+            var logToPocketLogger = false;
+#endif
+
             _omniSharpServer = new OmniSharpServer(
                 _workspace.Directory,
                 Paths.EmitPlugin,
-                logToPocketLogger: false);
+                logToPocketLogger: logToPocketLogger);
+
+            _initialized = new AsyncLazy<bool>(async () =>
+            {
+                await _workspace.EnsureBuilt();
+                await _omniSharpServer.WorkspaceReady();
+                return true;
+            });
         }
 
         public async Task EnsureInitializedAndNotDisposed(TimeBudget budget = null)
         {
+            budget?.RecordEntryAndThrowIfBudgetExceeded();
+
             if (_disposed)
             {
                 throw new ObjectDisposedException(nameof(DotnetWorkspaceServer));
             }
 
-            budget?.RecordEntryAndThrowIfBudgetExceeded();
-
-            await _workspace.EnsureCreated(budget);
-
-            await _workspace.EnsureBuilt(budget);
-
-            await _omniSharpServer.WorkspaceReady(budget);
+            await _initialized.ValueAsync()
+                              .CancelIfExceeds(budget ?? TimeBudget.Unlimited());
         }
 
         public async Task<RunResult> Run(Models.Execution.Workspace request, TimeBudget budget = null)
         {
-            budget = budget ?? TimeBudget.Unlimited();
+            using (var operation = Log.OnEnterAndConfirmOnExit()) { 
             var processor = new BufferInliningTransformer();
             var processedRequest = await processor.ProcessAsync(request);
             var viewPorts = processor.ExtractViewPorts(processedRequest);
-            CommandLineResult result = null;
-            Exception exception = null;
-            string exceptionMessage = null;
-            OmnisharpEmitResponse emitResponse = null;
             IEnumerable<(SerializableDiagnostic Diagnostic,string ErrorMessage)> processedDiagnostics;
+           
+                budget = budget ?? new TimeBudget(TimeSpan.FromSeconds(30));
 
-            try
-            {
-                await EnsureInitializedAndNotDisposed(budget);
-
-                emitResponse = await Emit(processedRequest, budget);
-
-                if (emitResponse.Body.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error))
+                CommandLineResult commandLineResult = null;
+                Exception exception = null;
+                string exceptionMessage = null;
+                OmnisharpEmitResponse emitResponse = null;
+                try
                 {
+                    emitResponse = await Emit(processedRequest, budget);
                     
-                    processedDiagnostics = ReconstructDiagnosticLocations(emitResponse.Body.Diagnostics, viewPorts, BufferInliningTransformer.PaddingSize).ToArray();
-                    return new RunResult(
-                        false,
-                        processedDiagnostics
-                                    .Where(d => d.Diagnostic.Severity == DiagnosticSeverity.Error)
-                                    .Select(d => d.ErrorMessage)
-                                    .ToArray(),
-                        diagnostics: processedDiagnostics.Select(d => d.Diagnostic).ToArray());
+                    if (emitResponse.Body.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error))
+                    {
+                        processedDiagnostics = ReconstructDiagnosticLocations(emitResponse.Body.Diagnostics, viewPorts, BufferInliningTransformer.PaddingSize).ToArray();
+
+                        return new RunResult(
+                            false,
+                            processedDiagnostics
+                                .Where(d => d.Diagnostic.Severity == DiagnosticSeverity.Error)
+                                .Select(d => d.ErrorMessage)
+                                .ToArray(),
+                            diagnostics: processedDiagnostics.Select(d => d.Diagnostic).ToArray());
+                    }
+
+                    var dotnet = new MLS.Agent.Tools.Dotnet(_workspace.Directory);
+
+                    commandLineResult = await dotnet.Execute(emitResponse.Body.OutputAssemblyPath, budget);
+
+                    if (commandLineResult.Exception != null)
+                    {
+                        exceptionMessage = commandLineResult.Exception.ToString();
+                    }
+                    else if (commandLineResult.Error.Count > 0)
+                    {
+                        exceptionMessage = string.Join(Environment.NewLine, commandLineResult.Error);
+                    }
                 }
-
-                var dotnet = new MLS.Agent.Tools.Dotnet(_workspace.Directory);
-
-                result = dotnet.Execute(emitResponse.Body.OutputAssemblyPath, budget);
-
-                if (result.Exception != null)
+                catch (TimeoutException timeoutException)
                 {
-                    exceptionMessage = result.Exception.ToString();
+                    exception = timeoutException;
                 }
-                else if (result.Error.Count > 0)
+                catch (TimeBudgetExceededException timeBudgetExceededException)
                 {
-                    exceptionMessage = string.Join(Environment.NewLine, result.Error);
+                    exception = timeBudgetExceededException; 
                 }
-            }
-            catch (TimeoutException timeoutException)
-            {
-                exception = timeoutException;
-            }
-            catch (TimeBudgetExceededException)
-            {
-                exception = new TimeoutException(); 
-            }
-            catch (TaskCanceledException taskCanceledException)
-            {
-                exception = taskCanceledException;
+                catch (TaskCanceledException taskCanceledException)
+                {
+                    exception = taskCanceledException;
+                }
+
+                processedDiagnostics = ReconstructDiagnosticLocations(emitResponse?.Body.Diagnostics, viewPorts, BufferInliningTransformer.PaddingSize).ToArray();
+                var  runResult = new RunResult(
+                    succeeded: !exception.IsConsideredRunFailure(),
+                    output: commandLineResult?.Output,
+                    exception: exceptionMessage ?? exception.ToDisplayString(),
+                    diagnostics: processedDiagnostics.Select(d => d.Diagnostic).ToArray());
+                
+                operation.Complete(runResult, budget);
+                return runResult;
+
             }
 
-            processedDiagnostics = ReconstructDiagnosticLocations(emitResponse?.Body.Diagnostics, viewPorts, BufferInliningTransformer.PaddingSize).ToArray();
-            return new RunResult(
-                succeeded:  !(exception is TimeoutException) &&
-                            !(exception is CompilationErrorException),
-                output: result?.Output,
-                exception: exceptionMessage ?? exception.ToDisplayString(),
-                diagnostics: processedDiagnostics.Select(d => d.Diagnostic).ToArray());
         }
 
         private static IEnumerable<(SerializableDiagnostic ,string)> ReconstructDiagnosticLocations(IEnumerable<Diagnostic> bodyDiagnostics,
@@ -155,7 +172,9 @@ namespace WorkspaceServer.Servers.Dotnet
                     }
              
                     var bufferTextSource = SourceFile.Create(target.Value.Destination.Text.GetSubText(selectionSpan).ToString());
-                    var charOffset = bufferTextSource.Text.Lines[lineOffest].ToString().IndexOf(line.ToString().Substring(diagnostic.Location.MappedLineSpan.Span.Start.Character), StringComparison.Ordinal);
+                    var lineText = line.ToString();
+                    var partToFind = lineText.Substring(diagnostic.Location.MappedLineSpan.Span.Start.Character);
+                    var charOffset = bufferTextSource.Text.Lines[lineOffest].ToString().IndexOf(partToFind, StringComparison.Ordinal);
                     var location = new { Line = lineOffest + 1, Char = charOffset + 1 };
 
                     var errorMessage = $"({location.Line},{location.Char}): error {diagnostic.Id}: {diagnostic.Message}";
@@ -175,7 +194,6 @@ namespace WorkspaceServer.Servers.Dotnet
                 }
             }
         }
-
         private async Task<OmnisharpEmitResponse> Emit(Models.Execution.Workspace request, TimeBudget budget = null)
         {
             await EnsureInitializedAndNotDisposed(budget);
@@ -194,7 +212,11 @@ namespace WorkspaceServer.Servers.Dotnet
                 await _omniSharpServer.UpdateBuffer(file, text);
             }
 
-            return await _omniSharpServer.Emit(budget);
+            var emitResponse = await _omniSharpServer.Emit(budget);
+
+            budget.RecordEntryAndThrowIfBudgetExceeded();
+
+            return emitResponse;
         }
 
         public Task<CompletionResult> GetCompletionList(CompletionRequest request)
@@ -204,7 +226,7 @@ namespace WorkspaceServer.Servers.Dotnet
 
         public async Task<DiagnosticResult> GetDiagnostics(Models.Execution.Workspace request)
         {
-            var emitResult = await Emit(request);
+            var emitResult = await Emit(request, TimeBudget.Unlimited());
             var diagnostics = emitResult.Body.Diagnostics.Select(d => new SerializableDiagnostic(d)).ToArray();
             return new DiagnosticResult(diagnostics);
         }

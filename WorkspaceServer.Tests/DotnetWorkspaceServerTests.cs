@@ -32,7 +32,7 @@ namespace WorkspaceServer.Tests
                 files: new[] { new Workspace.File("Program.cs", CodeSamples.SourceCodeProvider.ConsoleProgramSingleRegion) },
                 buffers: new[] { new Workspace.Buffer("alpha", @"Console.WriteLine(banana);", 0) });
 
-            var server = GetWorkspaceServer();
+            var server = await GetWorkspaceServer();
 
             var result = await server.Run(request);
 
@@ -52,7 +52,7 @@ namespace WorkspaceServer.Tests
                 files: new[] { new Workspace.File("Program.cs", CodeSamples.SourceCodeProvider.ConsoleProgramSingleRegion) },
                 buffers: new[] { new Workspace.Buffer("alpha", @"var a = 10;"+Environment.NewLine+"Console.WriteLine(banana);", 0) });
 
-            var server = GetWorkspaceServer();
+            var server = await GetWorkspaceServer();
 
             var result = await server.Run(request);
 
@@ -64,14 +64,16 @@ namespace WorkspaceServer.Tests
             }, config => config.ExcludingMissingMembers());
         }
 
-        protected override IWorkspaceServer GetWorkspaceServer(
+        protected override async Task<IWorkspaceServer> GetWorkspaceServer(
             [CallerMemberName] string testName = null)
         {
-            var project = Create.TestWorkspace(testName);
+            var project = await Create.TestWorkspace(testName);
 
             var workspaceServer = new DotnetWorkspaceServer(project);
 
             RegisterForDisposal(workspaceServer);
+
+            await workspaceServer.EnsureInitializedAndNotDisposed();
 
             return workspaceServer;
         }

@@ -26,7 +26,7 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task Console_app_project_can_be_emitted()
         {
-            using (var omniSharp = StartOmniSharp())
+            using (var omniSharp = await StartOmniSharp())
             {
                 await omniSharp.WorkspaceReady();
 
@@ -39,7 +39,7 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task Emitted_console_app_project_can_be_updated_and_rerun()
         {
-            using (var omniSharp = StartOmniSharp())
+            using (var omniSharp = await StartOmniSharp())
             {
                 await omniSharp.WorkspaceReady();
 
@@ -57,15 +57,15 @@ namespace WorkspaceServer.Tests
             }
         }
 
-        private OmniSharpServer StartOmniSharp() =>
+        private async Task<OmniSharpServer> StartOmniSharp() =>
             new OmniSharpServer(
-                Create.TestWorkspace(nameof(EmitTests)).Directory,
+                (await Create.TestWorkspace(nameof(EmitTests))).Directory,
                 Paths.EmitPlugin,
                 logToPocketLogger: true);
 
-        private (IReadOnlyCollection<string>, IReadOnlyCollection<string>) ExecuteEmittedAssembly(string dllPath)
+        private async Task<(IReadOnlyCollection<string>, IReadOnlyCollection<string>)> ExecuteEmittedAssembly(string dllPath)
         {
-            var result = new Dotnet().Execute(dllPath);
+            var result = await new Dotnet().Execute(dllPath);
 
             return (result.Output, result.Error);
         }
@@ -75,7 +75,7 @@ namespace WorkspaceServer.Tests
         {
             var response = await omnisharp.Emit();
 
-            return ExecuteEmittedAssembly(response.Body.OutputAssemblyPath);
+            return await ExecuteEmittedAssembly(response.Body.OutputAssemblyPath);
         }
     }
 }

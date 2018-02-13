@@ -49,7 +49,7 @@ namespace WorkspaceServer.Servers.Dotnet
                 NullValueHandling = NullValueHandling.Ignore
             });
 
-            omniSharp.StandardInput.WriteLine(json);
+            await omniSharp.Send(json);
 
             var received = await omniSharp.StandardOutput
                                           .AsOmniSharpMessages()

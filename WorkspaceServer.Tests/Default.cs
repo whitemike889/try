@@ -6,17 +6,14 @@ namespace WorkspaceServer.Tests
 {
     internal static class Default
     {
-        private static readonly Lazy<Workspace> _templateWorkspace = new Lazy<Workspace>(() =>
+        private static readonly AsyncLazy<Workspace> _templateWorkspace = new AsyncLazy<Workspace>(async () =>
         {
             var workspace = new Workspace("TestTemplate");
-            Task.Run(async () =>
-            {
-                await workspace.EnsureCreated();
-                await workspace.EnsureBuilt();
-            }).Wait();
+            await workspace.EnsureCreated();
+            await workspace.EnsureBuilt();
             return workspace;
         });
 
-        public static Workspace TemplateWorkspace => _templateWorkspace.Value;
+        public static Task<Workspace> TemplateWorkspace => _templateWorkspace.ValueAsync();
     }
 }
