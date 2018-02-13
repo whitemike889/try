@@ -45,12 +45,12 @@ namespace MLS.Agent.Tools
                 output: data =>
                 {
                     stdOut.AppendLine(data);
-                    operation.Info("{data}", data);
+                    operation.Info("Out: {data}", data);
                 },
                 error: data =>
                 {
                     stdErr.AppendLine(data);
-                    operation.Error("{data}", args: data);
+                    operation.Error("Err: {data}", args: data);
                 }))
             {
                 var timeToWaitInMs = budget.TimeToWaitInMs();
@@ -69,15 +69,13 @@ namespace MLS.Agent.Tools
                     "{command} {args} exited with {code}",
                     command,
                     args,
-                    exitCode);
-
-                operation.Trace("Returning");
+                    exitCode, 
+                    budget);
 
                 return new CommandLineResult(
                     exitCode: exitCode,
                     output: stdOut.Replace("\r\n", "\n").ToString().Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries),
-                    error: stdErr.Replace("\r\n", "\n").ToString().Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries),
-                    exception: null);
+                    error: stdErr.Replace("\r\n", "\n").ToString().Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries));
             }
         }
 
