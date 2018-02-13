@@ -1,8 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>    
+  <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <AssetTargetFallback>portable-net45+win8+wp8+wpa81</AssetTargetFallback>
+    <LangVersion>Latest</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -27,6 +28,9 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="pocketlogger.for.microsoftextensionslogging" Version="0.1.2">  
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="pocketlogger.for.microsoftextensionslogging" Version="0.1.2">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="pocketlogger.for.xunit" Version="0.1.3">
