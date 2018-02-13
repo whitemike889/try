@@ -133,7 +133,7 @@ namespace MLS.Agent.Tools
             process.BeginOutputReadLine();
             process.BeginErrorReadLine();
 
-            process.PriorityClass = ProcessPriorityClass.RealTime;
+            process.PriorityClass = ProcessPriorityClass.High;
 
             return process;
         }
