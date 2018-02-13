@@ -69,24 +69,20 @@ namespace MLS.Agent.Tools
                     "{command} {args} exited with {code}",
                     command,
                     args,
-                    exitCode);
-
-                operation.Trace("Returning");
+                    exitCode, 
+                    budget);
 
                 return new CommandLineResult(
                     exitCode: exitCode,
                     output: stdOut.Replace("\r\n", "\n").ToString().Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries),
-                    error: stdErr.Replace("\r\n", "\n").ToString().Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries),
-                    exception: null);
+                    error: stdErr.Replace("\r\n", "\n").ToString().Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries));
             }
         }
 
         private static int TimeToWaitInMs(this TimeBudget budget) =>
             budget.IsUnlimited
                 ? -1
-                : budget.RemainingDuration
-                        .Subtract(TimeSpan.FromMilliseconds(100))
-                        .Milliseconds;
+                : budget.RemainingDuration.Milliseconds;
 
         public static Process StartProcess(
             string command,
@@ -96,10 +92,6 @@ namespace MLS.Agent.Tools
             Action<string> error = null)
         {
             args = args ?? "";
-
-            Log.Trace("{workingDir}> {command} {args}", workingDir == null
-                                                            ? ""
-                                                            : workingDir.FullName, command, args);
 
             var process = new Process
             {

@@ -46,7 +46,8 @@ namespace MLS.Agent
                         a(("websiteSiteName", websiteSiteName));
                     }));
             }
-            else
+            
+            if (options.WriteFileLog)
             {
                 var log = new SerilogLoggerConfiguration()
                           .WriteTo
