@@ -8,6 +8,7 @@ using Pocket;
 using System.Threading.Tasks;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.Extensibility;
+using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using MLS.Agent.Tools;
@@ -80,8 +81,6 @@ namespace MLS.Agent
                 disposables.Add(telemetryClient.SubscribeToPocketLogger());
             }
 
-
-
             Log.Event("AgentStarting");
         }
 
@@ -105,8 +104,11 @@ namespace MLS.Agent
                 .UseIISIntegration()
                 .ConfigureServices(c =>
                 {
+                    if (options.ApplicationInsightsKey != null)
+                    {
+                        c.AddApplicationInsightsTelemetry(options.ApplicationInsightsKey);
+                    }
                     c.AddSingleton(options);
-
                     c.AddSingleton(_ =>
                     {
                         var registry = new WorkspaceServerRegistry();
