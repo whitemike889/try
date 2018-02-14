@@ -5,9 +5,10 @@ using WorkspaceServer;
 
 namespace MLS.Agent
 {
-    public class WarmUpWorkspaces : HostedService
+    public class WarmUpWorkspaces : HostedService, IDisposable
     {
         private readonly WorkspaceServerRegistry workspaceServerRegistry;
+        private Thread thread;
 
         public WarmUpWorkspaces(WorkspaceServerRegistry workspaceServerRegistry)
         {
@@ -22,7 +23,16 @@ namespace MLS.Agent
                 return;
             }
 
-            await workspaceServerRegistry.StartAllServers();
+            thread = new Thread(() =>
+            {
+                workspaceServerRegistry.StartAllServers().Wait(cancellationToken);
+            });
+
+            thread.Start();
+        }
+
+        public void Dispose()
+        {
         }
     }
 }
