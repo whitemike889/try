@@ -70,14 +70,14 @@ namespace MLS.Agent.Tools
                                   {
                                       var ex = new TimeBudgetExceededException(budget);
 
-                                      // FIX: (Execute) 
-                                      //                                      Task.Run(() =>
-                                      //                                      {
-                                      //                                          if (!process.HasExited)
-                                      //                                          {
-                                      //                                              process.Kill();
-                                      //                                          }
-                                      //                                      }).DontAwait();
+                                      //FIX: (Execute)
+                                      //Task.Run(() =>
+                                      //{
+                                      //    if (!process.HasExited)
+                                      //    {
+                                      //        process.Kill();
+                                      //    }
+                                      //}).DontAwait();
 
                                       if (!process.HasExited)
                                       {
