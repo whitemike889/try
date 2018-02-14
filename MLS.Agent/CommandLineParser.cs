@@ -7,11 +7,11 @@ namespace MLS.Agent
     public class CommandLineOptions
     {
         public CommandLineOptions(
-            bool wasSuccess, 
-            bool helpRequested, 
-            string helpText, 
-            bool isProduction, 
-            string key, 
+            bool wasSuccess,
+            bool helpRequested,
+            string helpText,
+            bool isProduction,
+            string key,
             string[] loadWorkspaces,
             string applicationInsightsKey = null)
         {
@@ -38,7 +38,7 @@ namespace MLS.Agent
                 Create.Option("-h|--help", "Shows this help text"),
                 Create.Option("--production", "Specifies if the agent is being run using production resources or not"),
                 Create.Option("-k|--key", "The encryption key", ExactlyOneArgument()),
-                Create.Option("--ai-key", "Application Insights key"),
+                Create.Option("--ai-key", "Application Insights key", ExactlyOneArgument()),
                 Create.Option("--load-workspace", "Starts OmniSharp in the specified workspace folder.", OneOrMoreArguments()));
 
             var parseResult = parser.Parse(args);
