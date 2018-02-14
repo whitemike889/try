@@ -1,9 +1,12 @@
 using System;
+using System.Diagnostics;
 using FluentAssertions;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using Clockwise;
 using Newtonsoft.Json;
 using Pocket;
 using Recipes;
@@ -12,6 +15,7 @@ using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Tests;
 using Xunit;
 using Xunit.Abstractions;
+using static Pocket.Logger<MLS.Agent.Tests.ApiViaHttpTests>;
 
 namespace MLS.Agent.Tests
 {
@@ -22,6 +26,16 @@ namespace MLS.Agent.Tests
         public ApiViaHttpTests(ITestOutputHelper output)
         {
             disposables.Add(output.SubscribeToPocketLogger());
+
+            disposables.Add(LogEvents.Enrich(log =>
+            {
+                log(("threadId", Thread.CurrentThread.ManagedThreadId ));
+            }));
+
+            if (Debugger.IsAttached)
+            {
+                disposables.Add(VirtualClock.Start());
+            }
         }
 
         public void Dispose() => disposables.Dispose();
