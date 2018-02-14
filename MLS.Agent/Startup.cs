@@ -88,17 +88,6 @@ namespace MLS.Agent
                     log(("threadId", Thread.CurrentThread.ManagedThreadId ));
                 }));
 
-                
-//                var workspaceServerRegistry = serviceProvider.GetRequiredService<WorkspaceServerRegistry>();
-//
-//                Clock.Current.Schedule(c =>
-//                                           Task.Factory
-//                                               .StartNew(() => workspaceServerRegistry.StartAllServers(budget),
-//                                                         CancellationToken.None,
-//                                                         TaskCreationOptions.LongRunning,
-//                                                         TaskScheduler.Default),
-//                                       TimeSpan.FromSeconds(1));
-
                 operation.Succeed();
             }
         }
