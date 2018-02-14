@@ -29,11 +29,10 @@ namespace WorkspaceServer.Servers.Dotnet
         {
             _workspace = workspace ?? throw new ArgumentNullException(nameof(workspace));
 
-
 #if DEBUG
             var logToPocketLogger = true;
 #else
-            var logToPocketLogger = false;
+            var logToPocketLogger = true;
 #endif
 
             _omniSharpServer = new OmniSharpServer(
