@@ -85,11 +85,13 @@ namespace MLS.Agent
 
                 var workspaceServerRegistry = serviceProvider.GetRequiredService<WorkspaceServerRegistry>();
 
-                Task.Factory
-                    .StartNew(() => workspaceServerRegistry.StartAllServers(budget),
-                              CancellationToken.None,
-                              TaskCreationOptions.LongRunning,
-                              TaskScheduler.Default);
+                Clock.Current.Schedule(c =>
+                                           Task.Factory
+                                               .StartNew(() => workspaceServerRegistry.StartAllServers(budget),
+                                                         CancellationToken.None,
+                                                         TaskCreationOptions.LongRunning,
+                                                         TaskScheduler.Default),
+                                       TimeSpan.FromSeconds(1));
 
                 operation.Succeed();
             }
