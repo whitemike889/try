@@ -82,10 +82,11 @@ namespace MLS.Agent
                .UseStaticFiles()
                .UseMvc();
 
-            serviceProvider
-                .GetRequiredService<WorkspaceServerRegistry>()
-                .StartAllServers(Clock.Current.CreateCancellationToken(TimeSpan.FromSeconds(30)))
-                .DontAwait();
+            // Hack: don't start servers
+            //serviceProvider
+            //    .GetRequiredService<WorkspaceServerRegistry>()
+            //    .StartAllServers(Clock.Current.CreateCancellationToken(TimeSpan.FromSeconds(30)))
+            //    .DontAwait();
         }
     }
 }
