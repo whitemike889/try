@@ -82,6 +82,10 @@ namespace MLS.Agent
                 var budget = TimeBudget.Unlimited();
 
                 _disposables.Add(() => budget.Cancel());
+                _disposables.Add(LogEvents.Enrich(log =>
+                {
+                    log(("threadId", Thread.CurrentThread.ManagedThreadId ));
+                }));
 
                 var workspaceServerRegistry = serviceProvider.GetRequiredService<WorkspaceServerRegistry>();
 

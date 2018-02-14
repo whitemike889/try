@@ -56,7 +56,8 @@ namespace WorkspaceServer.Servers.Dotnet
                                           .OfType<OmniSharpResponseMessage>()
                                           .Where(m => m.Request_seq == commandMessage.Seq)
                                           .FirstAsync()
-                                          .ToTask(budget);
+                                          .ToTask()
+                                          .CancelIfExceeds(budget ?? TimeBudget.Unlimited());
 
             return received;
         }

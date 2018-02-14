@@ -14,6 +14,7 @@ namespace Pocket
                 e => output.WriteLine(e.ToLogString()),
                 new[]
                 {
+                    typeof(LogEvents).Assembly,
                     typeof(Startup).Assembly,
                     typeof(CommandLine).Assembly,
                     typeof(OmniSharpServer).Assembly,
