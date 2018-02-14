@@ -71,17 +71,21 @@ namespace MLS.Agent.Tools
                                       var ex = new TimeBudgetExceededException(budget);
 
                                       // FIX: (Execute) 
-//                                      Task.Run(() =>
-//                                      {
-//                                          if (!process.HasExited)
-//                                          {
-//                                              process.Kill();
-//                                          }
-//                                      }).DontAwait();
+                                      //                                      Task.Run(() =>
+                                      //                                      {
+                                      //                                          if (!process.HasExited)
+                                      //                                          {
+                                      //                                              process.Kill();
+                                      //                                          }
+                                      //                                      }).DontAwait();
 
-                                      operation.Fail(ex);
+                                      if (!process.HasExited)
+                                      {
+                                          operation.Fail(ex);
 
-                                      return (124, ex); // like the Linux timeout command 
+                                          return (124, ex); // like the Linux timeout command 
+                                      }
+                                      return (process.ExitCode, (Exception)null);
                                   });
 
                 return new CommandLineResult(
