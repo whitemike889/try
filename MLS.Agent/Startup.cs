@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Threading;
-using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using Pocket;
 using Recipes;
-using WorkspaceServer;
 using static Pocket.Logger<MLS.Agent.Startup>;
 
 namespace MLS.Agent
@@ -60,6 +59,8 @@ namespace MLS.Agent
 
                 services.AddSingleton(_ => DefaultWorkspaces.CreateWorkspaceServerRegistry());
 
+                services.AddSingleton<IHostedService, WarmUpWorkspaces>();
+
                 operation.Succeed();
             }
         }
@@ -87,18 +88,21 @@ namespace MLS.Agent
                     log(("threadId", Thread.CurrentThread.ManagedThreadId ));
                 }));
 
-                var workspaceServerRegistry = serviceProvider.GetRequiredService<WorkspaceServerRegistry>();
-
-                Clock.Current.Schedule(c =>
-                                           Task.Factory
-                                               .StartNew(() => workspaceServerRegistry.StartAllServers(budget),
-                                                         CancellationToken.None,
-                                                         TaskCreationOptions.LongRunning,
-                                                         TaskScheduler.Default),
-                                       TimeSpan.FromSeconds(1));
+                
+//                var workspaceServerRegistry = serviceProvider.GetRequiredService<WorkspaceServerRegistry>();
+//
+//                Clock.Current.Schedule(c =>
+//                                           Task.Factory
+//                                               .StartNew(() => workspaceServerRegistry.StartAllServers(budget),
+//                                                         CancellationToken.None,
+//                                                         TaskCreationOptions.LongRunning,
+//                                                         TaskScheduler.Default),
+//                                       TimeSpan.FromSeconds(1));
 
                 operation.Succeed();
             }
         }
     }
 }
+
+
