@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Pocket;
 using WorkspaceServer;
+using static Pocket.Logger<MLS.Agent.WarmUpWorkspaces>;
 
 namespace MLS.Agent
 {
@@ -25,7 +27,14 @@ namespace MLS.Agent
 
             thread = new Thread(() =>
             {
-                workspaceServerRegistry.StartAllServers().Wait(cancellationToken);
+                try
+                {
+                    workspaceServerRegistry.StartAllServers().Wait(cancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    Log.Warning(ex);
+                }
             });
 
             thread.Start();
