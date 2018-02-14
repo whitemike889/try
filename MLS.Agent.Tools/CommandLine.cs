@@ -53,25 +53,25 @@ namespace MLS.Agent.Tools
             {
                 (int exitCode, Exception exception) =
                     await Task.Run(() =>
-                    {
-                        using (var happyOperation = operation.OnEnterAndExit($"{operation.Name}:😊"))
                         {
-                            process.WaitForExit();
+                            using (operation.OnEnterAndExit("Execute:happy"))
+                            {
+                                process.WaitForExit();
 
-                            operation.Succeed(
-                                "{command} {args} exited with {code}",
-                                command,
-                                args,
-                                process.ExitCode);
+                                operation.Succeed(
+                                    "{command} {args} exited with {code}",
+                                    command,
+                                    args,
+                                    process.ExitCode);
 
-                            return (process.ExitCode, (Exception) null);
-                        }
-                    })
+                                return (process.ExitCode, (Exception) null);
+                            }
+                        })
                     .CancelIfExceeds(
                         budget,
                         ifCancelled: () =>
                         {
-                            using (var sadOperation = operation.OnEnterAndExit($"{operation.Name}:😞"))
+                            using (operation.OnEnterAndExit($"Execute:sad"))
                             {
                                 var ex = new TimeBudgetExceededException(budget);
 

@@ -37,8 +37,6 @@ namespace MLS.Agent
                 }
             });
 
-            await Task.Delay(TimeSpan.FromSeconds(1.5), cancellationToken);
-
             thread.Start();
         }
 

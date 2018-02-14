@@ -28,7 +28,7 @@ namespace MLS.Agent.Controllers
         public async Task<IActionResult> Run(
             [FromBody] WorkspaceRunRequest request)
         {
-            using (var operation = Log.ConfirmOnExit())
+            using (var operation = Log.OnEnterAndConfirmOnExit())
             {
                 RunResult result = null;
 
