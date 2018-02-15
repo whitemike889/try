@@ -1,9 +1,7 @@
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using MLS.Agent.Tools;
 using Recipes;
-using Workspace = MLS.Agent.Tools.Workspace;
 
 namespace WorkspaceServer.Tests
 {
