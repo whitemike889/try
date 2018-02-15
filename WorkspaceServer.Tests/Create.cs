@@ -1,6 +1,7 @@
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using MLS.Agent.Tools;
 using Recipes;
 
 namespace WorkspaceServer.Tests
@@ -24,7 +25,7 @@ namespace WorkspaceServer.Tests
             return workspace;
         }
 
-        public static WorkspaceRunRequest SimpleRunRequest(
+        public static WorkspaceServer.Models.Execution.Workspace SimpleRunRequest(
             string consoleOutput = "Hello!",
             string workspaceType = null) =>
             new WorkspaceServer.Models.Execution.Workspace(SimpleConsoleAppCodeWithoutNamespaces(consoleOutput), workspaceType: workspaceType);
