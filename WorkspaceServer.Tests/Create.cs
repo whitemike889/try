@@ -17,8 +17,15 @@ namespace WorkspaceServer.Tests
             return Workspace.DefaultWorkspacesDirectory.CreateSubdirectory($"{testName}.{existingFolders.Length + 1}");
         }
 
-        public static async Task<Workspace> TestWorkspace([CallerMemberName] string testName = null) => 
-            Workspace.Copy(await Default.TemplateWorkspace, testName);
+        public static async Task<Workspace> TestWorkspace([CallerMemberName] string testName = null)
+        {
+            var workspace = new Workspace(Workspace.CreateDirectory(testName), "test");
+
+            await workspace.EnsureCreated();
+            await workspace.EnsureBuilt();
+
+            return workspace;
+        }
 
         public static WorkspaceRunRequest SimpleRunRequest(
             string consoleOutput = "Hello!",
