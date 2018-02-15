@@ -117,7 +117,11 @@ namespace MLS.Agent.Tools
                         RedirectStandardError = true,
                         RedirectStandardOutput = true,
                         RedirectStandardInput = true,
-                        WorkingDirectory = workingDir?.FullName
+                        WorkingDirectory = workingDir?.FullName,
+                        EnvironmentVariables =
+                        {
+                            ["NUGET_PACKAGES"] = Path.Combine(Paths.UserProfile, Guid.NewGuid().ToString())
+                        }
                     }
                 };
 
