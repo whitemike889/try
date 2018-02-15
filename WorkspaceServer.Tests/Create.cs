@@ -14,10 +14,17 @@ namespace WorkspaceServer.Tests
             return MLS.Agent.Tools.Workspace.DefaultWorkspacesDirectory.CreateSubdirectory($"{testName}.{existingFolders.Length + 1}");
         }
 
-        public static async Task<MLS.Agent.Tools.Workspace> TestWorkspace([CallerMemberName] string testName = null) =>
-            MLS.Agent.Tools.Workspace.Copy(await Default.TemplateWorkspace, testName);
+        public static async Task<Workspace> TestWorkspace([CallerMemberName] string testName = null)
+        {
+            var workspace = new Workspace(Workspace.CreateDirectory(testName), "test");
 
-        public static WorkspaceServer.Models.Execution.Workspace SimpleRunRequest(
+            await workspace.EnsureCreated();
+            await workspace.EnsureBuilt();
+
+            return workspace;
+        }
+
+        public static WorkspaceRunRequest SimpleRunRequest(
             string consoleOutput = "Hello!",
             string workspaceType = null) =>
             new WorkspaceServer.Models.Execution.Workspace(SimpleConsoleAppCodeWithoutNamespaces(consoleOutput), workspaceType: workspaceType);

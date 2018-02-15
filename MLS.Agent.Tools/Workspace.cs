@@ -141,6 +141,35 @@ namespace MLS.Agent.Tools
             }
 
             folderName = folderName ?? fromWorkspace.Name;
+            var parentDirectory = fromWorkspace
+                                      .Directory
+                                      .Parent;
+
+            var destination = CreateDirectory(folderName, parentDirectory);
+
+            fromWorkspace.Directory.CopyTo(destination);
+
+            var copy = new Workspace(destination,
+                                     folderName,
+                                     fromWorkspace._initializer);
+
+            copy.IsCreated = fromWorkspace.IsCreated;
+            copy.IsBuilt = fromWorkspace.IsBuilt;
+            copy.IsDirectoryCreated = true;
+
+            return copy;
+        }
+
+        public static DirectoryInfo CreateDirectory(
+            string folderNameStartsWith, 
+            DirectoryInfo parentDirectory = null)
+        {
+            if (string.IsNullOrWhiteSpace(folderNameStartsWith))
+            {
+                throw new ArgumentException("Value cannot be null or whitespace.", nameof(folderNameStartsWith));
+            }
+
+            parentDirectory = parentDirectory ?? DefaultWorkspacesDirectory;
 
             DirectoryInfo destination;
             var i = 0;
@@ -149,24 +178,13 @@ namespace MLS.Agent.Tools
             {
                 destination = new DirectoryInfo(
                     Path.Combine(
-                        fromWorkspace
-                            .Directory
-                            .Parent
-                            .FullName,
-                        $"{folderName}.{++i}"));
+                        parentDirectory.FullName,
+                        $"{folderNameStartsWith}.{++i}"));
             } while (destination.Exists);
 
-            fromWorkspace.Directory.CopyTo(destination);
+            destination.Create();
 
-            var copy = new Workspace(destination,
-                                     folderName ?? fromWorkspace.Name,
-                                     fromWorkspace._initializer);
-
-            copy.IsCreated = fromWorkspace.IsCreated;
-            copy.IsBuilt = fromWorkspace.IsBuilt;
-            copy.IsDirectoryCreated = true;
-
-            return copy;
+            return destination;
         }
     }
 }
