@@ -20,6 +20,7 @@ namespace WorkspaceServer.Servers.Dotnet
         private readonly OmniSharpServer _omniSharpServer;
         private readonly AsyncLazy<bool> _initialized;
         private bool _disposed;
+        private Budget _initializationBudget = new Budget();
 
         public DotnetWorkspaceServer(Workspace workspace)
         {
@@ -38,8 +39,8 @@ namespace WorkspaceServer.Servers.Dotnet
 
             _initialized = new AsyncLazy<bool>(async () =>
             {
-                await _workspace.EnsureBuilt();
-                await _omniSharpServer.WorkspaceReady();
+                await _workspace.EnsureBuilt(_initializationBudget);
+                await _omniSharpServer.WorkspaceReady(_initializationBudget);
                 return true;
             });
         }
@@ -164,6 +165,7 @@ namespace WorkspaceServer.Servers.Dotnet
             if (!_disposed)
             {
                 _disposed = true;
+                _initializationBudget.Cancel();
                 _omniSharpServer?.Dispose();
             }
         }

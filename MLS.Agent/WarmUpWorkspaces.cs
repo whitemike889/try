@@ -11,6 +11,7 @@ namespace MLS.Agent
     public class WarmUpWorkspaces : HostedService, IDisposable
     {
         private readonly WorkspaceServerRegistry workspaceServerRegistry;
+
         private Thread thread;
 
         public WarmUpWorkspaces(WorkspaceServerRegistry workspaceServerRegistry)
@@ -44,8 +45,6 @@ namespace MLS.Agent
             thread.Start();
         }
 
-        public void Dispose()
-        {
-        }
+        public void Dispose() => thread.Interrupt();
     }
 }
