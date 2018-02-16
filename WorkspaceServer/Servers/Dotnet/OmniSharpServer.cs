@@ -94,8 +94,8 @@ namespace WorkspaceServer.Servers.Dotnet
 
         public int NextSeq() => Interlocked.Increment(ref _seq);
 
-        public async Task WorkspaceReady(TimeBudget budget = null) =>
+        public async Task WorkspaceReady(Budget budget = null) =>
             await _omnisharpProcess.ValueAsync()
-                                   .CancelIfExceeds(budget ?? TimeBudget.Unlimited());
+                                   .CancelIfExceeds(budget ?? new Budget());
     }
 }

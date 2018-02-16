@@ -10,7 +10,7 @@ namespace WorkspaceServer
         {
             switch (exception)
             {
-                case TimeBudgetExceededException _:
+                case BudgetExceededException _:
                     return new TimeoutException().ToString();
 
                 case CompilationErrorException _:
@@ -23,7 +23,7 @@ namespace WorkspaceServer
 
         public static bool IsConsideredRunFailure(this Exception exception) =>
             exception is TimeoutException ||
-            exception is TimeBudgetExceededException ||
+            exception is BudgetExceededException ||
             exception is CompilationErrorException;
     }
 }

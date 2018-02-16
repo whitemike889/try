@@ -44,7 +44,7 @@ namespace WorkspaceServer.Servers.Dotnet
             });
         }
 
-        public async Task EnsureInitializedAndNotDisposed(TimeBudget budget = null)
+        public async Task EnsureInitializedAndNotDisposed(Budget budget = null)
         {
             budget?.RecordEntryAndThrowIfBudgetExceeded();
 
@@ -54,10 +54,10 @@ namespace WorkspaceServer.Servers.Dotnet
             }
 
             await _initialized.ValueAsync()
-                              .CancelIfExceeds(budget ?? TimeBudget.Unlimited());
+                              .CancelIfExceeds(budget ?? new Budget());
         }
 
-        public async Task<RunResult> Run(WorkspaceRunRequest request, TimeBudget budget = null)
+        public async Task<RunResult> Run(WorkspaceRunRequest request, Budget budget = null)
         {
             using (var operation = Log.OnEnterAndConfirmOnExit())
             {
@@ -101,9 +101,9 @@ namespace WorkspaceServer.Servers.Dotnet
                 {
                     exception = timeoutException;
                 }
-                catch (TimeBudgetExceededException timeBudgetExceededException)
+                catch (BudgetExceededException budgetExceededException)
                 {
-                    exception = timeBudgetExceededException; 
+                    exception = budgetExceededException; 
                 }
                 catch (TaskCanceledException taskCanceledException)
                 {
@@ -122,7 +122,7 @@ namespace WorkspaceServer.Servers.Dotnet
             }
         }
 
-        private async Task<OmnisharpEmitResponse> Emit(WorkspaceRunRequest request, TimeBudget budget)
+        private async Task<OmnisharpEmitResponse> Emit(WorkspaceRunRequest request, Budget budget)
         {
             await EnsureInitializedAndNotDisposed(budget);
 
@@ -154,7 +154,7 @@ namespace WorkspaceServer.Servers.Dotnet
 
         public async Task<DiagnosticResult> GetDiagnostics(WorkspaceRunRequest request)
         {
-            var emitResult = await Emit(request, TimeBudget.Unlimited());
+            var emitResult = await Emit(request, new Budget());
             var diagnostics = emitResult.Body.Diagnostics.Select(d => new SerializableDiagnostic(d)).ToArray();
             return new DiagnosticResult(diagnostics);
         }

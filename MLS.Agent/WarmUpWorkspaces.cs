@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Clockwise;
 using Pocket;
 using WorkspaceServer;
 using static Pocket.Logger<MLS.Agent.WarmUpWorkspaces>;
@@ -25,11 +26,14 @@ namespace MLS.Agent
                 return;
             }
 
+            var budget = new Budget(cancellationToken);
+
             thread = new Thread(() =>
             {
                 try
                 {
-                    workspaceServerRegistry.StartAllServers().Wait(cancellationToken);
+                    workspaceServerRegistry.StartAllServers(budget)
+                                           .Wait(cancellationToken);
                 }
                 catch (Exception ex)
                 {
