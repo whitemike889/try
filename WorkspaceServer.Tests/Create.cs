@@ -10,13 +10,6 @@ namespace WorkspaceServer.Tests
 {
     public static class Create
     {
-        public static DirectoryInfo TestFolder([CallerMemberName] string testName = null)
-        {
-            var existingFolders = Workspace.DefaultWorkspacesDirectory.GetDirectories($"{testName}.*");
-
-            return Workspace.DefaultWorkspacesDirectory.CreateSubdirectory($"{testName}.{existingFolders.Length + 1}");
-        }
-
         public static async Task<Workspace> TestWorkspace([CallerMemberName] string testName = null)
         {
             var workspace = new Workspace(Workspace.CreateDirectory(testName), "test");
