@@ -57,7 +57,7 @@ namespace WorkspaceServer
             }
         }
 
-        public async Task StartAllServers(TimeBudget budget = null)
+        public async Task StartAllServers(Budget budget = null)
         {
             using (var operation = Log.OnEnterAndConfirmOnExit())
             {

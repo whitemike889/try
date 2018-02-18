@@ -2,10 +2,12 @@ using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using FluentAssertions;
+using MLS.Agent.Tools;
 using Pocket;
 using WorkspaceServer.Models.Execution;
 using Xunit;
 using Xunit.Abstractions;
+using Workspace = MLS.Agent.Tools.Workspace;
 
 namespace WorkspaceServer.Tests
 {
@@ -25,7 +27,7 @@ namespace WorkspaceServer.Tests
         {
             using (var registry = new WorkspaceServerRegistry())
             {
-                var workspaceId = Create.TestFolder().Name;
+                var workspaceId = Workspace.CreateDirectory(nameof(Workspaces_can_be_registered_to_be_created_using_dotnet_new)).Name;
 
                 registry.AddWorkspace(workspaceId,
                                       options => options.CreateUsingDotnet("console"));
@@ -43,7 +45,7 @@ namespace WorkspaceServer.Tests
         {
             using (var registry = new WorkspaceServerRegistry())
             {
-                var workspaceId = Create.TestFolder().Name;
+                var workspaceId = Workspace.CreateDirectory(nameof(NuGet_packages_can_be_added_during_initialization)).Name;
 
                 registry.AddWorkspace(workspaceId,
                                       options =>
@@ -54,7 +56,7 @@ namespace WorkspaceServer.Tests
 
                 var workspaceServer = await registry.GetWorkspaceServer(workspaceId);
 
-                var result = await workspaceServer.Run(new Workspace(@"
+                var result = await workspaceServer.Run(new WorkspaceServer.Models.Execution.Workspace(@"
 using System;
 using Twilio.Clients;
 using Twilio.Rest.Api.V2010.Account;

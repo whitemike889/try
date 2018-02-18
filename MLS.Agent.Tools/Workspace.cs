@@ -71,9 +71,9 @@ namespace MLS.Agent.Tools
 
         public static DirectoryInfo DefaultWorkspacesDirectory { get; }
 
-        public async Task EnsureCreated(TimeBudget budget = null) =>
+        public async Task EnsureCreated(Budget budget = null) =>
             await _created.ValueAsync()
-                          .CancelIfExceeds(budget ?? TimeBudget.Unlimited());
+                          .CancelIfExceeds(budget ?? new Budget());
 
         private async Task<bool> VerifyOrCreate()
         {
@@ -105,11 +105,11 @@ namespace MLS.Agent.Tools
             return true;
         }
 
-        public async Task EnsureBuilt(TimeBudget budget = null)
+        public async Task EnsureBuilt(Budget budget = null)
         {
             await EnsureCreated(budget);
             await _built.ValueAsync()
-                        .CancelIfExceeds(budget ?? TimeBudget.Unlimited());
+                        .CancelIfExceeds(budget ?? new Budget());
         }
 
         private async Task<bool> VerifyOrBuild()
@@ -160,8 +160,10 @@ namespace MLS.Agent.Tools
             return copy;
         }
 
+        private static readonly object _lockObj = new object();
+
         public static DirectoryInfo CreateDirectory(
-            string folderNameStartsWith, 
+            string folderNameStartsWith,
             DirectoryInfo parentDirectory = null)
         {
             if (string.IsNullOrWhiteSpace(folderNameStartsWith))
@@ -171,20 +173,16 @@ namespace MLS.Agent.Tools
 
             parentDirectory = parentDirectory ?? DefaultWorkspacesDirectory;
 
-            DirectoryInfo destination;
-            var i = 0;
+            DirectoryInfo created;
 
-            do
+            lock (_lockObj)
             {
-                destination = new DirectoryInfo(
-                    Path.Combine(
-                        parentDirectory.FullName,
-                        $"{folderNameStartsWith}.{++i}"));
-            } while (destination.Exists);
+                var existingFolders = parentDirectory.GetDirectories($"{folderNameStartsWith}.*");
 
-            destination.Create();
+                created = parentDirectory.CreateSubdirectory($"{folderNameStartsWith}.{existingFolders.Length + 1}");
+            }
 
-            return destination;
+            return created;
         }
     }
 }

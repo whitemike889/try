@@ -10,7 +10,7 @@ namespace WorkspaceServer
     {
         private Workspace _workspace;
 
-        private readonly List<Func<Workspace, TimeBudget, Task>> _afterCreateActions = new List<Func<Workspace, TimeBudget, Task>>();
+        private readonly List<Func<Workspace, Budget, Task>> _afterCreateActions = new List<Func<Workspace, Budget, Task>>();
 
         public WorkspaceBuilder(string workspaceName)
         {
@@ -45,7 +45,7 @@ namespace WorkspaceServer
             });
         }
 
-        public async Task<Workspace> GetWorkspace(TimeBudget budget = null)
+        public async Task<Workspace> GetWorkspace(Budget budget = null)
         {
             if (_workspace == null)
             {
@@ -55,9 +55,9 @@ namespace WorkspaceServer
             return _workspace;
         }
 
-        private async Task BuildWorkspace(TimeBudget budget = null)
+        private async Task BuildWorkspace(Budget budget = null)
         {
-            budget = budget ?? TimeBudget.Unlimited();
+            budget = budget ?? new Budget();
 
             _workspace = new Workspace(WorkspaceName);
 

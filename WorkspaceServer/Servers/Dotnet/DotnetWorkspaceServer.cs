@@ -24,6 +24,7 @@ namespace WorkspaceServer.Servers.Dotnet
         private readonly OmniSharpServer _omniSharpServer;
         private readonly AsyncLazy<bool> _initialized;
         private bool _disposed;
+        private Budget _initializationBudget = new Budget();
 
         public DotnetWorkspaceServer(Workspace workspace)
         {
@@ -42,13 +43,13 @@ namespace WorkspaceServer.Servers.Dotnet
 
             _initialized = new AsyncLazy<bool>(async () =>
             {
-                await _workspace.EnsureBuilt();
-                await _omniSharpServer.WorkspaceReady();
+                await _workspace.EnsureBuilt(_initializationBudget);
+                await _omniSharpServer.WorkspaceReady(_initializationBudget);
                 return true;
             });
         }
 
-        public async Task EnsureInitializedAndNotDisposed(TimeBudget budget = null)
+        public async Task EnsureInitializedAndNotDisposed(Budget budget = null)
         {
             budget?.RecordEntryAndThrowIfBudgetExceeded();
 
@@ -58,10 +59,10 @@ namespace WorkspaceServer.Servers.Dotnet
             }
 
             await _initialized.ValueAsync()
-                              .CancelIfExceeds(budget ?? TimeBudget.Unlimited());
+                              .CancelIfExceeds(budget ?? new Budget());
         }
 
-        public async Task<RunResult> Run(Models.Execution.Workspace request, TimeBudget budget = null)
+        public async Task<RunResult> Run(WorkspaceServer.Models.Execution.Workspace request, Budget budget = null)
         {
             using (var operation = Log.OnEnterAndConfirmOnExit()) { 
             var processor = new BufferInliningTransformer();
@@ -110,9 +111,9 @@ namespace WorkspaceServer.Servers.Dotnet
                 {
                     exception = timeoutException;
                 }
-                catch (TimeBudgetExceededException timeBudgetExceededException)
+                catch (BudgetExceededException budgetExceededException)
                 {
-                    exception = timeBudgetExceededException; 
+                    exception = budgetExceededException; 
                 }
                 catch (TaskCanceledException taskCanceledException)
                 {
@@ -137,7 +138,7 @@ namespace WorkspaceServer.Servers.Dotnet
 
         }
 
-        private static IEnumerable<(SerializableDiagnostic ,string)> ReconstructDiagnosticLocations(IEnumerable<Diagnostic> bodyDiagnostics,
+        private static IEnumerable<(SerializableDiagnostic, string)> ReconstructDiagnosticLocations(IEnumerable<Diagnostic> bodyDiagnostics,
             Dictionary<string, (SourceFile Destination, TextSpan Region)> viewPorts, int paddingSize)
         {
             (SerializableDiagnostic, string) ProcesseDiagnostic(KeyValuePair<string, (SourceFile Destination, TextSpan Region)> target, Diagnostic diagnostic)
@@ -212,7 +213,8 @@ namespace WorkspaceServer.Servers.Dotnet
                 }
             }
         }
-        private async Task<OmnisharpEmitResponse> Emit(Models.Execution.Workspace request, TimeBudget budget = null)
+
+        private async Task<OmnisharpEmitResponse> Emit(Models.Execution.Workspace request, Budget budget = null)
         {
             await EnsureInitializedAndNotDisposed(budget);
 
@@ -244,7 +246,7 @@ namespace WorkspaceServer.Servers.Dotnet
 
         public async Task<DiagnosticResult> GetDiagnostics(Models.Execution.Workspace request)
         {
-            var emitResult = await Emit(request, TimeBudget.Unlimited());
+            var emitResult = await Emit(request, new Budget());
             var diagnostics = emitResult.Body.Diagnostics.Select(d => new SerializableDiagnostic(d)).ToArray();
             return new DiagnosticResult(diagnostics);
         }
@@ -254,6 +256,7 @@ namespace WorkspaceServer.Servers.Dotnet
             if (!_disposed)
             {
                 _disposed = true;
+                _initializationBudget.Cancel();
                 _omniSharpServer?.Dispose();
             }
         }

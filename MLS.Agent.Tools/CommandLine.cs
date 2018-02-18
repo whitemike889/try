@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Clockwise;
 using Pocket;
+using Recipes;
 using static Pocket.Logger<MLS.Agent.Tools.CommandLine>;
 
 namespace MLS.Agent.Tools
@@ -17,7 +18,7 @@ namespace MLS.Agent.Tools
             FileInfo exePath,
             string args,
             DirectoryInfo workingDir = null,
-            TimeBudget budget = null) =>
+            Budget budget = null) =>
             Execute(exePath.FullName,
                     args,
                     workingDir,
@@ -27,10 +28,10 @@ namespace MLS.Agent.Tools
             string command,
             string args,
             DirectoryInfo workingDir = null,
-            TimeBudget budget = null)
+            Budget budget = null)
         {
             args = args ?? "";
-            budget = budget ?? TimeBudget.Unlimited();
+            budget = budget ?? new Budget();
 
             var stdOut = new StringBuilder();
             var stdErr = new StringBuilder();
@@ -51,44 +52,43 @@ namespace MLS.Agent.Tools
                     operation.Error("{data}", args: data);
                 }))
             {
-                (int exitCode, Exception exception) =
+                var exitCode =
                     await Task.Run(() =>
-                        {
-                            using (operation.OnEnterAndExit("Execute:happy"))
-                            {
-                                process.WaitForExit();
+                              {
+                                  using (operation.OnEnterAndExit("Execute:happy"))
+                                  {
+                                      process.WaitForExit();
 
-                                operation.Succeed(
-                                    "{command} {args} exited with {code}",
-                                    command,
-                                    args,
-                                    process.ExitCode);
+                                      operation.Succeed(
+                                          "{command} {args} exited with {code}",
+                                          command,
+                                          args,
+                                          process.ExitCode);
 
-                                return (process.ExitCode, (Exception) null);
-                            }
-                        })
-                    .CancelIfExceeds(
-                        budget,
-                        ifCancelled: () =>
-                        {
-                            using (operation.OnEnterAndExit($"Execute:sad"))
-                            {
-                                var ex = new TimeBudgetExceededException(budget);
+                                      return process.ExitCode;
+                                  }
+                              })
+                              .CancelIfExceeds(
+                                  budget,
+                                  ifCancelled: () =>
+                                  {
+                                      using (operation.OnEnterAndExit($"Execute:sad"))
+                                      {
+                                          var ex = new BudgetExceededException(budget);
 
-                                // FIX: (Execute) 
-                                //                                      Task.Run(() =>
-                                //                                      {
-                                //                                          if (!process.HasExited)
-                                //                                          {
-                                //                                              process.Kill();
-                                //                                          }
-                                //                                      }).DontAwait();
+                                          Task.Run(() =>
+                                          {
+                                              if (!process.HasExited)
+                                              {
+                                                  process.Kill();
+                                              }
+                                          }).DontAwait();
 
-                                operation.Fail(ex);
+                                          operation.Fail(ex);
 
-                                return (124, ex); // like the Linux timeout command 
-                            }
-                        });
+                                          return 124; // like the Linux timeout command 
+                                      }
+                                  });
 
                 return new CommandLineResult(
                     exitCode: exitCode,
@@ -160,7 +160,7 @@ namespace MLS.Agent.Tools
         private static ConfirmationLogger CheckBudgetAndStartConfirmationLogger(
             object command,
             string args,
-            TimeBudget budget,
+            Budget budget,
             [CallerMemberName] string operationName = null)
         {
             budget.RecordEntryAndThrowIfBudgetExceeded($"Execute ({command} {args})");

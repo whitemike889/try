@@ -7,7 +7,7 @@ namespace WorkspaceServer
 {
     public interface IWorkspaceServer
     {
-        Task<RunResult> Run(Workspace request, TimeBudget budget = null);
+        Task<RunResult> Run(Workspace request, Budget budget = null);
 
         Task<CompletionResult> GetCompletionList(CompletionRequest request);
 

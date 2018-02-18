@@ -21,9 +21,9 @@ namespace WorkspaceServer.Servers.Scripting
 {
     public class ScriptingWorkspaceServer : IWorkspaceServer
     {
-        public async Task<RunResult> Run(Workspace request, TimeBudget budget = null)
+        public async Task<RunResult> Run(WorkspaceServer.Models.Execution.Workspace request, Budget budget = null)
         {
-            budget = budget ?? TimeBudget.Unlimited();
+            budget = budget ?? new Budget();
 
             using (var operation = Log.OnEnterAndConfirmOnExit())
             using (var console = await ConsoleOutput.Capture())
@@ -91,9 +91,9 @@ namespace WorkspaceServer.Servers.Scripting
                 {
                     exception = timeoutException;
                 }
-                catch (TimeBudgetExceededException timeBudgetExceededException)
+                catch (BudgetExceededException budgetExceededException)
                 {
-                    exception = timeBudgetExceededException; 
+                    exception = budgetExceededException; 
                 }
                 catch (TaskCanceledException taskCanceledException)
                 {
