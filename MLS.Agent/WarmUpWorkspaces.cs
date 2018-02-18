@@ -2,17 +2,14 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Clockwise;
-using Pocket;
 using WorkspaceServer;
-using static Pocket.Logger<MLS.Agent.WarmUpWorkspaces>;
 
 namespace MLS.Agent
 {
     public class WarmUpWorkspaces : HostedService, IDisposable
     {
         private readonly WorkspaceServerRegistry workspaceServerRegistry;
-
-        private Thread thread;
+        private Budget budget;
 
         public WarmUpWorkspaces(WorkspaceServerRegistry workspaceServerRegistry)
         {
@@ -27,24 +24,14 @@ namespace MLS.Agent
                 return;
             }
 
-            var budget = new Budget(cancellationToken);
+            budget = new Budget(cancellationToken);
 
-            thread = new Thread(() =>
+            using (SchedulerContext.Establish(budget))
             {
-                try
-                {
-                    workspaceServerRegistry.StartAllServers(budget)
-                                           .Wait(cancellationToken);
-                }
-                catch (Exception ex)
-                {
-                    Log.Warning(ex);
-                }
-            });
-
-            thread.Start();
+                await workspaceServerRegistry.StartAllServers(budget);
+            }
         }
 
-        public void Dispose() => thread.Interrupt();
+        public void Dispose() => budget?.Cancel();
     }
 }
