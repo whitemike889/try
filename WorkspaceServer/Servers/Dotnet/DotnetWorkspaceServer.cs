@@ -20,7 +20,7 @@ namespace WorkspaceServer.Servers.Dotnet
         private readonly OmniSharpServer _omniSharpServer;
         private readonly AsyncLazy<bool> _initialized;
         private bool _disposed;
-        private Budget _initializationBudget = new Budget();
+        private readonly Budget _initializationBudget = new Budget();
 
         public DotnetWorkspaceServer(Workspace workspace)
         {
