@@ -77,13 +77,11 @@ namespace WorkspaceServer.Servers.Dotnet
                 var processedRequest = await processor.TransformAsync(request, budget);
                 Dictionary<string, (SourceFile Destination, TextSpan Region)> viewPorts = null;
                 IEnumerable<(SerializableDiagnostic Diagnostic, string ErrorMessage)> processedDiagnostics;
-
-               
-
                 CommandLineResult commandLineResult = null;
                 Exception exception = null;
                 string exceptionMessage = null;
                 OmnisharpEmitResponse emitResponse = null;
+
                 try
                 {
                     emitResponse = await Emit(processedRequest, budget);
@@ -144,7 +142,6 @@ namespace WorkspaceServer.Servers.Dotnet
                 return runResult;
 
             }
-
         }
 
         private static IEnumerable<(SerializableDiagnostic, string)> ReconstructDiagnosticLocations(IEnumerable<Diagnostic> bodyDiagnostics,

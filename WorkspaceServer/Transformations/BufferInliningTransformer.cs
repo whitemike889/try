@@ -33,6 +33,7 @@ namespace WorkspaceServer.Transformations
 
             return ExtractViewPorts(files);
         }
+
         private static async Task<(Workspace.File[] files, Workspace.Buffer[] buffers)> InlineBuffersAsync(Workspace source, Budget timeBudget)
         {
             var files = source.SourceFiles.ToDictionary(f => f.Name);
@@ -59,7 +60,7 @@ namespace WorkspaceServer.Transformations
                         buffers.Add(new Workspace.Buffer(sourceBuffer.Id, sourceBuffer.Content, offset));
                         files[viewPort.Destination.Name] = SourceFile.Create(newCode, viewPort.Destination.Name);
                     }
-                   
+
                 }
                 else if (sourceBuffer.Id == string.Empty)
                 {
@@ -85,8 +86,10 @@ namespace WorkspaceServer.Transformations
         {
             var viewPorts = new Dictionary<string, (SourceFile Destination, TextSpan Region)>();
 
-
-            if (files.Count == 0) return viewPorts;
+            if (files.Count == 0)
+            {
+                return viewPorts;
+            }
 
             foreach (var sourceFile in files)
             {
@@ -147,6 +150,7 @@ namespace WorkspaceServer.Transformations
             var sourceCodeText = code.ToString();
             var root = CSharpSyntaxTree.ParseText(sourceCodeText).GetRoot();
             var regions = new List<(string regionName, TextSpan span)>();
+
             foreach (var (startRegion, endRegion, label) in FindRegions(root))
             {
                 var start = startRegion.GetLocation().SourceSpan.End;
