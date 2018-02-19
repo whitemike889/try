@@ -13,10 +13,10 @@ namespace WorkspaceServer.Transformations
 {
     public class BufferInliningTransformer : IWorksapceTransformer
     {
-        private static readonly string processorName = typeof(BufferInliningTransformer).Name;
-        private static readonly string padding = Environment.NewLine;
-        public static int PaddingSize => padding.Length;
-        public async Task<Workspace> TransformAsync(Workspace source, TimeBudget timeBudget = null)
+        private static readonly string ProcessorName = typeof(BufferInliningTransformer).Name;
+        private static readonly string Padding = Environment.NewLine;
+        public static int PaddingSize => Padding.Length;
+        public async Task<Workspace> TransformAsync(Workspace source, Budget timeBudget = null)
         {
             if (source == null) throw new ArgumentNullException(nameof(source));
 
@@ -33,7 +33,7 @@ namespace WorkspaceServer.Transformations
 
             return ExtractViewPorts(files);
         }
-        private static async Task<(Workspace.File[] files, Workspace.Buffer[] buffers)> InlineBuffersAsync(Workspace source, TimeBudget timeBudget)
+        private static async Task<(Workspace.File[] files, Workspace.Buffer[] buffers)> InlineBuffersAsync(Workspace source, Budget timeBudget)
         {
             var files = source.SourceFiles.ToDictionary(f => f.Name);
             var buffers = new List<Workspace.Buffer>();
@@ -47,7 +47,7 @@ namespace WorkspaceServer.Transformations
                         var tree = CSharpSyntaxTree.ParseText(viewPort.Destination.Text.ToString());
                         var textChange = new TextChange(
                             viewPort.Region,
-                            $"{padding}{sourceBuffer.Content}{padding}");
+                            $"{Padding}{sourceBuffer.Content}{Padding}");
 
 
                         var txt = tree.WithChangedText(tree.GetText().WithChanges(textChange));
@@ -75,7 +75,7 @@ namespace WorkspaceServer.Transformations
 
             var processedFiles = files.Values.Select(sf => new Workspace.File(sf.Name, sf.Text.ToString())).ToArray();
             var processedBuffers = buffers.ToArray();
-            timeBudget?.RecordEntry(processorName);
+            timeBudget?.RecordEntry(ProcessorName);
             return (processedFiles, processedBuffers);
         }
 

@@ -6,6 +6,6 @@ namespace WorkspaceServer
 {
     public interface IWorksapceTransformer
     {
-        Task<Workspace> TransformAsync(Workspace source, TimeBudget timebudget = null);
+        Task<Workspace> TransformAsync(Workspace source, Budget timebudget = null);
     }
 }

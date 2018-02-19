@@ -25,11 +25,17 @@ namespace WorkspaceServer.Servers.Dotnet
         private readonly AsyncLazy<bool> _initialized;
         private bool _disposed;
         private readonly Budget _initializationBudget = new Budget();
+        private readonly TimeSpan _defaultTimeoutInSeconds;
 
-        public DotnetWorkspaceServer(Workspace workspace)
+        public DotnetWorkspaceServer(
+            Workspace workspace,
+            int? defaultTimeoutInSeconds = 30)
         {
             _workspace = workspace ?? throw new ArgumentNullException(nameof(workspace));
 
+            _defaultTimeoutInSeconds = TimeSpan.FromSeconds(defaultTimeoutInSeconds ?? 30);
+
+            // FIX: (DotnetWorkspaceServer) lower the verbosity for release builds
 #if DEBUG
             var logToPocketLogger = true;
 #else
@@ -64,13 +70,15 @@ namespace WorkspaceServer.Servers.Dotnet
 
         public async Task<RunResult> Run(WorkspaceServer.Models.Execution.Workspace request, Budget budget = null)
         {
-            using (var operation = Log.OnEnterAndConfirmOnExit()) { 
-            var processor = new BufferInliningTransformer();
-            var processedRequest = await processor.TransformAsync(request);
-            Dictionary<string, (SourceFile Destination, TextSpan Region)> viewPorts = null;
-            IEnumerable<(SerializableDiagnostic Diagnostic,string ErrorMessage)> processedDiagnostics;
-           
-                budget = budget ?? new TimeBudget(TimeSpan.FromSeconds(30));
+            budget = budget ?? new TimeBudget(_defaultTimeoutInSeconds);
+            using (var operation = Log.OnEnterAndConfirmOnExit())
+            {
+                var processor = new BufferInliningTransformer();
+                var processedRequest = await processor.TransformAsync(request, budget);
+                Dictionary<string, (SourceFile Destination, TextSpan Region)> viewPorts = null;
+                IEnumerable<(SerializableDiagnostic Diagnostic, string ErrorMessage)> processedDiagnostics;
+
+               
 
                 CommandLineResult commandLineResult = null;
                 Exception exception = null;
@@ -79,7 +87,7 @@ namespace WorkspaceServer.Servers.Dotnet
                 try
                 {
                     emitResponse = await Emit(processedRequest, budget);
-                    
+
                     if (emitResponse.Body.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error))
                     {
                         viewPorts = processor.ExtractViewPorts(processedRequest);
@@ -113,7 +121,7 @@ namespace WorkspaceServer.Servers.Dotnet
                 }
                 catch (BudgetExceededException budgetExceededException)
                 {
-                    exception = budgetExceededException; 
+                    exception = budgetExceededException;
                 }
                 catch (TaskCanceledException taskCanceledException)
                 {
@@ -121,16 +129,17 @@ namespace WorkspaceServer.Servers.Dotnet
                 }
 
                 if (emitResponse?.Body.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error) == true
-                    && viewPorts == null){
+                    && viewPorts == null)
+                {
                     viewPorts = processor.ExtractViewPorts(processedRequest);
                 }
-                    processedDiagnostics = ReconstructDiagnosticLocations(emitResponse?.Body.Diagnostics, viewPorts, BufferInliningTransformer.PaddingSize).ToArray();
-                var  runResult = new RunResult(
+                processedDiagnostics = ReconstructDiagnosticLocations(emitResponse?.Body.Diagnostics, viewPorts, BufferInliningTransformer.PaddingSize).ToArray();
+                var runResult = new RunResult(
                     succeeded: !exception.IsConsideredRunFailure(),
                     output: commandLineResult?.Output,
                     exception: exceptionMessage ?? exception.ToDisplayString(),
                     diagnostics: processedDiagnostics.Select(d => d.Diagnostic).ToArray());
-                
+
                 operation.Complete(runResult, budget);
                 return runResult;
 
