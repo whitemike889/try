@@ -28,6 +28,8 @@ namespace MLS.Agent
 
             using (SchedulerContext.Establish(budget))
             {
+                await Task.Yield();
+
                 await workspaceServerRegistry.StartAllServers(budget);
             }
         }
