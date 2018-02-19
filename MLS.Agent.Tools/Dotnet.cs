@@ -15,7 +15,7 @@ namespace MLS.Agent.Tools
                                 new DirectoryInfo(Directory.GetCurrentDirectory());
         }
 
-        public Task<CommandLineResult> New(string templateName, string args = null, TimeBudget budget = null)
+        public Task<CommandLineResult> New(string templateName, string args = null, Budget budget = null)
         {
             if (string.IsNullOrWhiteSpace(templateName))
             {

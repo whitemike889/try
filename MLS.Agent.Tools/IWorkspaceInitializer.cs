@@ -8,6 +8,6 @@ namespace MLS.Agent.Tools
     {
         Task Initialize(
             DirectoryInfo directory,
-            TimeBudget budget = null);
+            Budget budget = null);
     }
 }
