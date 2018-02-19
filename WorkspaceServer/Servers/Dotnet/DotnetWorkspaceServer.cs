@@ -21,11 +21,18 @@ namespace WorkspaceServer.Servers.Dotnet
         private readonly AsyncLazy<bool> _initialized;
         private bool _disposed;
         private readonly Budget _initializationBudget = new Budget();
+        private readonly TimeSpan _defaultTimeoutInSeconds;
 
-        public DotnetWorkspaceServer(Workspace workspace)
+        public DotnetWorkspaceServer(
+            Workspace workspace,
+            int? defaultTimeoutInSeconds = 30)
         {
             _workspace = workspace ?? throw new ArgumentNullException(nameof(workspace));
 
+            _defaultTimeoutInSeconds = TimeSpan.FromSeconds(
+                defaultTimeoutInSeconds ?? 30);
+
+            // FIX: (DotnetWorkspaceServer) lower the verbosity for release builds
 #if DEBUG
             var logToPocketLogger = true;
 #else
@@ -62,7 +69,7 @@ namespace WorkspaceServer.Servers.Dotnet
         {
             using (var operation = Log.OnEnterAndConfirmOnExit())
             {
-                budget = budget ?? new TimeBudget(TimeSpan.FromSeconds(30));
+                budget = budget ?? new TimeBudget(_defaultTimeoutInSeconds);
 
                 CommandLineResult commandLineResult = null;
                 Exception exception = null;
