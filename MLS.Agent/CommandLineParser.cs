@@ -13,10 +13,10 @@ namespace MLS.Agent
             bool isProduction, 
             string key, 
             string[] loadWorkspaces,
-            bool writeFileLog = false)
+            bool logToFile = false)
         {
             LoadWorkspaces = loadWorkspaces;
-            WriteFileLog = writeFileLog;
+            LogToFile = logToFile;
             WasSuccess = wasSuccess;
             IsProduction = isProduction;
             HelpRequested = helpRequested;
@@ -30,7 +30,7 @@ namespace MLS.Agent
         public string HelpText { get; }
         public string Key { get; }
         public string[] LoadWorkspaces { get; }
-        public bool WriteFileLog { get; }
+        public bool LogToFile { get; }
 
         public static CommandLineOptions Parse(string[] args)
         {
@@ -38,7 +38,8 @@ namespace MLS.Agent
                 Create.Option("-h|--help", "Shows this help text"),
                 Create.Option("--production", "Specifies if the agent is being run using production resources or not"),
                 Create.Option("-k|--key", "The encryption key", ExactlyOneArgument()),
-                Create.Option("--load-workspace", "Starts OmniSharp in the specified workspace folder.", OneOrMoreArguments()));
+                Create.Option("--load-workspace", "Starts OmniSharp in the specified workspace folder.", OneOrMoreArguments()),
+                Create.Option("--log-to-file", "Writes a log file", NoArguments()));
 
             var parseResult = parser.Parse(args);
             var wasSuccess = true;
@@ -66,6 +67,7 @@ namespace MLS.Agent
                               ? parseResult.Command().HelpView()
                               : errorText,
                 isProduction: parseResult.HasOption("production"),
+                logToFile: parseResult.HasOption("log-to-file"),
                 key: parseResult.HasOption("key")
                          ? parseResult["key"].Value<string>()
                          : null,
