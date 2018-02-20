@@ -62,15 +62,11 @@ namespace WorkspaceServer
         {
             using (var operation = Log.OnEnterAndConfirmOnExit())
             {
-                operation.Trace("Starting on thread {id}", Thread.CurrentThread.ManagedThreadId);
-
                 await Task.WhenAll(workspaceBuilders.Keys.Select(async name =>
                 {
                     var workspaceServer = await GetWorkspaceServer(name);
                     if (workspaceServer is DotnetWorkspaceServer dotnetWorkspaceServer)
                     {
-                        operation.Trace("Initializing workspace on thread {id}", Thread.CurrentThread.ManagedThreadId);
-
                         await dotnetWorkspaceServer.EnsureInitializedAndNotDisposed(budget);
                     }
                 }));

@@ -83,10 +83,6 @@ namespace MLS.Agent
                 var budget = new Budget();
 
                 _disposables.Add(() => budget.Cancel());
-                _disposables.Add(LogEvents.Enrich(log =>
-                {
-                    log(("threadId", Thread.CurrentThread.ManagedThreadId));
-                }));
 
                 operation.Succeed();
             }

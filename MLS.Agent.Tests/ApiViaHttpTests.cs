@@ -25,11 +25,6 @@ namespace MLS.Agent.Tests
         public ApiViaHttpTests(ITestOutputHelper output)
         {
             disposables.Add(output.SubscribeToPocketLogger());
-
-            disposables.Add(LogEvents.Enrich(log =>
-            {
-                log(("threadId", Thread.CurrentThread.ManagedThreadId ));
-            }));
         }
 
         public void Dispose() => disposables.Dispose();

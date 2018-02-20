@@ -169,9 +169,8 @@ namespace MLS.Agent.Tools
                 operationName: operationName,
                 category: Log.Category,
                 message: "Invoking {command} {args}",
-                args: new[] { command, args, ("threadId", Thread.CurrentThread.ManagedThreadId ) },
-                logOnStart: true,
-                exitArgs: () => new (string, object)[] { ("threadId", Thread.CurrentThread.ManagedThreadId ) });
+                args: new[] { command, args },
+                logOnStart: true);
         }
     }
 }

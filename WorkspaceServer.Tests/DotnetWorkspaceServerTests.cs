@@ -15,10 +15,6 @@ namespace WorkspaceServer.Tests
     {
         public DotnetWorkspaceServerTests(ITestOutputHelper output) : base(output)
         {
-            RegisterForDisposal(LogEvents.Enrich(log =>
-            {
-                log(("threadId", Thread.CurrentThread.ManagedThreadId));
-            }));
         }
 
         protected override Workspace CreateRunRequestContaining(string text)
