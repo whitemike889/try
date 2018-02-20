@@ -46,7 +46,7 @@ namespace MLS.Agent
                         a(("websiteSiteName", websiteSiteName));
                     }));
             }
-            
+
             if (options.WriteFileLog)
             {
                 var log = new SerilogLoggerConfiguration()
@@ -60,11 +60,11 @@ namespace MLS.Agent
 
                 disposables.Add(subscription);
                 disposables.Add(log);
-
-                disposables.Add(
-                    LogEvents.Subscribe(e => Console.WriteLine(e.ToLogString()),
-                                        assembliesEmittingPocketLoggerLogs));
             }
+
+            disposables.Add(
+                LogEvents.Subscribe(e => Console.WriteLine(e.ToLogString()),
+                                    assembliesEmittingPocketLoggerLogs));
 
             TaskScheduler.UnobservedTaskException += (sender, args) =>
             {

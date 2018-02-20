@@ -15,7 +15,7 @@ namespace MLS.Agent.Tools
                                 new DirectoryInfo(Directory.GetCurrentDirectory());
         }
 
-        public Task<CommandLineResult> New(string templateName, string args = null, TimeBudget budget = null)
+        public Task<CommandLineResult> New(string templateName, string args = null, Budget budget = null)
         {
             if (string.IsNullOrWhiteSpace(templateName))
             {
@@ -25,10 +25,10 @@ namespace MLS.Agent.Tools
             return Execute($"new {templateName} {args}", budget);
         }
 
-        public Task<CommandLineResult> Build(string args = null, TimeBudget budget = null) =>
+        public Task<CommandLineResult> Build(string args = null, Budget budget = null) =>
             Execute("build".AppendArgs(args), budget);
 
-        public Task<CommandLineResult> Execute(string args, TimeBudget budget = null) =>
+        public Task<CommandLineResult> Execute(string args, Budget budget = null) =>
             CommandLine.Execute(
                 DotnetMuxer.Path,
                 args,

@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Threading;
-using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using Pocket;
 using Recipes;
-using WorkspaceServer;
 using static Pocket.Logger<MLS.Agent.Startup>;
 
 namespace MLS.Agent
@@ -60,6 +59,8 @@ namespace MLS.Agent
 
                 services.AddSingleton(_ => DefaultWorkspaces.CreateWorkspaceServerRegistry());
 
+                services.AddSingleton<IHostedService, WarmUpWorkspaces>();
+
                 operation.Succeed();
             }
         }
@@ -79,20 +80,18 @@ namespace MLS.Agent
                    .UseStaticFiles()
                    .UseMvc();
 
-                var budget = TimeBudget.Unlimited();
+                var budget = new Budget();
 
                 _disposables.Add(() => budget.Cancel());
-
-                var workspaceServerRegistry = serviceProvider.GetRequiredService<WorkspaceServerRegistry>();
-
-                Task.Factory
-                    .StartNew(() => workspaceServerRegistry.StartAllServers(budget),
-                              CancellationToken.None,
-                              TaskCreationOptions.LongRunning,
-                              TaskScheduler.Default);
+                _disposables.Add(LogEvents.Enrich(log =>
+                {
+                    log(("threadId", Thread.CurrentThread.ManagedThreadId));
+                }));
 
                 operation.Succeed();
             }
         }
     }
 }
+
+

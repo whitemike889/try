@@ -35,7 +35,7 @@ namespace WorkspaceServer.Servers.Dotnet
         public static async Task<OmniSharpResponseMessage> SendCommand(
             this OmniSharpServer omniSharp,
             OmniSharpCommandMessage commandMessage,
-            TimeBudget budget = null)
+            Budget budget = null)
         {
             if (omniSharp == null)
             {
@@ -56,14 +56,15 @@ namespace WorkspaceServer.Servers.Dotnet
                                           .OfType<OmniSharpResponseMessage>()
                                           .Where(m => m.Request_seq == commandMessage.Seq)
                                           .FirstAsync()
-                                          .ToTask(budget);
+                                          .ToTask()
+                                          .CancelIfExceeds(budget ?? new Budget());
 
             return received;
         }
 
         public static async Task<OmniSharpResponseMessage<TResponse>> SendCommand<TCommand, TResponse>(
             this OmniSharpServer omniSharp,
-            TimeBudget budget = null,
+            Budget budget = null,
             int? seq = null)
             where TCommand : class, IOmniSharpCommandArguments, new() =>
             await omniSharp.SendCommand<TCommand, TResponse>(new TCommand(), budget, seq);
@@ -71,7 +72,7 @@ namespace WorkspaceServer.Servers.Dotnet
         public static async Task<OmniSharpResponseMessage<TResponse>> SendCommand<TCommand, TResponse>(
             this OmniSharpServer omniSharp,
             TCommand command,
-            TimeBudget budget = null,
+            Budget budget = null,
             int? seq = null) where TCommand : class, IOmniSharpCommandArguments
         {
             seq = seq ?? omniSharp.NextSeq();
@@ -107,12 +108,12 @@ namespace WorkspaceServer.Servers.Dotnet
             this OmniSharpServer server,
             FileInfo file = null,
             string buffer = null,
-            TimeBudget budget = null) =>
+            Budget budget = null) =>
             server.SendCommand<CodeCheck, CodeCheckResponse>(new CodeCheck(file, buffer), budget);
 
         public static Task<OmniSharpResponseMessage<EmitResponse>> Emit(
             this OmniSharpServer server,
-            TimeBudget budget = null) =>
+            Budget budget = null) =>
             server.SendCommand<Emit, EmitResponse>(new Emit(), budget);
 
         public static Task<OmniSharpResponseMessage<WorkspaceInformationResponse>> GetWorkspaceInformation(

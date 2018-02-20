@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Clockwise;
 using MLS.Agent.Tools;
@@ -57,15 +58,19 @@ namespace WorkspaceServer
             }
         }
 
-        public async Task StartAllServers(TimeBudget budget = null)
+        public async Task StartAllServers(Budget budget = null)
         {
             using (var operation = Log.OnEnterAndConfirmOnExit())
             {
+                operation.Trace("Starting on thread {id}", Thread.CurrentThread.ManagedThreadId);
+
                 await Task.WhenAll(workspaceBuilders.Keys.Select(async name =>
                 {
                     var workspaceServer = await GetWorkspaceServer(name);
                     if (workspaceServer is DotnetWorkspaceServer dotnetWorkspaceServer)
                     {
+                        operation.Trace("Initializing workspace on thread {id}", Thread.CurrentThread.ManagedThreadId);
+
                         await dotnetWorkspaceServer.EnsureInitializedAndNotDisposed(budget);
                     }
                 }));

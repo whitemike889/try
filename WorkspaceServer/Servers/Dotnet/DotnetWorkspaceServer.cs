@@ -20,16 +20,23 @@ namespace WorkspaceServer.Servers.Dotnet
         private readonly OmniSharpServer _omniSharpServer;
         private readonly AsyncLazy<bool> _initialized;
         private bool _disposed;
+        private readonly Budget _initializationBudget = new Budget();
+        private readonly TimeSpan _defaultTimeoutInSeconds;
 
-        public DotnetWorkspaceServer(Workspace workspace)
+        public DotnetWorkspaceServer(
+            Workspace workspace,
+            int? defaultTimeoutInSeconds = 30)
         {
             _workspace = workspace ?? throw new ArgumentNullException(nameof(workspace));
 
+            _defaultTimeoutInSeconds = TimeSpan.FromSeconds(
+                defaultTimeoutInSeconds ?? 30);
 
+            // FIX: (DotnetWorkspaceServer) lower the verbosity for release builds
 #if DEBUG
             var logToPocketLogger = true;
 #else
-            var logToPocketLogger = false;
+            var logToPocketLogger = true;
 #endif
 
             _omniSharpServer = new OmniSharpServer(
@@ -39,13 +46,13 @@ namespace WorkspaceServer.Servers.Dotnet
 
             _initialized = new AsyncLazy<bool>(async () =>
             {
-                await _workspace.EnsureBuilt();
-                await _omniSharpServer.WorkspaceReady();
+                await _workspace.EnsureBuilt(_initializationBudget);
+                await _omniSharpServer.WorkspaceReady(_initializationBudget);
                 return true;
             });
         }
 
-        public async Task EnsureInitializedAndNotDisposed(TimeBudget budget = null)
+        public async Task EnsureInitializedAndNotDisposed(Budget budget = null)
         {
             budget?.RecordEntryAndThrowIfBudgetExceeded();
 
@@ -55,14 +62,14 @@ namespace WorkspaceServer.Servers.Dotnet
             }
 
             await _initialized.ValueAsync()
-                              .CancelIfExceeds(budget ?? TimeBudget.Unlimited());
+                              .CancelIfExceeds(budget ?? new Budget());
         }
 
-        public async Task<RunResult> Run(WorkspaceRunRequest request, TimeBudget budget = null)
+        public async Task<RunResult> Run(WorkspaceRunRequest request, Budget budget = null)
         {
             using (var operation = Log.OnEnterAndConfirmOnExit())
             {
-                budget = budget ?? new TimeBudget(TimeSpan.FromSeconds(30));
+                budget = budget ?? new TimeBudget(_defaultTimeoutInSeconds);
 
                 CommandLineResult commandLineResult = null;
                 Exception exception = null;
@@ -102,9 +109,9 @@ namespace WorkspaceServer.Servers.Dotnet
                 {
                     exception = timeoutException;
                 }
-                catch (TimeBudgetExceededException timeBudgetExceededException)
+                catch (BudgetExceededException budgetExceededException)
                 {
-                    exception = timeBudgetExceededException; 
+                    exception = budgetExceededException; 
                 }
                 catch (TaskCanceledException taskCanceledException)
                 {
@@ -123,7 +130,7 @@ namespace WorkspaceServer.Servers.Dotnet
             }
         }
 
-        private async Task<OmnisharpEmitResponse> Emit(WorkspaceRunRequest request, TimeBudget budget)
+        private async Task<OmnisharpEmitResponse> Emit(WorkspaceRunRequest request, Budget budget)
         {
             await EnsureInitializedAndNotDisposed(budget);
 
@@ -155,7 +162,7 @@ namespace WorkspaceServer.Servers.Dotnet
 
         public async Task<DiagnosticResult> GetDiagnostics(WorkspaceRunRequest request)
         {
-            var emitResult = await Emit(request, TimeBudget.Unlimited());
+            var emitResult = await Emit(request, new Budget());
             var diagnostics = emitResult.Body.Diagnostics.Select(d => new SerializableDiagnostic(d)).ToArray();
             return new DiagnosticResult(diagnostics);
         }
@@ -165,6 +172,7 @@ namespace WorkspaceServer.Servers.Dotnet
             if (!_disposed)
             {
                 _disposed = true;
+                _initializationBudget.Cancel();
                 _omniSharpServer?.Dispose();
             }
         }

@@ -1,8 +1,9 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Clockwise;
 using Pocket;
@@ -17,7 +18,7 @@ namespace MLS.Agent.Tools
             FileInfo exePath,
             string args,
             DirectoryInfo workingDir = null,
-            TimeBudget budget = null) =>
+            Budget budget = null) =>
             Execute(exePath.FullName,
                     args,
                     workingDir,
@@ -27,15 +28,13 @@ namespace MLS.Agent.Tools
             string command,
             string args,
             DirectoryInfo workingDir = null,
-            TimeBudget budget = null)
+            Budget budget = null)
         {
             args = args ?? "";
-            budget = budget ?? TimeBudget.Unlimited();
+            budget = budget ?? new Budget();
 
             var stdOut = new StringBuilder();
             var stdErr = new StringBuilder();
-
-            await Task.Yield();
 
             using (var operation = CheckBudgetAndStartConfirmationLogger(command, args, budget))
             using (var process = StartProcess(
@@ -53,24 +52,43 @@ namespace MLS.Agent.Tools
                     operation.Error("{data}", args: data);
                 }))
             {
-                var timeToWaitInMs = budget.TimeToWaitInMs();
+                var exitCode =
+                    await Task.Run(() =>
+                              {
+                                  using (operation.OnEnterAndExit("Execute:happy"))
+                                  {
+                                      process.WaitForExit();
 
-                operation.Trace("Waiting up to {timeToWaitInMs}ms for process to exit (remaining budget is {remainingBudgetMs}ms)",
-                                timeToWaitInMs,
-                                budget.RemainingDuration.Milliseconds);
+                                      operation.Succeed(
+                                          "{command} {args} exited with {code}",
+                                          command,
+                                          args,
+                                          process.ExitCode);
 
-                var exited = process.WaitForExit(timeToWaitInMs);
+                                      return process.ExitCode;
+                                  }
+                              })
+                              .CancelIfExceeds(
+                                  budget,
+                                  ifCancelled: () =>
+                                  {
+                                      using (operation.OnEnterAndExit($"Execute:sad"))
+                                      {
+                                          var ex = new BudgetExceededException(budget);
 
-                var exitCode = exited
-                                   ? process.ExitCode
-                                   : 124;
+                                          Task.Run(() =>
+                                          {
+                                              if (!process.HasExited)
+                                              {
+                                                  process.Kill();
+                                              }
+                                          }).DontAwait();
 
-                operation.Succeed(
-                    "{command} {args} exited with {code}",
-                    command,
-                    args,
-                    exitCode, 
-                    budget);
+                                          operation.Fail(ex);
+
+                                          return 124; // like the Linux timeout command 
+                                      }
+                                  });
 
                 return new CommandLineResult(
                     exitCode: exitCode,
@@ -79,11 +97,6 @@ namespace MLS.Agent.Tools
             }
         }
 
-        private static int TimeToWaitInMs(this TimeBudget budget) =>
-            budget.IsUnlimited
-                ? -1
-                : budget.RemainingDuration.Milliseconds;
-
         public static Process StartProcess(
             string command,
             string args,
@@ -91,49 +104,52 @@ namespace MLS.Agent.Tools
             Action<string> output = null,
             Action<string> error = null)
         {
-            args = args ?? "";
-
-            var process = new Process
+            using (Log.OnEnterAndExit())
             {
-                StartInfo =
+                args = args ?? "";
+
+                var process = new Process
                 {
-                    Arguments = args,
-                    FileName = command,
-                    RedirectStandardError = true,
-                    RedirectStandardOutput = true,
-                    RedirectStandardInput = true,
-                    WorkingDirectory = workingDir?.FullName
+                    StartInfo =
+                    {
+                        Arguments = args,
+                        FileName = command,
+                        RedirectStandardError = true,
+                        RedirectStandardOutput = true,
+                        RedirectStandardInput = true,
+                        WorkingDirectory = workingDir?.FullName
+                    }
+                };
+
+                if (output != null)
+                {
+                    process.OutputDataReceived += (sender, eventArgs) =>
+                    {
+                        if (eventArgs.Data != null)
+                        {
+                            output(eventArgs.Data);
+                        }
+                    };
                 }
-            };
 
-            if (output != null)
-            {
-                process.OutputDataReceived += (sender, eventArgs) =>
+                if (error != null)
                 {
-                    if (eventArgs.Data != null)
+                    process.ErrorDataReceived += (sender, eventArgs) =>
                     {
-                        output(eventArgs.Data);
-                    }
-                };
+                        if (eventArgs.Data != null)
+                        {
+                            error(eventArgs.Data);
+                        }
+                    };
+                }
+
+                process.Start();
+
+                process.BeginOutputReadLine();
+                process.BeginErrorReadLine();
+
+                return process;
             }
-
-            if (error != null)
-            {
-                process.ErrorDataReceived += (sender, eventArgs) =>
-                {
-                    if (eventArgs.Data != null)
-                    {
-                        error(eventArgs.Data);
-                    }
-                };
-            }
-
-            process.Start();
-
-            process.BeginOutputReadLine();
-            process.BeginErrorReadLine();
-
-            return process;
         }
 
         internal static string AppendArgs(this string initial, string append = null) =>
@@ -144,7 +160,7 @@ namespace MLS.Agent.Tools
         private static ConfirmationLogger CheckBudgetAndStartConfirmationLogger(
             object command,
             string args,
-            TimeBudget budget,
+            Budget budget,
             [CallerMemberName] string operationName = null)
         {
             budget.RecordEntryAndThrowIfBudgetExceeded($"Execute ({command} {args})");
@@ -153,9 +169,9 @@ namespace MLS.Agent.Tools
                 operationName: operationName,
                 category: Log.Category,
                 message: "Invoking {command} {args}",
-                args: new[] { command, args },
+                args: new[] { command, args, ("threadId", Thread.CurrentThread.ManagedThreadId ) },
                 logOnStart: true,
-                exitArgs: () => new[] { ( "budget", (object) budget ) });
+                exitArgs: () => new (string, object)[] { ("threadId", Thread.CurrentThread.ManagedThreadId ) });
         }
     }
 }

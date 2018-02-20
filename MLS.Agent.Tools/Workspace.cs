@@ -71,9 +71,9 @@ namespace MLS.Agent.Tools
 
         public static DirectoryInfo DefaultWorkspacesDirectory { get; }
 
-        public async Task EnsureCreated(TimeBudget budget = null) =>
+        public async Task EnsureCreated(Budget budget = null) =>
             await _created.ValueAsync()
-                          .CancelIfExceeds(budget ?? TimeBudget.Unlimited());
+                          .CancelIfExceeds(budget ?? new Budget());
 
         private async Task<bool> VerifyOrCreate()
         {
@@ -105,11 +105,11 @@ namespace MLS.Agent.Tools
             return true;
         }
 
-        public async Task EnsureBuilt(TimeBudget budget = null)
+        public async Task EnsureBuilt(Budget budget = null)
         {
             await EnsureCreated(budget);
             await _built.ValueAsync()
-                        .CancelIfExceeds(budget ?? TimeBudget.Unlimited());
+                        .CancelIfExceeds(budget ?? new Budget());
         }
 
         private async Task<bool> VerifyOrBuild()
@@ -141,25 +141,16 @@ namespace MLS.Agent.Tools
             }
 
             folderName = folderName ?? fromWorkspace.Name;
+            var parentDirectory = fromWorkspace
+                                      .Directory
+                                      .Parent;
 
-            DirectoryInfo destination;
-            var i = 0;
-
-            do
-            {
-                destination = new DirectoryInfo(
-                    Path.Combine(
-                        fromWorkspace
-                            .Directory
-                            .Parent
-                            .FullName,
-                        $"{folderName}.{++i}"));
-            } while (destination.Exists);
+            var destination = CreateDirectory(folderName, parentDirectory);
 
             fromWorkspace.Directory.CopyTo(destination);
 
             var copy = new Workspace(destination,
-                                     folderName ?? fromWorkspace.Name,
+                                     folderName,
                                      fromWorkspace._initializer);
 
             copy.IsCreated = fromWorkspace.IsCreated;
@@ -167,6 +158,31 @@ namespace MLS.Agent.Tools
             copy.IsDirectoryCreated = true;
 
             return copy;
+        }
+
+        private static readonly object _lockObj = new object();
+
+        public static DirectoryInfo CreateDirectory(
+            string folderNameStartsWith,
+            DirectoryInfo parentDirectory = null)
+        {
+            if (string.IsNullOrWhiteSpace(folderNameStartsWith))
+            {
+                throw new ArgumentException("Value cannot be null or whitespace.", nameof(folderNameStartsWith));
+            }
+
+            parentDirectory = parentDirectory ?? DefaultWorkspacesDirectory;
+
+            DirectoryInfo created;
+
+            lock (_lockObj)
+            {
+                var existingFolders = parentDirectory.GetDirectories($"{folderNameStartsWith}.*");
+
+                created = parentDirectory.CreateSubdirectory($"{folderNameStartsWith}.{existingFolders.Length + 1}");
+            }
+
+            return created;
         }
     }
 }

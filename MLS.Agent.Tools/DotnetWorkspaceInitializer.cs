@@ -7,13 +7,16 @@ namespace MLS.Agent.Tools
 {
     public class DotnetWorkspaceInitializer : IWorkspaceInitializer
     {
-        private readonly Action<Dotnet> afterCreate;
+        private readonly Func<Budget, Task> afterCreate;
 
         public string Template { get; }
 
         public string Name { get; }
 
-        public DotnetWorkspaceInitializer(string template, string name, Action<Dotnet> afterCreate = null)
+        public DotnetWorkspaceInitializer(
+            string template, 
+            string name,
+            Func<Budget, Task> afterCreate = null)
         {
             if (string.IsNullOrWhiteSpace(template))
             {
@@ -34,8 +37,10 @@ namespace MLS.Agent.Tools
 
         public async Task Initialize(
             DirectoryInfo directory,
-            TimeBudget budget = null)
+            Budget budget = null)
         {
+            budget = budget ?? new Budget();
+
             var dotnet = new Dotnet(directory);
 
             var result = await dotnet
@@ -44,7 +49,10 @@ namespace MLS.Agent.Tools
                                   budget: budget);
             result.ThrowOnFailure();
 
-            afterCreate?.Invoke(dotnet);
+            if (afterCreate != null)
+            {
+                await afterCreate(budget);
+            }
         }
     }
 }

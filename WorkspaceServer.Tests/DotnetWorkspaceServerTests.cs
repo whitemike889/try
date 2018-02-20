@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
+using Pocket;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Servers.Dotnet;
 using Xunit.Abstractions;
@@ -11,6 +13,10 @@ namespace WorkspaceServer.Tests
     {
         public DotnetWorkspaceServerTests(ITestOutputHelper output) : base(output)
         {
+            RegisterForDisposal(LogEvents.Enrich(log =>
+            {
+                log(("threadId", Thread.CurrentThread.ManagedThreadId ));
+            }));
         }
 
         protected override WorkspaceRunRequest CreateRunRequestContaining(string text)
@@ -27,7 +33,7 @@ namespace WorkspaceServer.Tests
         {
             var project = await Create.TestWorkspace(testName);
 
-            var workspaceServer = new DotnetWorkspaceServer(project);
+            var workspaceServer = new DotnetWorkspaceServer(project, 45);
 
             RegisterForDisposal(workspaceServer);
 

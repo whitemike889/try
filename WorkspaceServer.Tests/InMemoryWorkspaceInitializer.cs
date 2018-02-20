@@ -9,7 +9,7 @@ namespace WorkspaceServer.Tests
     {
         public int InitializeCount { get; private set; }
 
-        public Task Initialize(DirectoryInfo directory, TimeBudget budget = null)
+        public Task Initialize(DirectoryInfo directory, Budget budget = null)
         {
             InitializeCount++;
             return Task.CompletedTask;

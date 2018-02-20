@@ -12,7 +12,7 @@ COPY ${source:-obj/Docker/publish} .
 
 RUN chown --recursive app_user:app_group /app
 RUN chown --recursive app_user:app_group /dependencies
-RUN chown --recursive app_user:app_group /projects
+RUN chown --recursive app_user:app_group /workspaces
 
 USER app_user
 

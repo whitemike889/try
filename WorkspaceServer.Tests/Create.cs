@@ -10,15 +10,15 @@ namespace WorkspaceServer.Tests
 {
     public static class Create
     {
-        public static DirectoryInfo TestFolder([CallerMemberName] string testName = null)
+        public static async Task<Workspace> TestWorkspace([CallerMemberName] string testName = null)
         {
-            var existingFolders = Workspace.DefaultWorkspacesDirectory.GetDirectories($"{testName}.*");
+            var workspace = new Workspace(Workspace.CreateDirectory(testName), "test");
 
-            return Workspace.DefaultWorkspacesDirectory.CreateSubdirectory($"{testName}.{existingFolders.Length + 1}");
+            await workspace.EnsureCreated();
+            await workspace.EnsureBuilt();
+
+            return workspace;
         }
-
-        public static async Task<Workspace> TestWorkspace([CallerMemberName] string testName = null) => 
-            Workspace.Copy(await Default.TemplateWorkspace, testName);
 
         public static WorkspaceRunRequest SimpleRunRequest(
             string consoleOutput = "Hello!",
