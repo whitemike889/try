@@ -35,11 +35,10 @@ namespace WorkspaceServer.Servers.Dotnet
 
             _defaultTimeoutInSeconds = TimeSpan.FromSeconds(defaultTimeoutInSeconds ?? 30);
 
-            // FIX: (DotnetWorkspaceServer) lower the verbosity for release builds
 #if DEBUG
             var logToPocketLogger = true;
 #else
-            var logToPocketLogger = true;
+            var logToPocketLogger = false;
 #endif
 
             _omniSharpServer = new OmniSharpServer(
