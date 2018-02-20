@@ -1,12 +1,9 @@
 using System;
-using System.Diagnostics;
 using FluentAssertions;
 using System.Net;
 using System.Net.Http;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
-using Clockwise;
 using Newtonsoft.Json;
 using Pocket;
 using Recipes;

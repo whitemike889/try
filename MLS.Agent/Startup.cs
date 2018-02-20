@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading;
 using Clockwise;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
