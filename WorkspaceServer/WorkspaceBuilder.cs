@@ -29,7 +29,8 @@ namespace WorkspaceServer
         public void CreateUsingDotnet(string template) =>
             WorkspaceInitializer = new DotnetWorkspaceInitializer(
                 template,
-                WorkspaceName);
+                WorkspaceName,
+                AfterCreate);
 
         public void AddPackageReference(string packageId, string version = null)
         {
@@ -59,16 +60,21 @@ namespace WorkspaceServer
         {
             budget = budget ?? new Budget();
 
-            _workspace = new Workspace(WorkspaceName);
+            _workspace = new Workspace(
+                WorkspaceName, 
+                WorkspaceInitializer);
 
             await _workspace.EnsureCreated(budget);
 
+            await _workspace.EnsureBuilt(budget);
+        }
+
+        private async Task AfterCreate(Budget budget)
+        {
             foreach (var action in _afterCreateActions)
             {
                 await action(_workspace, budget);
             }
-
-            await _workspace.EnsureBuilt(budget);
         }
     }
 }

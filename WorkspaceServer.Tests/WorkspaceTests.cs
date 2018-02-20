@@ -36,6 +36,26 @@ namespace WorkspaceServer.Tests
         }
 
         [Fact]
+        public async Task Workspace_after_create_actions_are_not_run_more_than_once()
+        {
+            var afterCreateCallCount = 0;
+
+            var initializer = new DotnetWorkspaceInitializer(
+                "console",
+                "test",
+                async _ => afterCreateCallCount++);
+
+            var workspace = new Workspace(
+                Workspace.CreateDirectory(nameof(Workspace_after_create_actions_are_not_run_more_than_once)),
+                initializer: initializer);
+
+            await workspace.EnsureCreated();
+            await workspace.EnsureCreated();
+
+            afterCreateCallCount.Should().Be(1);
+        }
+
+        [Fact]
         public async Task A_workspace_copy_is_not_reinitialized_if_the_source_was_already_built()
         {
             var initializer = new InMemoryWorkspaceInitializer();
