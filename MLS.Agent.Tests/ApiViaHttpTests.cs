@@ -30,11 +30,6 @@ namespace MLS.Agent.Tests
             {
                 log(("threadId", Thread.CurrentThread.ManagedThreadId ));
             }));
-
-            if (Debugger.IsAttached)
-            {
-                disposables.Add(VirtualClock.Start());
-            }
         }
 
         public void Dispose() => disposables.Dispose();
