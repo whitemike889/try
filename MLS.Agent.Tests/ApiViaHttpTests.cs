@@ -226,7 +226,20 @@ namespace MLS.Agent.Tests
             result.ShouldSucceedWithOutput(output);
         }
 
-        private static async Task<HttpResponseMessage> CallRun(string content)
+        [Fact]
+        public async Task When_Run_times_out_then_the_response_code_is_504()
+        {
+            var requestJson =
+                @"{ ""Buffers"":[{""Id"":"""",""Content"":""public class Program { public static void Main()\n  {\n  System.Threading.Thread.Sleep(System.TimeSpan.FromSeconds(30));  }  }""}],""Usings"":[],""WorkspaceType"":""console""}";
+
+            var response = await CallRun(requestJson, 100);
+
+            response.StatusCode.Should().Be(HttpStatusCode.GatewayTimeout);
+        }
+
+        private static async Task<HttpResponseMessage> CallRun(
+            string content,
+            int? runTimeoutMs = null)
         {
             HttpResponseMessage response;
             using (var agent = new AgentService())
@@ -240,6 +253,11 @@ namespace MLS.Agent.Tests
                         Encoding.UTF8,
                         "application/json")
                 };
+
+                if (runTimeoutMs != null)
+                {
+                    request.Headers.Add("Timeout", runTimeoutMs.ToString());
+                }
 
                 response = await agent.SendAsync(request);
             }

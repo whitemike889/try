@@ -36,7 +36,9 @@ namespace WorkspaceServer.Servers.Scripting
                 var options = CreateOptions(request);
 
                 ScriptState<object> state = null;
-                Exception exception = null;
+                Exception userException = null;
+                Exception workspaceServerException = null;
+
                 try
                 {
                     await Task.Run(async () =>
@@ -69,7 +71,7 @@ namespace WorkspaceServer.Servers.Scripting
                             {
                                 if (lineNumber == sourceLines.Count)
                                 {
-                                    exception = ex;
+                                    userException = ex;
 
                                     Console.WriteLine(
                                         string.Join(Environment.NewLine,
@@ -81,7 +83,7 @@ namespace WorkspaceServer.Servers.Scripting
                             }
                             catch (Exception ex)
                             {
-                                exception = ex;
+                                userException = ex;
                                 break;
                             }
                         }
@@ -89,24 +91,25 @@ namespace WorkspaceServer.Servers.Scripting
                 }
                 catch (TimeoutException timeoutException)
                 {
-                    exception = timeoutException;
+                    workspaceServerException = timeoutException;
                 }
                 catch (BudgetExceededException budgetExceededException)
                 {
-                    exception = budgetExceededException; 
+                    workspaceServerException = budgetExceededException; 
                 }
                 catch (TaskCanceledException taskCanceledException)
                 {
-                    exception = taskCanceledException;
+                    workspaceServerException = taskCanceledException;
                 }
 
                 var result = new RunResult(
-                    succeeded: !exception.IsConsideredRunFailure(),
+                    succeeded: !userException.IsConsideredRunFailure(),
                     output: console.StandardOutput
                                    .Replace("\r\n", "\n")
                                    .Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries),
                     returnValue: state?.ReturnValue,
-                    exception: (exception ?? state?.Exception).ToDisplayString(),
+                    exception: (userException ?? state?.Exception).ToDisplayString(),
+                    workspaceServerException: workspaceServerException,
                     diagnostics: GetDiagnostics(request.SourceFiles.Single(), options));
 
                 operation.Complete(result, budget);

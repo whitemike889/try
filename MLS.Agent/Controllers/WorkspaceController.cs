@@ -26,19 +26,28 @@ namespace MLS.Agent.Controllers
         [Route("/workspace/run")]
         [Route("/workspace/{DEPRECATED}/compile")] // FIX: (Run) remove this endpoint when Orchestrator no longer calls it
         public async Task<IActionResult> Run(
-            [FromBody] Workspace request)
+            [FromBody] Workspace request,
+            [FromHeader(Name = "Referer")] string referer,
+            [FromHeader(Name = "Timeout")] string timeoutInMilliseconds = "15000")
         {
             using (var operation = Log.OnEnterAndConfirmOnExit())
             {
-                RunResult result = null;
+                if (!int.TryParse(timeoutInMilliseconds, out var timeoutMs))
+                {
+                    return BadRequest();
+                }
 
+                RunResult result = null;
                 var workspaceType = request.WorkspaceType;
+                var runTimeout = TimeSpan.FromMilliseconds(timeoutMs);
 
                 if (string.Equals(workspaceType, "script", StringComparison.OrdinalIgnoreCase))
                 {
                     var server = new ScriptingWorkspaceServer();
 
-                    result = await server.Run(request, new TimeBudget(TimeSpan.FromSeconds(10)));
+                    result = await server.Run(
+                                 request, 
+                                 new TimeBudget(runTimeout));
                 }
                 else
                 {
@@ -52,12 +61,18 @@ namespace MLS.Agent.Controllers
 
                     result = await server.Run(
                                  request,
-                                 new TimeBudget(TimeSpan.FromSeconds(10)));
+                                 new TimeBudget(runTimeout));
                 }
 
-                operation.Succeed();
-
-                return Ok(result);
+                if (result.WorkspaceServerException is BudgetExceededException)
+                {
+                    return StatusCode(504);
+                }
+                else
+                {
+                    operation.Succeed();
+                    return Ok(result);
+                }
             }
         }
 
