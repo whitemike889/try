@@ -82,7 +82,7 @@ namespace WorkspaceServer.Tests
             var result = await server.GetDiagnostics(request);
 
             result.Diagnostics.Should().NotContain(d => d.Id == "CS7022"); // Not "ignoring main in script"
-            result.Diagnostics.Should().Contain(d => d.Id == "CS0103" && d.Start == 31); // banana is not defined
+            result.Diagnostics.Should().Contain(d => d.Id == "CS0103" && d.Start == 29 + Environment.NewLine.Length); // banana is not defined
         }
 
         [Fact]
