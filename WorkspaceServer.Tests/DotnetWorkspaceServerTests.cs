@@ -17,7 +17,7 @@ namespace WorkspaceServer.Tests
         {
             RegisterForDisposal(LogEvents.Enrich(log =>
             {
-                log(("threadId", Thread.CurrentThread.ManagedThreadId ));
+                log(("threadId", Thread.CurrentThread.ManagedThreadId));
             }));
         }
 
@@ -56,7 +56,7 @@ namespace WorkspaceServer.Tests
             var request = new Workspace(
                 workspaceType: "console",
                 files: new[] { new Workspace.File("Program.cs", CodeSamples.SourceCodeProvider.ConsoleProgramSingleRegion) },
-                buffers: new[] { new Workspace.Buffer("Program.cs@alpha", @"var a = 10;"+Environment.NewLine+"Console.WriteLine(banana);", 0) });
+                buffers: new[] { new Workspace.Buffer("Program.cs@alpha", @"var a = 10;" + Environment.NewLine + "Console.WriteLine(banana);", 0) });
 
             var server = await GetWorkspaceServer();
 
@@ -73,16 +73,19 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task Get_diagnostics_produces_appropriate_diagnostics_for_display_to_user_when_using_buffers()
         {
+            var codeLine1 = @"var a = 10;";
+            var codeLine2 = @"Console.WriteLine(banana);";
+            var code = $"{codeLine1}{Environment.NewLine}{codeLine2}";
+            var erroPos = code.IndexOf("banana);");
             var request = new Workspace(
                 workspaceType: "console",
                 files: new[] { new Workspace.File("Program.cs", CodeSamples.SourceCodeProvider.ConsoleProgramSingleRegion) },
-                buffers: new[] { new Workspace.Buffer("Program.cs@alpha", @"var a = 10;" + Environment.NewLine + "Console.WriteLine(banana);", 0) });
+                buffers: new[] { new Workspace.Buffer("Program.cs@alpha", code, 0) });
             var server = await GetWorkspaceServer();
 
             var result = await server.GetDiagnostics(request);
 
-            result.Diagnostics.Should().NotContain(d => d.Id == "CS7022"); // Not "ignoring main in script"
-            result.Diagnostics.Should().Contain(d => d.Id == "CS0103" && d.Start == 29 + Environment.NewLine.Length); // banana is not defined
+            result.Diagnostics.Should().Contain(d => d.Id == "CS0103" && d.Start == erroPos); // banana is not defined
         }
 
         [Fact]
@@ -139,7 +142,7 @@ namespace FibonacciTest
 
             result.Succeeded.Should().BeTrue();
             result.Output.Count.Should().Be(20);
-            result.Output.ShouldAllBeEquivalentTo(new []{
+            result.Output.ShouldAllBeEquivalentTo(new[]{
                 "1",
                 "1",
                 "2",
@@ -177,3 +180,4 @@ namespace FibonacciTest
         }
     }
 }
+
