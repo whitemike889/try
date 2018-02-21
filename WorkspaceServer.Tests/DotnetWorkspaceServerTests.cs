@@ -71,6 +71,21 @@ namespace WorkspaceServer.Tests
         }
 
         [Fact]
+        public async Task Get_diagnostics_produces_appropriate_diagnostics_for_display_to_user_when_using_buffers()
+        {
+            var request = new Workspace(
+                workspaceType: "console",
+                files: new[] { new Workspace.File("Program.cs", CodeSamples.SourceCodeProvider.ConsoleProgramSingleRegion) },
+                buffers: new[] { new Workspace.Buffer("Program.cs@alpha", @"var a = 10;" + Environment.NewLine + "Console.WriteLine(banana);", 0) });
+            var server = await GetWorkspaceServer();
+
+            var result = await server.GetDiagnostics(request);
+
+            result.Diagnostics.Should().NotContain(d => d.Id == "CS7022"); // Not "ignoring main in script"
+            result.Diagnostics.Should().Contain(d => d.Id == "CS0103" && d.Start == 31); // banana is not defined
+        }
+
+        [Fact]
         public async Task Response_with_multi_buffer_workspace()
         {
             var output = nameof(Response_with_multi_buffer_workspace);

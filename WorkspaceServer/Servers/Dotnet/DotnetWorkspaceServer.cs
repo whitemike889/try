@@ -68,7 +68,7 @@ namespace WorkspaceServer.Servers.Dotnet
                               .CancelIfExceeds(budget ?? new Budget());
         }
 
-        public async Task<RunResult> Run(WorkspaceServer.Models.Execution.Workspace request, Budget budget = null)
+        public async Task<RunResult> Run(Models.Execution.Workspace request, Budget budget = null)
         {
             budget = budget ?? new TimeBudget(_defaultTimeoutInSeconds);
             using (var operation = Log.OnEnterAndConfirmOnExit())
@@ -143,72 +143,70 @@ namespace WorkspaceServer.Servers.Dotnet
 
             }
         }
-
-        private static IEnumerable<(SerializableDiagnostic, string)> ReconstructDiagnosticLocations(IEnumerable<Diagnostic> bodyDiagnostics,
-            Dictionary<string, (SourceFile Destination, TextSpan Region)> viewPorts, int paddingSize)
+        private static (SerializableDiagnostic, string) AlignDiagnosticLocation(KeyValuePair<string, (SourceFile Destination, TextSpan Region)> target, Diagnostic diagnostic, int paddingSize)
         {
-            (SerializableDiagnostic, string) ProcesseDiagnostic(KeyValuePair<string, (SourceFile Destination, TextSpan Region)> target, Diagnostic diagnostic)
+            // offest of the buffer int othe original source file
+            var offset = target.Value.Region.Start;
+            // span of content injected in the buffer viewport
+            var selectionSpan = new TextSpan(offset + paddingSize, target.Value.Region.Length - (2 * paddingSize));
+
+            // aligned offset of the diagnostic entry
+            var start = diagnostic.Location.SourceSpan.Start - selectionSpan.Start;
+            var end = diagnostic.Location.SourceSpan.End - selectionSpan.Start;
+            // line containing the diagnostic in the original source file
+            var line = target.Value.Destination.Text.Lines[diagnostic.Location.MappedLineSpan.StartLinePosition.Line];
+
+            // first line of the region from the soruce file
+            var lineOffest = 0;
+
+            foreach (var regionLine in target.Value.Destination.Text.GetSubText(selectionSpan).Lines)
             {
-                // offest of the buffer int othe original source file
-                var offset = target.Value.Region.Start;
-                // span of content injected in the buffer viewport
-                var selectionSpan = new TextSpan(offset + paddingSize, target.Value.Region.Length - (2 * paddingSize));
-
-                // aligned offset of the diagnostic entry
-                var start = diagnostic.Location.SourceSpan.Start - selectionSpan.Start;
-                var end = diagnostic.Location.SourceSpan.End - selectionSpan.Start;
-                // line containing the diagnostic in the original source file
-                var line = target.Value.Destination.Text.Lines[diagnostic.Location.MappedLineSpan.StartLinePosition.Line];
-
-                // first line of the region from the soruce file
-                var lineOffest = 0;
-
-                foreach (var regionLine in target.Value.Destination.Text.GetSubText(selectionSpan).Lines)
+                if (regionLine.ToString() == line.ToString())
                 {
-                    if (regionLine.ToString() == line.ToString())
-                    {
-                        break;
-                    }
-
-                    lineOffest++;
+                    break;
                 }
 
-                var bufferTextSource = SourceFile.Create(target.Value.Destination.Text.GetSubText(selectionSpan).ToString());
-                var lineText = line.ToString();
-                var partToFind = lineText.Substring(diagnostic.Location.MappedLineSpan.Span.Start.Character);
-                var charOffset = bufferTextSource.Text.Lines[lineOffest].ToString().IndexOf(partToFind, StringComparison.Ordinal);
-                var location = new { Line = lineOffest + 1, Char = charOffset + 1 };
-
-                var errorMessage = $"({location.Line},{location.Char}): error {diagnostic.Id}: {diagnostic.Message}";
-
-                var processedDiagnostic = (new SerializableDiagnostic(
-                        start,
-                        end,
-                        diagnostic.Message,
-                        diagnostic.Severity,
-                        diagnostic.Id),
-                    errorMessage);
-                return processedDiagnostic;
+                lineOffest++;
             }
 
+            var bufferTextSource = SourceFile.Create(target.Value.Destination.Text.GetSubText(selectionSpan).ToString());
+            var lineText = line.ToString();
+            var partToFind = lineText.Substring(diagnostic.Location.MappedLineSpan.Span.Start.Character);
+            var charOffset = bufferTextSource.Text.Lines[lineOffest].ToString().IndexOf(partToFind, StringComparison.Ordinal);
+            var location = new { Line = lineOffest + 1, Char = charOffset + 1 };
+
+            var errorMessage = $"({location.Line},{location.Char}): error {diagnostic.Id}: {diagnostic.Message}";
+
+            var processedDiagnostic = (new SerializableDiagnostic(
+                    start,
+                    end,
+                    diagnostic.Message,
+                    diagnostic.Severity,
+                    diagnostic.Id),
+                errorMessage);
+            return processedDiagnostic;
+        }
+        private static IEnumerable<(SerializableDiagnostic, string)> ReconstructDiagnosticLocations(IEnumerable<Diagnostic> bodyDiagnostics,
+            Dictionary<string, (SourceFile Destination, TextSpan Region)> viewPortsByBufferId, int paddingSize)
+        {
             var diagnostics = bodyDiagnostics ?? Enumerable.Empty<Diagnostic>();
             foreach (var diagnostic in diagnostics)
             {
                 var diagnosticPath = diagnostic.Location.MappedLineSpan.Path;
-                if (viewPorts == null || viewPorts.Count == 0)
+                if (viewPortsByBufferId == null || viewPortsByBufferId.Count == 0)
                 {
                     var errorMessage = diagnostic.ToString();
                     yield return (new SerializableDiagnostic(diagnostic), errorMessage);
                 }
                 else
                 {
-                    var target = viewPorts
+                    var target = viewPortsByBufferId
                         .Where(e => e.Key.Contains("@") && diagnosticPath.EndsWith(e.Value.Destination.Name))
                         .FirstOrDefault(e => e.Value.Region.Contains(diagnostic.Location.SourceSpan.Start));
 
                     if (!target.Value.Region.IsEmpty)
                     {
-                        var processedDiagnostic = ProcesseDiagnostic(target, diagnostic);
+                        var processedDiagnostic = AlignDiagnosticLocation(target, diagnostic, paddingSize);
                         yield return processedDiagnostic;
                     }
                     else
@@ -252,8 +250,24 @@ namespace WorkspaceServer.Servers.Dotnet
 
         public async Task<DiagnosticResult> GetDiagnostics(Models.Execution.Workspace request)
         {
-            var emitResult = await Emit(request, new Budget());
-            var diagnostics = emitResult.Body.Diagnostics.Select(d => new SerializableDiagnostic(d)).ToArray();
+            var budget = new Budget();
+            var processor = new BufferInliningTransformer();
+            var processedRequest = await processor.TransformAsync(request, budget);
+            var emitResult = await Emit(processedRequest, new Budget());
+            SerializableDiagnostic[] diagnostics;
+            if (emitResult.Body.Diagnostics.Any())
+            {
+
+                var viewPorts = processor.ExtractViewPorts(processedRequest);
+                IEnumerable<(SerializableDiagnostic Diagnostic, string ErrorMessage)> processedDiagnostics = ReconstructDiagnosticLocations(emitResult.Body.Diagnostics, viewPorts, BufferInliningTransformer.PaddingSize).ToArray();
+                diagnostics = processedDiagnostics?.Select(d => d.Diagnostic).ToArray();
+            }
+
+            else
+            {
+                diagnostics = emitResult.Body.Diagnostics.Select(d => new SerializableDiagnostic(d)).ToArray();
+            }
+
             return new DiagnosticResult(diagnostics);
         }
 
