@@ -88,8 +88,6 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task Response_with_multi_buffer_workspace()
         {
-            var output = nameof(Response_with_multi_buffer_workspace);
-
             #region bufferSources
 
             var program = @"
@@ -129,7 +127,7 @@ namespace FibonacciTest
 }";
             #endregion
 
-            var request = new Models.Execution.Workspace(workspaceType: "console", buffers: new[]
+            var request = new Workspace(workspaceType: "console", buffers: new[]
             {
                 new Workspace.Buffer("Program.cs",program,0),
                 new Workspace.Buffer("FibonacciGenerator.cs",generator,0)
