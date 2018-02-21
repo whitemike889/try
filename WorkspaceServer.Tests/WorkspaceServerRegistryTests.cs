@@ -7,6 +7,7 @@ using Pocket;
 using WorkspaceServer.Models.Execution;
 using Xunit;
 using Xunit.Abstractions;
+using Workspace = MLS.Agent.Tools.Workspace;
 
 namespace WorkspaceServer.Tests
 {
@@ -55,7 +56,7 @@ namespace WorkspaceServer.Tests
 
                 var workspaceServer = await registry.GetWorkspaceServer(workspaceId);
 
-                var result = await workspaceServer.Run(new WorkspaceRunRequest(@"
+                var result = await workspaceServer.Run(new WorkspaceServer.Models.Execution.Workspace(@"
 using System;
 using Twilio.Clients;
 using Twilio.Rest.Api.V2010.Account;

@@ -1,10 +1,8 @@
-using System;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using MLS.Agent.Tools;
 using Recipes;
-using WorkspaceServer.Models.Execution;
 
 namespace WorkspaceServer.Tests
 {
@@ -20,10 +18,10 @@ namespace WorkspaceServer.Tests
             return workspace;
         }
 
-        public static WorkspaceRunRequest SimpleRunRequest(
+        public static WorkspaceServer.Models.Execution.Workspace SimpleRunRequest(
             string consoleOutput = "Hello!",
             string workspaceType = null) =>
-            new WorkspaceRunRequest(SimpleConsoleAppCodeWithoutNamespaces(consoleOutput), workspaceType: workspaceType);
+            new WorkspaceServer.Models.Execution.Workspace(SimpleConsoleAppCodeWithoutNamespaces(consoleOutput), workspaceType: workspaceType);
 
         public static string SimpleRunRequestJson(
             string consoleOutput = "Hello!",

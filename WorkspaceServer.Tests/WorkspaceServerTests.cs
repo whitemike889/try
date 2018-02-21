@@ -5,25 +5,25 @@ using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.CodeAnalysis;
 using Pocket;
-using WorkspaceServer.Models.Execution;
 using Xunit;
 using Xunit.Abstractions;
 using static Pocket.Logger<WorkspaceServer.Tests.WorkspaceServerTests>;
+using Workspace = WorkspaceServer.Models.Execution.Workspace;
 
 namespace WorkspaceServer.Tests
 {
     public abstract class WorkspaceServerTests : IDisposable
     {
-        private readonly CompositeDisposable disposables = new CompositeDisposable();
+        private readonly CompositeDisposable _disposables = new CompositeDisposable();
 
         protected abstract Task<IWorkspaceServer> GetWorkspaceServer(
             [CallerMemberName] string testName = null);
 
-        protected abstract WorkspaceRunRequest CreateRunRequestContaining(string text);
+        protected abstract Models.Execution.Workspace CreateRunRequestContaining(string text);
 
-        public void Dispose() => disposables.Dispose();
+        public void Dispose() => _disposables.Dispose();
 
-        protected void RegisterForDisposal(IDisposable disposable) => disposables.Add(disposable);
+        protected void RegisterForDisposal(IDisposable disposable) => _disposables.Add(disposable);
 
         [Fact]
         public async Task Diagnostic_logs_do_not_show_up_in_captured_console_output()
@@ -40,13 +40,13 @@ namespace WorkspaceServer.Tests
 
         protected WorkspaceServerTests(ITestOutputHelper output)
         {
-            disposables.Add(LogEvents.Subscribe(e => output.WriteLine(e.ToLogString())));
+            _disposables.Add(LogEvents.Subscribe(e => output.WriteLine(e.ToLogString())));
         }
 
         [Fact]
         public async Task Response_indicates_when_compile_is_successful_and_signature_is_like_a_console_app()
         {
-            var request = new WorkspaceRunRequest(@"
+            var request = new Models.Execution.Workspace(@"
 using System;
 
 public static class Hello
@@ -71,7 +71,7 @@ public static class Hello
         {
             var output = nameof(Response_shows_program_output_when_compile_is_successful_and_signature_is_like_a_console_app);
 
-            var request = new WorkspaceRunRequest($@"
+            var request = new Models.Execution.Workspace($@"
 using System;
 
 public static class Hello
@@ -121,6 +121,7 @@ Console.WriteLine(banana);");
                 Exception = (string) null, // we already display the error in Output
             }, config => config.ExcludingMissingMembers());
         }
+        
 
         [Fact]
         public async Task Multi_line_console_output_is_captured_correctly()
@@ -156,7 +157,7 @@ Console.WriteLine(4);");
 
             result.ShouldSucceedWithExceptionContaining(
                 "System.Exception: oops!",
-                output: new string[] { "1", "2" });
+                output: new[] { "1", "2" });
         }
 
         [Fact]
@@ -199,7 +200,7 @@ throw new Exception(""oops!"");");
         [Fact]
         public async Task When_a_public_void_Main_with_no_parameters_is_present_it_is_invoked()
         {
-            var request = new WorkspaceRunRequest($@"
+            var request = new Models.Execution.Workspace($@"
 using System;
 
 public static class Hello
@@ -219,7 +220,7 @@ public static class Hello
         [Fact]
         public async Task When_a_public_void_Main_with_parameters_is_present_it_is_invoked()
         {
-            var request = new WorkspaceRunRequest(@"
+            var request = new Models.Execution.Workspace(@"
 using System;
 
 public static class Hello
@@ -240,7 +241,7 @@ public static class Hello
         [Fact]
         public async Task When_an_internal_void_Main_with_no_parameters_is_present_it_is_invoked()
         {
-            var request = new WorkspaceRunRequest(@"
+            var request = new Models.Execution.Workspace(@"
 using System;
 
 public static class Hello
@@ -263,7 +264,7 @@ public static class Hello
         [Fact]
         public async Task When_an_internal_void_Main_with_parameters_is_present_it_is_invoked()
         {
-            var request = new WorkspaceRunRequest(@"
+            var request = new Models.Execution.Workspace(@"
 using System;
 
 public static class Hello
@@ -286,7 +287,7 @@ public static class Hello
         {
             var output = nameof(Response_shows_warnings_with_successful_compilation);
 
-            var request = new WorkspaceRunRequest($@"
+            var request = new Models.Execution.Workspace($@"
 using System;
 using System;
 public static class Hello
@@ -305,12 +306,15 @@ public static class Hello
 
         }
 
+     
+
+
         [Fact]
         public async Task Response_shows_warnings_when_compilation_fails()
         {
             var output = nameof(Response_shows_warnings_when_compilation_fails);
 
-            var request = new WorkspaceRunRequest($@"
+            var request = new Models.Execution.Workspace($@"
 using System;
 using System;
 public static class Hello
@@ -331,7 +335,7 @@ public static class Hello
         [Fact]
         public async Task Get_diagnostics_produces_appropriate_diagnostics_for_display_to_user()
         {
-            var request = new WorkspaceRunRequest(@"
+            var request = new Models.Execution.Workspace(@"
 using System;
 
 public static class Hello

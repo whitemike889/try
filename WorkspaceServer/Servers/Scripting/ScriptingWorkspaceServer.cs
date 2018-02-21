@@ -15,12 +15,13 @@ using Pocket;
 using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
 using static Pocket.Logger<WorkspaceServer.Servers.Scripting.ScriptingWorkspaceServer>;
+using Workspace = WorkspaceServer.Models.Execution.Workspace;
 
 namespace WorkspaceServer.Servers.Scripting
 {
     public class ScriptingWorkspaceServer : IWorkspaceServer
     {
-        public async Task<RunResult> Run(WorkspaceRunRequest request, Budget budget = null)
+        public async Task<RunResult> Run(WorkspaceServer.Models.Execution.Workspace request, Budget budget = null)
         {
             budget = budget ?? new Budget();
 
@@ -114,7 +115,7 @@ namespace WorkspaceServer.Servers.Scripting
             }
         }
 
-        private static ScriptOptions CreateOptions(WorkspaceRunRequest request) =>
+        private static ScriptOptions CreateOptions(Workspace request) =>
             ScriptOptions.Default
                          .AddReferences(GetReferenceAssemblies())
                          .AddImports(GetDefultUsings().Concat(request.Usings));
@@ -250,7 +251,7 @@ typeof({entryPointMethod.ContainingType.Name})
                                               : "null";
         }
 
-        public Task<DiagnosticResult> GetDiagnostics(WorkspaceRunRequest request) => 
+        public Task<DiagnosticResult> GetDiagnostics(Workspace request) => 
             Task.FromResult(new DiagnosticResult(GetDiagnostics(request.SourceFiles.Single(), CreateOptions(request))));
     }
 }
