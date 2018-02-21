@@ -1,28 +1,27 @@
-using System;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using MLS.Agent.Tools;
 using Recipes;
-using WorkspaceServer.Models.Execution;
 
 namespace WorkspaceServer.Tests
 {
     public static class Create
     {
-        public static DirectoryInfo TestFolder([CallerMemberName] string testName = null)
+        public static async Task<Workspace> TestWorkspace([CallerMemberName] string testName = null)
         {
-            var existingFolders = Workspace.DefaultWorkspacesDirectory.GetDirectories($"{testName}.*");
+            var workspace = new Workspace(Workspace.CreateDirectory(testName), "test");
 
-            return Workspace.DefaultWorkspacesDirectory.CreateSubdirectory($"{testName}.{existingFolders.Length + 1}");
+            await workspace.EnsureCreated();
+            await workspace.EnsureBuilt();
+
+            return workspace;
         }
 
-        public static Workspace TestWorkspace([CallerMemberName] string testName = null) =>
-            Workspace.Copy(Default.TemplateWorkspace, testName);
-
-        public static RunRequest SimpleRunRequest(
+        public static WorkspaceServer.Models.Execution.Workspace SimpleRunRequest(
             string consoleOutput = "Hello!",
             string workspaceType = null) =>
-            new RunRequest(SimpleConsoleAppCodeWithoutNamespaces(consoleOutput), workspaceType: workspaceType);
+            new WorkspaceServer.Models.Execution.Workspace(SimpleConsoleAppCodeWithoutNamespaces(consoleOutput), workspaceType: workspaceType);
 
         public static string SimpleRunRequestJson(
             string consoleOutput = "Hello!",
@@ -30,7 +29,7 @@ namespace WorkspaceServer.Tests
         {
             return new
             {
-                source = SimpleConsoleAppCodeWithoutNamespaces(consoleOutput),
+                buffer = SimpleConsoleAppCodeWithoutNamespaces(consoleOutput),
                 workspaceType
             }.ToJson();
         }

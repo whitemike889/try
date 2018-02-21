@@ -1,10 +1,11 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Clockwise;
 using Pocket;
 using Recipes;
 using static Pocket.Logger<MLS.Agent.Tools.CommandLine>;
@@ -13,29 +14,29 @@ namespace MLS.Agent.Tools
 {
     public static class CommandLine
     {
-        public static CommandLineResult Execute(
+        public static Task<CommandLineResult> Execute(
             FileInfo exePath,
             string args,
             DirectoryInfo workingDir = null,
-            CancellationToken? cancellationToken = null) =>
+            Budget budget = null) =>
             Execute(exePath.FullName,
                     args,
                     workingDir,
-                    cancellationToken);
+                    budget);
 
-        public static CommandLineResult Execute(
+        public static async Task<CommandLineResult> Execute(
             string command,
             string args,
             DirectoryInfo workingDir = null,
-            CancellationToken? cancellationToken = null)
+            Budget budget = null)
         {
             args = args ?? "";
-            cancellationToken = cancellationToken ?? CancellationToken.None;
+            budget = budget ?? new Budget();
 
             var stdOut = new StringBuilder();
             var stdErr = new StringBuilder();
 
-            using (var operation = LogConfirm(command, args))
+            using (var operation = CheckBudgetAndStartConfirmationLogger(command, args, budget))
             using (var process = StartProcess(
                 command,
                 args,
@@ -43,51 +44,56 @@ namespace MLS.Agent.Tools
                 output: data =>
                 {
                     stdOut.AppendLine(data);
-                    operation.Info("{x}", data);
+                    operation.Info("{data}", data);
                 },
                 error: data =>
                 {
                     stdErr.AppendLine(data);
-                    operation.Error("{x}", args: data);
+                    operation.Error("{data}", args: data);
                 }))
             {
-                (int exitCode, Exception exception) =
-                    Task.Run(() =>
-                        {
-                            process.WaitForExit();
+                var exitCode =
+                    await Task.Run(() =>
+                              {
+                                  using (operation.OnEnterAndExit("Execute:happy"))
+                                  {
+                                      process.WaitForExit();
 
-                            operation.Succeed(
-                                "{command} {args} exited with {code}",
-                                command,
-                                args,
-                                process.ExitCode);
+                                      operation.Succeed(
+                                          "{command} {args} exited with {code}",
+                                          command,
+                                          args,
+                                          process.ExitCode);
 
-                            return (process.ExitCode, (Exception) null);
-                        })
-                        .CancelAfter(
-                            cancellationToken.Value,
-                            ifCancelled: () =>
-                            {
-                                var ex = new TimeoutException();
+                                      return process.ExitCode;
+                                  }
+                              })
+                              .CancelIfExceeds(
+                                  budget,
+                                  ifCancelled: () =>
+                                  {
+                                      using (operation.OnEnterAndExit($"Execute:sad"))
+                                      {
+                                          var ex = new BudgetExceededException(budget);
 
-                                Task.Run(() =>
-                                {
-                                    if (!process.HasExited)
-                                    {
-                                        process.Kill();
-                                    }
-                                }).DontAwait();
+                                          Task.Run(() =>
+                                          {
+                                              if (!process.HasExited)
+                                              {
+                                                  process.Kill();
+                                              }
+                                          }).DontAwait();
 
-                                operation.Fail(ex);
+                                          operation.Fail(ex);
 
-                                return (124, ex); // like the Linux timeout command 
-                            }).Result;
+                                          return 124; // like the Linux timeout command 
+                                      }
+                                  });
 
                 return new CommandLineResult(
                     exitCode: exitCode,
                     output: stdOut.Replace("\r\n", "\n").ToString().Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries),
-                    error: stdErr.Replace("\r\n", "\n").ToString().Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries),
-                    exception: exception);
+                    error: stdErr.Replace("\r\n", "\n").ToString().Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries));
             }
         }
 
@@ -98,63 +104,74 @@ namespace MLS.Agent.Tools
             Action<string> output = null,
             Action<string> error = null)
         {
-            args = args ?? "";
-
-            Log.Trace("{workingDir}> {command} {args}", workingDir == null
-                                                            ? ""
-                                                            : workingDir.FullName, command, args);
-
-            var process = new Process
+            using (Log.OnEnterAndExit())
             {
-                StartInfo =
+                args = args ?? "";
+
+                var process = new Process
                 {
-                    Arguments = args,
-                    FileName = command,
-                    RedirectStandardError = true,
-                    RedirectStandardOutput = true,
-                    RedirectStandardInput = true,
-                    WorkingDirectory = workingDir?.FullName
+                    StartInfo =
+                    {
+                        Arguments = args,
+                        FileName = command,
+                        RedirectStandardError = true,
+                        RedirectStandardOutput = true,
+                        RedirectStandardInput = true,
+                        WorkingDirectory = workingDir?.FullName
+                    }
+                };
+
+                if (output != null)
+                {
+                    process.OutputDataReceived += (sender, eventArgs) =>
+                    {
+                        if (eventArgs.Data != null)
+                        {
+                            output(eventArgs.Data);
+                        }
+                    };
                 }
-            };
 
-            if (output != null)
-            {
-                process.OutputDataReceived += (sender, eventArgs) =>
+                if (error != null)
                 {
-                    if (eventArgs.Data != null)
+                    process.ErrorDataReceived += (sender, eventArgs) =>
                     {
-                        output(eventArgs.Data);
-                    }
-                };
+                        if (eventArgs.Data != null)
+                        {
+                            error(eventArgs.Data);
+                        }
+                    };
+                }
+
+                process.Start();
+
+                process.BeginOutputReadLine();
+                process.BeginErrorReadLine();
+
+                return process;
             }
-
-            if (error != null)
-            {
-                process.ErrorDataReceived += (sender, eventArgs) =>
-                {
-                    if (eventArgs.Data != null)
-                    {
-                        error(eventArgs.Data);
-                    }
-                };
-            }
-
-            process.Start();
-
-            process.BeginOutputReadLine();
-            process.BeginErrorReadLine();
-
-            return process;
         }
 
-        private static ConfirmationLogger LogConfirm(
+        internal static string AppendArgs(this string initial, string append = null) =>
+            string.IsNullOrWhiteSpace(append)
+                ? initial
+                : $"{initial} {append}";
+
+        private static ConfirmationLogger CheckBudgetAndStartConfirmationLogger(
             object command,
             string args,
-            [CallerMemberName] string operationName = null) => new ConfirmationLogger(
-            operationName: operationName,
-            category: Logger.Log.Category,
-            message: "Invoking {command} {args}",
-            args: new[] { command, args },
-            logOnStart: true);
+            Budget budget,
+            [CallerMemberName] string operationName = null)
+        {
+            budget.RecordEntryAndThrowIfBudgetExceeded($"Execute ({command} {args})");
+
+            return new ConfirmationLogger(
+                operationName: operationName,
+                category: Log.Category,
+                message: "Invoking {command} {args}",
+                args: new[] { command, args, ("threadId", Thread.CurrentThread.ManagedThreadId ) },
+                logOnStart: true,
+                exitArgs: () => new (string, object)[] { ("threadId", Thread.CurrentThread.ManagedThreadId ) });
+        }
     }
 }

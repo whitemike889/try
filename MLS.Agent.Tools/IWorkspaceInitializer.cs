@@ -1,6 +1,6 @@
 ﻿using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
+using Clockwise;
 
 namespace MLS.Agent.Tools
 {
@@ -8,6 +8,6 @@ namespace MLS.Agent.Tools
     {
         Task Initialize(
             DirectoryInfo directory,
-            CancellationToken? cancellationToken = null);
+            Budget budget = null);
     }
 }

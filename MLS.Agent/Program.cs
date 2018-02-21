@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using static Pocket.Logger<MLS.Agent.Program>;
@@ -15,9 +14,9 @@ using MLS.Agent.Tools;
 using Pocket.For.ApplicationInsights;
 using Recipes;
 using Serilog.Sinks.RollingFileAlternate;
-using WorkspaceServer;
-using WorkspaceServer.Servers.OmniSharp;
+using WorkspaceServer.Servers.Dotnet;
 using SerilogLoggerConfiguration = Serilog.LoggerConfiguration;
+using WorkspaceServer;
 
 namespace MLS.Agent
 {
@@ -49,7 +48,8 @@ namespace MLS.Agent
                         a(("websiteSiteName", websiteSiteName));
                     }));
             }
-            else
+
+            if (options.WriteFileLog)
             {
                 var log = new SerilogLoggerConfiguration()
                           .WriteTo
@@ -62,9 +62,11 @@ namespace MLS.Agent
 
                 disposables.Add(subscription);
                 disposables.Add(log);
-
-                disposables.Add(LogEvents.Subscribe(e => Console.WriteLine(e.ToLogString())));
             }
+
+            disposables.Add(
+                LogEvents.Subscribe(e => Console.WriteLine(e.ToLogString()),
+                                    assembliesEmittingPocketLoggerLogs));
 
             TaskScheduler.UnobservedTaskException += (sender, args) =>
             {
@@ -78,7 +80,7 @@ namespace MLS.Agent
                 {
                     InstrumentationKey = options.ApplicationInsightsKey
                 };
-                disposables.Add(telemetryClient.SubscribeToPocketLogger());
+                disposables.Add(telemetryClient.SubscribeToPocketLogger(assembliesEmittingPocketLoggerLogs));
             }
 
             Log.Event("AgentStarting");
@@ -95,13 +97,12 @@ namespace MLS.Agent
             }
             else
             {
-                Log.Info("Received Key", options.Key);
+                Log.Info("Received Key: {key}", options.Key);
             }
 
             var webHost = new WebHostBuilder()
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
                 .ConfigureServices(c =>
                 {
                     if (options.ApplicationInsightsKey != null)
@@ -126,6 +127,9 @@ namespace MLS.Agent
                         return registry;
                     });
                 })
+                .UseEnvironment(options.IsProduction
+                                      ? EnvironmentName.Production
+                                      : EnvironmentName.Development)
                 .UseStartup<Startup>()
                 .Build();
 

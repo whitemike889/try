@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
 
-namespace WorkspaceServer.Servers.OmniSharp
+namespace WorkspaceServer.Servers.Dotnet
 {
     public static class FileInfoExtensions
     {

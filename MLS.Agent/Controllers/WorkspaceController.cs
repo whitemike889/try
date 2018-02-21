@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Clockwise;
 using Microsoft.AspNetCore.Mvc;
 using Pocket;
 using WorkspaceServer;
 using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
+using WorkspaceServer.Servers.Dotnet;
 using WorkspaceServer.Servers.Scripting;
 using static Pocket.Logger<MLS.Agent.Controllers.WorkspaceController>;
 
@@ -24,9 +26,9 @@ namespace MLS.Agent.Controllers
         [Route("/workspace/run")]
         [Route("/workspace/{DEPRECATED}/compile")] // FIX: (Run) remove this endpoint when Orchestrator no longer calls it
         public async Task<IActionResult> Run(
-            [FromBody] RunRequest request)
+            [FromBody] Workspace request)
         {
-            using (var operation = Log.ConfirmOnExit())
+            using (var operation = Log.OnEnterAndConfirmOnExit())
             {
                 RunResult result = null;
 
@@ -36,13 +38,21 @@ namespace MLS.Agent.Controllers
                 {
                     var server = new ScriptingWorkspaceServer();
 
-                    result = await server.Run(request);
+                    result = await server.Run(request, new TimeBudget(TimeSpan.FromSeconds(10)));
                 }
                 else
                 {
                     var server = await workspaceServerRegistry.GetWorkspaceServer(workspaceType);
 
-                    result = await server.Run(request);
+                    if (server is DotnetWorkspaceServer dotnetWorkspaceServer)
+                    {
+                        await dotnetWorkspaceServer.EnsureInitializedAndNotDisposed(
+                            new TimeBudget(TimeSpan.FromSeconds(30)));
+                    }
+
+                    result = await server.Run(
+                                 request,
+                                 new TimeBudget(TimeSpan.FromSeconds(10)));
                 }
 
                 operation.Succeed();
@@ -73,7 +83,7 @@ namespace MLS.Agent.Controllers
         [Route("/workspace/diagnostics")]
         [Route("/workspace/{DEPRECATED}/diagnostics")]
         public async Task<IActionResult> Diagnostics(
-            [FromBody] RunRequest request)
+            [FromBody] Workspace request)
         {
             using (var operation = Log.ConfirmOnExit())
             {

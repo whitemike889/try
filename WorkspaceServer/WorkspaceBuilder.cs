@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 using Clockwise;
 using MLS.Agent.Tools;
@@ -11,7 +10,7 @@ namespace WorkspaceServer
     {
         private Workspace _workspace;
 
-        private readonly List<Func<Workspace, CancellationToken, Task>> _afterCreateActions = new List<Func<Workspace, CancellationToken, Task>>();
+        private readonly List<Func<Workspace, Budget, Task>> _afterCreateActions = new List<Func<Workspace, Budget, Task>>();
 
         public WorkspaceBuilder(string workspaceName)
         {
@@ -30,11 +29,12 @@ namespace WorkspaceServer
         public void CreateUsingDotnet(string template) =>
             WorkspaceInitializer = new DotnetWorkspaceInitializer(
                 template,
-                WorkspaceName);
+                WorkspaceName,
+                AfterCreate);
 
         public void AddPackageReference(string packageId, string version = null)
         {
-            _afterCreateActions.Add((workspace, cancellationToken) =>
+            _afterCreateActions.Add(async (workspace, budget) =>
             {
                 var dotnet = new Dotnet(workspace.Directory);
 
@@ -42,37 +42,39 @@ namespace WorkspaceServer
                                      ? ""
                                      : $"--version {version}";
 
-                dotnet.Execute($"add package {versionArg} {packageId}",
-                               cancellationToken);
-
-                return Task.CompletedTask;
+                await dotnet.Execute($"add package {versionArg} {packageId}", budget);
             });
         }
 
-        public async Task<Workspace> GetWorkspace(CancellationToken? cancellationToken = null)
+        public async Task<Workspace> GetWorkspace(Budget budget = null)
         {
             if (_workspace == null)
             {
-                await BuildWorkspace(cancellationToken);
+                await BuildWorkspace(budget);
             }
 
             return _workspace;
         }
 
-        private async Task BuildWorkspace(CancellationToken? cancellationToken)
+        private async Task BuildWorkspace(Budget budget = null)
         {
-            cancellationToken = cancellationToken ?? Clock.Current.CreateCancellationToken(TimeSpan.FromSeconds(55));
+            budget = budget ?? new Budget();
 
-            _workspace = new Workspace(WorkspaceName);
+            _workspace = new Workspace(
+                WorkspaceName, 
+                WorkspaceInitializer);
 
-            await _workspace.EnsureCreated(cancellationToken);
+            await _workspace.EnsureCreated(budget);
 
+            await _workspace.EnsureBuilt(budget);
+        }
+
+        private async Task AfterCreate(Budget budget)
+        {
             foreach (var action in _afterCreateActions)
             {
-                await action(_workspace, cancellationToken.Value);
+                await action(_workspace, budget);
             }
-
-            _workspace.EnsureBuilt(cancellationToken);
         }
     }
 }

@@ -1,19 +1,28 @@
 using System;
 using System.Threading.Tasks;
 using MLS.Agent.Tools;
+using Pocket;
 
 namespace WorkspaceServer.Tests
 {
     internal static class Default
     {
-        private static readonly Lazy<Workspace> _templateWorkspace = new Lazy<Workspace>(() =>
+        private static readonly AsyncLazy<Workspace> _templateWorkspace = new AsyncLazy<Workspace>(async () =>
         {
             var workspace = new Workspace("TestTemplate");
-            Task.Run(() => workspace.EnsureCreated()).Wait();
-            workspace.EnsureBuilt();
+
+            workspace.Directory.Refresh();
+
+            if (!workspace.Directory.Exists)
+            {
+                Logger.Log.Info("Creating directory {directory}", workspace.Directory);
+                workspace.Directory.Create();
+            }
+
             return workspace;
         });
 
-        public static Workspace TemplateWorkspace => _templateWorkspace.Value;
+        public static Task<Workspace> TemplateWorkspace => _templateWorkspace.ValueAsync();
     }
 }
+

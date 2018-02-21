@@ -13,9 +13,11 @@ namespace MLS.Agent
             bool isProduction,
             string key,
             string[] loadWorkspaces,
-            string applicationInsightsKey = null)
+            string applicationInsightsKey = null,
+            bool writeFileLog = false)
         {
             LoadWorkspaces = loadWorkspaces;
+            WriteFileLog = writeFileLog;
             WasSuccess = wasSuccess;
             IsProduction = isProduction;
             HelpRequested = helpRequested;
@@ -31,6 +33,7 @@ namespace MLS.Agent
         public string Key { get; }
         public string ApplicationInsightsKey { get; }
         public string[] LoadWorkspaces { get; }
+        public bool WriteFileLog { get; }
 
         public static CommandLineOptions Parse(string[] args)
         {

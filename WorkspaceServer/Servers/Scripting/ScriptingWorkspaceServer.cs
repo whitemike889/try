@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Reflection;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.CodeAnalysis;
@@ -14,19 +12,20 @@ using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.Scripting;
 using Pocket;
-using Recipes;
 using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
 using static Pocket.Logger<WorkspaceServer.Servers.Scripting.ScriptingWorkspaceServer>;
-using MLS.Agent.Tools;
+using Workspace = WorkspaceServer.Models.Execution.Workspace;
 
 namespace WorkspaceServer.Servers.Scripting
 {
     public class ScriptingWorkspaceServer : IWorkspaceServer
     {
-        public async Task<RunResult> Run(RunRequest request, CancellationToken? cancellationToken = null)
+        public async Task<RunResult> Run(WorkspaceServer.Models.Execution.Workspace request, Budget budget = null)
         {
-            using (Log.OnEnterAndExit())
+            budget = budget ?? new Budget();
+
+            using (var operation = Log.OnEnterAndConfirmOnExit())
             using (var console = await ConsoleOutput.Capture())
             {
                 if (request.SourceFiles.Count != 1)
@@ -34,10 +33,9 @@ namespace WorkspaceServer.Servers.Scripting
                     throw new ArgumentException($"{nameof(request)} should have exactly one source file.");
                 }
 
-                ScriptOptions options = CreateOptions(request);
+                var options = CreateOptions(request);
 
                 ScriptState<object> state = null;
-                var variables = new Dictionary<string, Variable>();
                 Exception exception = null;
                 try
                 {
@@ -60,8 +58,6 @@ namespace WorkspaceServer.Servers.Scripting
                                 console.Clear();
 
                                 state = await Run(state, buffer, options);
-
-                                CaptureVariableState(state, variables, lineNumber);
 
                                 if (index == sourceLines.Count - 1 &&
                                     console.IsEmpty())
@@ -89,34 +85,40 @@ namespace WorkspaceServer.Servers.Scripting
                                 break;
                             }
                         }
-                    }).CancelAfter(cancellationToken ?? Clock.Current.CreateCancellationToken(TimeSpan.FromSeconds(5)));
+                    }).CancelIfExceeds(budget);
                 }
                 catch (TimeoutException timeoutException)
                 {
                     exception = timeoutException;
                 }
-                catch (TaskCanceledException timeoutException)
+                catch (BudgetExceededException budgetExceededException)
                 {
-                    exception = timeoutException;
+                    exception = budgetExceededException; 
+                }
+                catch (TaskCanceledException taskCanceledException)
+                {
+                    exception = taskCanceledException;
                 }
 
-                return new RunResult(
-                    succeeded: !(exception is TimeoutException) &&
-                               !(exception is CompilationErrorException),
+                var result = new RunResult(
+                    succeeded: !exception.IsConsideredRunFailure(),
                     output: console.StandardOutput
                                    .Replace("\r\n", "\n")
                                    .Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries),
                     returnValue: state?.ReturnValue,
-                    exception: ToDisplayString(exception ?? state?.Exception),
-                    variables: variables.Values,
-                    diagnostics: GetDiagnostics(request.SourceFiles.Single(), options)); 
+                    exception: (exception ?? state?.Exception).ToDisplayString(),
+                    diagnostics: GetDiagnostics(request.SourceFiles.Single(), options));
+
+                operation.Complete(result, budget);
+
+                return result; 
             }
         }
 
-        private static ScriptOptions CreateOptions(RunRequest request) =>
-                        ScriptOptions.Default
-                                                   .AddReferences(GetReferenceAssemblies())
-                                                   .AddImports(GetDefultUsings().Concat(request.Usings));
+        private static ScriptOptions CreateOptions(Workspace request) =>
+            ScriptOptions.Default
+                         .AddReferences(GetReferenceAssemblies())
+                         .AddImports(GetDefultUsings().Concat(request.Usings));
 
         private SerializableDiagnostic[] GetDiagnostics(SourceFile sourceFile, ScriptOptions options)
         {
@@ -127,32 +129,6 @@ namespace WorkspaceServer.Servers.Scripting
                                 Select(d => new SerializableDiagnostic(d))
                                       .ToArray(); // Suppress  warning CS7022: The entry point of the program is global script code; ignoring 'Main()' entry point.
                                                                // Unlike regular CompilationOptions, ScriptOptions does't provide the ability to suppress diagnostics
-        }
-
-        private static void CaptureVariableState(ScriptState<object> state, Dictionary<string, Variable> variables, int lineNumber)
-        {
-            foreach (var scriptVariable in state.Variables)
-            {
-                variables.GetOrAdd(scriptVariable.Name,
-                                   name => new Variable(name))
-                         .TryAddState(
-                             new VariableState(
-                                 lineNumber,
-                                 scriptVariable.Value,
-                                 scriptVariable.Type));
-            }
-        }
-
-        internal static string ToDisplayString(Exception exception)
-        {
-            switch (exception)
-            {
-                case CompilationErrorException _:
-                    return null;
-
-                default:
-                    return exception?.ToString();
-            }
         }
 
         private static async Task<ScriptState<object>> Run(
@@ -275,7 +251,7 @@ typeof({entryPointMethod.ContainingType.Name})
                                               : "null";
         }
 
-        public Task<DiagnosticResult> GetDiagnostics(RunRequest request) => 
+        public Task<DiagnosticResult> GetDiagnostics(Workspace request) => 
             Task.FromResult(new DiagnosticResult(GetDiagnostics(request.SourceFiles.Single(), CreateOptions(request))));
     }
 }

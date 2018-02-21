@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
 using Clockwise;
 using Pocket;
@@ -25,10 +24,18 @@ namespace MLS.Agent.Tools
                             ".trydotnet",
                             "workspaces"));
 
+            if (!DefaultWorkspacesDirectory.Exists)
+            {
+                DefaultWorkspacesDirectory.Create();
+            }
+
             Log.Info("Workspaces path is {DefaultWorkspacesDirectory}", DefaultWorkspacesDirectory);
         }
 
         private readonly IWorkspaceInitializer _initializer;
+
+        private readonly AsyncLazy<bool> _created;
+        private readonly AsyncLazy<bool> _built;
 
         public Workspace(
             string name,
@@ -47,6 +54,9 @@ namespace MLS.Agent.Tools
             Name = name ?? directory.Name;
             Directory = directory ?? throw new ArgumentNullException(nameof(directory));
             _initializer = initializer ?? new DotnetWorkspaceInitializer("console", Name);
+
+            _created = new AsyncLazy<bool>(VerifyOrCreate);
+            _built = new AsyncLazy<bool>(VerifyOrBuild);
         }
 
         private bool IsDirectoryCreated { get; set; }
@@ -61,10 +71,12 @@ namespace MLS.Agent.Tools
 
         public static DirectoryInfo DefaultWorkspacesDirectory { get; }
 
-        public async Task EnsureCreated(CancellationToken? cancellationToken = null)
-        {
-            cancellationToken = cancellationToken ?? Clock.Current.CreateCancellationToken(TimeSpan.FromSeconds(45));
+        public async Task EnsureCreated(Budget budget = null) =>
+            await _created.ValueAsync()
+                          .CancelIfExceeds(budget ?? new Budget());
 
+        private async Task<bool> VerifyOrCreate()
+        {
             if (!IsDirectoryCreated)
             {
                 Directory.Refresh();
@@ -84,25 +96,39 @@ namespace MLS.Agent.Tools
                 if (Directory.GetFiles().Length == 0)
                 {
                     Log.Info("Initializing workspace using {_initializer} in {directory}", _initializer, Directory);
-                    await _initializer.Initialize(Directory, cancellationToken);
+                    await _initializer.Initialize(Directory);
                 }
 
                 IsCreated = true;
             }
+
+            return true;
         }
 
-        public void EnsureBuilt(CancellationToken? cancellationToken = null)
+        public async Task EnsureBuilt(Budget budget = null)
+        {
+            await EnsureCreated(budget);
+            await _built.ValueAsync()
+                        .CancelIfExceeds(budget ?? new Budget());
+        }
+
+        private async Task<bool> VerifyOrBuild()
         {
             if (!IsBuilt)
             {
                 if (Directory.GetFiles("*.deps.json", SearchOption.AllDirectories).Length == 0)
                 {
                     Log.Info("Building workspace using {_initializer} in {directory}", _initializer, Directory);
-                    new Dotnet(Directory).Build(cancellationToken).ThrowOnFailure();
+                    var result = await new Dotnet(Directory)
+                                     .Build(
+                                         args: "--no-dependencies");
+                    result.ThrowOnFailure();
                 }
 
                 IsBuilt = true;
             }
+
+            return true;
         }
 
         public static Workspace Copy(
@@ -115,25 +141,16 @@ namespace MLS.Agent.Tools
             }
 
             folderName = folderName ?? fromWorkspace.Name;
+            var parentDirectory = fromWorkspace
+                                      .Directory
+                                      .Parent;
 
-            DirectoryInfo destination;
-            var i = 0;
-
-            do
-            {
-                destination = new DirectoryInfo(
-                    Path.Combine(
-                        fromWorkspace
-                            .Directory
-                            .Parent
-                            .FullName,
-                        $"{folderName}.{++i}"));
-            } while (destination.Exists);
+            var destination = CreateDirectory(folderName, parentDirectory);
 
             fromWorkspace.Directory.CopyTo(destination);
 
             var copy = new Workspace(destination,
-                                     folderName ?? fromWorkspace.Name,
+                                     folderName,
                                      fromWorkspace._initializer);
 
             copy.IsCreated = fromWorkspace.IsCreated;
@@ -141,6 +158,31 @@ namespace MLS.Agent.Tools
             copy.IsDirectoryCreated = true;
 
             return copy;
+        }
+
+        private static readonly object _lockObj = new object();
+
+        public static DirectoryInfo CreateDirectory(
+            string folderNameStartsWith,
+            DirectoryInfo parentDirectory = null)
+        {
+            if (string.IsNullOrWhiteSpace(folderNameStartsWith))
+            {
+                throw new ArgumentException("Value cannot be null or whitespace.", nameof(folderNameStartsWith));
+            }
+
+            parentDirectory = parentDirectory ?? DefaultWorkspacesDirectory;
+
+            DirectoryInfo created;
+
+            lock (_lockObj)
+            {
+                var existingFolders = parentDirectory.GetDirectories($"{folderNameStartsWith}.*");
+
+                created = parentDirectory.CreateSubdirectory($"{folderNameStartsWith}.{existingFolders.Length + 1}");
+            }
+
+            return created;
         }
     }
 }
