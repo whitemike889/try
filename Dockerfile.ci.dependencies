@@ -4,12 +4,11 @@ FROM microsoft/aspnetcore-build:2.0
 RUN mkdir -p /dependencies/omnisharp
 RUN curl -SL https://github.com/OmniSharp/omnisharp-roslyn/releases/download/v1.29.0-beta1/omnisharp-linux-x64.tar.gz | tar xvz -C /dependencies/omnisharp
 ENV TRYDOTNET_OMNISHARP_PATH=/dependencies/omnisharp/
+ENV NUGET_PACKAGES=/root/.nuget/packages/
 
 # set up workspaces directory
 ENV TRYDOTNET_WORKSPACES_PATH=/workspaces
-RUN mkdir -p /workspaces/console 
 WORKDIR /workspaces/console
 RUN dotnet new console
 RUN dotnet add package Newtonsoft.Json
 RUN dotnet build
-
