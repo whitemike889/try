@@ -37,14 +37,9 @@ namespace WorkspaceServer.Models.Execution
             }
 
             Buffers = bufferList;
-            if (sourceFiles.Count == 0)
-            {
-                sourceFiles.Add(SourceFile.Create(bufferList[0].Content, "Program.cs"));
-            }
             SourceFiles = sourceFiles;
         }
-
-        [Required]
+        
         public IReadOnlyCollection<SourceFile> SourceFiles { get; }
 
         public string[] Usings { get; }

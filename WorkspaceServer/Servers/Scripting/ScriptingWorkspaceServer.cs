@@ -27,18 +27,20 @@ namespace WorkspaceServer.Servers.Scripting
         public async Task<RunResult> Run(Workspace request, Budget budget = null)
         {
             budget = budget ?? new Budget();
-
+          
             using (var operation = Log.OnEnterAndConfirmOnExit())
             using (var console = await ConsoleOutput.Capture())
             {
-                if (request.SourceFiles.Count != 1)
+                var processor = new BufferInliningTransformer();
+                var processedRequest = await processor.TransformAsync(request, budget);
+
+                if (processedRequest.SourceFiles.Count != 1)
                 {
                     throw new ArgumentException($"{nameof(request)} should have exactly one source file.");
                 }
 
                 var options = CreateOptions(request);
-                var processor = new BufferInliningTransformer();
-                var processedRequest = await processor.TransformAsync(request, budget);
+               
                 ScriptState<object> state = null;
                 Exception userException = null;
 
