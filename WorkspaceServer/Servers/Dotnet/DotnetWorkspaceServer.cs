@@ -26,6 +26,7 @@ namespace WorkspaceServer.Servers.Dotnet
         private bool _disposed;
         private readonly Budget _initializationBudget = new Budget();
         private readonly TimeSpan _defaultTimeoutInSeconds;
+        public static string UserCodeCompletedBudgetEntryName = "UserCodeCompleted";
 
         public DotnetWorkspaceServer(
             Workspace workspace,
@@ -35,11 +36,10 @@ namespace WorkspaceServer.Servers.Dotnet
 
             _defaultTimeoutInSeconds = TimeSpan.FromSeconds(defaultTimeoutInSeconds ?? 30);
 
-            // FIX: (DotnetWorkspaceServer) lower the verbosity for release builds
 #if DEBUG
             var logToPocketLogger = true;
 #else
-            var logToPocketLogger = true;
+            var logToPocketLogger = false;
 #endif
 
             _omniSharpServer = new OmniSharpServer(
@@ -71,6 +71,7 @@ namespace WorkspaceServer.Servers.Dotnet
         public async Task<RunResult> Run(Models.Execution.Workspace request, Budget budget = null)
         {
             budget = budget ?? new TimeBudget(_defaultTimeoutInSeconds);
+
             using (var operation = Log.OnEnterAndConfirmOnExit())
             {
                 var processor = new BufferInliningTransformer();
@@ -82,10 +83,10 @@ namespace WorkspaceServer.Servers.Dotnet
                 string exceptionMessage = null;
                 OmnisharpEmitResponse emitResponse = null;
 
-                try
-                {
-                    emitResponse = await Emit(processedRequest, budget);
+                emitResponse = await Emit(processedRequest, budget);
 
+                if (emitResponse.Body.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error))
+                {
                     if (emitResponse.Body.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error))
                     {
                         viewPorts = processor.ExtractViewPorts(processedRequest);
@@ -99,31 +100,26 @@ namespace WorkspaceServer.Servers.Dotnet
                                 .ToArray(),
                             diagnostics: processedDiagnostics.Select(d => d.Diagnostic).ToArray());
                     }
-
-                    var dotnet = new MLS.Agent.Tools.Dotnet(_workspace.Directory);
-
-                    commandLineResult = await dotnet.Execute(emitResponse.Body.OutputAssemblyPath, budget);
-
-                    if (commandLineResult.Exception != null)
-                    {
-                        exceptionMessage = commandLineResult.Exception.ToString();
-                    }
-                    else if (commandLineResult.Error.Count > 0)
-                    {
-                        exceptionMessage = string.Join(Environment.NewLine, commandLineResult.Error);
-                    }
                 }
-                catch (TimeoutException timeoutException)
+
+                var dotnet = new MLS.Agent.Tools.Dotnet(_workspace.Directory);
+
+                commandLineResult = await dotnet.Execute(emitResponse.Body.OutputAssemblyPath, budget);
+
+                budget.RecordEntry(UserCodeCompletedBudgetEntryName);
+
+                if (commandLineResult.ExitCode == 124)
                 {
-                    exception = timeoutException;
+                    throw new BudgetExceededException(budget);
                 }
-                catch (BudgetExceededException budgetExceededException)
+
+                if (commandLineResult.Exception != null)
                 {
-                    exception = budgetExceededException;
+                    exceptionMessage = commandLineResult.Exception.ToString();
                 }
-                catch (TaskCanceledException taskCanceledException)
+                else if (commandLineResult.Error.Count > 0)
                 {
-                    exception = taskCanceledException;
+                    exceptionMessage = string.Join(Environment.NewLine, commandLineResult.Error);
                 }
 
                 if (emitResponse?.Body.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error) == true
@@ -139,12 +135,12 @@ namespace WorkspaceServer.Servers.Dotnet
                     diagnostics: processedDiagnostics.Select(d => d.Diagnostic).ToArray());
 
                 operation.Complete(runResult, budget);
-                return runResult;
 
+                return runResult;
             }
         }
 
-        private async Task<OmnisharpEmitResponse> Emit(Models.Execution.Workspace request, Budget budget = null)
+        private async Task<OmnisharpEmitResponse> Emit(Models.Execution.Workspace request, Budget budget)
         {
             await EnsureInitializedAndNotDisposed(budget);
 
@@ -181,6 +177,7 @@ namespace WorkspaceServer.Servers.Dotnet
             var processedRequest = await processor.TransformAsync(request, budget);
             var emitResult = await Emit(processedRequest, new Budget());
             SerializableDiagnostic[] diagnostics;
+
             if (emitResult.Body.Diagnostics.Any())
             {
 
@@ -188,7 +185,6 @@ namespace WorkspaceServer.Servers.Dotnet
                 IEnumerable<(SerializableDiagnostic Diagnostic, string ErrorMessage)> processedDiagnostics = OmniSharpDiagnosticTransformer.ReconstructDiagnosticLocations(emitResult.Body.Diagnostics, viewPorts, BufferInliningTransformer.PaddingSize).ToArray();
                 diagnostics = processedDiagnostics?.Select(d => d.Diagnostic).ToArray();
             }
-
             else
             {
                 diagnostics = emitResult.Body.Diagnostics.Select(d => new SerializableDiagnostic(d)).ToArray();

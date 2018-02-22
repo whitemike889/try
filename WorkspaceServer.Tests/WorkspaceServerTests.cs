@@ -186,18 +186,6 @@ throw new Exception(""oops!"");");
         }
 
         [Fact]
-        public async Task Response_indicates_when_execution_times_out()
-        {
-            var request = CreateRunRequestContaining(@"while (true) {  }");
-
-            var server = await GetWorkspaceServer();
-
-            var result = await server.Run(request, new TimeBudget(1.Seconds()));
-
-            result.ShouldFailWithExceptionContaining("System.TimeoutException: The operation has timed out.");
-        }
-
-        [Fact]
         public async Task When_a_public_void_Main_with_no_parameters_is_present_it_is_invoked()
         {
             var request = new Models.Execution.Workspace($@"

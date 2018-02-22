@@ -3,28 +3,30 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Pocket;
-using static Pocket.Logger<Recipes.ExceptionFilter>;
+using static Pocket.Logger<MLS.Agent.ExceptionFilter>;
 
-namespace Recipes
+namespace MLS.Agent
 {
-    internal class ExceptionFilter : IExceptionFilter
+    public class ExceptionFilter : IExceptionFilter
     {
         public void OnException(ExceptionContext context)
         {
-            if (context.Exception == null)
+            var exception = context.Exception;
+
+            if (exception == null)
             {
                 return;
             }
 
-            context.Result = new ExceptionResult(context.Exception);
+            context.Result = new ExceptionResult(exception);
 
             if (context.ExceptionHandled)
             {
-                Log.Warning(context.Exception);
+                Log.Warning(exception);
             }
             else
             {
-                Log.Error(context.Exception);
+                Log.Error(exception);
             }
         }
 
@@ -45,7 +47,7 @@ namespace Recipes
                     exception = exception.ToString()
                 })
                 {
-                    StatusCode = 500
+                    StatusCode = exception.ToHttpStatusCode()
                 };
 
                 await objectResult.ExecuteResultAsync(context);
