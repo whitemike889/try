@@ -36,82 +36,68 @@ namespace WorkspaceServer.Servers.Scripting
                 var options = CreateOptions(request);
 
                 ScriptState<object> state = null;
-                Exception exception = null;
-                try
+                Exception userException = null;
+
+                await Task.Run(async () =>
                 {
-                    await Task.Run(async () =>
+                    var sourceLines = request.SourceFiles.Single().Text.Lines;
+
+                    var buffer = new StringBuilder();
+
+                    for (var index = 0; index < sourceLines.Count; index++)
                     {
-                        var sourceLines = request.SourceFiles.Single().Text.Lines;
+                        var sourceLine = sourceLines[index];
+                        buffer.AppendLine(sourceLine.ToString());
 
-                        var buffer = new StringBuilder();
+                        // Convert from 0-based to 1-based.
+                        var lineNumber = sourceLine.LineNumber + 1;
 
-                        for (var index = 0; index < sourceLines.Count; index++)
+                        try
                         {
-                            var sourceLine = sourceLines[index];
-                            buffer.AppendLine(sourceLine.ToString());
+                            console.Clear();
 
-                            // Convert from 0-based to 1-based.
-                            var lineNumber = sourceLine.LineNumber + 1;
+                            state = await Run(state, buffer, options);
 
-                            try
+                            if (index == sourceLines.Count - 1 &&
+                                console.IsEmpty())
                             {
-                                console.Clear();
-
-                                state = await Run(state, buffer, options);
-
-                                if (index == sourceLines.Count - 1 &&
-                                    console.IsEmpty())
-                                {
-                                    state = await EmulateConsoleMainInvocation(state, buffer, options);
-                                }
+                                state = await EmulateConsoleMainInvocation(state, buffer, options);
                             }
-                            catch (CompilationErrorException ex)
+                        }
+                        catch (CompilationErrorException ex)
+                        {
+                            if (lineNumber == sourceLines.Count)
                             {
-                                if (lineNumber == sourceLines.Count)
-                                {
-                                    exception = ex;
+                                userException = ex;
 
-                                    Console.WriteLine(
-                                        string.Join(Environment.NewLine,
-                                                    ex.Diagnostics
-                                                      .Select(d => d.ToString())));
+                                Console.WriteLine(
+                                    string.Join(Environment.NewLine,
+                                                ex.Diagnostics
+                                                  .Select(d => d.ToString())));
 
-                                    break;
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                exception = ex;
                                 break;
                             }
                         }
-                    }).CancelIfExceeds(budget);
-                }
-                catch (TimeoutException timeoutException)
-                {
-                    exception = timeoutException;
-                }
-                catch (BudgetExceededException budgetExceededException)
-                {
-                    exception = budgetExceededException; 
-                }
-                catch (TaskCanceledException taskCanceledException)
-                {
-                    exception = taskCanceledException;
-                }
+                        catch (Exception ex)
+                        {
+                            userException = ex;
+                            break;
+                        }
+                    }
+                }).CancelIfExceeds(budget);
 
                 var result = new RunResult(
-                    succeeded: !exception.IsConsideredRunFailure(),
+                    succeeded: !userException.IsConsideredRunFailure(),
                     output: console.StandardOutput
                                    .Replace("\r\n", "\n")
                                    .Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries),
                     returnValue: state?.ReturnValue,
-                    exception: (exception ?? state?.Exception).ToDisplayString(),
+                    exception: (userException ?? state?.Exception).ToDisplayString(),
                     diagnostics: GetDiagnostics(request.SourceFiles.Single(), options));
 
                 operation.Complete(result, budget);
 
-                return result; 
+                return result;
             }
         }
 

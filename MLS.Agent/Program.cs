@@ -47,7 +47,13 @@ namespace MLS.Agent
                     }));
             }
 
-            if (options.WriteFileLog)
+            var shouldLogToFile = options.LogToFile;
+
+#if DEBUG
+            shouldLogToFile = true;
+#endif 
+
+            if (shouldLogToFile)
             {
                 var log = new SerilogLoggerConfiguration()
                           .WriteTo
