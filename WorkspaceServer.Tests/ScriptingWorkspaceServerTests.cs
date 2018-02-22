@@ -149,5 +149,63 @@ public static class Hello
 
             result.Diagnostics.Should().NotContain(d => d.Id == "CS7022");
         }
+
+        [Fact]
+        public async Task When_using_buffers_they_are_inlined()
+        {
+            var fileCode = @"using System;
+
+public static class Hello
+{
+    static void Main(string[] args)
+    {
+        #region toReplace
+        Console.WriteLine(""Hello world!"");
+        #endregion
+    }
+}";
+            var request = new Workspace(
+                workspaceType: "script",
+                files: new[] { new Workspace.File("Main.cs", fileCode) },
+                buffers: new[] { new Workspace.Buffer(@"Main.cs@toReplace", @"Console.WriteLine(""Hello there!"");", 0) });
+
+            var server = await GetWorkspaceServer();
+
+            var result = await server.Run(request);
+
+            result.ShouldSucceedWithOutput("Hello there!");
+        }
+
+        [Fact]
+        public async Task When_using_buffers_they_are_inlined_and_warnings_are_aligned()
+        {
+            var fileCode = @"using System;
+
+public static class Hello
+{
+    static void Main(string[] args)
+    {
+        #region toReplace
+        Console.WriteLine(""Hello world!"");
+        #endregion
+    }
+}";
+            var request = new Workspace(
+                workspaceType: "script",
+                files: new[] { new Workspace.File("Main.cs", fileCode) },
+                buffers: new[] { new Workspace.Buffer(@"Main.cs@toReplace", @"Console.WriteLine(banana);", 0) });
+
+            var server = await GetWorkspaceServer();
+
+            var result = await server.Run(request);
+
+            result.ShouldBeEquivalentTo(new
+            {
+                Succeeded = false,
+                Output = new[] { "(1,19): error CS0103: The name \'banana\' does not exist in the current context" },
+                Exception = (string)null, 
+            }, config => config.ExcludingMissingMembers());
+            
+        }
     }
 }

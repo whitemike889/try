@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.CodeAnalysis;
@@ -14,6 +16,7 @@ using Microsoft.CodeAnalysis.Scripting;
 using Pocket;
 using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
+using WorkspaceServer.Transformations;
 using static Pocket.Logger<WorkspaceServer.Servers.Scripting.ScriptingWorkspaceServer>;
 using Workspace = WorkspaceServer.Models.Execution.Workspace;
 
@@ -21,26 +24,29 @@ namespace WorkspaceServer.Servers.Scripting
 {
     public class ScriptingWorkspaceServer : IWorkspaceServer
     {
-        public async Task<RunResult> Run(WorkspaceServer.Models.Execution.Workspace request, Budget budget = null)
+        public async Task<RunResult> Run(Workspace request, Budget budget = null)
         {
             budget = budget ?? new Budget();
-
+          
             using (var operation = Log.OnEnterAndConfirmOnExit())
             using (var console = await ConsoleOutput.Capture())
             {
-                if (request.SourceFiles.Count != 1)
+                var processor = new BufferInliningTransformer();
+                var processedRequest = await processor.TransformAsync(request, budget);
+
+                if (processedRequest.SourceFiles.Count != 1)
                 {
                     throw new ArgumentException($"{nameof(request)} should have exactly one source file.");
                 }
 
                 var options = CreateOptions(request);
-
+               
                 ScriptState<object> state = null;
                 Exception userException = null;
 
                 await Task.Run(async () =>
                 {
-                    var sourceLines = request.SourceFiles.Single().Text.Lines;
+                    var sourceLines = processedRequest.SourceFiles.Single().Text.Lines;
 
                     var buffer = new StringBuilder();
 
@@ -86,14 +92,18 @@ namespace WorkspaceServer.Servers.Scripting
                     }
                 }).CancelIfExceeds(budget);
 
+                (SerializableDiagnostic Diagnostic, string ErrorMessage)[] processeddiagnostics = GetDiagnostics(processedRequest, options).ToArray();
+                var diagnostics = processeddiagnostics.Select(e => e.Diagnostic).ToArray();
+                var output = console.StandardOutput
+                    .Replace("\r\n", "\n")
+                    .Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+                output = ProcessOutputLines(output, processeddiagnostics.Where(e => e.Diagnostic.Severity == DiagnosticSeverity.Error).Select(e => e.ErrorMessage).ToArray());
                 var result = new RunResult(
                     succeeded: !userException.IsConsideredRunFailure(),
-                    output: console.StandardOutput
-                                   .Replace("\r\n", "\n")
-                                   .Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries),
+                    output: output,
                     returnValue: state?.ReturnValue,
                     exception: (userException ?? state?.Exception).ToDisplayString(),
-                    diagnostics: GetDiagnostics(request.SourceFiles.Single(), options));
+                    diagnostics:diagnostics);
 
                 operation.Complete(result, budget);
 
@@ -101,20 +111,37 @@ namespace WorkspaceServer.Servers.Scripting
             }
         }
 
+        private string[] ProcessOutputLines(string[] output, string[] errormessages)
+        {
+            var filter = output.Where(IsNotDisagnostic);
+
+            return filter.Concat(errormessages).ToArray();
+        }
+        
+
+        private bool IsNotDisagnostic(string line)
+        {
+            var filter = new Regex(@"^(?<location>\(\d+,\d+\):)\s*(?<level>\S+)\s*(?<code>[A-Z]{2}\d+:)(?<message>.+)", RegexOptions.Compiled);
+            return !filter.IsMatch(line);
+        }
+
         private static ScriptOptions CreateOptions(Workspace request) =>
             ScriptOptions.Default
                          .AddReferences(GetReferenceAssemblies())
                          .AddImports(GetDefultUsings().Concat(request.Usings));
 
-        private SerializableDiagnostic[] GetDiagnostics(SourceFile sourceFile, ScriptOptions options)
+        private IEnumerable<(SerializableDiagnostic Diagnostic, string ErrorMessage)> GetDiagnostics(Workspace workspace, ScriptOptions options)
         {
-            return CSharpScript.Create(sourceFile.Text.ToString(), options)
-                                .GetCompilation()
-                                .GetDiagnostics()
-                                .Where(d => d.Id != "CS7022").
-                                Select(d => new SerializableDiagnostic(d))
-                                      .ToArray(); // Suppress  warning CS7022: The entry point of the program is global script code; ignoring 'Main()' entry point.
-                                                               // Unlike regular CompilationOptions, ScriptOptions does't provide the ability to suppress diagnostics
+            var processor = new BufferInliningTransformer();
+            var viewPorts = processor.ExtractViewPorts(workspace);
+            var sourceFile = workspace.SourceFiles.Single();
+            var sourceDiagnostics = CSharpScript.Create(sourceFile.Text.ToString(), options)
+                .GetCompilation()
+                .GetDiagnostics()
+                .Where(d => d.Id != "CS7022");
+
+            IEnumerable<(SerializableDiagnostic Diagnostic, string ErrorMessage)> processedDiagnostics =  DiagnosticTransformer.ReconstructDiagnosticLocations(sourceDiagnostics, viewPorts, BufferInliningTransformer.PaddingSize).ToArray();
+            return processedDiagnostics;
         }
 
         private static async Task<ScriptState<object>> Run(
@@ -238,6 +265,6 @@ typeof({entryPointMethod.ContainingType.Name})
         }
 
         public Task<DiagnosticResult> GetDiagnostics(Workspace request) => 
-            Task.FromResult(new DiagnosticResult(GetDiagnostics(request.SourceFiles.Single(), CreateOptions(request))));
+            Task.FromResult(new DiagnosticResult(GetDiagnostics(request, CreateOptions(request)).Select(e => e.Diagnostic).ToArray()));
     }
 }

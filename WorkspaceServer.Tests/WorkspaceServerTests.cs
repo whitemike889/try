@@ -270,6 +270,8 @@ public static class Hello
             result.ShouldSucceedWithOutput("Hello there!");
         }
 
+
+
         [Fact]
         public async Task Response_shows_warnings_with_successful_compilation()
         {

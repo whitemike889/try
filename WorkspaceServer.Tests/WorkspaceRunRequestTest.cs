@@ -33,7 +33,7 @@ namespace WorkspaceServer.Tests
         {
             var request = JsonConvert.DeserializeObject<Workspace>(@"{ workspaceType: ""console"", buffers: [{content: ""code"", id:""test"", position: 12}] }");
             request.Buffers.Should().NotBeNullOrEmpty();
-            request.SourceFiles.Should().NotBeNullOrEmpty();
+            request.SourceFiles.Should().BeNullOrEmpty();
             request.WorkspaceType.Should().Be("console");
             request.Buffers.FirstOrDefault(b => b.Id == "test").Should().NotBeNull();
         }
