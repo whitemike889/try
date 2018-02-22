@@ -100,19 +100,6 @@ namespace WorkspaceServer.Servers.Dotnet
                                 .ToArray(),
                             diagnostics: processedDiagnostics.Select(d => d.Diagnostic).ToArray());
                     }
-
-                    var dotnet = new MLS.Agent.Tools.Dotnet(_workspace.Directory);
-
-                    commandLineResult = await dotnet.Execute(emitResponse.Body.OutputAssemblyPath, budget);
-
-                    if (commandLineResult.Exception != null)
-                    {
-                        exceptionMessage = commandLineResult.Exception.ToString();
-                    }
-                    else if (commandLineResult.Error.Count > 0)
-                    {
-                        exceptionMessage = string.Join(Environment.NewLine, commandLineResult.Error);
-                    }
                 }
 
                 var dotnet = new MLS.Agent.Tools.Dotnet(_workspace.Directory);
