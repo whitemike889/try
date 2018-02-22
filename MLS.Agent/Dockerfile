@@ -7,6 +7,7 @@ RUN groupadd app_group
 RUN useradd -r --gid app_group --home /app --shell /sbin/nologin --comment "app user" app_user 
 WORKDIR /app
 ENV ASPNETCORE_URLS=http://+:4242
+ENV DOTNET_SKIP_FIRST_TIME_EXPERIENCE=true
 EXPOSE 4242
 COPY ${source:-obj/Docker/publish} .
 
