@@ -26,6 +26,7 @@ namespace WorkspaceServer.Servers.Dotnet
         private bool _disposed;
         private readonly Budget _initializationBudget = new Budget();
         private readonly TimeSpan _defaultTimeoutInSeconds;
+        public static string UserCodeCompletedBudgetEntryName = "UserCodeCompleted";
 
         public DotnetWorkspaceServer(
             Workspace workspace,
@@ -80,8 +81,9 @@ namespace WorkspaceServer.Servers.Dotnet
                 Exception exception = null;
                 string exceptionMessage = null;
                 OmnisharpEmitResponse emitResponse = null;
+                emitResponse = await Emit(request, budget);
 
-                try
+                if (emitResponse.Body.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error))
                 {
                     emitResponse = await Emit(processedRequest, budget);
 
@@ -112,17 +114,25 @@ namespace WorkspaceServer.Servers.Dotnet
                         exceptionMessage = string.Join(Environment.NewLine, commandLineResult.Error);
                     }
                 }
-                catch (TimeoutException timeoutException)
+
+                var dotnet = new MLS.Agent.Tools.Dotnet(_workspace.Directory);
+
+                commandLineResult = await dotnet.Execute(emitResponse.Body.OutputAssemblyPath, budget);
+
+                budget.RecordEntry(UserCodeCompletedBudgetEntryName);
+
+                if (commandLineResult.ExitCode == 124)
                 {
-                    exception = timeoutException;
+                    throw new BudgetExceededException(budget);
                 }
-                catch (BudgetExceededException budgetExceededException)
+
+                if (commandLineResult.Exception != null)
                 {
-                    exception = budgetExceededException;
+                    exceptionMessage = commandLineResult.Exception.ToString();
                 }
-                catch (TaskCanceledException taskCanceledException)
+                else if (commandLineResult.Error.Count > 0)
                 {
-                    exception = taskCanceledException;
+                    exceptionMessage = string.Join(Environment.NewLine, commandLineResult.Error);
                 }
 
                 if (emitResponse?.Body.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error) == true

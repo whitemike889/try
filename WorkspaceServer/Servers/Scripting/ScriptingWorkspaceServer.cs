@@ -37,70 +37,54 @@ namespace WorkspaceServer.Servers.Scripting
 
                 ScriptState<object> state = null;
                 Exception userException = null;
-                Exception workspaceServerException = null;
 
-                try
+                await Task.Run(async () =>
                 {
-                    await Task.Run(async () =>
+                    var sourceLines = request.SourceFiles.Single().Text.Lines;
+
+                    var buffer = new StringBuilder();
+
+                    for (var index = 0; index < sourceLines.Count; index++)
                     {
-                        var sourceLines = request.SourceFiles.Single().Text.Lines;
+                        var sourceLine = sourceLines[index];
+                        buffer.AppendLine(sourceLine.ToString());
 
-                        var buffer = new StringBuilder();
+                        // Convert from 0-based to 1-based.
+                        var lineNumber = sourceLine.LineNumber + 1;
 
-                        for (var index = 0; index < sourceLines.Count; index++)
+                        try
                         {
-                            var sourceLine = sourceLines[index];
-                            buffer.AppendLine(sourceLine.ToString());
+                            console.Clear();
 
-                            // Convert from 0-based to 1-based.
-                            var lineNumber = sourceLine.LineNumber + 1;
+                            state = await Run(state, buffer, options);
 
-                            try
+                            if (index == sourceLines.Count - 1 &&
+                                console.IsEmpty())
                             {
-                                console.Clear();
-
-                                state = await Run(state, buffer, options);
-
-                                if (index == sourceLines.Count - 1 &&
-                                    console.IsEmpty())
-                                {
-                                    state = await EmulateConsoleMainInvocation(state, buffer, options);
-                                }
+                                state = await EmulateConsoleMainInvocation(state, buffer, options);
                             }
-                            catch (CompilationErrorException ex)
-                            {
-                                if (lineNumber == sourceLines.Count)
-                                {
-                                    userException = ex;
-
-                                    Console.WriteLine(
-                                        string.Join(Environment.NewLine,
-                                                    ex.Diagnostics
-                                                      .Select(d => d.ToString())));
-
-                                    break;
-                                }
-                            }
-                            catch (Exception ex)
+                        }
+                        catch (CompilationErrorException ex)
+                        {
+                            if (lineNumber == sourceLines.Count)
                             {
                                 userException = ex;
+
+                                Console.WriteLine(
+                                    string.Join(Environment.NewLine,
+                                                ex.Diagnostics
+                                                  .Select(d => d.ToString())));
+
                                 break;
                             }
                         }
-                    }).CancelIfExceeds(budget);
-                }
-                catch (TimeoutException timeoutException)
-                {
-                    workspaceServerException = timeoutException;
-                }
-                catch (BudgetExceededException budgetExceededException)
-                {
-                    workspaceServerException = budgetExceededException; 
-                }
-                catch (TaskCanceledException taskCanceledException)
-                {
-                    workspaceServerException = taskCanceledException;
-                }
+                        catch (Exception ex)
+                        {
+                            userException = ex;
+                            break;
+                        }
+                    }
+                }).CancelIfExceeds(budget);
 
                 var result = new RunResult(
                     succeeded: !userException.IsConsideredRunFailure(),
@@ -109,12 +93,11 @@ namespace WorkspaceServer.Servers.Scripting
                                    .Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries),
                     returnValue: state?.ReturnValue,
                     exception: (userException ?? state?.Exception).ToDisplayString(),
-                    workspaceServerException: workspaceServerException,
                     diagnostics: GetDiagnostics(request.SourceFiles.Single(), options));
 
                 operation.Complete(result, budget);
 
-                return result; 
+                return result;
             }
         }
 

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Newtonsoft.Json;
 
 namespace WorkspaceServer.Models.Execution
 {
@@ -11,13 +10,11 @@ namespace WorkspaceServer.Models.Execution
             IReadOnlyCollection<string> output = null,
             object returnValue = null,
             string exception = null,
-            IReadOnlyCollection<SerializableDiagnostic> diagnostics = null,
-            Exception workspaceServerException = null)
+            IReadOnlyCollection<SerializableDiagnostic> diagnostics = null)
         {
             Output = output ?? Array.Empty<string>();
             Succeeded = succeeded;
             Exception = exception;
-            WorkspaceServerException = workspaceServerException;
             ReturnValue = returnValue;
             Diagnostics = diagnostics ?? Array.Empty<SerializableDiagnostic>();
         }
@@ -31,9 +28,6 @@ namespace WorkspaceServer.Models.Execution
         public object ReturnValue { get; }
 
         public string Exception { get; }
-
-        [JsonIgnore]
-        public Exception WorkspaceServerException { get; }
 
         public override string ToString() =>
             $@"{nameof(Succeeded)}: {Succeeded}

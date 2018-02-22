@@ -41,13 +41,15 @@ namespace MLS.Agent.Controllers
                 var workspaceType = request.WorkspaceType;
                 var runTimeout = TimeSpan.FromMilliseconds(timeoutMs);
 
+                var budget = new TimeBudget(runTimeout);
+
                 if (string.Equals(workspaceType, "script", StringComparison.OrdinalIgnoreCase))
                 {
                     var server = new ScriptingWorkspaceServer();
 
                     result = await server.Run(
-                                 request, 
-                                 new TimeBudget(runTimeout));
+                                 request,
+                                 budget);
                 }
                 else
                 {
@@ -55,24 +57,16 @@ namespace MLS.Agent.Controllers
 
                     if (server is DotnetWorkspaceServer dotnetWorkspaceServer)
                     {
-                        await dotnetWorkspaceServer.EnsureInitializedAndNotDisposed(
-                            new TimeBudget(TimeSpan.FromSeconds(30)));
+                        await dotnetWorkspaceServer.EnsureInitializedAndNotDisposed(budget);
                     }
 
                     result = await server.Run(
                                  request,
-                                 new TimeBudget(runTimeout));
+                                 budget);
                 }
 
-                if (result.WorkspaceServerException is BudgetExceededException)
-                {
-                    return StatusCode(504);
-                }
-                else
-                {
-                    operation.Succeed();
-                    return Ok(result);
-                }
+                operation.Succeed();
+                return Ok(result);
             }
         }
 
