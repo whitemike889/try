@@ -6,15 +6,26 @@ namespace MLS.Agent.Tools
 {
     public static class Paths
     {
-        public static string UserProfile { get; } =
-            Environment.GetEnvironmentVariable(
+        static Paths()
+        {
+            UserProfile = Environment.GetEnvironmentVariable(
                 RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
                     ? "USERPROFILE"
                     : "HOME");
 
-        public static string NugetCache { get; } =
-            Path.Combine(UserProfile, ".nuget", "packages");
+            var nugetPackagesEnvironmentVariable = Environment.GetEnvironmentVariable("NUGET_PACKAGES");
 
-        public static string EmitPlugin { get; } = Path.Combine(NugetCache, "trydotnet.omnisharp.emit", "1.29.0-beta2", "lib", "net46", "OmniSharp.Emit.dll");
+            NugetCache = string.IsNullOrWhiteSpace(nugetPackagesEnvironmentVariable)
+                             ? Path.Combine(UserProfile, ".nuget", "packages")
+                             : nugetPackagesEnvironmentVariable;
+
+            EmitPlugin = Path.Combine(NugetCache, "trydotnet.omnisharp.emit", "1.29.0-beta2", "lib", "net46", "OmniSharp.Emit.dll");
+        }
+
+        public static string UserProfile { get; }
+
+        public static string NugetCache { get; }
+
+        public static string EmitPlugin { get; }
     }
 }

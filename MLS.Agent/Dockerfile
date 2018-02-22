@@ -14,6 +14,9 @@ RUN chown --recursive app_user:app_group /app
 RUN chown --recursive app_user:app_group /dependencies
 RUN chown --recursive app_user:app_group /workspaces
 
+# make sure that the root folder is available to app_user since this is where the nuget package cache is found
+RUN chmod -R 777 /root/
+
 USER app_user
 
 ENTRYPOINT ["dotnet", "MLS.Agent.dll"]
