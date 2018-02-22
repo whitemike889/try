@@ -71,6 +71,7 @@ namespace WorkspaceServer.Servers.Dotnet
         public async Task<RunResult> Run(Models.Execution.Workspace request, Budget budget = null)
         {
             budget = budget ?? new TimeBudget(_defaultTimeoutInSeconds);
+
             using (var operation = Log.OnEnterAndConfirmOnExit())
             {
                 var processor = new BufferInliningTransformer();
@@ -81,12 +82,11 @@ namespace WorkspaceServer.Servers.Dotnet
                 Exception exception = null;
                 string exceptionMessage = null;
                 OmnisharpEmitResponse emitResponse = null;
-                emitResponse = await Emit(request, budget);
+
+                emitResponse = await Emit(processedRequest, budget);
 
                 if (emitResponse.Body.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error))
                 {
-                    emitResponse = await Emit(processedRequest, budget);
-
                     if (emitResponse.Body.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error))
                     {
                         viewPorts = processor.ExtractViewPorts(processedRequest);
@@ -127,7 +127,9 @@ namespace WorkspaceServer.Servers.Dotnet
                 {
                     viewPorts = processor.ExtractViewPorts(processedRequest);
                 }
+
                 processedDiagnostics = ReconstructDiagnosticLocations(emitResponse?.Body.Diagnostics, viewPorts, BufferInliningTransformer.PaddingSize).ToArray();
+
                 var runResult = new RunResult(
                     succeeded: !exception.IsConsideredRunFailure(),
                     output: commandLineResult?.Output,
@@ -135,10 +137,11 @@ namespace WorkspaceServer.Servers.Dotnet
                     diagnostics: processedDiagnostics.Select(d => d.Diagnostic).ToArray());
 
                 operation.Complete(runResult, budget);
-                return runResult;
 
+                return runResult;
             }
         }
+
         private static (SerializableDiagnostic, string) AlignDiagnosticLocation(KeyValuePair<string, (SourceFile Destination, TextSpan Region)> target, Diagnostic diagnostic, int paddingSize)
         {
             // offest of the buffer int othe original source file
@@ -182,10 +185,13 @@ namespace WorkspaceServer.Servers.Dotnet
                 errorMessage);
             return processedDiagnostic;
         }
+
         private static IEnumerable<(SerializableDiagnostic, string)> ReconstructDiagnosticLocations(IEnumerable<Diagnostic> bodyDiagnostics,
             Dictionary<string, (SourceFile Destination, TextSpan Region)> viewPortsByBufferId, int paddingSize)
         {
-            var diagnostics = bodyDiagnostics ?? Enumerable.Empty<Diagnostic>();
+            var diagnostics = bodyDiagnostics ??
+                              Enumerable.Empty<Diagnostic>();
+
             foreach (var diagnostic in diagnostics)
             {
                 var diagnosticPath = diagnostic.Location.MappedLineSpan.Path;
@@ -214,7 +220,7 @@ namespace WorkspaceServer.Servers.Dotnet
             }
         }
 
-        private async Task<OmnisharpEmitResponse> Emit(Models.Execution.Workspace request, Budget budget = null)
+        private async Task<OmnisharpEmitResponse> Emit(Models.Execution.Workspace request, Budget budget)
         {
             await EnsureInitializedAndNotDisposed(budget);
 
@@ -251,6 +257,7 @@ namespace WorkspaceServer.Servers.Dotnet
             var processedRequest = await processor.TransformAsync(request, budget);
             var emitResult = await Emit(processedRequest, new Budget());
             SerializableDiagnostic[] diagnostics;
+
             if (emitResult.Body.Diagnostics.Any())
             {
 
@@ -258,7 +265,6 @@ namespace WorkspaceServer.Servers.Dotnet
                 IEnumerable<(SerializableDiagnostic Diagnostic, string ErrorMessage)> processedDiagnostics = ReconstructDiagnosticLocations(emitResult.Body.Diagnostics, viewPorts, BufferInliningTransformer.PaddingSize).ToArray();
                 diagnostics = processedDiagnostics?.Select(d => d.Diagnostic).ToArray();
             }
-
             else
             {
                 diagnostics = emitResult.Body.Diagnostics.Select(d => new SerializableDiagnostic(d)).ToArray();
