@@ -9,7 +9,7 @@ namespace WorkspaceServer.Transformations
     public class OmniSharpDiagnosticTransformer
     {
         public static IEnumerable<(SerializableDiagnostic, string)> ReconstructDiagnosticLocations(IEnumerable<OmniSharp.Client.Diagnostic> bodyDiagnostics,
-            Dictionary<string, (SourceFile Destination, TextSpan Region)> viewPortsByBufferId, int paddingSize)
+            Dictionary<string, Viewport> viewPortsByBufferId, int paddingSize)
         {
             var diagnostics = bodyDiagnostics ?? Enumerable.Empty<OmniSharp.Client.Diagnostic>();
             foreach (var diagnostic in diagnostics)
@@ -39,7 +39,7 @@ namespace WorkspaceServer.Transformations
                 }
             }
         }
-        private static (SerializableDiagnostic, string) AlignDiagnosticLocation(KeyValuePair<string, (SourceFile Destination, TextSpan Region)> target, OmniSharp.Client.Diagnostic diagnostic, int paddingSize)
+        private static (SerializableDiagnostic, string) AlignDiagnosticLocation(KeyValuePair<string, Viewport> target, OmniSharp.Client.Diagnostic diagnostic, int paddingSize)
         {
             // offest of the buffer int othe original source file
             var offset = target.Value.Region.Start;

@@ -10,7 +10,7 @@ namespace WorkspaceServer.Transformations
     public class DiagnosticTransformer
     {
         public static IEnumerable<(SerializableDiagnostic, string)> ReconstructDiagnosticLocations(IEnumerable<Diagnostic> bodyDiagnostics,
-            Dictionary<string, (SourceFile Destination, TextSpan Region)> viewPortsByBufferId, int paddingSize)
+            Dictionary<string, Viewport> viewPortsByBufferId, int paddingSize)
         {
             const string unmappedPath = "unmapped";
             var diagnostics = bodyDiagnostics ?? Enumerable.Empty<Diagnostic>();
@@ -42,7 +42,7 @@ namespace WorkspaceServer.Transformations
                 }
             }
         }
-        private static (SerializableDiagnostic, string) AlignDiagnosticLocation(KeyValuePair<string, (SourceFile Destination, TextSpan Region)> target, Diagnostic diagnostic, int paddingSize)
+        private static (SerializableDiagnostic, string) AlignDiagnosticLocation(KeyValuePair<string, Viewport> target, Diagnostic diagnostic, int paddingSize)
         {
             // offest of the buffer int othe original source file
             var offset = target.Value.Region.Start;

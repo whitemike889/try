@@ -76,7 +76,7 @@ namespace WorkspaceServer.Servers.Dotnet
             {
                 var processor = new BufferInliningTransformer();
                 var processedRequest = await processor.TransformAsync(request, budget);
-                Dictionary<string, (SourceFile Destination, TextSpan Region)> viewPorts = null;
+                Dictionary<string, Viewport> viewPorts = null;
                 IEnumerable<(SerializableDiagnostic Diagnostic, string ErrorMessage)> processedDiagnostics;
                 CommandLineResult commandLineResult = null;
                 Exception exception = null;
