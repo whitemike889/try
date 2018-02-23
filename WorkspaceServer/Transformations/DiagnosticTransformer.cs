@@ -29,7 +29,7 @@ namespace WorkspaceServer.Transformations
                         .Where(e => e.Key.Contains("@") && (diagnosticPath == unmappedPath || diagnosticPath.EndsWith(e.Value.Destination.Name)))
                         .FirstOrDefault(e => e.Value.Region.Contains(diagnostic.Location.SourceSpan.Start));
 
-                    if (!target.Value.Region.IsEmpty)
+                    if (target.Value != null && !target.Value.Region.IsEmpty)
                     {
                         var processedDiagnostic = AlignDiagnosticLocation(target, diagnostic, paddingSize);
                         yield return processedDiagnostic;
