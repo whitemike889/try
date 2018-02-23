@@ -74,6 +74,7 @@ namespace WorkspaceServer.Servers.Dotnet
 
             using (var operation = Log.OnEnterAndConfirmOnExit())
             {
+                await EnsureInitializedAndNotDisposed(budget);
                 var processor = new BufferInliningTransformer();
                 var processedRequest = await processor.TransformAsync(request, budget);
                 Dictionary<string, Viewport> viewPorts = null;
@@ -83,6 +84,7 @@ namespace WorkspaceServer.Servers.Dotnet
                 string exceptionMessage = null;
                 OmnisharpEmitResponse emitResponse = null;
 
+                await FlushBuffers(processedRequest, budget);
                 emitResponse = await Emit(processedRequest, budget);
 
                 if (emitResponse.Body.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error))
@@ -140,6 +142,24 @@ namespace WorkspaceServer.Servers.Dotnet
             }
         }
 
+        private async Task FlushBuffers(Models.Execution.Workspace workspace, Budget budget)
+        {
+            var wi = await _omniSharpServer.GetWorkspaceInformation(budget);
+            var serverBuffers = wi.Body.MSBuildSolution.Projects.SelectMany(p => p.SourceFiles);
+
+            var usedFiles = new HashSet<string>(workspace.SourceFiles.Select(f => f.Name));
+            foreach (var serverBuffer in serverBuffers)
+            {
+                if (usedFiles.Add(serverBuffer.Name))
+                {
+                    var file = new FileInfo(Path.Combine(_workspace.Directory.FullName, serverBuffer.Name));
+                    await _omniSharpServer.UpdateBuffer(file, "//empty",budget);
+                }
+            }
+            budget.RecordEntry();
+            ;
+        }
+
         private async Task<OmnisharpEmitResponse> Emit(Models.Execution.Workspace request, Budget budget)
         {
             await EnsureInitializedAndNotDisposed(budget);
@@ -172,7 +192,8 @@ namespace WorkspaceServer.Servers.Dotnet
 
         public async Task<DiagnosticResult> GetDiagnostics(Models.Execution.Workspace request)
         {
-            var budget = new Budget();
+            var budget =  new TimeBudget(_defaultTimeoutInSeconds);
+            await EnsureInitializedAndNotDisposed(budget);
             var processor = new BufferInliningTransformer();
             var processedRequest = await processor.TransformAsync(request, budget);
             var emitResult = await Emit(processedRequest, new Budget());

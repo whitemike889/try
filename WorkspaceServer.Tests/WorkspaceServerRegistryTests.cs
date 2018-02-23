@@ -83,6 +83,7 @@ namespace Twilio_try.dot.net_sample
         {
             IWorkspaceServer workspaceServer;
 
+            using(Clockwise.VirtualClock.Start())
             using (var registry = new WorkspaceServerRegistry())
             {
                 var workspaceId = (await Default.TemplateWorkspace).Name;
