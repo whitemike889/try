@@ -280,7 +280,7 @@ namespace MLS.Agent.Tests
 
                 if (runTimeoutMs != null)
                 {
-                    request.Headers.Add("Timeout", runTimeoutMs.ToString());
+                    request.Headers.Add("Timeout", runTimeoutMs.Value.ToString("F0"));
                 }
 
                 response = await agent.SendAsync(request);
