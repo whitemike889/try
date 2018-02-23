@@ -154,6 +154,10 @@ namespace WorkspaceServer.Servers.Dotnet
                 {
                     var file = new FileInfo(Path.Combine(_workspace.Directory.FullName, serverBuffer.Name));
                     await _omniSharpServer.UpdateBuffer(file, "//empty",budget);
+                    if (file.Exists)
+                    {
+                        File.WriteAllText(file.FullName, "//empty");
+                    }
                 }
             }
             budget.RecordEntry();
