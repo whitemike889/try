@@ -83,7 +83,7 @@ namespace WorkspaceServer.Tests
         }
 
         [Fact]
-        public async Task Console_workspace_clean_previous_files()
+        public async Task Workspace_cleans_previous_files()
         {
             #region bufferSources
 
