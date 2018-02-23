@@ -10,7 +10,7 @@ namespace WorkspaceServer.Models.Execution
         public Viewport(SourceFile destination, TextSpan region)
         {
             this.Region = region;
-            this.Destination = destination;
+            this.Destination = destination ?? throw new ArgumentNullException(nameof(destination));
         }
 
         public TextSpan Region { get; }
