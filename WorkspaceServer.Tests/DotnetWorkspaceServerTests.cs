@@ -83,6 +83,72 @@ namespace WorkspaceServer.Tests
         }
 
         [Fact]
+        public async Task Console_workspace_clean_previous_files()
+        {
+            #region bufferSources
+
+            var program = @"
+using System;
+using System.Linq;
+
+namespace FibonacciTest
+{
+    public class Program
+    {
+        public static void Main()
+        {
+            foreach (var i in FibonacciGenerator.Fibonacci().Take(20))
+            {
+                Console.WriteLine(i);
+            }
+        }       
+    }
+}";
+            var generator = @"
+using System.Collections.Generic;
+
+namespace FibonacciTest
+{
+    public static class FibonacciGenerator
+    {
+        public  static IEnumerable<int> Fibonacci()
+        {
+            int current = 1, next = 1;
+            while (true)
+            {
+                yield return current;
+                next = current + (current = next);
+            }
+        }
+    }
+}";
+
+            #endregion
+
+            var request = new Workspace(workspaceType: "console", buffers: new[]
+            {
+                new Workspace.Buffer("Program.cs", program, 0),
+                new Workspace.Buffer("FibonacciGenerator.cs", generator, 0)
+            });
+
+            var server = await GetWorkspaceServer();
+
+            var result = await server.Run(request);
+
+            result.Succeeded.Should().BeTrue();
+
+            request = new Workspace(workspaceType: "console", buffers: new[]
+            {
+                new Workspace.Buffer("NotProgram.cs", program, 0),
+                new Workspace.Buffer("FibonacciGenerator.cs", generator, 0)
+            });
+
+            result = await server.Run(request);
+
+            result.Succeeded.Should().BeTrue();
+        }
+
+        [Fact]
         public async Task Response_with_multi_buffer_workspace()
         {
             #region bufferSources

@@ -83,6 +83,7 @@ namespace WorkspaceServer.Servers.Dotnet
                 string exceptionMessage = null;
                 OmnisharpEmitResponse emitResponse = null;
 
+                await FlushBuffers(processedRequest);
                 emitResponse = await Emit(processedRequest, budget);
 
                 if (emitResponse.Body.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error))
@@ -137,6 +138,22 @@ namespace WorkspaceServer.Servers.Dotnet
                 operation.Complete(runResult, budget);
 
                 return runResult;
+            }
+        }
+
+        private async Task FlushBuffers(Models.Execution.Workspace workspace)
+        {
+            var wi = await _omniSharpServer.GetWorkspaceInformation();
+            var serverBuffers = wi.Body.MSBuildSolution.Projects.SelectMany(p => p.SourceFiles);
+
+            var usedFiles = new HashSet<string>(workspace.SourceFiles.Select(f => f.Name));
+            foreach (var serverBuffer in serverBuffers)
+            {
+                if (usedFiles.Add(serverBuffer.Name))
+                {
+                    var file = new FileInfo(Path.Combine(_workspace.Directory.FullName, serverBuffer.Name));
+                    await _omniSharpServer.UpdateBuffer(file, "//empty");
+                }
             }
         }
 
