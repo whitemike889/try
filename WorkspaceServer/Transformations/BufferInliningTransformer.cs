@@ -25,7 +25,7 @@ namespace WorkspaceServer.Transformations
             return new Workspace(workspaceType: source.WorkspaceType, files: results.files, buffers: results.buffers);
         }
 
-        public Dictionary<string, (SourceFile Destination, TextSpan Region)> ExtractViewPorts(Workspace ws)
+        public Dictionary<string, Viewport> ExtractViewPorts(Workspace ws)
         {
             if (ws == null) throw new ArgumentNullException(nameof(ws));
 
@@ -81,10 +81,10 @@ namespace WorkspaceServer.Transformations
         }
 
 
-        private static Dictionary<string, (SourceFile Destination, TextSpan Region)> ExtractViewPorts(
+        private static Dictionary<string, Viewport> ExtractViewPorts(
             IReadOnlyCollection<SourceFile> files)
         {
-            var viewPorts = new Dictionary<string, (SourceFile Destination, TextSpan Region)>();
+            var viewPorts = new Dictionary<string, Viewport>();
 
             if (files.Count == 0)
             {
@@ -99,7 +99,7 @@ namespace WorkspaceServer.Transformations
 
                 foreach (var region in regions)
                 {
-                    viewPorts.Add(region.regionName, (sourceFile, region.span));
+                    viewPorts.Add(region.regionName, new Viewport(sourceFile, region.span));
                 }
             }
 
