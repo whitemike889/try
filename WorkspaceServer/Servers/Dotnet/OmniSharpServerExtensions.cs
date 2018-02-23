@@ -118,14 +118,14 @@ namespace WorkspaceServer.Servers.Dotnet
 
         public static Task<OmniSharpResponseMessage<WorkspaceInformationResponse>> GetWorkspaceInformation(
             this OmniSharpServer server,
-            TimeBudget budget = null) =>
+            Budget budget = null) =>
             server.SendCommand<WorkspaceInformation, WorkspaceInformationResponse>(budget);
 
         public static Task UpdateBuffer(
             this OmniSharpServer server,
             FileInfo file,
             string newText,
-            TimeBudget budget = null) =>
+            Budget budget = null) =>
             server.SendCommand<UpdateBuffer, bool>(new UpdateBuffer(file, newText), budget);
     }
 }
