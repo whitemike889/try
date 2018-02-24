@@ -84,7 +84,7 @@ namespace WorkspaceServer.Servers.Dotnet
                 string exceptionMessage = null;
                 OmnisharpEmitResponse emitResponse = null;
 
-                await FlushBuffers(processedRequest, budget);
+                await FlushBuffers(budget);
                 emitResponse = await Emit(processedRequest, budget);
 
                 if (emitResponse.Body.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error))
@@ -142,22 +142,17 @@ namespace WorkspaceServer.Servers.Dotnet
             }
         }
 
-        private async Task FlushBuffers(Models.Execution.Workspace workspace, Budget budget)
+        private async Task FlushBuffers(Budget budget)
         {
             var wi = await _omniSharpServer.GetWorkspaceInformation(budget);
-            var serverBuffers = wi.Body.MSBuildSolution.Projects.SelectMany(p => p.SourceFiles);
-
-            var usedFiles = new HashSet<string>(workspace.SourceFiles.Select(f => f.Name));
-            foreach (var serverBuffer in serverBuffers)
+            var omnisharpFile = wi.Body.MSBuildSolution.Projects.SelectMany(p => p.SourceFiles);
+           
+            foreach (var serverBuffer in omnisharpFile)
             {
-                if (usedFiles.Add(serverBuffer.Name))
+                if (Path.GetExtension(serverBuffer.Name).EndsWith("cs", StringComparison.OrdinalIgnoreCase))
                 {
                     var file = new FileInfo(Path.Combine(_workspace.Directory.FullName, serverBuffer.Name));
                     await _omniSharpServer.UpdateBuffer(file, "//empty",budget);
-                    if (file.Exists)
-                    {
-                        File.WriteAllText(file.FullName, "//empty");
-                    }
                 }
             }
             budget.RecordEntry();
