@@ -156,7 +156,6 @@ namespace WorkspaceServer.Servers.Dotnet
                 }
             }
             budget.RecordEntry();
-            ;
         }
 
         private async Task<OmnisharpEmitResponse> Emit(Models.Execution.Workspace request, Budget budget)
