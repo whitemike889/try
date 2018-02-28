@@ -1,7 +1,6 @@
 using System;
 using System.Threading.Tasks;
 using MLS.Agent.Tools;
-using Pocket;
 
 namespace WorkspaceServer.Tests
 {
@@ -11,13 +10,8 @@ namespace WorkspaceServer.Tests
         {
             var workspace = new Workspace("TestTemplate");
 
-            workspace.Directory.Refresh();
-
-            if (!workspace.Directory.Exists)
-            {
-                Logger.Log.Info("Creating directory {directory}", workspace.Directory);
-                workspace.Directory.Create();
-            }
+            await workspace.EnsureCreated();
+            await workspace.EnsureBuilt();
 
             return workspace;
         });
@@ -25,4 +19,3 @@ namespace WorkspaceServer.Tests
         public static Task<Workspace> TemplateWorkspace => _templateWorkspace.ValueAsync();
     }
 }
-

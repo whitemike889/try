@@ -133,24 +133,24 @@ namespace MLS.Agent.Tools
 
         public static Workspace Copy(
             Workspace fromWorkspace,
-            string folderName = null)
+            string folderNameStartsWith = null)
         {
             if (fromWorkspace == null)
             {
                 throw new ArgumentNullException(nameof(fromWorkspace));
             }
 
-            folderName = folderName ?? fromWorkspace.Name;
+            folderNameStartsWith = folderNameStartsWith ?? fromWorkspace.Name;
             var parentDirectory = fromWorkspace
                                       .Directory
                                       .Parent;
 
-            var destination = CreateDirectory(folderName, parentDirectory);
+            var destination = CreateDirectory(folderNameStartsWith, parentDirectory);
 
             fromWorkspace.Directory.CopyTo(destination);
 
             var copy = new Workspace(destination,
-                                     folderName,
+                                     folderNameStartsWith,
                                      fromWorkspace._initializer);
 
             copy.IsCreated = fromWorkspace.IsCreated;

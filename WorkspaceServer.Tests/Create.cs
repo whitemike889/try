@@ -1,4 +1,3 @@
-using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Recipes;
@@ -11,7 +10,9 @@ namespace WorkspaceServer.Tests
     {
         public static async Task<Workspace> TestWorkspace([CallerMemberName] string testName = null)
         {
-            var workspace = new Workspace(Workspace.CreateDirectory(testName), "test");
+            var workspace = Workspace.Copy(
+                await Default.TemplateWorkspace,
+                testName);
 
             await workspace.EnsureCreated();
             await workspace.EnsureBuilt();
