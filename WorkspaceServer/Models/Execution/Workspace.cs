@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using MLS.Agent.Tools;
+using WorkspaceServer.Servers.Dotnet;
 
 namespace WorkspaceServer.Models.Execution
 {
@@ -20,18 +21,18 @@ namespace WorkspaceServer.Models.Execution
         private const string DefaultWorkspaceType = "script";
 
         public Workspace(
-        string buffer = null, // TODO: added for backward comaptibility
-        string source = null, // TODO: added for backward comaptibility
-        string bufferid = null, // TODO: added for backward comaptibility
-        int position = 0,
-        string[] usings = null,
-        File[] files = null,
-        Buffer[] buffers = null,
-        string workspaceType = DefaultWorkspaceType)
+            string buffer = null, // TODO: added for backward comaptibility
+            string source = null, // TODO: added for backward comaptibility
+            string bufferid = null, // TODO: added for backward comaptibility
+            int position = 0,
+            string[] usings = null,
+            File[] files = null,
+            Buffer[] buffers = null,
+            string workspaceType = DefaultWorkspaceType)
         {
             WorkspaceType = workspaceType ?? DefaultWorkspaceType;
             Usings = usings ?? Array.Empty<string>();
-            var code  = buffer ?? source ??string.Empty;
+            var code = buffer ?? source ?? string.Empty;
             var id = bufferid ?? string.Empty;
 
             Usings = usings ?? Array.Empty<string>();
@@ -66,6 +67,7 @@ namespace WorkspaceServer.Models.Execution
             }
 
             public string Name { get; }
+
             public string Text { get; }
         }
 
@@ -79,6 +81,7 @@ namespace WorkspaceServer.Models.Execution
             }
 
             public string Id { get; }
+
             public string Content { get; }
 
             public int Position { get; }
