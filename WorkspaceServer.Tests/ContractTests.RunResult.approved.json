@@ -1,0 +1,18 @@
+{
+  "Diagnostics": [
+    {
+      "Start": 1,
+      "End": 4,
+      "Message": "oops",
+      "Severity": 3,
+      "Id": "CS1234"
+    }
+  ],
+  "Succeeded": true,
+  "Output": [
+    "output one",
+    "output two",
+    "output three"
+  ],
+  "Exception": null
+}
