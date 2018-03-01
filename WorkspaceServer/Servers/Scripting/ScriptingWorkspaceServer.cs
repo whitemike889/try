@@ -86,7 +86,6 @@ namespace WorkspaceServer.Servers.Scripting
                 var result = new RunResult(
                     succeeded: !userException.IsConsideredRunFailure(),
                     output: output,
-                    returnValue: state?.ReturnValue,
                     exception: (userException ?? state?.Exception).ToDisplayString(),
                     diagnostics: diagnostics);
 
