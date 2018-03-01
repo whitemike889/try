@@ -1,6 +1,5 @@
 using System;
 using Assent;
-using FluentAssertions;
 using Microsoft.CodeAnalysis;
 using Newtonsoft.Json;
 using Recipes;
@@ -39,10 +38,13 @@ namespace WorkspaceServer.Tests
                         id: "CS1234")
                 });
 
-            this.Assent(runResult.ToJson(new JsonSerializerSettings
+            this.Assent(Serialize(runResult), configuration);
+        }
+
+        private static string Serialize(RunResult runResult) =>
+            runResult.ToJson(new JsonSerializerSettings
             {
                 Formatting = Formatting.Indented
-            }), configuration);
-        }
+            });
     }
 }
