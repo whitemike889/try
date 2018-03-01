@@ -40,7 +40,7 @@ namespace WorkspaceServer.Tests
 
         protected WorkspaceServerTests(ITestOutputHelper output)
         {
-            _disposables.Add(LogEvents.Subscribe(e => output.WriteLine(e.ToLogString())));
+            _disposables.Add(output.SubscribeToPocketLogger());
         }
 
         [Fact]
