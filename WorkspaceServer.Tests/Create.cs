@@ -8,10 +8,22 @@ namespace WorkspaceServer.Tests
 {
     public static class Create
     {
-        public static async Task<Workspace> TestWorkspace([CallerMemberName] string testName = null)
+        public static async Task<Workspace> ConsoleWorkspace([CallerMemberName] string testName = null)
         {
             var workspace = Workspace.Copy(
-                await Default.TemplateWorkspace,
+                await Default.ConsoleWorkspace,
+                testName);
+
+            await workspace.EnsureCreated();
+            await workspace.EnsureBuilt();
+
+            return workspace;
+        }
+
+        public static async Task<Workspace> WebApiWorkspace([CallerMemberName] string testName = null)
+        {
+            var workspace = Workspace.Copy(
+                await Default.WebApiWorkspace,
                 testName);
 
             await workspace.EnsureCreated();

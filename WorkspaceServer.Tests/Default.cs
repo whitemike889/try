@@ -6,9 +6,11 @@ namespace WorkspaceServer.Tests
 {
     internal static class Default
     {
-        private static readonly AsyncLazy<Workspace> _templateWorkspace = new AsyncLazy<Workspace>(async () =>
+        private static readonly AsyncLazy<Workspace> _consoleWorkspace = new AsyncLazy<Workspace>(async () =>
         {
-            var workspace = new Workspace("TestTemplate");
+            var workspace = new Workspace(
+                "TestTemplate.Console",
+                new DotnetWorkspaceInitializer("console", "test"));
 
             await workspace.EnsureCreated();
             await workspace.EnsureBuilt();
@@ -16,6 +18,20 @@ namespace WorkspaceServer.Tests
             return workspace;
         });
 
-        public static Task<Workspace> TemplateWorkspace => _templateWorkspace.ValueAsync();
+        private static readonly AsyncLazy<Workspace> _webApiWorkspace = new AsyncLazy<Workspace>(async () =>
+        {
+            var workspace = new Workspace(
+                "TestTemplate.WebApi",
+                new DotnetWorkspaceInitializer("webapi", "test"));
+
+            await workspace.EnsureCreated();
+            await workspace.EnsureBuilt();
+
+            return workspace;
+        });
+
+        public static Task<Workspace> ConsoleWorkspace => _consoleWorkspace.ValueAsync();
+
+        public static Task<Workspace> WebApiWorkspace => _webApiWorkspace.ValueAsync();
     }
 }

@@ -9,9 +9,9 @@ using Xunit.Abstractions;
 
 namespace WorkspaceServer.Tests
 {
-    public class DotnetWorkspaceServerTests : WorkspaceServerTests
+    public class DotnetWorkspaceServerConsoleProjectTests : WorkspaceServerTests
     {
-        public DotnetWorkspaceServerTests(ITestOutputHelper output) : base(output)
+        public DotnetWorkspaceServerConsoleProjectTests(ITestOutputHelper output) : base(output)
         {
         }
 
@@ -307,7 +307,7 @@ namespace FibonacciTest
         protected override async Task<IWorkspaceServer> GetWorkspaceServer(
             [CallerMemberName] string testName = null)
         {
-            var project = await Create.TestWorkspace(testName);
+            var project = await Create.ConsoleWorkspace(testName);
 
             var workspaceServer = new DotnetWorkspaceServer(project, 45);
 

@@ -86,7 +86,7 @@ namespace Twilio_try.dot.net_sample
             using(Clockwise.VirtualClock.Start())
             using (var registry = new WorkspaceServerRegistry())
             {
-                var workspaceId = (await Default.TemplateWorkspace).Name;
+                var workspaceId = (await Default.ConsoleWorkspace).Name;
 
                 registry.AddWorkspace(workspaceId,
                                       options => options.CreateUsingDotnet("console"));
