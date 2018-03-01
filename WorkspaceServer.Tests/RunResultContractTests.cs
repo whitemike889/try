@@ -18,8 +18,8 @@ namespace WorkspaceServer.Tests
             configuration = new Configuration()
                 .UsingExtension("json");
 
-#if DEBUG
-          configuration =   configuration.SetInteractive(false);
+#if !DEBUG
+            configuration = configuration.SetInteractive(false);
 #endif
         }
 
@@ -29,12 +29,15 @@ namespace WorkspaceServer.Tests
             var runResult = new RunResult(
                 true,
                 new[] { "output one", "output two", "output three" },
-              diagnostics:  new[] { new SerializableDiagnostic(
-                  start: 1,
-                  end: 4,
-                  message: "oops",
-                  severity: DiagnosticSeverity.Error,
-                  id: "CS1234")});
+                diagnostics: new[]
+                {
+                    new SerializableDiagnostic(
+                        start: 1,
+                        end: 4,
+                        message: "oops",
+                        severity: DiagnosticSeverity.Error,
+                        id: "CS1234")
+                });
 
             this.Assent(runResult.ToJson(new JsonSerializerSettings
             {
