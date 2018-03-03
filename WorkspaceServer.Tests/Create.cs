@@ -14,7 +14,6 @@ namespace WorkspaceServer.Tests
                 await Default.ConsoleWorkspace,
                 testName);
 
-            await workspace.EnsureCreated();
             await workspace.EnsureBuilt();
 
             return workspace;
@@ -26,8 +25,7 @@ namespace WorkspaceServer.Tests
                 await Default.WebApiWorkspace,
                 testName);
 
-            await workspace.EnsureCreated();
-            await workspace.EnsureBuilt();
+            await workspace.EnsurePublished();
 
             return workspace;
         }

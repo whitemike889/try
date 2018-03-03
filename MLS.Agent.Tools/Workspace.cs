@@ -222,6 +222,7 @@ namespace MLS.Agent.Tools
                                      fromWorkspace._initializer);
 
             copy.IsCreated = fromWorkspace.IsCreated;
+            copy.IsPublished = fromWorkspace.IsPublished;
             copy.IsBuilt = fromWorkspace.IsBuilt;
             copy.IsDirectoryCreated = true;
 
