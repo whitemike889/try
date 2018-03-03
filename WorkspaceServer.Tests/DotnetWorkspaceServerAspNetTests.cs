@@ -22,10 +22,7 @@ namespace WorkspaceServer.Tests
             _disposables.Add(output.SubscribeToPocketLogger());
         }
 
-        public void Dispose()
-        {
-            _disposables.Dispose();
-        }
+        public void Dispose() => _disposables.Dispose();
 
         [Fact]
         public async Task Run_starts_the_kestrel_server_and_provides_a_WebServer_feature_that_can_receive_requests()
