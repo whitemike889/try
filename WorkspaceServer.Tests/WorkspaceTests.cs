@@ -146,5 +146,45 @@ namespace WorkspaceServer.Tests
             workspace.IsWebProject.Should().BeTrue();
         }
 
+        [Fact]
+        public async Task When_workspace_contains_simple_console_app_then_entry_point_dll_is_in_the_build_directory()
+        {
+            var workspace = await Create.ConsoleWorkspace();
+
+            await workspace.EnsurePublished();
+
+            workspace.EntryPointAssemblyPath.Exists.Should().BeTrue();
+
+            workspace.EntryPointAssemblyPath
+                     .FullName
+                     .Should()
+                     .Be(Path.Combine(
+                             workspace.Directory.FullName,
+                             "bin",
+                             "Debug",
+                             "netcoreapp2.0",
+                             "test.dll"));
+        }
+
+        [Fact]
+        public async Task When_workspace_contains_aspnet_project_then_entry_point_dll_is_in_the_publish_directory()
+        {
+            var workspace = await Create.WebApiWorkspace();
+
+            await workspace.EnsurePublished();
+
+            workspace.EntryPointAssemblyPath.Exists.Should().BeTrue();
+
+            workspace.EntryPointAssemblyPath
+                     .FullName
+                     .Should()
+                     .Be(Path.Combine(
+                             workspace.Directory.FullName,
+                             "bin",
+                             "Debug",
+                             "netcoreapp2.0",
+                             "publish",
+                             "test.dll"));
+        }
     }
 }

@@ -39,6 +39,7 @@ namespace MLS.Agent.Tools
         private readonly AsyncLazy<bool> _built;
         private readonly AsyncLazy<bool> _published;
         private bool? _isWebProject;
+        private FileInfo _entryPointAssemblyPath;
 
         public Workspace(
             string name,
@@ -80,6 +81,37 @@ namespace MLS.Agent.Tools
         public static DirectoryInfo DefaultWorkspacesDirectory { get; }
 
         public bool IsPublished { get; private set; }
+
+        public FileInfo EntryPointAssemblyPath
+        {
+            get
+            {
+                if (_entryPointAssemblyPath == null)
+                {
+                    var depsFile = Directory.GetFiles("*.deps.json", SearchOption.AllDirectories)
+                                            .FirstOrDefault();
+
+                    var entryPointAssemblyName = DepsFile.GetEntryPointAssemblyName(depsFile);
+
+                    var path =
+                        Path.Combine(
+                            Directory.FullName,
+                            "bin",
+                            "Debug",
+                            "netcoreapp2.0");
+
+                    if (IsWebProject)
+                    {
+                        path = Path.Combine(path, "publish");
+                    }
+
+                    _entryPointAssemblyPath = new FileInfo(Path.Combine(path, entryPointAssemblyName));
+                }
+
+                return _entryPointAssemblyPath;
+            }
+        }
+
         public async Task EnsureCreated(Budget budget = null) =>
             await _created.ValueAsync()
                           .CancelIfExceeds(budget ?? new Budget());
