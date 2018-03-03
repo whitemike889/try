@@ -1,7 +1,8 @@
 ﻿using System;
 using System.IO;
-using System.Threading.Tasks;
 using Clockwise;
+using System.Linq;
+using System.Threading.Tasks;
 using Pocket;
 using static Pocket.Logger<MLS.Agent.Tools.Workspace>;
 
@@ -36,6 +37,8 @@ namespace MLS.Agent.Tools
 
         private readonly AsyncLazy<bool> _created;
         private readonly AsyncLazy<bool> _built;
+        private readonly AsyncLazy<bool> _published;
+        private bool? _isWebProject;
 
         public Workspace(
             string name,
@@ -57,6 +60,7 @@ namespace MLS.Agent.Tools
 
             _created = new AsyncLazy<bool>(VerifyOrCreate);
             _built = new AsyncLazy<bool>(VerifyOrBuild);
+            _published = new AsyncLazy<bool>(VerifyOrPublish);
         }
 
         private bool IsDirectoryCreated { get; set; }
@@ -65,12 +69,17 @@ namespace MLS.Agent.Tools
 
         public bool IsBuilt { get; private set; }
 
+        public bool IsWebProject =>
+            _isWebProject ??
+            (_isWebProject = Directory.GetDirectories("wwwroot", SearchOption.AllDirectories).Any()).Value;
+
         public DirectoryInfo Directory { get; }
 
         public string Name { get; }
 
         public static DirectoryInfo DefaultWorkspacesDirectory { get; }
 
+        public bool IsPublished { get; private set; }
         public async Task EnsureCreated(Budget budget = null) =>
             await _created.ValueAsync()
                           .CancelIfExceeds(budget ?? new Budget());
@@ -108,6 +117,7 @@ namespace MLS.Agent.Tools
         public async Task EnsureBuilt(Budget budget = null)
         {
             await EnsureCreated(budget);
+
             await _built.ValueAsync()
                         .CancelIfExceeds(budget ?? new Budget());
         }
@@ -126,6 +136,32 @@ namespace MLS.Agent.Tools
                 }
 
                 IsBuilt = true;
+            }
+
+            return true;
+        }
+
+        public async Task EnsurePublished(Budget budget = null)
+        {
+            await EnsureBuilt(budget);
+
+            await _published.ValueAsync()
+                            .CancelIfExceeds(budget ?? new Budget());
+        }
+
+        private async Task<bool> VerifyOrPublish()
+        {
+            if (!IsPublished)
+            {
+                if (Directory.GetDirectories("publish", SearchOption.AllDirectories).Length == 0)
+                {
+                    Log.Info("Publishing workspace in {directory}", Directory);
+                    var result = await new Dotnet(Directory)
+                                     .Publish("--no-dependencies --no-restore");
+                    result.ThrowOnFailure();
+                }
+
+                IsPublished = true;
             }
 
             return true;
