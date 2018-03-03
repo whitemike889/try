@@ -8,20 +8,17 @@ namespace MLS.Agent.Tools
         public CommandLineResult(
             int exitCode,
             IReadOnlyCollection<string> output = null,
-            IReadOnlyCollection<string> error = null,
-            Exception exception = null)
+            IReadOnlyCollection<string> error = null)
         {
             ExitCode = exitCode;
             Output = output ?? Array.Empty<string>();
             Error = error ?? Array.Empty<string>();
-            Exception = exception;
         }
 
         public int ExitCode { get; }
 
         public IReadOnlyCollection<string> Output { get; }
-        public IReadOnlyCollection<string> Error { get; }
 
-        public Exception Exception { get; }
+        public IReadOnlyCollection<string> Error { get; }
     }
 }
