@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using Pocket;
 
 namespace WorkspaceServer.Models.Execution
 {
-    public class RunResult
+    public class RunResult : IDisposable
     {
         private readonly Dictionary<Type, object> features = new Dictionary<Type, object>();
+
+        private readonly CompositeDisposable _disposables = new CompositeDisposable();
 
         public RunResult(
             bool succeeded,
@@ -24,7 +27,15 @@ namespace WorkspaceServer.Models.Execution
             }
         }
 
-        private void AddFeature<T>(T feature) => features.Add(typeof(T), feature);
+        public void AddFeature<T>(T feature)
+        {
+            if (feature is IDisposable disposable)
+            {
+                _disposables.Add(disposable);
+            }
+
+            features.Add(typeof(T), feature);
+        }
 
         public IReadOnlyCollection<SerializableDiagnostic> Diagnostics =>
             this.GetFeature<IReadOnlyCollection<SerializableDiagnostic>>() ??
@@ -45,5 +56,7 @@ namespace WorkspaceServer.Models.Execution
             $@"{nameof(Succeeded)}: {Succeeded}
 {nameof(Output)}: {string.Join("\n", Output)}
 {nameof(Exception)}: {Exception}";
+
+        public void Dispose() => _disposables.Dispose();
     }
 }
