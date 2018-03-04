@@ -14,25 +14,17 @@ namespace MLS.Agent.Controllers
 {
     public class WorkspaceController : Controller
     {
-        private readonly WorkspaceServerRegistry workspaceServerRegistry;
+        private readonly WorkspaceServerRegistry _workspaceServerRegistry;
 
         public WorkspaceController(WorkspaceServerRegistry workspaceServerRegistry)
         {
-            this.workspaceServerRegistry = workspaceServerRegistry ??
+            _workspaceServerRegistry = workspaceServerRegistry ??
                                            throw new ArgumentNullException(nameof(workspaceServerRegistry));
-        }
-
-        [Route("/workspace/{DEPRECATED}/compile")] // FIX: (Run) remove this endpoint when Orchestrator no longer calls it
-        public Task<IActionResult> LegacyRun(
-            [FromBody] Workspace workspace,
-            [FromHeader(Name = "Referer")] string referer,
-            [FromHeader(Name = "Timeout")] string timeoutInMilliseconds = "15000")
-        {
-            return Run(new WorkspaceRequest(workspace), referer, timeoutInMilliseconds);
         }
 
         [HttpPost]
         [Route("/workspace/run")]
+        [Route("/workspace/{DEPRECATED}/compile")] // FIX: (Run) remove this endpoint when Orchestrator no longer calls it
         public async Task<IActionResult> Run(
             [FromBody] WorkspaceRequest request,
             [FromHeader(Name = "Referer")] string referer,
@@ -61,7 +53,7 @@ namespace MLS.Agent.Controllers
                 }
                 else
                 {
-                    var server = await workspaceServerRegistry.GetWorkspaceServer(workspaceType);
+                    var server = await _workspaceServerRegistry.GetWorkspaceServer(workspaceType);
 
                     if (server is DotnetWorkspaceServer dotnetWorkspaceServer)
                     {

@@ -200,7 +200,7 @@ namespace MLS.Agent.Tests
             {
                 var request = new HttpRequestMessage(
                     HttpMethod.Post,
-                    @"/workspace/snippet/getCompletionItems")
+                    @"/workspace/completion")
                 {
                     Content = new StringContent(
                         JsonConvert.SerializeObject(new
@@ -270,7 +270,7 @@ namespace MLS.Agent.Tests
             {
                 var request = new HttpRequestMessage(
                     HttpMethod.Post,
-                    @"/workspace/snippet/compile")
+                    @"/workspace/run")
                 {
                     Content = new StringContent(
                         content,
