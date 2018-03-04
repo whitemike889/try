@@ -108,7 +108,7 @@ namespace MLS.Agent.Tools
             Action<string> error = null,
             params (string key, string value)[] environmentVariables)
         {
-            using (Log.OnEnterAndExit())
+            using (var operation = Log.OnEnterAndExit())
             {
                 args = args ?? "";
 
@@ -129,6 +129,7 @@ namespace MLS.Agent.Tools
                 {
                     foreach (var tuple in environmentVariables)
                     {
+                        operation.Trace("Adding environment variable {tuple}", tuple);
                         process.StartInfo.EnvironmentVariables.Add(tuple.key, tuple.value);
                     }
                 }
