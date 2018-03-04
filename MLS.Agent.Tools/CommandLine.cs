@@ -130,7 +130,7 @@ namespace MLS.Agent.Tools
                     foreach (var tuple in environmentVariables)
                     {
                         operation.Trace("Adding environment variable {tuple}", tuple);
-                        process.StartInfo.EnvironmentVariables.Add(tuple.key, tuple.value);
+                        process.StartInfo.Environment.Add(tuple.key, tuple.value);
                     }
                 }
 
