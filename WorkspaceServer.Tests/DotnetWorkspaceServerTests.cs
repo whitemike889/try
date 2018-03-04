@@ -15,23 +15,24 @@ namespace WorkspaceServer.Tests
         {
         }
 
-        protected override Workspace CreateRunRequestContaining(string text)
+        protected override WorkspaceRequest CreateRunRequestContaining(string text)
         {
-            return new Workspace(
+            var workspace = new Workspace(
                 $@"using System; using System.Linq; using System.Collections.Generic; class Program {{ static void Main() {{ {text}
                     }}
                 }}
 ");
+           return new WorkspaceRequest(workspace);
         }
 
         [Fact]
         public async Task When_compile_is_unsuccessful_diagnostic_are_aligned_with_buffer_span()
         {
-            var request = new Workspace(
+            var workspace = new Workspace(
                 workspaceType: "console",
                 files: new[] { new Workspace.File("Program.cs", CodeSamples.SourceCodeProvider.ConsoleProgramSingleRegion) },
                 buffers: new[] { new Workspace.Buffer("Program.cs@alpha", @"Console.WriteLine(banana);", 0) });
-
+            var request = new WorkspaceRequest(workspace);
             var server = await GetWorkspaceServer();
 
             var result = await server.Run(request);
@@ -47,11 +48,11 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task When_compile_is_unsuccessful_diagnostic_are_aligned_with_buffer_span_when_code_is_multi_line()
         {
-            var request = new Workspace(
+            var workspace = new Workspace(
                 workspaceType: "console",
                 files: new[] { new Workspace.File("Program.cs", CodeSamples.SourceCodeProvider.ConsoleProgramSingleRegion) },
                 buffers: new[] { new Workspace.Buffer("Program.cs@alpha", @"var a = 10;" + Environment.NewLine + "Console.WriteLine(banana);", 0) });
-
+            var request = new WorkspaceRequest(workspace);
             var server = await GetWorkspaceServer();
 
             var result = await server.Run(request);
@@ -71,13 +72,14 @@ namespace WorkspaceServer.Tests
             var codeLine2 = @"Console.WriteLine(banana);";
             var code = $"{codeLine1}{Environment.NewLine}{codeLine2}";
             var erroPos = code.IndexOf("banana);");
-            var request = new Workspace(
+            var workspace = new Workspace(
                 workspaceType: "console",
                 files: new[] { new Workspace.File("Program.cs", CodeSamples.SourceCodeProvider.ConsoleProgramSingleRegion) },
                 buffers: new[] { new Workspace.Buffer("Program.cs@alpha", code, 0) });
+            var request = new WorkspaceRequest(workspace);
             var server = await GetWorkspaceServer();
 
-            var result = await server.GetDiagnostics(request);
+            var result = await server.GetDiagnostics(request.Workspace);
 
             result.Diagnostics.Should().Contain(d => d.Id == "CS0103" && d.Start == erroPos); // banana is not defined
         }
@@ -125,24 +127,24 @@ namespace FibonacciTest
 
             #endregion
 
-            var request = new Workspace(workspaceType: "console", buffers: new[]
+            var workspace = new Workspace(workspaceType: "console", buffers: new[]
             {
                 new Workspace.Buffer("Program.cs", program, 0),
                 new Workspace.Buffer("FibonacciGenerator.cs", generator, 0)
             });
-
+            var request = new WorkspaceRequest(workspace);
             var server = await GetWorkspaceServer();
 
             var result = await server.Run(request);
 
             result.Succeeded.Should().BeTrue();
 
-            request = new Workspace(workspaceType: "console", buffers: new[]
+            workspace = new Workspace(workspaceType: "console", buffers: new[]
             {
                 new Workspace.Buffer("NotProgram.cs", program, 0),
                 new Workspace.Buffer("FibonacciGenerator.cs", generator, 0)
             });
-
+            request = new WorkspaceRequest(workspace);
             result = await server.Run(request);
 
             result.Succeeded.Should().BeTrue();
@@ -190,12 +192,12 @@ namespace FibonacciTest
 }";
             #endregion
 
-            var request = new Workspace(workspaceType: "console", buffers: new[]
+            var workspace = new Workspace(workspaceType: "console", buffers: new[]
             {
                 new Workspace.Buffer("Program.cs",program,0),
                 new Workspace.Buffer("FibonacciGenerator.cs",generator,0)
             });
-
+            var request = new WorkspaceRequest(workspace);
             var server = await GetWorkspaceServer();
 
             var result = await server.Run(request);

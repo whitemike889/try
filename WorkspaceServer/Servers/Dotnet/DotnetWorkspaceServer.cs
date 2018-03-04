@@ -68,7 +68,7 @@ namespace WorkspaceServer.Servers.Dotnet
                               .CancelIfExceeds(budget ?? new Budget());
         }
 
-        public async Task<RunResult> Run(Models.Execution.Workspace request, Budget budget = null)
+        public async Task<RunResult> Run(WorkspaceRequest request, Budget budget = null)
         {
             budget = budget ?? new TimeBudget(_defaultTimeoutInSeconds);
 
@@ -76,7 +76,7 @@ namespace WorkspaceServer.Servers.Dotnet
             {
                 await EnsureInitializedAndNotDisposed(budget);
                 var processor = new BufferInliningTransformer();
-                var processedRequest = await processor.TransformAsync(request, budget);
+                var processedRequest = await processor.TransformAsync(request.Workspace, budget);
                 Dictionary<string, Viewport> viewPorts = null;
                 IEnumerable<(SerializableDiagnostic Diagnostic, string ErrorMessage)> processedDiagnostics;
                 CommandLineResult commandLineResult = null;

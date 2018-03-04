@@ -3,6 +3,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
+using MLS.Agent.JsonContracts;
 using Pocket;
 using Recipes;
 
@@ -16,6 +17,7 @@ namespace MLS.Agent.Tests
 
         public AgentService()
         {
+           //JsonContratcs.Setup();
             var testServer = CreateTestServer();
 
             client = testServer.CreateClient();

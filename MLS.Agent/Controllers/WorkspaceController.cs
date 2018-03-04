@@ -22,11 +22,19 @@ namespace MLS.Agent.Controllers
                                            throw new ArgumentNullException(nameof(workspaceServerRegistry));
         }
 
+        [Route("/workspace/{DEPRECATED}/compile")] // FIX: (Run) remove this endpoint when Orchestrator no longer calls it
+        public Task<IActionResult> LegacyRun(
+            [FromBody] Workspace workspace,
+            [FromHeader(Name = "Referer")] string referer,
+            [FromHeader(Name = "Timeout")] string timeoutInMilliseconds = "15000")
+        {
+            return Run(new WorkspaceRequest(workspace), referer, timeoutInMilliseconds);
+        }
+
         [HttpPost]
         [Route("/workspace/run")]
-        [Route("/workspace/{DEPRECATED}/compile")] // FIX: (Run) remove this endpoint when Orchestrator no longer calls it
         public async Task<IActionResult> Run(
-            [FromBody] Workspace request,
+            [FromBody] WorkspaceRequest request,
             [FromHeader(Name = "Referer")] string referer,
             [FromHeader(Name = "Timeout")] string timeoutInMilliseconds = "15000")
         {
@@ -37,8 +45,8 @@ namespace MLS.Agent.Controllers
                     return BadRequest();
                 }
 
-                RunResult result = null;
-                var workspaceType = request.WorkspaceType;
+                RunResult result;
+                var workspaceType = request.Workspace.WorkspaceType;
                 var runTimeout = TimeSpan.FromMilliseconds(timeoutMs);
 
                 var budget = new TimeBudget(runTimeout);

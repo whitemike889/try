@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using MLS.Agent.JsonContracts;
 using Newtonsoft.Json;
 using Pocket;
 using Recipes;
@@ -52,6 +53,7 @@ namespace MLS.Agent
                         {
                             o.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
                             o.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
+                            o.SerializerSettings.Converters.Add(new WorkspaceRequestConverter());
                         });
 
                 services.AddSingleton(Configuration);

@@ -1,8 +1,9 @@
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using MLS.Agent.Tools;
 using Recipes;
+using WorkspaceServer.Models.Execution;
+using Workspace = MLS.Agent.Tools.Workspace;
 
 namespace WorkspaceServer.Tests
 {
@@ -18,12 +19,15 @@ namespace WorkspaceServer.Tests
             return workspace;
         }
 
-        public static WorkspaceServer.Models.Execution.Workspace SimpleRunRequest(
+        public static WorkspaceRequest SimpleRunRequest(
             string consoleOutput = "Hello!",
-            string workspaceType = null) =>
-            new WorkspaceServer.Models.Execution.Workspace(SimpleConsoleAppCodeWithoutNamespaces(consoleOutput), workspaceType: workspaceType);
+            string workspaceType = null) => new WorkspaceRequest(SimpleWorkspace(consoleOutput, workspaceType));
 
-        public static string SimpleRunRequestJson(
+        public static Models.Execution.Workspace SimpleWorkspace(
+            string consoleOutput = "Hello!",
+            string workspaceType = null) => new Models.Execution.Workspace(SimpleConsoleAppCodeWithoutNamespaces(consoleOutput), workspaceType: workspaceType);
+
+        public static string SimpleWorkspaceAsJson(
             string consoleOutput = "Hello!",
             string workspaceType = null)
         {

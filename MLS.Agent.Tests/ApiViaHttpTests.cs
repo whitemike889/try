@@ -94,7 +94,7 @@ namespace MLS.Agent.Tests
             using (VirtualClock.Start())
             {
                 var output = Guid.NewGuid().ToString();
-                var requestJson = Create.SimpleRunRequestJson(output, "console");
+                var requestJson = Create.SimpleWorkspaceAsJson(output, "console");
 
                 var response = await CallRun(requestJson);
 
