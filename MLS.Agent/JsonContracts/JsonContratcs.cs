@@ -7,24 +7,10 @@ using WorkspaceServer.Models.Execution;
 
 namespace MLS.Agent.JsonContracts
 {
-    public static class JsonContratcs
-    {
-        public static void Setup()
-        {
-            var settings = JsonConvert.DefaultSettings?.Invoke() ?? new JsonSerializerSettings()
-            {
-                Converters = new List<JsonConverter> { new WorkspaceRequestConverter() }
-            };
-
-            JsonConvert.DefaultSettings = () => settings;
-        }
-    }
-
     public class WorkspaceRequestConverter : JsonConverter
     {
         private readonly HashSet<string> _workspaceSignature;
         private readonly HashSet<string> _workspaceEnvelopeSignature;
-        private JsonConverter _wsec;
 
         public WorkspaceRequestConverter()
         {
@@ -38,11 +24,7 @@ namespace MLS.Agent.JsonContracts
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
-            if (_wsec == null)
-            {
-                _wsec = JsonConvert.DefaultSettings?.Invoke()?.Converters.FirstOrDefault(c => c.GetType() == this.GetType());
-            }
-
+          
             var obj = serializer.Deserialize(reader) as JObject;
 
             var isWorkspace = obj?.Properties().All(p => _workspaceSignature.Contains(p.Name)) == true;
@@ -56,9 +38,9 @@ namespace MLS.Agent.JsonContracts
 
             if (isWorkspaceEnvelope)
             {
-                serializer.Converters.Remove(_wsec);
+                serializer.Converters.Remove(this);
                 var ret = obj.ToObject<WorkspaceRequest>(serializer);
-                serializer.Converters.Add(_wsec);
+                serializer.Converters.Add(this);
                 return ret;
             }
 
