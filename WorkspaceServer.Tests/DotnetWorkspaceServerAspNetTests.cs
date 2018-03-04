@@ -2,6 +2,7 @@
 using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using Clockwise;
 using FluentAssertions;
 using Pocket;
 using Recipes;
@@ -10,6 +11,7 @@ using WorkspaceServer.Servers.Dotnet;
 using WorkspaceServer.WorkspaceFeatures;
 using Xunit;
 using Xunit.Abstractions;
+using static Pocket.Logger;
 
 namespace WorkspaceServer.Tests
 {
@@ -30,16 +32,21 @@ namespace WorkspaceServer.Tests
             var workspaceServer = await GetWorkspaceServer();
 
             var webApiWorkspace = await Default.WebApiWorkspace;
-            var runResult = await workspaceServer.Run(Workspace.FromDirectory(webApiWorkspace.Directory));
 
-            var webServer = runResult.GetFeature<WebServer>();
+            using (var runResult = await workspaceServer.Run(Workspace.FromDirectory(webApiWorkspace.Directory)))
+            {
+                var webServer = runResult.GetFeature<WebServer>();
 
-            var response = await webServer.SendAsync(new HttpRequestMessage(HttpMethod.Get, "/api/values"));
+                _disposables.Add(webServer.StandardOutput.Subscribe(s => Log.Trace(s)));
+                _disposables.Add(webServer.StandardError.Subscribe(s => Log.Error(s)));
 
-            var result = await response.EnsureSuccess()
-                                       .DeserializeAs<string[]>();
+                var response = await webServer.SendAsync(new HttpRequestMessage(HttpMethod.Get, "/api/values")).CancelIfExceeds(new TimeBudget(35.Seconds()));
 
-            result.Should().Equal("value1", "value2");
+                var result = await response.EnsureSuccess()
+                                           .DeserializeAs<string[]>();
+
+                result.Should().Equal("value1", "value2");
+            }
         }
 
         protected async Task<IWorkspaceServer> GetWorkspaceServer(

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.CodeAnalysis;
@@ -10,9 +11,11 @@ using Pocket;
 using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Transformations;
+using WorkspaceServer.WorkspaceFeatures;
 using static Pocket.Logger<WorkspaceServer.Servers.Dotnet.DotnetWorkspaceServer>;
 using static WorkspaceServer.Servers.WorkspaceServer;
 using static WorkspaceServer.Transformations.OmniSharpDiagnosticTransformer;
+using Diagnostic = OmniSharp.Client.Diagnostic;
 using Workspace = MLS.Agent.Tools.Workspace;
 using OmnisharpEmitResponse = OmniSharp.Client.Commands.OmniSharpResponseMessage<OmniSharp.Client.Commands.EmitResponse>;
 
@@ -102,31 +105,44 @@ namespace WorkspaceServer.Servers.Dotnet
                         diagnostics: diagnostics.Select(d => d.Diagnostic).ToArray());
                 }
 
-                var dotnet = new MLS.Agent.Tools.Dotnet(_workspace.Directory);
+                RunResult runResult = null;
 
-                var commandLineResult = await dotnet.Execute(emitResponse.Body.OutputAssemblyPath, budget);
-
-                budget.RecordEntry(UserCodeCompletedBudgetEntryName);
-
-                if (commandLineResult.ExitCode == 124)
+                if (_workspace.IsWebProject)
                 {
-                    throw new BudgetExceededException(budget);
-                }
+                    var webServer = new WebServer(_workspace);
 
-                if (commandLineResult.Exception != null)
-                {
-                    exceptionMessage = commandLineResult.Exception.ToString();
+                    runResult = new RunResult(
+                        succeeded: true,
+                        diagnostics: diagnostics.Select(d => d.Diagnostic).ToArray());
+
+                    runResult.AddFeature(webServer);
                 }
-                else if (commandLineResult.Error.Count > 0)
+                else
                 {
-                    exceptionMessage = string.Join(Environment.NewLine, commandLineResult.Error);
+                    var dotnet = new MLS.Agent.Tools.Dotnet(_workspace.Directory);
+
+                    var commandLineResult = await dotnet.Execute(
+                                                _workspace.EntryPointAssemblyPath.FullName,
+                                                budget);
+
+                    budget.RecordEntry(UserCodeCompletedBudgetEntryName);
+
+                    if (commandLineResult.ExitCode == 124)
+                    {
+                        throw new BudgetExceededException(budget);
+                    }
+
+                    if (commandLineResult.Error.Count > 0)
+                    {
+                        exceptionMessage = string.Join(Environment.NewLine, commandLineResult.Error);
+                    }
+
+                    runResult = new RunResult(
+                        succeeded: true,
+                        output: commandLineResult?.Output,
+                        exception: exceptionMessage,
+                        diagnostics: diagnostics.Select(d => d.Diagnostic).ToArray());
                 }
-              
-                var runResult = new RunResult(
-                    succeeded: true,
-                    output: commandLineResult?.Output,
-                    exception: exceptionMessage,
-                    diagnostics: diagnostics.Select(d => d.Diagnostic).ToArray());
 
                 operation.Complete(runResult, budget);
 
@@ -167,6 +183,16 @@ namespace WorkspaceServer.Servers.Dotnet
 
             budget.RecordEntryAndThrowIfBudgetExceeded();
 
+            var builtLocation = emitResponse.Body.OutputAssemblyPath;
+
+            if (_workspace.IsWebProject)
+            {
+                File.Copy(
+                    builtLocation,
+                    _workspace.EntryPointAssemblyPath.FullName,
+                    true);
+            }
+
             return emitResponse;
         }
 
@@ -181,19 +207,18 @@ namespace WorkspaceServer.Servers.Dotnet
             await EnsureInitializedAndNotDisposed(budget);
             var processor = new BufferInliningTransformer();
             var processedRequest = await processor.TransformAsync(request, budget);
-            var emitResult = await Emit(processedRequest, new Budget());
+            var emitResponse = await Emit(processedRequest, new Budget());
             SerializableDiagnostic[] diagnostics;
 
-            if (emitResult.Body.Diagnostics.Any())
+            if (emitResponse.Body.Diagnostics.Any())
             {
-
                 var viewPorts = processor.ExtractViewPorts(processedRequest);
-                IEnumerable<(SerializableDiagnostic Diagnostic, string ErrorMessage)> processedDiagnostics = ReconstructDiagnosticLocations(emitResult.Body.Diagnostics, viewPorts, BufferInliningTransformer.PaddingSize).ToArray();
+                var processedDiagnostics = ReconstructDiagnosticLocations(emitResponse.Body.Diagnostics, viewPorts, BufferInliningTransformer.PaddingSize).ToArray();
                 diagnostics = processedDiagnostics?.Select(d => d.Diagnostic).ToArray();
             }
             else
             {
-                diagnostics = emitResult.Body.Diagnostics.Select(d => new SerializableDiagnostic(d)).ToArray();
+                diagnostics = emitResponse.Body.Diagnostics.Select(d => new SerializableDiagnostic(d)).ToArray();
             }
 
             return new DiagnosticResult(diagnostics);
