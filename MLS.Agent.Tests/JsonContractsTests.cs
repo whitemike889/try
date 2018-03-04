@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 using WorkspaceServer.Models.Execution;
 using Xunit;
 
-namespace WorkspaceServer.Tests
+namespace MLS.Agent.Tests
 {
     public class JsonContractsTests
     {
