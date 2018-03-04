@@ -1,4 +1,6 @@
-﻿namespace WorkspaceServer.Models.Execution
+﻿using System;
+
+namespace WorkspaceServer.Models.Execution
 {
     public static class RunResultExtensions
     {
@@ -6,6 +8,6 @@
             where T : class => 
             result.Features.TryGetValue(typeof(T), out var feature)
                 ? feature as T
-                : null;
+                : throw new InvalidOperationException($"The feature is not enabled: {typeof(T)}");
     }
 }
