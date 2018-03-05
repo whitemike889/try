@@ -18,7 +18,7 @@ namespace WorkspaceServer.Tests
         {
         }
 
-        protected override WorkspaceRequest CreateRunRequestContaining(string text) => new WorkspaceRequest(new Workspace(text));
+        protected override Workspace CreateWorkspaceContaining(string text) => new Workspace(text);
 
         protected override Task<IWorkspaceServer> GetWorkspaceServer(
             [CallerMemberName] string testName = null) =>
@@ -30,10 +30,9 @@ namespace WorkspaceServer.Tests
             var workspace = new Workspace(@"
 var person = new { Name = ""Jeff"", Age = 20 };
 $""{person.Name} is {person.Age} year(s) old""");
-            var request = new WorkspaceRequest(workspace);
             var server = await GetWorkspaceServer();
 
-            var result = await server.Run(request);
+            var result = await server.Run(workspace);
 
             Log.Trace(result.ToJson());
 
@@ -51,10 +50,9 @@ $""{person.Name} is {person.Age} year(s) old""");
         {
             var workspace = new Workspace(@"
 Console.WriteLine(banana);");
-            var request = new WorkspaceRequest(workspace);
             var server = await GetWorkspaceServer();
 
-            var result = await server.Run(request);
+            var result = await server.Run(workspace);
 
             result.ShouldBeEquivalentTo(new
             {
@@ -89,14 +87,12 @@ public static class Hello
         Thread.Sleep(1);
         Console.WriteLine(""Hello there!"");
     }
-}
+}",
+                                          usings: new[] { "System.Threading" });
 
-Hello.Main();",
-                                         usings: new[] { "System.Threading" });
-            var request = new WorkspaceRequest(workspace);
             var server = await GetWorkspaceServer();
 
-            var result = await server.Run(request);
+            var result = await server.Run(workspace);
 
             result.ShouldBeEquivalentTo(new
             {
@@ -105,7 +101,7 @@ Hello.Main();",
                 Exception = (string) null,
             }, config => config.ExcludingMissingMembers());
         }
-           
+
         [Fact]
         public async Task When_a_public_void_Main_with_non_string_parameters_is_present_it_is_not_invoked()
         {
@@ -119,10 +115,9 @@ public static class Hello
         Console.WriteLine(""Hello there!"");
     }
 }");
-            var request = new WorkspaceRequest(workspace);
             var server = await GetWorkspaceServer();
 
-            var result = await server.Run(request);
+            var result = await server.Run(workspace);
 
             result.ShouldSucceedWithNoOutput();
         }
@@ -140,10 +135,9 @@ public static class Hello
         Console.WriteLine(""Hello there!"");
     }
 }");
-            var request = new WorkspaceRequest(workspace);
             var server = await GetWorkspaceServer();
 
-            var result = await server.Run(request);
+            var result = await server.Run(workspace);
 
             result.Diagnostics.Should().NotContain(d => d.Id == "CS7022");
         }
@@ -166,10 +160,9 @@ public static class Hello
                 workspaceType: "script",
                 files: new[] { new Workspace.File("Main.cs", fileCode) },
                 buffers: new[] { new Workspace.Buffer(@"Main.cs@toReplace", @"Console.WriteLine(""Hello there!"");", 0) });
-            var request = new WorkspaceRequest(workspace);
             var server = await GetWorkspaceServer();
 
-            var result = await server.Run(request);
+            var result = await server.Run(workspace);
 
             result.ShouldSucceedWithOutput("Hello there!");
         }
@@ -194,8 +187,7 @@ public static class Hello
                 buffers: new[] { new Workspace.Buffer(@"Main.cs@toReplace", @"Console.WriteLine(banana);", 0) });
 
             var server = await GetWorkspaceServer();
-            var request = new WorkspaceRequest(workspace);
-            var result = await server.Run(request);
+            var result = await server.Run(workspace);
 
             result.ShouldBeEquivalentTo(new
             {
@@ -203,7 +195,6 @@ public static class Hello
                 Output = new[] { "(1,19): error CS0103: The name \'banana\' does not exist in the current context" },
                 Exception = (string)null, 
             }, config => config.ExcludingMissingMembers());
-            
         }
     }
 }

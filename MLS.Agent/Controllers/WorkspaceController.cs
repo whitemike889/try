@@ -47,7 +47,7 @@ namespace MLS.Agent.Controllers
                     var server = new ScriptingWorkspaceServer();
 
                     result = await server.Run(
-                                 request,
+                                 request.Workspace,
                                  budget);
                 }
                 else
@@ -60,7 +60,7 @@ namespace MLS.Agent.Controllers
                     }
 
                     result = await server.Run(
-                                 request,
+                                 request.Workspace,
                                  budget);
                 }
 

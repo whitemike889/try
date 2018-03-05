@@ -1,7 +1,7 @@
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using MLS.Agent.Tools;
 using Recipes;
-using WorkspaceServer.Models.Execution;
 using Workspace = MLS.Agent.Tools.Workspace;
 
 namespace WorkspaceServer.Tests
@@ -30,24 +30,27 @@ namespace WorkspaceServer.Tests
             return workspace;
         }
 
-        public static WorkspaceRequest SimpleRunRequest(
+        public static Workspace EmptyWorkspace([CallerMemberName] string testName = null, IWorkspaceInitializer initializer = null) =>
+            new Workspace(Workspace.CreateDirectory(testName), initializer: initializer);
+
+        public static Models.Execution.Workspace SimpleRunRequest(
             string consoleOutput = "Hello!",
-            string workspaceType = null) => new WorkspaceRequest(SimpleWorkspace(consoleOutput, workspaceType));
+            string workspaceType = null) =>
+            SimpleWorkspace(consoleOutput, workspaceType);
 
         public static Models.Execution.Workspace SimpleWorkspace(
             string consoleOutput = "Hello!",
-            string workspaceType = null) => new Models.Execution.Workspace(SimpleConsoleAppCodeWithoutNamespaces(consoleOutput), workspaceType: workspaceType);
+            string workspaceType = null) =>
+            new Models.Execution.Workspace(SimpleConsoleAppCodeWithoutNamespaces(consoleOutput), workspaceType: workspaceType);
 
         public static string SimpleWorkspaceAsJson(
             string consoleOutput = "Hello!",
-            string workspaceType = null)
-        {
-            return new
+            string workspaceType = null) =>
+            new
             {
                 buffer = SimpleConsoleAppCodeWithoutNamespaces(consoleOutput),
                 workspaceType
             }.ToJson();
-        }
 
         public static string SimpleConsoleAppCodeWithoutNamespaces(string consoleOutput)
         {

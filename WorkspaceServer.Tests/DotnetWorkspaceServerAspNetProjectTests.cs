@@ -33,7 +33,8 @@ namespace WorkspaceServer.Tests
 
             var webApiWorkspace = await Default.WebApiWorkspace;
 
-            using (var runResult = await workspaceServer.Run(Workspace.FromDirectory(webApiWorkspace.Directory)))
+            using (var runResult = await workspaceServer.Run(
+                                           Workspace.FromDirectory(webApiWorkspace.Directory)))
             {
                 var webServer = runResult.GetFeature<WebServer>();
 

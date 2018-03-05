@@ -24,23 +24,24 @@ namespace WorkspaceServer.Servers.Scripting
 {
     public class ScriptingWorkspaceServer : IWorkspaceServer
     {
-        public async Task<RunResult> Run(WorkspaceRequest request, Budget budget = null)
+        private readonly BufferInliningTransformer _transformer = new BufferInliningTransformer();
+
+        public async Task<RunResult> Run(Workspace workspace, Budget budget = null)
         {
             budget = budget ?? new Budget();
 
             using (var operation = Log.OnEnterAndConfirmOnExit())
             using (var console = await ConsoleOutput.Capture(budget))
             {
-                var processor = new BufferInliningTransformer();
-                var processedRequest = await processor.TransformAsync(request.Workspace, budget);
+                workspace = await _transformer.TransformAsync(workspace, budget);
 
                 if (processedRequest.Files.Count != 1)
                 {
-                    throw new ArgumentException($"{nameof(request)} should have exactly one source file.");
+                    throw new ArgumentException($"{nameof(workspace)} should have exactly one source file.");
                 }
 
-                var options = CreateOptions(request.Workspace);
-
+                var options = CreateOptions(workspace);
+               
                 ScriptState<object> state = null;
                 Exception userException = null;
 

@@ -15,14 +15,13 @@ namespace WorkspaceServer.Tests
         {
         }
 
-        protected override WorkspaceRequest CreateRunRequestContaining(string text)
+        protected override Workspace CreateWorkspaceContaining(string text)
         {
-            var workspace = new Workspace(
+            return new Workspace(
                 $@"using System; using System.Linq; using System.Collections.Generic; class Program {{ static void Main() {{ {text}
                     }}
                 }}
 ");
-           return new WorkspaceRequest(workspace);
         }
 
         [Fact]
@@ -32,10 +31,9 @@ namespace WorkspaceServer.Tests
                 workspaceType: "console",
                 files: new[] { new Workspace.File("Program.cs", CodeSamples.SourceCodeProvider.ConsoleProgramSingleRegion) },
                 buffers: new[] { new Workspace.Buffer("Program.cs@alpha", @"Console.WriteLine(banana);", 0) });
-            var request = new WorkspaceRequest(workspace);
             var server = await GetWorkspaceServer();
 
-            var result = await server.Run(request);
+            var result = await server.Run(workspace);
 
             result.ShouldBeEquivalentTo(new
             {
@@ -52,10 +50,9 @@ namespace WorkspaceServer.Tests
                 workspaceType: "console",
                 files: new[] { new Workspace.File("Program.cs", CodeSamples.SourceCodeProvider.ConsoleProgramSingleRegion) },
                 buffers: new[] { new Workspace.Buffer("Program.cs@alpha", @"var a = 10;" + Environment.NewLine + "Console.WriteLine(banana);", 0) });
-            var request = new WorkspaceRequest(workspace);
             var server = await GetWorkspaceServer();
 
-            var result = await server.Run(request);
+            var result = await server.Run(workspace);
 
             result.ShouldBeEquivalentTo(new
             {
@@ -132,10 +129,9 @@ namespace FibonacciTest
                 new Workspace.Buffer("Program.cs", program, 0),
                 new Workspace.Buffer("FibonacciGenerator.cs", generator, 0)
             });
-            var request = new WorkspaceRequest(workspace);
             var server = await GetWorkspaceServer();
 
-            var result = await server.Run(request);
+            var result = await server.Run(workspace);
 
             result.Succeeded.Should().BeTrue();
 
@@ -144,8 +140,7 @@ namespace FibonacciTest
                 new Workspace.Buffer("NotProgram.cs", program, 0),
                 new Workspace.Buffer("FibonacciGenerator.cs", generator, 0)
             });
-            request = new WorkspaceRequest(workspace);
-            result = await server.Run(request);
+            result = await server.Run(workspace);
 
             result.Succeeded.Should().BeTrue();
         }
@@ -197,10 +192,9 @@ namespace FibonacciTest
                 new Workspace.Buffer("Program.cs",program,0),
                 new Workspace.Buffer("FibonacciGenerator.cs",generator,0)
             });
-            var request = new WorkspaceRequest(workspace);
             var server = await GetWorkspaceServer();
 
-            var result = await server.Run(request);
+            var result = await server.Run(workspace);
 
             result.Succeeded.Should().BeTrue();
             result.Output.Count.Should().Be(20);

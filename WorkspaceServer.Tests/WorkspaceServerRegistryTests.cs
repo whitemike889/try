@@ -71,8 +71,7 @@ namespace Twilio_try.dot.net_sample
         }
     }
 }");
-                var request = new WorkspaceRequest(workspace);
-                var result = await workspaceServer.Run(request);
+                var result = await workspaceServer.Run(workspace);
 
                 result.Succeeded.Should().BeTrue(because: "compilation can't succeed unless the NuGet package has been restored.");
             }

@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.CodeAnalysis;
@@ -15,7 +13,6 @@ using WorkspaceServer.WorkspaceFeatures;
 using static Pocket.Logger<WorkspaceServer.Servers.Dotnet.DotnetWorkspaceServer>;
 using static WorkspaceServer.Servers.WorkspaceServer;
 using static WorkspaceServer.Transformations.OmniSharpDiagnosticTransformer;
-using Diagnostic = OmniSharp.Client.Diagnostic;
 using Workspace = MLS.Agent.Tools.Workspace;
 using OmnisharpEmitResponse = OmniSharp.Client.Commands.OmniSharpResponseMessage<OmniSharp.Client.Commands.EmitResponse>;
 
@@ -73,7 +70,7 @@ namespace WorkspaceServer.Servers.Dotnet
                               .CancelIfExceeds(budget ?? new Budget());
         }
 
-        public async Task<RunResult> Run(WorkspaceRequest request, Budget budget = null)
+        public async Task<RunResult> Run(Models.Execution.Workspace workspace, Budget budget = null)
         {
             budget = budget ?? new TimeBudget(_defaultTimeoutInSeconds);
 
@@ -81,17 +78,17 @@ namespace WorkspaceServer.Servers.Dotnet
             {
                 await EnsureInitializedAndNotDisposed(budget);
 
-                request = await _transformer.TransformAsync(request, budget);
+                workspace = await _transformer.TransformAsync(workspace, budget);
 
                 string exceptionMessage = null;
 
                 await FlushBuffers(budget);
 
-                var emitResponse = await Emit(request, budget);
+                var emitResponse = await Emit(workspace, budget);
 
                 var diagnostics = ReconstructDiagnosticLocations(
                     emitResponse.Body.Diagnostics,
-                    _transformer.ExtractViewPorts(request),
+                    _transformer.ExtractViewPorts(workspace),
                     BufferInliningTransformer.PaddingSize).ToArray();
 
                 if (emitResponse.Body.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error))
