@@ -168,16 +168,6 @@ namespace WorkspaceServer.Servers.Dotnet
 
                 var text = sourceFile.Text.ToString();
 
-                if (!file.Exists)
-                {
-                    var path = Path.GetDirectoryName(Path.GetFullPath(file.FullName));
-                    if (!Directory.Exists(path))
-                    {
-                        Directory.CreateDirectory(path);
-                    }
-                    File.WriteAllText(file.FullName, text);
-                }
-
                 await _omniSharpServer.UpdateBuffer(file, text);
             }
 
