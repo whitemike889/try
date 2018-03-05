@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Clockwise;
+using Microsoft.CodeAnalysis;
 using Newtonsoft.Json;
 using Pocket;
 using Recipes;
@@ -13,6 +14,7 @@ using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Tests;
 using Xunit;
 using Xunit.Abstractions;
+using Workspace = WorkspaceServer.Models.Execution.Workspace;
 
 namespace MLS.Agent.Tests
 {
@@ -223,12 +225,47 @@ namespace MLS.Agent.Tests
         }
 
         [Fact]
-        public async Task When_invoked_with_workspace_request_it_executes_correctly()
+        public async Task When_invoked_with_workspace_it_executes_correctly()
         {
             var output ="1";
             var requestJson = @"{ ""Buffers"":[{""Id"":"""",""Content"":""using System;\nusing System.Linq;\n\npublic class Program\n{\n  public static void Main()\n  {\n    foreach (var i in Fibonacci().Take(1))\n    {\n      Console.WriteLine(i);\n    }\n  }\n\n  private static IEnumerable<int> Fibonacci()\n  {\n    int current = 1, next = 1;\n\n    while (true) \n    {\n      yield return current;\n      next = current + (current = next);\n    }\n  }\n}\n"",""Position"":0}],""Usings"":[],""WorkspaceType"":""script"",""Files"":[]}";
 
             var response = await CallRun(requestJson);
+
+            var result = await response
+                .EnsureSuccess()
+                .DeserializeAs<RunResult>();
+
+            VerifySucceeded(result);
+
+            result.ShouldSucceedWithOutput(output);
+        }
+
+        [Fact]
+        public async Task When_invoked_with_workspace_request_it_executes_correctly()
+        {
+            var output = "1";
+            var sourceCode = @"using System;
+using System.Linq;
+
+public class Program {
+    public static void Main() {
+        foreach (var i in Fibonacci().Take(1)) {
+            Console.WriteLine(i);
+        }
+    }
+
+    private static IEnumerable<int> Fibonacci() {
+        int current = 1, next = 1;
+        while (true) {
+            yield return current;
+            next = current + (current = next);
+        }
+    }
+}";
+            var request = new WorkspaceRequest(new Workspace(workspaceType: "script", buffers: new[] { new Workspace.Buffer(string.Empty, sourceCode, 0 )}));
+
+            var response = await CallRun(request);
 
             var result = await response
                 .EnsureSuccess()
@@ -287,6 +324,13 @@ namespace MLS.Agent.Tests
             }
 
             return response;
+        }
+
+        private static Task<HttpResponseMessage> CallRun(
+            WorkspaceRequest request,
+            int? runTimeoutMs = null)
+        {
+            return CallRun(request.ToJson(), runTimeoutMs);
         }
 
         private class FailedRunResult : Exception

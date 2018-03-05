@@ -10,13 +10,14 @@ namespace MLS.Agent.JsonContracts
     // todo : this is to be removed once migrated all to new protocol
     public class WorkspaceRequestConverter : JsonConverter
     {
-        private readonly HashSet<string> _workspaceSignature;
-        private readonly HashSet<string> _workspaceEnvelopeSignature;
+        private static readonly HashSet<string> WorkspaceSignature;
+        private static readonly HashSet<string> WorkspaceEnvelopeSignature;
 
-        public WorkspaceRequestConverter()
+        static WorkspaceRequestConverter()
         {
-            _workspaceSignature = new HashSet<string>(typeof(Workspace).GetConstructors()?.SelectMany(c => c.GetParameters()?.Select(p => p.Name)) ?? Enumerable.Empty<string>(), StringComparer.OrdinalIgnoreCase);
-            _workspaceEnvelopeSignature = new HashSet<string>(typeof(WorkspaceRequest).GetConstructors()?.SelectMany(c => c?.GetParameters().Select(p => p.Name)) ?? Enumerable.Empty<string>(), StringComparer.OrdinalIgnoreCase);}
+            WorkspaceSignature = new HashSet<string>(typeof(Workspace).GetConstructors()?.SelectMany(c => c.GetParameters()?.Select(p => p.Name)) ?? Enumerable.Empty<string>(), StringComparer.OrdinalIgnoreCase);
+            WorkspaceEnvelopeSignature = new HashSet<string>(typeof(WorkspaceRequest).GetConstructors()?.SelectMany(c => c?.GetParameters().Select(p => p.Name)) ?? Enumerable.Empty<string>(), StringComparer.OrdinalIgnoreCase);
+        }
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
@@ -28,8 +29,8 @@ namespace MLS.Agent.JsonContracts
           
             var obj = serializer.Deserialize(reader) as JObject;
 
-            var isWorkspace = obj?.Properties().All(p => _workspaceSignature.Contains(p.Name)) == true;
-            var isWorkspaceEnvelope = obj?.Properties().All(p => _workspaceEnvelopeSignature.Contains(p.Name)) == true;
+            var isWorkspace = obj?.Properties().All(p => WorkspaceSignature.Contains(p.Name)) == true;
+            var isWorkspaceEnvelope = obj?.Properties().All(p => WorkspaceEnvelopeSignature.Contains(p.Name)) == true;
 
             if (isWorkspace)
             {

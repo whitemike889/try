@@ -1,4 +1,6 @@
-﻿namespace WorkspaceServer.Models.Execution
+﻿using System;
+
+namespace WorkspaceServer.Models.Execution
 {
     public class WorkspaceRequest
     {
@@ -6,7 +8,7 @@
 
         public WorkspaceRequest(Workspace workspace)
         {
-            Workspace = workspace;
+            Workspace = workspace ?? throw new ArgumentNullException(nameof(workspace));
         }
     }
 }
