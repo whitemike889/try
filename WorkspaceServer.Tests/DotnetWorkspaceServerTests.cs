@@ -227,6 +227,83 @@ namespace FibonacciTest
                 "6765"});
         }
 
+        [Fact]
+        public async Task Response_with_multi_buffer_using_relative_paths_workspace()
+        {
+            #region bufferSources
+
+            var program = @"
+using System;
+using System.Linq;
+
+namespace FibonacciTest
+{
+    public class Program
+    {
+        public static void Main()
+        {
+            foreach (var i in FibonacciGenerator.Fibonacci().Take(20))
+            {
+                Console.WriteLine(i);
+            }
+        }       
+    }
+}";
+            var generator = @"
+using System.Collections.Generic;
+
+namespace FibonacciTest
+{
+    public static class FibonacciGenerator
+    {
+        public  static IEnumerable<int> Fibonacci()
+        {
+            int current = 1, next = 1;
+            while (true)
+            {
+                yield return current;
+                next = current + (current = next);
+            }
+        }
+    }
+}";
+            #endregion
+
+            var workspace = new Workspace(workspaceType: "console", buffers: new[]
+            {
+                new Workspace.Buffer("Program.cs",program,0),
+                new Workspace.Buffer("generators/FibonacciGenerator.cs",generator,0)
+            });
+            var request = new WorkspaceRequest(workspace);
+            var server = await GetWorkspaceServer();
+
+            var result = await server.Run(request);
+
+            result.Succeeded.Should().BeTrue();
+            result.Output.Count.Should().Be(20);
+            result.Output.ShouldAllBeEquivalentTo(new[]{
+                "1",
+                "1",
+                "2",
+                "3",
+                "5",
+                "8",
+                "13",
+                "21",
+                "34",
+                "55",
+                "89",
+                "144",
+                "233",
+                "377",
+                "610",
+                "987",
+                "1597",
+                "2584",
+                "4181",
+                "6765"});
+        }
+
         protected override async Task<IWorkspaceServer> GetWorkspaceServer(
             [CallerMemberName] string testName = null)
         {

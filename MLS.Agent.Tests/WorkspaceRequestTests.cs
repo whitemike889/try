@@ -39,7 +39,7 @@ namespace MLS.Agent.Tests
         {
             var action = new Action(() =>
             {
-                var wr = new WebRequest(@"/handler", string.Empty);
+                var wr = new HttpRequest(@"/handler", string.Empty);
             });
             action.ShouldThrow<ArgumentException>();
         }
@@ -49,7 +49,7 @@ namespace MLS.Agent.Tests
         {
             var action = new Action(() =>
             {
-                var wr = new WebRequest(@"http://www.microsoft.com", "post");
+                var wr = new HttpRequest(@"http://www.microsoft.com", "post");
             });
             action.ShouldThrow<ArgumentException>();
         }

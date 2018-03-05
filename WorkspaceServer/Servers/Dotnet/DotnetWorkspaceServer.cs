@@ -170,6 +170,11 @@ namespace WorkspaceServer.Servers.Dotnet
 
                 if (!file.Exists)
                 {
+                    var path = Path.GetDirectoryName(Path.GetFullPath(file.FullName));
+                    if (!Directory.Exists(path))
+                    {
+                        Directory.CreateDirectory(path);
+                    }
                     File.WriteAllText(file.FullName, text);
                 }
 
