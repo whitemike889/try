@@ -7,6 +7,7 @@ using WorkspaceServer.Models.Execution;
 
 namespace MLS.Agent.JsonContracts
 {
+    // todo : this is to be removed once migrated all to new protocol
     public class WorkspaceRequestConverter : JsonConverter
     {
         private readonly HashSet<string> _workspaceSignature;
