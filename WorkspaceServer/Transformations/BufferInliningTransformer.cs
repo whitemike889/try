@@ -11,7 +11,7 @@ using Workspace = WorkspaceServer.Models.Execution.Workspace;
 
 namespace WorkspaceServer.Transformations
 {
-    public class BufferInliningTransformer : IWorksapceTransformer
+    public class BufferInliningTransformer : IWorkspaceTransformer
     {
         private static readonly string ProcessorName = typeof(BufferInliningTransformer).Name;
         private static readonly string Padding = Environment.NewLine;

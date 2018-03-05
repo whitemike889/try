@@ -4,7 +4,7 @@ using WorkspaceServer.Models.Execution;
 
 namespace WorkspaceServer
 {
-    public interface IWorksapceTransformer
+    public interface IWorkspaceTransformer
     {
         Task<Workspace> TransformAsync(Workspace source, Budget timebudget = null);
     }
