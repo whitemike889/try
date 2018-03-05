@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using FluentAssertions;
+using FluentAssertions.Common;
 using MLS.Agent.JsonContracts;
 using Newtonsoft.Json;
 using WorkspaceServer.Models.Execution;
@@ -7,9 +9,9 @@ using Xunit;
 
 namespace MLS.Agent.Tests
 {
-    public class JsonContractsTests
+    public class WorkspaceRequestTests
     {
-        public JsonContractsTests()
+        public WorkspaceRequestTests()
         {
             var settings = JsonConvert.DefaultSettings?.Invoke() ?? new JsonSerializerSettings()
             {
@@ -30,6 +32,26 @@ namespace MLS.Agent.Tests
 
             var request = JsonConvert.DeserializeObject<WorkspaceRequest>(json);
             request.Should().NotBeNull();
+        }
+
+        [Fact]
+        public void webrequest_must_have_verb()
+        {
+            var action = new Action(() =>
+            {
+                var wr = new WebRequest(@"/handler", string.Empty);
+            });
+            action.ShouldThrow<ArgumentException>();
+        }
+
+        [Fact]
+        public void webrequest_must_have_relative_url()
+        {
+            var action = new Action(() =>
+            {
+                var wr = new WebRequest(@"http://www.microsoft.com", "post");
+            });
+            action.ShouldThrow<ArgumentException>();
         }
     }
 }
