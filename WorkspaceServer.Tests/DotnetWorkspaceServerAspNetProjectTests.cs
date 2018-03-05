@@ -15,11 +15,11 @@ using static Pocket.Logger;
 
 namespace WorkspaceServer.Tests
 {
-    public class DotnetWorkspaceServerAspNetTests : IDisposable
+    public class DotnetWorkspaceServerAspNetProjectTests : IDisposable
     {
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
 
-        public DotnetWorkspaceServerAspNetTests(ITestOutputHelper output)
+        public DotnetWorkspaceServerAspNetProjectTests(ITestOutputHelper output)
         {
             _disposables.Add(output.SubscribeToPocketLogger());
         }
