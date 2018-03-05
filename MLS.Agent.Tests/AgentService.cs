@@ -10,21 +10,21 @@ namespace MLS.Agent.Tests
 {
     public class AgentService : IDisposable
     {
-        private readonly CompositeDisposable disposables = new CompositeDisposable();
+        private readonly CompositeDisposable _disposables = new CompositeDisposable();
 
-        private readonly HttpClient client;
+        private readonly HttpClient _client;
 
         public AgentService()
         {
             var testServer = CreateTestServer();
 
-            client = testServer.CreateClient();
+            _client = testServer.CreateClient();
 
-            disposables.Add(testServer);
-            disposables.Add(client);
+            _disposables.Add(testServer);
+            _disposables.Add(_client);
         }
 
-        public void Dispose() => disposables.Dispose();
+        public void Dispose() => _disposables.Dispose();
 
         private TestServer CreateTestServer() => new TestServer(CreateWebHostBuilder());
 
@@ -38,6 +38,6 @@ namespace MLS.Agent.Tests
         }
 
         public Task<HttpResponseMessage> SendAsync(HttpRequestMessage request) =>
-            client.SendAsync(request);
+            _client.SendAsync(request);
     }
 }

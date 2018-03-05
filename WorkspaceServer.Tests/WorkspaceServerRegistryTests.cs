@@ -55,8 +55,7 @@ namespace WorkspaceServer.Tests
                                       });
 
                 var workspaceServer = await registry.GetWorkspaceServer(workspaceId);
-
-                var result = await workspaceServer.Run(new WorkspaceServer.Models.Execution.Workspace(@"
+                var workspace = new WorkspaceServer.Models.Execution.Workspace(@"
 using System;
 using Twilio.Clients;
 using Twilio.Rest.Api.V2010.Account;
@@ -72,7 +71,9 @@ namespace Twilio_try.dot.net_sample
             var sendToPhoneNumber = new PhoneNumber(""RECIPIENT_PHONE_NUMBER"");
         }
     }
-}"));
+}");
+                var request = new WorkspaceRequest(workspace);
+                var result = await workspaceServer.Run(request);
 
                 result.Succeeded.Should().BeTrue(because: "compilation can't succeed unless the NuGet package has been restored.");
             }

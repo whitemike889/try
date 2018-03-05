@@ -24,7 +24,7 @@ namespace WorkspaceServer.Servers.Scripting
 {
     public class ScriptingWorkspaceServer : IWorkspaceServer
     {
-        public async Task<RunResult> Run(Workspace request, Budget budget = null)
+        public async Task<RunResult> Run(WorkspaceRequest request, Budget budget = null)
         {
             budget = budget ?? new Budget();
           
@@ -32,14 +32,14 @@ namespace WorkspaceServer.Servers.Scripting
             using (var console = await ConsoleOutput.Capture())
             {
                 var processor = new BufferInliningTransformer();
-                var processedRequest = await processor.TransformAsync(request, budget);
+                var processedRequest = await processor.TransformAsync(request.Workspace, budget);
 
                 if (processedRequest.SourceFiles.Count != 1)
                 {
                     throw new ArgumentException($"{nameof(request)} should have exactly one source file.");
                 }
 
-                var options = CreateOptions(request);
+                var options = CreateOptions(request.Workspace);
                
                 ScriptState<object> state = null;
                 Exception userException = null;
