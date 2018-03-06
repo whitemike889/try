@@ -76,10 +76,7 @@ namespace MLS.Agent.JsonContracts
         {
             var targeType = typeof(WorkspaceRequest);
             var response = targeType == objectType || objectType.IsSubclassOf(typeof(WorkspaceRequest));
-            if (response)
-                return true;
-
-            return false;
+            return response;
         }
 
         private void RemoveConverter(JsonConverter jsonConverter, JsonSerializer serializer)
