@@ -30,7 +30,7 @@ namespace MLS.Agent.JsonContracts
             RestoreConverter(serializer, converter);
         }
 
-       
+
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
@@ -62,10 +62,7 @@ namespace MLS.Agent.JsonContracts
         {
             var targeType = typeof(WorkspaceRequest);
             var response = targeType == objectType || objectType.IsSubclassOf(typeof(WorkspaceRequest));
-            if (response)
-                return true;
-
-            return false;
+            return response;
         }
 
         private void RemoveConverter(JsonConverter jsonConverter, JsonSerializer serializer)
