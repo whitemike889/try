@@ -7,7 +7,6 @@ using WorkspaceServer.Models.Execution;
 
 namespace MLS.Agent.JsonContracts
 {
-    // todo : this is to be removed once migrated all to new protocol
     public class WorkspaceRequestConverter : JsonConverter
     {
         private static readonly HashSet<string> WorkspaceSignature;
@@ -26,8 +25,14 @@ namespace MLS.Agent.JsonContracts
         {
             var converter = serializer.Converters.FirstOrDefault(e => e.GetType() == GetType());
             RemoveConverter(converter, serializer);
-            serializer.Serialize(writer, value);
-            RestoreConverter(serializer, converter);
+            try
+            {
+                serializer.Serialize(writer, value);
+            }
+            finally
+            {
+                RestoreConverter(serializer, converter);
+            }
         }
 
        
@@ -35,24 +40,40 @@ namespace MLS.Agent.JsonContracts
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
             var obj = serializer.Deserialize(reader) as JObject;
-
+            WorkspaceRequest ret = null;
             var isWorkspace = obj?.Properties().All(p => WorkspaceSignature.Contains(p.Name)) == true;
             var isWorkspaceEnvelope = obj?.Properties().All(p => WorkspaceEnvelopeSignature.Contains(p.Name)) == true;
             var converter = serializer.Converters.FirstOrDefault(e => e.GetType() == GetType());
             if (isWorkspace)
             {
                 RemoveConverter(converter, serializer);
-                var ws = obj.ToObject<Workspace>();
-                var ret = new WorkspaceRequest(ws);
-                RestoreConverter(serializer, converter);
+                try
+                {
+                    var ws = obj.ToObject<Workspace>();
+                    ret = new WorkspaceRequest(ws);
+                }
+                finally
+                {
+                    RestoreConverter(serializer, converter);
+                }
+
+                
                 return ret;
             }
 
             if (isWorkspaceEnvelope)
             {
                 RemoveConverter(converter, serializer);
-                var ret = obj.ToObject<WorkspaceRequest>(serializer);
-                RestoreConverter(serializer, converter);
+                try
+                {
+                    ret = obj.ToObject<WorkspaceRequest>(serializer);
+                }
+                finally
+                {
+
+                    RestoreConverter(serializer, converter);
+                }
+
                 return ret;
             }
 
