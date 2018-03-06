@@ -168,11 +168,6 @@ namespace WorkspaceServer.Servers.Dotnet
 
                 var text = sourceFile.Text.ToString();
 
-                if (!file.Exists)
-                {
-                    File.WriteAllText(file.FullName, text);
-                }
-
                 await _omniSharpServer.UpdateBuffer(file, text);
             }
 
