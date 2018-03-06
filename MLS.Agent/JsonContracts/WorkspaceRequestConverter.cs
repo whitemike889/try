@@ -24,7 +24,7 @@ namespace MLS.Agent.JsonContracts
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
             var converter = serializer.Converters.FirstOrDefault(e => e.GetType() == GetType());
-            RemoveConverter(converter, serializer);
+            RemoveConverter(serializer, converter);
             try
             {
                 serializer.Serialize(writer, value);
@@ -46,7 +46,7 @@ namespace MLS.Agent.JsonContracts
             var converter = serializer.Converters.FirstOrDefault(e => e.GetType() == GetType());
             if (isWorkspace)
             {
-                RemoveConverter(converter, serializer);
+                RemoveConverter(serializer, converter);
                 try
                 {
                     var ws = obj.ToObject<Workspace>();
@@ -59,7 +59,7 @@ namespace MLS.Agent.JsonContracts
             }
             else if (isWorkspaceEnvelope)
             {
-                RemoveConverter(converter, serializer);
+                RemoveConverter(serializer, converter);
                 try
                 {
                     workspaceRequest = obj.ToObject<WorkspaceRequest>(serializer);
@@ -79,11 +79,12 @@ namespace MLS.Agent.JsonContracts
             return response;
         }
 
-        private void RemoveConverter(JsonConverter jsonConverter, JsonSerializer serializer)
+        private void RemoveConverter(JsonSerializer serializer, JsonConverter converter)
         {
-            if (jsonConverter != null)
-                serializer.Converters.Remove(jsonConverter);
+            if (converter != null)
+                serializer.Converters.Remove(converter);
         }
+
         private void RestoreConverter(JsonSerializer serializer, JsonConverter converter)
         {
             if (converter != null)
