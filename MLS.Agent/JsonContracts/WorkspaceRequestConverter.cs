@@ -7,7 +7,6 @@ using WorkspaceServer.Models.Execution;
 
 namespace MLS.Agent.JsonContracts
 {
-    // todo : this is to be removed once migrated all to new protocol
     public class WorkspaceRequestConverter : JsonConverter
     {
         private static readonly HashSet<string> WorkspaceSignature;
@@ -25,9 +24,15 @@ namespace MLS.Agent.JsonContracts
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
             var converter = serializer.Converters.FirstOrDefault(e => e.GetType() == GetType());
-            RemoveConverter(converter, serializer);
-            serializer.Serialize(writer, value);
-            RestoreConverter(serializer, converter);
+            RemoveConverter(serializer, converter);
+            try
+            {
+                serializer.Serialize(writer, value);
+            }
+            finally
+            {
+                RestoreConverter(serializer, converter);
+            }
         }
 
 
@@ -35,28 +40,37 @@ namespace MLS.Agent.JsonContracts
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
             var obj = serializer.Deserialize(reader) as JObject;
-
+            WorkspaceRequest workspaceRequest = null;
             var isWorkspace = obj?.Properties().All(p => WorkspaceSignature.Contains(p.Name)) == true;
             var isWorkspaceEnvelope = obj?.Properties().All(p => WorkspaceEnvelopeSignature.Contains(p.Name)) == true;
             var converter = serializer.Converters.FirstOrDefault(e => e.GetType() == GetType());
             if (isWorkspace)
             {
-                RemoveConverter(converter, serializer);
-                var ws = obj.ToObject<Workspace>();
-                var ret = new WorkspaceRequest(ws);
-                RestoreConverter(serializer, converter);
-                return ret;
+                RemoveConverter(serializer, converter);
+                try
+                {
+                    var ws = obj.ToObject<Workspace>();
+                    workspaceRequest = new WorkspaceRequest(ws);
+                }
+                finally
+                {
+                    RestoreConverter(serializer, converter);
+                }
             }
-
-            if (isWorkspaceEnvelope)
+            else if (isWorkspaceEnvelope)
             {
-                RemoveConverter(converter, serializer);
-                var ret = obj.ToObject<WorkspaceRequest>(serializer);
-                RestoreConverter(serializer, converter);
-                return ret;
+                RemoveConverter(serializer, converter);
+                try
+                {
+                    workspaceRequest = obj.ToObject<WorkspaceRequest>(serializer);
+                }
+                finally
+                {
+                    RestoreConverter(serializer, converter);
+                }
             }
 
-            return null;
+            return workspaceRequest;
         }
         public override bool CanConvert(Type objectType)
         {
@@ -65,11 +79,12 @@ namespace MLS.Agent.JsonContracts
             return response;
         }
 
-        private void RemoveConverter(JsonConverter jsonConverter, JsonSerializer serializer)
+        private void RemoveConverter(JsonSerializer serializer, JsonConverter converter)
         {
-            if (jsonConverter != null)
-                serializer.Converters.Remove(jsonConverter);
+            if (converter != null)
+                serializer.Converters.Remove(converter);
         }
+
         private void RestoreConverter(JsonSerializer serializer, JsonConverter converter)
         {
             if (converter != null)
