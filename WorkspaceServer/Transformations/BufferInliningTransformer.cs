@@ -29,14 +29,14 @@ namespace WorkspaceServer.Transformations
         {
             if (ws == null) throw new ArgumentNullException(nameof(ws));
 
-            var files = ws.SourceFiles;
+            var files = ws.GetSourceFiles();
 
             return ExtractViewPorts(files);
         }
 
         private static async Task<(Workspace.File[] files, Workspace.Buffer[] buffers)> InlineBuffersAsync(Workspace source, Budget timeBudget)
         {
-            var files = source.SourceFiles.ToDictionary(f => f.Name);
+            var files = source.GetSourceFiles().ToDictionary(f => f.Name);
             var buffers = new List<Workspace.Buffer>();
             foreach (var sourceBuffer in source.Buffers)
             {

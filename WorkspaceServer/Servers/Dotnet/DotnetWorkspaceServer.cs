@@ -162,7 +162,7 @@ namespace WorkspaceServer.Servers.Dotnet
         {
             await EnsureInitializedAndNotDisposed(budget);
 
-            foreach (var sourceFile in request.SourceFiles)
+            foreach (var sourceFile in request.Files)
             {
                 var file = new FileInfo(Path.Combine(_workspace.Directory.FullName, sourceFile.Name));
 

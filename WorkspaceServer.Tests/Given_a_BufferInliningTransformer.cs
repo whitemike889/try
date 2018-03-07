@@ -80,10 +80,10 @@ namespace WorkspaceServer.Tests
 
             var processed = await processor.TransformAsync(ws);
             processed.Should().NotBeNull();
-            processed.SourceFiles.Should().NotBeEmpty();
-            var newCode = processed.SourceFiles.ElementAt(0).Text.ToString();
+            processed.Files.Should().NotBeEmpty();
+            var newCode = processed.Files.ElementAt(0).Text;
 
-            newCode.Should().NotBe(ws.SourceFiles.ElementAt(0).Text.ToString());
+            newCode.Should().NotBe(ws.Files.ElementAt(0).Text);
             newCode.Should().Contain("var newValue = 1000;");
 
             processed.Buffers.Count.Should().Be(ws.Buffers.Count);
@@ -107,10 +107,10 @@ namespace WorkspaceServer.Tests
 
             var processed = await processor.TransformAsync(ws);
             processed.Should().NotBeNull();
-            processed.SourceFiles.Should().NotBeEmpty();
-            var newCode = processed.SourceFiles.ElementAt(0).Text.ToString();
+            processed.Files.Should().NotBeEmpty();
+            var newCode = processed.Files.ElementAt(0).Text;
 
-            newCode.Should().NotBe(ws.SourceFiles.ElementAt(0).Text.ToString());
+            newCode.Should().NotBe(ws.Files.ElementAt(0).Text);
             newCode.Should().Be("var newValue = 1000;");
 
             processed.Buffers.Count.Should().Be(ws.Buffers.Count);
@@ -129,8 +129,8 @@ namespace WorkspaceServer.Tests
 
             var processed = await processor.TransformAsync(ws);
             processed.Should().NotBeNull();
-            processed.SourceFiles.Should().NotBeEmpty();
-            var newCode = processed.SourceFiles.ElementAt(0).Text.ToString();
+            processed.Files.Should().NotBeEmpty();
+            var newCode = processed.Files.ElementAt(0).Text;
             newCode.Should().Contain(CodeSamples.SourceCodeProvider.ConsoleProgramSingleRegion);
 
         }

@@ -20,7 +20,7 @@ namespace WorkspaceServer.Tests
       ""AssemblyName"": ""MyConsoleApp"",
       ""TargetPath"": ""C:\\temp\\MyConsoleApp\\bin\\Debug\\netcoreapp2.0\\MyConsoleApp.dll"",
       ""TargetFramework"": "".NETCoreApp,Version=v2.0"",
-      ""SourceFiles"": [
+      ""Files"": [
         ""C:\\temp\\MyConsoleApp\\Program.cs"",
         ""C:\\Users\\josequ.REDMOND\\AppData\\Local\\Temp\\.NETCoreApp,Version=v2.0.AssemblyAttributes.cs"",
         ""C:\\temp\\MyConsoleApp\\obj\\Debug\\netcoreapp2.0\\MyConsoleApp.AssemblyInfo.cs""
@@ -61,7 +61,7 @@ namespace WorkspaceServer.Tests
       ""AssemblyName"": ""MyConsoleApp"",
       ""TargetPath"": ""C:\\temp\\MyConsoleApp\\bin\\Debug\\netcoreapp2.0\\MyConsoleApp.dll"",
       ""TargetFramework"": "".NETCoreApp,Version=v2.0"",
-      ""SourceFiles"": [
+      ""Files"": [
         ""C:\\temp\\MyConsoleApp\\Program.cs"",
         ""C:\\Users\\josequ.REDMOND\\AppData\\Local\\Temp\\.NETCoreApp,Version=v2.0.AssemblyAttributes.cs"",
         ""C:\\temp\\MyConsoleApp\\obj\\Debug\\netcoreapp2.0\\MyConsoleApp.AssemblyInfo.cs""
