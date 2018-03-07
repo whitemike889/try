@@ -34,7 +34,7 @@ namespace WorkspaceServer.Servers.Scripting
                 var processor = new BufferInliningTransformer();
                 var processedRequest = await processor.TransformAsync(request.Workspace, budget);
 
-                if (processedRequest.SourceFiles.Count != 1)
+                if (processedRequest.Files.Count != 1)
                 {
                     throw new ArgumentException($"{nameof(request)} should have exactly one source file.");
                 }
@@ -46,7 +46,7 @@ namespace WorkspaceServer.Servers.Scripting
 
                 await Task.Run(async () =>
                 {
-                    var sourceLines = processedRequest.SourceFiles.Single().Text.Lines;
+                    var sourceLines = processedRequest.GetSourceFiles().Single().Text.Lines;
 
                     var buffer = new StringBuilder();
 
@@ -133,8 +133,9 @@ namespace WorkspaceServer.Servers.Scripting
         private IEnumerable<(SerializableDiagnostic Diagnostic, string ErrorMessage)> GetDiagnostics(Workspace workspace, ScriptOptions options)
         {
             var processor = new BufferInliningTransformer();
-            var viewPorts = processor.ExtractViewPorts(workspace);
-            var sourceFile = workspace.SourceFiles.Single();
+            var processed = processor.TransformAsync(workspace).Result;
+            var viewPorts = processor.ExtractViewPorts(processed);
+            var sourceFile = processed.GetSourceFiles().Single();
             var sourceDiagnostics = CSharpScript.Create(sourceFile.Text.ToString(), options)
                 .GetCompilation()
                 .GetDiagnostics()
