@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Reactive.Linq;
 using System.Threading;
@@ -6,6 +8,7 @@ using System.Threading.Tasks;
 using MLS.Agent.Tools;
 using Pocket;
 using Recipes;
+using static Pocket.Logger;
 
 namespace WorkspaceServer.WorkspaceFeatures
 {
@@ -14,6 +17,7 @@ namespace WorkspaceServer.WorkspaceFeatures
         private readonly AsyncLazy<HttpClient> _getHttpClient;
         private readonly AsyncLazy<Uri> _started;
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
+        private static int _port = 6000;
 
         public WebServer(Workspace workspace)
         {
@@ -22,9 +26,22 @@ namespace WorkspaceServer.WorkspaceFeatures
                 throw new ArgumentNullException(nameof(workspace));
             }
 
+            Interlocked.Increment(ref _port);
+
             _started = new AsyncLazy<Uri>(async () =>
             {
                 await workspace.EnsurePublished();
+
+                var environmentVariables = new List<(string, string)>();
+
+                foreach (DictionaryEntry e in Environment.GetEnvironmentVariables())
+                {
+                    environmentVariables.Add((e.Key.ToString(), e.Value.ToString()));
+                }
+
+                Log.Trace("Starting Kestrel on port {port}. Environment: {env}",
+                          _port, 
+                          environmentVariables);
 
                 var process = CommandLine.StartProcess(
                     DotnetMuxer.Path.FullName,
@@ -32,12 +49,13 @@ namespace WorkspaceServer.WorkspaceFeatures
                     workspace.Directory,
                     StandardOutput.OnNext,
                     StandardError.OnNext,
-                    ("ASPNETCORE_URLS", "http://127.0.0.1:0"));
+                    ("ASPNETCORE_URLS", $"http://127.0.0.1:0"),
+                    ("ASPNETCORE_PORT", null));
 
-                _disposables.Add(() =>
-                {
-                    process.Complete().DontAwait();
-                });
+                _disposables.Add(() => { process.Complete().DontAwait(); });
+
+                _disposables.Add(StandardOutput.Subscribe(s => Log.Trace(s)));
+                _disposables.Add(StandardError.Subscribe(s => Log.Error(s)));
 
                 var kestrelListeningMessagePrefix = "Now listening on: ";
 

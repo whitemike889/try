@@ -31,10 +31,10 @@ namespace WorkspaceServer.Tests
         {
             var workspaceServer = await GetWorkspaceServer();
 
-            var webApiWorkspace = await Default.WebApiWorkspace;
+            var workspace = Workspace.FromDirectory((await Default.WebApiWorkspace).Directory);
 
             using (var runResult = await workspaceServer.Run(
-                                           Workspace.FromDirectory(webApiWorkspace.Directory)))
+                                           workspace))
             {
                 var webServer = runResult.GetFeature<WebServer>();
 

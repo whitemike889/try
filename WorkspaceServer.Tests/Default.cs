@@ -4,7 +4,7 @@ using MLS.Agent.Tools;
 
 namespace WorkspaceServer.Tests
 {
-    internal static class Default
+    public static class Default
     {
         private static readonly AsyncLazy<Workspace> _consoleWorkspace = new AsyncLazy<Workspace>(async () =>
         {
@@ -26,6 +26,7 @@ namespace WorkspaceServer.Tests
 
             await workspace.EnsureCreated();
             await workspace.EnsureBuilt();
+            await workspace.EnsurePublished();
 
             return workspace;
         });

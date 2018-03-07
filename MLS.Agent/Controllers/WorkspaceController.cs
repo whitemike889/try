@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.AspNetCore.Mvc;
@@ -8,6 +9,7 @@ using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Servers.Dotnet;
 using WorkspaceServer.Servers.Scripting;
+using WorkspaceServer.WorkspaceFeatures;
 using static Pocket.Logger<MLS.Agent.Controllers.WorkspaceController>;
 
 namespace MLS.Agent.Controllers
@@ -15,6 +17,7 @@ namespace MLS.Agent.Controllers
     public class WorkspaceController : Controller
     {
         private readonly WorkspaceServerRegistry _workspaceServerRegistry;
+        private readonly CompositeDisposable _disposables = new CompositeDisposable();
 
         public WorkspaceController(WorkspaceServerRegistry workspaceServerRegistry)
         {
@@ -29,6 +32,11 @@ namespace MLS.Agent.Controllers
             [FromHeader(Name = "Referer")] string referer,
             [FromHeader(Name = "Timeout")] string timeoutInMilliseconds = "15000")
         {
+            if (Debugger.IsAttached)
+            {
+                _disposables.Add(VirtualClock.Start());
+            }
+
             using (var operation = Log.OnEnterAndConfirmOnExit())
             {
                 if (!int.TryParse(timeoutInMilliseconds, out var timeoutMs))
@@ -62,9 +70,29 @@ namespace MLS.Agent.Controllers
                     result = await server.Run(
                                  request.Workspace,
                                  budget);
+
+                    _disposables.Add(result);
+
+                    if (request.HttpRequest != null)
+                    {
+                        var webServer = result.GetFeature<WebServer>();
+
+                        if (webServer != null)
+                        {
+                            var response = await webServer.SendAsync(request.HttpRequest.ToHttpRequestMessage())
+                                                          .CancelIfExceeds(budget);
+
+                            result = new RunResult(
+                                true,
+                                new[] { response.ToString() });
+
+
+                        }
+                    }
                 }
 
                 operation.Succeed();
+
                 return Ok(result);
             }
         }
@@ -103,6 +131,16 @@ namespace MLS.Agent.Controllers
 
                 return Ok(result);
             }
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _disposables.Dispose();
+            }
+
+            base.Dispose(disposing);
         }
     }
 }

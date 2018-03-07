@@ -268,10 +268,10 @@ namespace FibonacciTest
                 new Workspace.Buffer("Program.cs",program,0),
                 new Workspace.Buffer("generators/FibonacciGenerator.cs",generator,0)
             });
-            var request = new WorkspaceRequest(workspace);
+
             var server = await GetWorkspaceServer();
 
-            var result = await server.Run(request);
+            var result = await server.Run(workspace);
 
             result.Succeeded.Should().BeTrue();
             result.Output.Count.Should().Be(20);

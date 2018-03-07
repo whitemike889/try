@@ -39,7 +39,7 @@ namespace WorkspaceServer.Servers.Dotnet
             _defaultTimeoutInSeconds = TimeSpan.FromSeconds(defaultTimeoutInSeconds ?? 30);
 
 #if DEBUG
-            var logToPocketLogger = true;
+            var logToPocketLogger = false;
 #else
             var logToPocketLogger = false;
 #endif

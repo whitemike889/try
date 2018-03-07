@@ -25,8 +25,6 @@ namespace WorkspaceServer.Tests
                 await Default.WebApiWorkspace,
                 testName);
 
-            await workspace.EnsurePublished();
-
             return workspace;
         }
 

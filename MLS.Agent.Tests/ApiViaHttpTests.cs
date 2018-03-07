@@ -242,7 +242,7 @@ namespace MLS.Agent.Tests
         }
 
         [Fact]
-        public async Task When_invoked_with_workspace_request_it_executes_correctly()
+        public async Task When_invoked_with_script_workspace_request_it_executes_correctly()
         {
             var output = "1";
             var sourceCode = @"using System;
@@ -274,6 +274,24 @@ public class Program {
             VerifySucceeded(result);
 
             result.ShouldSucceedWithOutput(output);
+        }
+
+        [Fact]
+        public async Task When_invoked_with_aspnet_webapi_workspace_request_it_executes_correctly()
+        {
+            var workspace = Workspace.FromDirectory((await Default.WebApiWorkspace).Directory);
+
+            var request = new WorkspaceRequest(workspace);
+
+            var response = await CallRun(request);
+
+            var result = await response
+                .EnsureSuccess()
+                .DeserializeAs<RunResult>();
+
+            VerifySucceeded(result);
+
+            result.ShouldSucceedWithOutput("the text of the web response");
         }
 
         [Fact]

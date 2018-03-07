@@ -26,6 +26,8 @@ namespace WorkspaceServer
 
         internal IWorkspaceInitializer WorkspaceInitializer { get; private set; }
 
+        public bool RequiresPublish { get; set; }
+
         public void CreateUsingDotnet(string template) =>
             WorkspaceInitializer = new DotnetWorkspaceInitializer(
                 template,
@@ -50,13 +52,13 @@ namespace WorkspaceServer
         {
             if (_workspace == null)
             {
-                await BuildWorkspace(budget);
+                await PrepareWorkspace(budget);
             }
 
             return _workspace;
         }
 
-        private async Task BuildWorkspace(Budget budget = null)
+        private async Task PrepareWorkspace(Budget budget = null)
         {
             budget = budget ?? new Budget();
 
@@ -67,6 +69,11 @@ namespace WorkspaceServer
             await _workspace.EnsureCreated(budget);
 
             await _workspace.EnsureBuilt(budget);
+
+            if (RequiresPublish)
+            {
+                await _workspace.EnsurePublished(budget);
+            }
         }
 
         private async Task AfterCreate(Budget budget)
