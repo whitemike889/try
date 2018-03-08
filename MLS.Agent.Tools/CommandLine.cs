@@ -86,7 +86,7 @@ namespace MLS.Agent.Tools
                           return process.ExitCode;
                       })
                       .CancelIfExceeds(
-                          budget,
+                          budget ?? new Budget(),
                           ifCancelled: () =>
                           {
                               Task.Run(() =>
