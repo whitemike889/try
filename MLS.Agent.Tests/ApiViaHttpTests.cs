@@ -25,6 +25,7 @@ namespace MLS.Agent.Tests
         public ApiViaHttpTests(ITestOutputHelper output)
         {
             disposables.Add(output.SubscribeToPocketLogger());
+            disposables.Add(VirtualClock.Start());
         }
 
         public void Dispose() => disposables.Dispose();
@@ -93,82 +94,73 @@ namespace MLS.Agent.Tests
         [Fact]
         public async Task The_workspace_endpoint_compiles_code_using_dotnet_when_a_non_script_workspace_type_is_specified()
         {
-            using (VirtualClock.Start())
-            {
-                var output = Guid.NewGuid().ToString();
-                var requestJson = Create.SimpleWorkspaceAsJson(output, "console");
+            var output = Guid.NewGuid().ToString();
+            var requestJson = Create.SimpleWorkspaceAsJson(output, "console");
 
-                var response = await CallRun(requestJson);
+            var response = await CallRun(requestJson);
 
-                var result = await response
-                                   .EnsureSuccess()
-                                   .DeserializeAs<RunResult>();
+            var result = await response
+                                .EnsureSuccess()
+                                .DeserializeAs<RunResult>();
 
-                VerifySucceeded(result);
+            VerifySucceeded(result);
 
-                result.ShouldSucceedWithOutput(output);
-            }
+            result.ShouldSucceedWithOutput(output);
         }
 
         [Fact]
         public async Task When_a_non_script_workspace_type_is_specified_then_code_fragments_cannot_be_compiled_successfully()
         {
-            using (VirtualClock.Start())
+            var requestJson = JsonConvert.SerializeObject(new
             {
-                var requestJson = JsonConvert.SerializeObject(new
-                {
-                    Buffer = @"Console.WriteLine(""hello!"");",
-                    WorkspaceType = "console"
-                });
+                Buffer = @"Console.WriteLine(""hello!"");",
+                WorkspaceType = "console"
+            });
 
-                var response = await CallRun(requestJson);
+            var response = await CallRun(requestJson);
 
-                var result = await response
-                                   .EnsureSuccess()
-                                   .DeserializeAs<RunResult>();
+            var result = await response
+                                .EnsureSuccess()
+                                .DeserializeAs<RunResult>();
 
-                result.ShouldFailWithOutput(
-                    "(1,19): error CS1022: Type or namespace definition, or end-of-file expected",
-                    "(1,19): error CS1026: ) expected",
-                    "(1,1): error CS5001: Program does not contain a static 'Main' method suitable for an entry point"
-                );
-            }
+            result.ShouldFailWithOutput(
+                "(1,19): error CS1022: Type or namespace definition, or end-of-file expected",
+                "(1,19): error CS1026: ) expected",
+                "(1,1): error CS5001: Program does not contain a static 'Main' method suitable for an entry point"
+            );
         }
 
         [Fact]
         public async Task When_they_load_a_snippet_then_they_get_diagnostics_for_the_first_line()
         {
-            using (VirtualClock.Start())
+            var output = Guid.NewGuid().ToString();
+
+            using (var agent = new AgentService())
             {
-                var output = Guid.NewGuid().ToString();
-
-                using (var agent = new AgentService())
+                var request = new HttpRequestMessage(
+                    HttpMethod.Post,
+                    @"/workspace/run")
                 {
-                    var request = new HttpRequestMessage(
-                        HttpMethod.Post,
-                        @"/workspace/run")
-                    {
-                        Content = new StringContent(
-                            JsonConvert.SerializeObject(new
-                            {
-                                Buffer = $@"Console.WriteLine(""{output}"""
-                            }),
-                            Encoding.UTF8,
-                            "application/json")
-                    };
+                    Content = new StringContent(
+                        JsonConvert.SerializeObject(new
+                        {
+                            Buffer = $@"Console.WriteLine(""{output}"""
+                        }),
+                        Encoding.UTF8,
+                        "application/json")
+                };
 
-                    var response = await agent.SendAsync(request);
+                var response = await agent.SendAsync(request);
 
-                    var result = await response
-                                       .EnsureSuccess()
-                                       .DeserializeAs<RunResult>();
+                var result = await response
+                                    .EnsureSuccess()
+                                    .DeserializeAs<RunResult>();
 
-                    result.Diagnostics.Should().Contain(d =>
-                                                            d.Start== 56 &&
-                                                            d.End == 56 &&
-                                                            d.Message == ") expected" &&
-                                                            d.Id == "CS1026");
-                }
+                result.Diagnostics.Should().Contain(d =>
+                                                        d.Start== 56 &&
+                                                        d.End == 56 &&
+                                                        d.Message == ") expected" &&
+                                                        d.Id == "CS1026");
             }
         }
 
@@ -187,12 +179,9 @@ namespace MLS.Agent.Tests
         [InlineData("garbage 1235")]
         public async Task Sending_payloads_that_cannot_be_deserialized_results_in_BadRequest(string content)
         {
-            using (VirtualClock.Start())
-            {
-                var response = await CallRun(content);
+            var response = await CallRun(content);
 
-                response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-            }
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
 
         [Fact]
@@ -279,9 +268,9 @@ public class Program {
         [Fact]
         public async Task When_invoked_with_aspnet_webapi_workspace_request_it_executes_correctly()
         {
-            var workspace = Workspace.FromDirectory((await Default.WebApiWorkspace).Directory);
+            var workspace = Workspace.FromDirectory((await Default.WebApiWorkspace).Directory, "aspnet.webapi");
 
-            var request = new WorkspaceRequest(workspace);
+            var request = new WorkspaceRequest(workspace, new HttpRequest("/api/values", "get"));
 
             var response = await CallRun(request);
 
