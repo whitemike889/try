@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using MLS.Agent.Tools;
 using Pocket;
-using Recipes;
 using static Pocket.Logger;
 
 namespace WorkspaceServer.WorkspaceFeatures
@@ -32,16 +31,7 @@ namespace WorkspaceServer.WorkspaceFeatures
             {
                 await workspace.EnsurePublished();
 
-                var environmentVariables = new List<(string, string)>();
-
-                foreach (DictionaryEntry e in Environment.GetEnvironmentVariables())
-                {
-                    environmentVariables.Add((e.Key.ToString(), e.Value.ToString()));
-                }
-
-                Log.Trace("Starting Kestrel on port {port}. Environment: {env}",
-                          _port, 
-                          environmentVariables);
+                Log.Trace("Starting Kestrel on port {port}.", _port);
 
                 var process = CommandLine.StartProcess(
                     DotnetMuxer.Path.FullName,
