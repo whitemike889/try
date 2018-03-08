@@ -275,12 +275,25 @@ public class Program {
             var response = await CallRun(request);
 
             var result = await response
-                .EnsureSuccess()
-                .DeserializeAs<RunResult>();
+                               .EnsureSuccess()
+                               .DeserializeAs<RunResult>();
 
             VerifySucceeded(result);
 
-            result.ShouldSucceedWithOutput("the text of the web response");
+            Log.Info("output: {x}", result.Output);
+
+            result.ShouldSucceedWithOutput(
+                "Status code: 200 OK",
+                "Content headers:",
+                $"  Date: {DateTime.UtcNow:R}",
+                "  Transfer-Encoding: chunked",
+                "  Server: Kestrel",
+                "  Content-Type: application/json; charset=utf-8",
+                "Content:",
+                "[",
+                "  \"value1\",",
+                "  \"value2\"",
+                "]");
         }
 
         [Fact]

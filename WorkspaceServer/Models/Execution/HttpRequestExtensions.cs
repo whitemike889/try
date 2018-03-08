@@ -14,10 +14,7 @@ namespace WorkspaceServer.Models.Execution
 
             return new HttpRequestMessage(
                 new HttpMethod(request.Verb),
-                request.Uri)
-            {
-                Content = new StringContent(request.Body)
-            };
+                request.Uri);
         }
     }
 }

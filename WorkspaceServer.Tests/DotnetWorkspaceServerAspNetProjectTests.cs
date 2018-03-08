@@ -31,15 +31,12 @@ namespace WorkspaceServer.Tests
         {
             var workspaceServer = await GetWorkspaceServer();
 
-            var workspace = Workspace.FromDirectory((await Default.WebApiWorkspace).Directory);
+            var workspace = Workspace.FromDirectory((await Default.WebApiWorkspace).Directory, "aspnet.webapi");
 
             using (var runResult = await workspaceServer.Run(
                                            workspace))
             {
                 var webServer = runResult.GetFeature<WebServer>();
-
-                _disposables.Add(webServer.StandardOutput.Subscribe(s => Log.Trace(s)));
-                _disposables.Add(webServer.StandardError.Subscribe(s => Log.Error(s)));
 
                 var response = await webServer.SendAsync(new HttpRequestMessage(HttpMethod.Get, "/api/values")).CancelIfExceeds(new TimeBudget(35.Seconds()));
 
@@ -49,7 +46,7 @@ namespace WorkspaceServer.Tests
                 result.Should().Equal("value1", "value2");
             }
         }
-
+        
         protected async Task<IWorkspaceServer> GetWorkspaceServer(
             [CallerMemberName] string testName = null)
         {

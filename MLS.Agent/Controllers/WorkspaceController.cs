@@ -32,7 +32,7 @@ namespace MLS.Agent.Controllers
             [FromHeader(Name = "Referer")] string referer,
             [FromHeader(Name = "Timeout")] string timeoutInMilliseconds = "15000")
         {
-            if (Debugger.IsAttached)
+            if (Debugger.IsAttached && !(Clock.Current is VirtualClock))
             {
                 _disposables.Add(VirtualClock.Start());
             }
@@ -67,26 +67,25 @@ namespace MLS.Agent.Controllers
                         await dotnetWorkspaceServer.EnsureInitializedAndNotDisposed(budget);
                     }
 
-                    result = await server.Run(
-                                 request.Workspace,
-                                 budget);
-
-                    _disposables.Add(result);
-
-                    if (request.HttpRequest != null)
+                    using (result = await server.Run(request.Workspace, budget))
                     {
-                        var webServer = result.GetFeature<WebServer>();
+                        _disposables.Add(result);
 
-                        if (webServer != null)
+                        if (result.Succeeded &&
+                            request.HttpRequest != null)
                         {
-                            var response = await webServer.SendAsync(request.HttpRequest.ToHttpRequestMessage())
-                                                          .CancelIfExceeds(budget);
+                            var webServer = result.GetFeature<WebServer>();
 
-                            result = new RunResult(
-                                true,
-                                new[] { response.ToString() });
+                            if (webServer != null)
+                            {
+                                var response = await webServer.SendAsync(
+                                    request.HttpRequest.ToHttpRequestMessage())
+                                                              .CancelIfExceeds(budget);
 
-
+                                result = new RunResult(
+                                    true,
+                                    await response.ToDisplayString());
+                            }
                         }
                     }
                 }
