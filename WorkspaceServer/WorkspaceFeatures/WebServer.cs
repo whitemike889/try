@@ -52,7 +52,9 @@ namespace WorkspaceServer.WorkspaceFeatures
                     ("ASPNETCORE_URLS", $"http://127.0.0.1:0"),
                     ("ASPNETCORE_PORT", null));
 
-                _disposables.Add(() => { process.Complete().DontAwait(); });
+                _disposables.Add(() => {
+                    process.Kill();
+                });
 
                 _disposables.Add(StandardOutput.Subscribe(s => Log.Trace(s)));
                 _disposables.Add(StandardError.Subscribe(s => Log.Error(s)));
