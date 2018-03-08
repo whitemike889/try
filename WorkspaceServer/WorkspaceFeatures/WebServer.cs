@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Reactive.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using MLS.Agent.Tools;
 using Pocket;
@@ -16,7 +15,6 @@ namespace WorkspaceServer.WorkspaceFeatures
         private readonly AsyncLazy<HttpClient> _getHttpClient;
         private readonly AsyncLazy<Uri> _started;
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
-        private static int _port = 6000;
 
         public WebServer(Workspace workspace)
         {
@@ -25,13 +23,10 @@ namespace WorkspaceServer.WorkspaceFeatures
                 throw new ArgumentNullException(nameof(workspace));
             }
 
-            Interlocked.Increment(ref _port);
-
             _started = new AsyncLazy<Uri>(async () =>
             {
                 await workspace.EnsurePublished();
 
-                Log.Trace("Starting Kestrel on port {port}.", _port);
 
                 var process = CommandLine.StartProcess(
                     DotnetMuxer.Path.FullName,
@@ -55,6 +50,9 @@ namespace WorkspaceServer.WorkspaceFeatures
                                       .Where(line => line.StartsWith(kestrelListeningMessagePrefix))
                                       .Select(line => line.Replace(kestrelListeningMessagePrefix, ""))
                                       .FirstAsync();
+
+                Log.Trace("Starting Kestrel at {uri}.", uriString);
+
 
                 return new Uri(uriString);
             });
