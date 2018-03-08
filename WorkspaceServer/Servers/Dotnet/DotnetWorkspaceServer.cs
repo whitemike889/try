@@ -160,6 +160,7 @@ namespace WorkspaceServer.Servers.Dotnet
                     await _omniSharpServer.UpdateBuffer(file, "//empty",budget);
                 }
             }
+
             budget.RecordEntry();
         }
 
@@ -171,7 +172,7 @@ namespace WorkspaceServer.Servers.Dotnet
             {
                 var file = new FileInfo(Path.Combine(_workspace.Directory.FullName, sourceFile.Name));
 
-                var text = sourceFile.Text.ToString();
+                var text = sourceFile.Text;
 
                 await _omniSharpServer.UpdateBuffer(file, text);
             }
@@ -202,14 +203,13 @@ namespace WorkspaceServer.Servers.Dotnet
         {
             var budget =  new TimeBudget(_defaultTimeoutInSeconds);
             await EnsureInitializedAndNotDisposed(budget);
-            var processor = new BufferInliningTransformer();
-            var processedRequest = await processor.TransformAsync(request, budget);
-            var emitResponse = await Emit(processedRequest, new Budget());
+            request = await _transformer.TransformAsync(request, budget);
+            var emitResponse = await Emit(request, new Budget());
             SerializableDiagnostic[] diagnostics;
 
             if (emitResponse.Body.Diagnostics.Any())
             {
-                var viewPorts = processor.ExtractViewPorts(processedRequest);
+                var viewPorts = _transformer.ExtractViewPorts(request);
                 var processedDiagnostics = ReconstructDiagnosticLocations(emitResponse.Body.Diagnostics, viewPorts, BufferInliningTransformer.PaddingSize).ToArray();
                 diagnostics = processedDiagnostics?.Select(d => d.Diagnostic).ToArray();
             }
