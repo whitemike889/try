@@ -20,11 +20,8 @@ namespace WorkspaceServer.Models.Execution
             Output = output ?? Array.Empty<string>();
             Succeeded = succeeded;
             Exception = exception;
-
-            if (diagnostics != null)
-            {
-                AddFeature(diagnostics);
-            }
+            AddFeature(diagnostics ?? 
+                       Array.Empty<SerializableDiagnostic>());
         }
 
         public void AddFeature<T>(T feature)
@@ -38,8 +35,7 @@ namespace WorkspaceServer.Models.Execution
         }
 
         public IReadOnlyCollection<SerializableDiagnostic> Diagnostics =>
-            this.GetFeature<IReadOnlyCollection<SerializableDiagnostic>>() ??
-            Array.Empty<SerializableDiagnostic>();
+            this.GetFeature<IReadOnlyCollection<SerializableDiagnostic>>();
 
         public bool Succeeded { get; }
 
