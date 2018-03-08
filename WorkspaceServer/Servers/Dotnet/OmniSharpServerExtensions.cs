@@ -100,7 +100,7 @@ namespace WorkspaceServer.Servers.Dotnet
                         unknown.Request_seq);
 
                 default:
-                    throw new OmniSharpMessageSerializationException("");
+                    throw new OmniSharpMessageSerializationException($"Unrecognized: {received.Message}");
             }
         }
 
@@ -126,6 +126,6 @@ namespace WorkspaceServer.Servers.Dotnet
             FileInfo file,
             string newText,
             Budget budget = null) =>
-            server.SendCommand<UpdateBuffer, bool>(new UpdateBuffer(file, newText), budget);
+            server.SendCommand<UpdateBuffer, bool?>(new UpdateBuffer(file, newText), budget);
     }
 }

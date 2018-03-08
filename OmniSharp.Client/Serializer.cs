@@ -23,7 +23,7 @@ namespace OmniSharp.Client
             {
                 [CommandNames.CodeCheck] = envelope => envelope.ToCommandResponse<CodeCheckResponse>(),
                 [CommandNames.Emit] = envelope => envelope.ToCommandResponse<EmitResponse>(),
-                [CommandNames.UpdateBuffer] = envelope => envelope.ToCommandResponse<bool>()
+                [CommandNames.UpdateBuffer] = envelope => envelope.ToCommandResponse<bool?>()
             };
 
         public static OmniSharpMessage DeserializeOmniSharpMessage(string json)
