@@ -82,7 +82,7 @@ namespace WorkspaceServer.Tests
         }
 
         [Fact]
-        public async Task Workspace_cleans_previous_files()
+        public async Task When_Run_is_called_again_then_previous_file_state_is_cleaned_up()
         {
             #region bufferSources
 
