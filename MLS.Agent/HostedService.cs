@@ -1,21 +1,21 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
+using Clockwise;
 using Microsoft.Extensions.Hosting;
 
 namespace MLS.Agent
 {
-    public abstract class HostedService : IHostedService
+    public abstract class HostedService : IHostedService, IDisposable
     {
         private Task _executingTask;
-        private CancellationTokenSource _cts;
+        private Budget _budget;
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            // Create a linked token so we can trigger cancellation outside of this token's cancellation
-            _cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            _budget = new Budget(cancellationToken);
 
-            // Store the task we're executing
-            _executingTask = ExecuteAsync(_cts.Token);
+            _executingTask = ExecuteAsync(_budget);
 
             // If the task is completed then return it, otherwise it's running
             return _executingTask.IsCompleted
@@ -31,20 +31,34 @@ namespace MLS.Agent
                 return;
             }
 
-            // Signal cancellation to the executing method
-            _cts.Cancel();
+            _budget.Cancel();
 
             // Wait until the task completes or the stop token triggers
             await Task.WhenAny(
-                _executingTask, 
+                _executingTask,
                 Task.Delay(-1, cancellationToken));
 
             // Throw if cancellation triggered
             cancellationToken.ThrowIfCancellationRequested();
         }
 
-        // Derived classes should override this and execute a long running method until 
-        // cancellation is requested
-        protected abstract Task ExecuteAsync(CancellationToken cancellationToken);
+        protected async Task ExecuteAsync()
+        {
+            if (_budget.IsExceeded)
+            {
+                return;
+            }
+
+            using (SchedulerContext.Establish(_budget))
+            {
+                await Task.Yield();
+
+                await ExecuteAsync(_budget);
+            }
+        }
+
+        protected abstract Task ExecuteAsync(Budget budget);
+
+        public void Dispose() => _budget?.Cancel();
     }
 }

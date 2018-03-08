@@ -14,11 +14,11 @@ namespace MLS.Agent.Controllers
 {
     public class WorkspaceController : Controller
     {
-        private readonly WorkspaceServerRegistry workspaceServerRegistry;
+        private readonly WorkspaceServerRegistry _workspaceServerRegistry;
 
         public WorkspaceController(WorkspaceServerRegistry workspaceServerRegistry)
         {
-            this.workspaceServerRegistry = workspaceServerRegistry ??
+            _workspaceServerRegistry = workspaceServerRegistry ??
                                            throw new ArgumentNullException(nameof(workspaceServerRegistry));
         }
 
@@ -26,37 +26,46 @@ namespace MLS.Agent.Controllers
         [Route("/workspace/run")]
         [Route("/workspace/{DEPRECATED}/compile")] // FIX: (Run) remove this endpoint when Orchestrator no longer calls it
         public async Task<IActionResult> Run(
-            [FromBody] Workspace request)
+            [FromBody] WorkspaceRequest request,
+            [FromHeader(Name = "Referer")] string referer,
+            [FromHeader(Name = "Timeout")] string timeoutInMilliseconds = "15000")
         {
             using (var operation = Log.OnEnterAndConfirmOnExit())
             {
-                RunResult result = null;
+                if (!int.TryParse(timeoutInMilliseconds, out var timeoutMs))
+                {
+                    return BadRequest();
+                }
 
-                var workspaceType = request.WorkspaceType;
+                RunResult result;
+                var workspaceType = request.Workspace.WorkspaceType;
+                var runTimeout = TimeSpan.FromMilliseconds(timeoutMs);
+
+                var budget = new TimeBudget(runTimeout);
 
                 if (string.Equals(workspaceType, "script", StringComparison.OrdinalIgnoreCase))
                 {
                     var server = new ScriptingWorkspaceServer();
 
-                    result = await server.Run(request, new TimeBudget(TimeSpan.FromSeconds(10)));
+                    result = await server.Run(
+                                 request,
+                                 budget);
                 }
                 else
                 {
-                    var server = await workspaceServerRegistry.GetWorkspaceServer(workspaceType);
+                    var server = await _workspaceServerRegistry.GetWorkspaceServer(workspaceType);
 
                     if (server is DotnetWorkspaceServer dotnetWorkspaceServer)
                     {
-                        await dotnetWorkspaceServer.EnsureInitializedAndNotDisposed(
-                            new TimeBudget(TimeSpan.FromSeconds(30)));
+                        await dotnetWorkspaceServer.EnsureInitializedAndNotDisposed(budget);
                     }
 
                     result = await server.Run(
                                  request,
-                                 new TimeBudget(TimeSpan.FromSeconds(10)));
+                                 budget);
                 }
 
                 operation.Succeed();
-
                 return Ok(result);
             }
         }

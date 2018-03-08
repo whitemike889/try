@@ -5,10 +5,10 @@ using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.CodeAnalysis;
 using Pocket;
+using WorkspaceServer.Models.Execution;
 using Xunit;
 using Xunit.Abstractions;
 using static Pocket.Logger<WorkspaceServer.Tests.WorkspaceServerTests>;
-using Workspace = WorkspaceServer.Models.Execution.Workspace;
 
 namespace WorkspaceServer.Tests
 {
@@ -19,7 +19,7 @@ namespace WorkspaceServer.Tests
         protected abstract Task<IWorkspaceServer> GetWorkspaceServer(
             [CallerMemberName] string testName = null);
 
-        protected abstract Models.Execution.Workspace CreateRunRequestContaining(string text);
+        protected abstract WorkspaceRequest CreateRunRequestContaining(string text);
 
         public void Dispose() => _disposables.Dispose();
 
@@ -46,7 +46,7 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task Response_indicates_when_compile_is_successful_and_signature_is_like_a_console_app()
         {
-            var request = new Models.Execution.Workspace(@"
+            var workspace = new Models.Execution.Workspace(@"
 using System;
 
 public static class Hello
@@ -56,7 +56,7 @@ public static class Hello
     }
 }
 ");
-
+            var request = new WorkspaceRequest(workspace);
             var server = await GetWorkspaceServer();
 
             var result = await server.Run(request);
@@ -71,7 +71,7 @@ public static class Hello
         {
             var output = nameof(Response_shows_program_output_when_compile_is_successful_and_signature_is_like_a_console_app);
 
-            var request = new Models.Execution.Workspace($@"
+            var workspace = new Models.Execution.Workspace($@"
 using System;
 
 public static class Hello
@@ -81,7 +81,7 @@ public static class Hello
         Console.WriteLine(""{output}"");
     }}
 }}");
-
+            var request = new WorkspaceRequest(workspace);
             var server = await GetWorkspaceServer();
 
             var result = await server.Run(request);
@@ -186,21 +186,9 @@ throw new Exception(""oops!"");");
         }
 
         [Fact]
-        public async Task Response_indicates_when_execution_times_out()
-        {
-            var request = CreateRunRequestContaining(@"while (true) {  }");
-
-            var server = await GetWorkspaceServer();
-
-            var result = await server.Run(request, new TimeBudget(1.Seconds()));
-
-            result.ShouldFailWithExceptionContaining("System.TimeoutException: The operation has timed out.");
-        }
-
-        [Fact]
         public async Task When_a_public_void_Main_with_no_parameters_is_present_it_is_invoked()
         {
-            var request = new Models.Execution.Workspace($@"
+            var workspace = new Models.Execution.Workspace($@"
 using System;
 
 public static class Hello
@@ -210,7 +198,7 @@ public static class Hello
         Console.WriteLine(""Hello there!"");
     }}
 }}");
-
+            var request = new WorkspaceRequest(workspace);
             var server = await GetWorkspaceServer();
 
             var result = await server.Run(request);
@@ -220,7 +208,7 @@ public static class Hello
         [Fact]
         public async Task When_a_public_void_Main_with_parameters_is_present_it_is_invoked()
         {
-            var request = new Models.Execution.Workspace(@"
+            var workspace = new Models.Execution.Workspace(@"
 using System;
 
 public static class Hello
@@ -230,7 +218,7 @@ public static class Hello
         Console.WriteLine(""Hello there!"");
     }
 }");
-
+            var request = new WorkspaceRequest(workspace);
             var server = await GetWorkspaceServer();
 
             var result = await server.Run(request);
@@ -241,7 +229,7 @@ public static class Hello
         [Fact]
         public async Task When_an_internal_void_Main_with_no_parameters_is_present_it_is_invoked()
         {
-            var request = new Models.Execution.Workspace(@"
+            var workspace = new Models.Execution.Workspace(@"
 using System;
 
 public static class Hello
@@ -251,7 +239,7 @@ public static class Hello
         Console.WriteLine(""Hello there!"");
     }
 }");
-
+            var request = new WorkspaceRequest(workspace);
             var server = await GetWorkspaceServer();
 
             var result = await server.Run(request);
@@ -264,7 +252,7 @@ public static class Hello
         [Fact]
         public async Task When_an_internal_void_Main_with_parameters_is_present_it_is_invoked()
         {
-            var request = new Models.Execution.Workspace(@"
+            var workspace = new Models.Execution.Workspace(@"
 using System;
 
 public static class Hello
@@ -274,7 +262,7 @@ public static class Hello
         Console.WriteLine(""Hello there!"");
     }
 }");
-
+            var request = new WorkspaceRequest(workspace);
             var server = await GetWorkspaceServer();
 
             var result = await server.Run(request);
@@ -282,12 +270,14 @@ public static class Hello
             result.ShouldSucceedWithOutput("Hello there!");
         }
 
+
+
         [Fact]
         public async Task Response_shows_warnings_with_successful_compilation()
         {
             var output = nameof(Response_shows_warnings_with_successful_compilation);
 
-            var request = new Models.Execution.Workspace($@"
+            var workspace = new Models.Execution.Workspace($@"
 using System;
 using System;
 public static class Hello
@@ -297,7 +287,7 @@ public static class Hello
         Console.WriteLine(""{output}"");
     }}
 }}");
-
+            var request = new WorkspaceRequest(workspace);
             var server = await GetWorkspaceServer();
 
             var result = await server.Run(request);
@@ -314,7 +304,7 @@ public static class Hello
         {
             var output = nameof(Response_shows_warnings_when_compilation_fails);
 
-            var request = new Models.Execution.Workspace($@"
+            var workspace = new Models.Execution.Workspace($@"
 using System;
 using System;
 public static class Hello
@@ -324,7 +314,7 @@ public static class Hello
         Console.WriteLine(""{output}"")
     }}
 }}");
-
+            var request = new WorkspaceRequest(workspace);
             var server = await GetWorkspaceServer();
 
             var result = await server.Run(request);

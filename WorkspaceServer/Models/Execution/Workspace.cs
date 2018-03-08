@@ -5,6 +5,14 @@ using System.Linq;
 
 namespace WorkspaceServer.Models.Execution
 {
+
+    public static class WorkspaceExtensions
+    {
+        public static IReadOnlyCollection<SourceFile> GetSourceFiles(this Workspace workspace)
+        {
+            return workspace.Files?.Select(f => SourceFile.Create(f.Text, f.Name)).ToArray() ?? Array.Empty<SourceFile>();
+        }
+    }
     public class Workspace
     {
         private const string DefaultWorkspaceType = "script";
@@ -25,27 +33,19 @@ namespace WorkspaceServer.Models.Execution
             var id = bufferid ?? string.Empty;
 
             Usings = usings ?? Array.Empty<string>();
-          
-            var sourceFiles = files?.Select(entry => SourceFile.Create(entry.Text, entry.Name)).ToList() ?? new List<SourceFile>();
+
+            Files = files?? Array.Empty<File>();
             
             var bufferList = buffers?.ToList() ?? new List<Buffer>();
 
             if (!string.IsNullOrWhiteSpace(code))
             {
                 bufferList.Add(new Buffer(id,code,position));
-                sourceFiles.Add(SourceFile.Create(code, "Program.cs"));
             }
-
             Buffers = bufferList;
-            if (sourceFiles.Count == 0)
-            {
-                sourceFiles.Add(SourceFile.Create(bufferList[0].Content, "Program.cs"));
-            }
-            SourceFiles = sourceFiles;
         }
-
-        [Required]
-        public IReadOnlyCollection<SourceFile> SourceFiles { get; }
+        
+        public IReadOnlyCollection<File> Files { get; }
 
         public string[] Usings { get; }
 

@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
-using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Pocket;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Servers.Dotnet;
 using Xunit;
@@ -15,29 +13,26 @@ namespace WorkspaceServer.Tests
     {
         public DotnetWorkspaceServerTests(ITestOutputHelper output) : base(output)
         {
-            RegisterForDisposal(LogEvents.Enrich(log =>
-            {
-                log(("threadId", Thread.CurrentThread.ManagedThreadId));
-            }));
         }
 
-        protected override Workspace CreateRunRequestContaining(string text)
+        protected override WorkspaceRequest CreateRunRequestContaining(string text)
         {
-            return new Workspace(
+            var workspace = new Workspace(
                 $@"using System; using System.Linq; using System.Collections.Generic; class Program {{ static void Main() {{ {text}
                     }}
                 }}
 ");
+           return new WorkspaceRequest(workspace);
         }
 
         [Fact]
         public async Task When_compile_is_unsuccessful_diagnostic_are_aligned_with_buffer_span()
         {
-            var request = new Workspace(
+            var workspace = new Workspace(
                 workspaceType: "console",
                 files: new[] { new Workspace.File("Program.cs", CodeSamples.SourceCodeProvider.ConsoleProgramSingleRegion) },
                 buffers: new[] { new Workspace.Buffer("Program.cs@alpha", @"Console.WriteLine(banana);", 0) });
-
+            var request = new WorkspaceRequest(workspace);
             var server = await GetWorkspaceServer();
 
             var result = await server.Run(request);
@@ -53,11 +48,11 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task When_compile_is_unsuccessful_diagnostic_are_aligned_with_buffer_span_when_code_is_multi_line()
         {
-            var request = new Workspace(
+            var workspace = new Workspace(
                 workspaceType: "console",
                 files: new[] { new Workspace.File("Program.cs", CodeSamples.SourceCodeProvider.ConsoleProgramSingleRegion) },
                 buffers: new[] { new Workspace.Buffer("Program.cs@alpha", @"var a = 10;" + Environment.NewLine + "Console.WriteLine(banana);", 0) });
-
+            var request = new WorkspaceRequest(workspace);
             var server = await GetWorkspaceServer();
 
             var result = await server.Run(request);
@@ -77,15 +72,82 @@ namespace WorkspaceServer.Tests
             var codeLine2 = @"Console.WriteLine(banana);";
             var code = $"{codeLine1}{Environment.NewLine}{codeLine2}";
             var erroPos = code.IndexOf("banana);");
-            var request = new Workspace(
+            var workspace = new Workspace(
                 workspaceType: "console",
                 files: new[] { new Workspace.File("Program.cs", CodeSamples.SourceCodeProvider.ConsoleProgramSingleRegion) },
                 buffers: new[] { new Workspace.Buffer("Program.cs@alpha", code, 0) });
+            var request = new WorkspaceRequest(workspace);
             var server = await GetWorkspaceServer();
 
-            var result = await server.GetDiagnostics(request);
+            var result = await server.GetDiagnostics(request.Workspace);
 
             result.Diagnostics.Should().Contain(d => d.Id == "CS0103" && d.Start == erroPos); // banana is not defined
+        }
+
+        [Fact]
+        public async Task Workspace_cleans_previous_files()
+        {
+            #region bufferSources
+
+            var program = @"
+using System;
+using System.Linq;
+
+namespace FibonacciTest
+{
+    public class Program
+    {
+        public static void Main()
+        {
+            foreach (var i in FibonacciGenerator.Fibonacci().Take(20))
+            {
+                Console.WriteLine(i);
+            }
+        }       
+    }
+}";
+            var generator = @"
+using System.Collections.Generic;
+
+namespace FibonacciTest
+{
+    public static class FibonacciGenerator
+    {
+        public  static IEnumerable<int> Fibonacci()
+        {
+            int current = 1, next = 1;
+            while (true)
+            {
+                yield return current;
+                next = current + (current = next);
+            }
+        }
+    }
+}";
+
+            #endregion
+
+            var workspace = new Workspace(workspaceType: "console", buffers: new[]
+            {
+                new Workspace.Buffer("Program.cs", program, 0),
+                new Workspace.Buffer("FibonacciGenerator.cs", generator, 0)
+            });
+            var request = new WorkspaceRequest(workspace);
+            var server = await GetWorkspaceServer();
+
+            var result = await server.Run(request);
+
+            result.Succeeded.Should().BeTrue();
+
+            workspace = new Workspace(workspaceType: "console", buffers: new[]
+            {
+                new Workspace.Buffer("NotProgram.cs", program, 0),
+                new Workspace.Buffer("FibonacciGenerator.cs", generator, 0)
+            });
+            request = new WorkspaceRequest(workspace);
+            result = await server.Run(request);
+
+            result.Succeeded.Should().BeTrue();
         }
 
         [Fact]
@@ -130,12 +192,89 @@ namespace FibonacciTest
 }";
             #endregion
 
-            var request = new Workspace(workspaceType: "console", buffers: new[]
+            var workspace = new Workspace(workspaceType: "console", buffers: new[]
             {
                 new Workspace.Buffer("Program.cs",program,0),
                 new Workspace.Buffer("FibonacciGenerator.cs",generator,0)
             });
+            var request = new WorkspaceRequest(workspace);
+            var server = await GetWorkspaceServer();
 
+            var result = await server.Run(request);
+
+            result.Succeeded.Should().BeTrue();
+            result.Output.Count.Should().Be(20);
+            result.Output.ShouldAllBeEquivalentTo(new[]{
+                "1",
+                "1",
+                "2",
+                "3",
+                "5",
+                "8",
+                "13",
+                "21",
+                "34",
+                "55",
+                "89",
+                "144",
+                "233",
+                "377",
+                "610",
+                "987",
+                "1597",
+                "2584",
+                "4181",
+                "6765"});
+        }
+
+        [Fact]
+        public async Task Response_with_multi_buffer_using_relative_paths_workspace()
+        {
+            #region bufferSources
+
+            var program = @"
+using System;
+using System.Linq;
+
+namespace FibonacciTest
+{
+    public class Program
+    {
+        public static void Main()
+        {
+            foreach (var i in FibonacciGenerator.Fibonacci().Take(20))
+            {
+                Console.WriteLine(i);
+            }
+        }       
+    }
+}";
+            var generator = @"
+using System.Collections.Generic;
+
+namespace FibonacciTest
+{
+    public static class FibonacciGenerator
+    {
+        public  static IEnumerable<int> Fibonacci()
+        {
+            int current = 1, next = 1;
+            while (true)
+            {
+                yield return current;
+                next = current + (current = next);
+            }
+        }
+    }
+}";
+            #endregion
+
+            var workspace = new Workspace(workspaceType: "console", buffers: new[]
+            {
+                new Workspace.Buffer("Program.cs",program,0),
+                new Workspace.Buffer("generators/FibonacciGenerator.cs",generator,0)
+            });
+            var request = new WorkspaceRequest(workspace);
             var server = await GetWorkspaceServer();
 
             var result = await server.Run(request);
