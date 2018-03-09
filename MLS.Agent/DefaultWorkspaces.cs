@@ -16,7 +16,7 @@ namespace MLS.Agent
                                   });
 
 
-            registry.AddWorkspace("nodatime",
+            registry.AddWorkspace("nodatime.api",
                                   workspace =>
                                   {
                                       workspace.CreateUsingDotnet("console");

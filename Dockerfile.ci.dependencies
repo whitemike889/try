@@ -13,7 +13,7 @@ RUN dotnet new console
 RUN dotnet add package Newtonsoft.Json
 RUN dotnet build
 
-WORKDIR /workspaces/nodatime
+WORKDIR /workspaces/nodatime.api
 RUN dotnet new console
 RUN dotnet add package Newtonsoft.Json
 RUN dotnet add package NodaTime
