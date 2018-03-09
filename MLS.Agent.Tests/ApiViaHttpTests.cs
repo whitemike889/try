@@ -164,11 +164,10 @@ namespace MLS.Agent.Tests
             }
         }
 
-        [Theory]
-        [InlineData("{}")]
-        public async Task Sending_payloads_that_dont_include_source_strings_results_in_BadRequest(string content)
+        [Fact]
+        public async Task Sending_payloads_that_dont_include_source_strings_results_in_BadRequest()
         {
-            var response = await CallRun(content);
+            var response = await CallRun("{}");
 
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
@@ -266,7 +265,7 @@ public class Program {
         }
 
         [Fact]
-        public async Task When_invoked_with_aspnet_webapi_workspace_request_it_executes_correctly()
+        public async Task When_invoked_with_aspnet_webapi_workspace_request_then_output_shows_web_response()
         {
             var workspace = Workspace.FromDirectory((await Default.WebApiWorkspace).Directory, "aspnet.webapi");
 
@@ -297,8 +296,19 @@ public class Program {
         }
 
         [Fact]
+        public async Task When_invoked_with_aspnet_webapi_workspace_request_that_does_not_compile_then______()
+        {
+
+
+
+           throw new Exception();
+        }
+
+        [Fact]
         public async Task When_Run_times_out_in_workspace_server_code_then_the_response_code_is_504()
         {
+            Clock.Reset();
+
             var requestJson =
                 @"{ ""Buffers"":[{""Id"":"""",""Content"":""public class Program { public static void Main()\n  {\n  System.Threading.Thread.Sleep(System.TimeSpan.FromTicks(30));  }  }""}],""Usings"":[],""WorkspaceType"":""console""}";
 
@@ -310,6 +320,10 @@ public class Program {
         [Fact]
         public async Task When_Run_times_out_in_user_code_in_a_console_workspace_type_then_the_response_code_is_417()
         {
+            // TODO-JOSEQU: (When_Run_times_out_in_user_code_then_the_response_code_is_417) make this test faster
+
+            Clock.Reset();
+
             var requestJson =
                 @"{ ""Buffers"":[{""Id"":"""",""Content"":""public class Program { public static void Main()\n  {\n  System.Threading.Thread.Sleep(System.TimeSpan.FromSeconds(30));  }  }""}],""WorkspaceType"":""console""}";
 

@@ -46,6 +46,7 @@ namespace WorkspaceServer.Models.Execution
         public string WorkspaceType { get; }
         
         [Required]
+        [MinLength(1)]
         public IReadOnlyCollection<Buffer> Buffers { get; }
 
         public class File

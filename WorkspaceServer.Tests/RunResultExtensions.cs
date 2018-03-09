@@ -1,6 +1,6 @@
 ﻿using System;
-using FluentAssertions;
 using System.Linq;
+using FluentAssertions;
 using FluentAssertions.Execution;
 using WorkspaceServer.Models.Execution;
 
@@ -23,7 +23,12 @@ namespace WorkspaceServer.Tests
             using (new AssertionScope("result"))
             {
                 result.Succeeded.Should().BeTrue();
-                result.Output.ShouldBeEquivalentTo(output);
+                for (var i = 0; i < output.Length; i++)
+                {
+                    var line = output[i];
+                    line.Should().Match(result.Output.ElementAt(i));
+                }
+
                 result.Exception.Should().BeNull();
             }
         }
