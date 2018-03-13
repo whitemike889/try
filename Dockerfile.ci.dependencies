@@ -8,6 +8,7 @@ ENV NUGET_PACKAGES=/root/.nuget/packages/
 
 # set up workspaces directory
 ENV TRYDOTNET_WORKSPACES_PATH=/workspaces
+
 WORKDIR /workspaces/console
 RUN dotnet new console
 RUN dotnet add package Newtonsoft.Json
