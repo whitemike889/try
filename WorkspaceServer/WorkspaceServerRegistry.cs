@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Clockwise;
 using MLS.Agent.Tools;
 using Pocket;
+using Recipes;
 using WorkspaceServer.Servers.Dotnet;
 using static Pocket.Logger<WorkspaceServer.WorkspaceServerRegistry>;
 
@@ -34,8 +36,22 @@ namespace WorkspaceServer
             workspaceBuilders.Add(name, options);
         }
 
-        public Task<Workspace> GetWorkspace(string workspaceId, TimeBudget budget = null) =>
-            workspaceBuilders[workspaceId].GetWorkspace(budget);
+        public Task<Workspace> GetWorkspace(string workspaceName, TimeBudget budget = null) =>
+            workspaceBuilders.GetOrAdd(
+                workspaceName,
+                name =>
+                {
+                    var directory = new DirectoryInfo(
+                        Path.Combine(
+                            Workspace.DefaultWorkspacesDirectory.FullName, workspaceName));
+
+                    if (directory.Exists)
+                    {
+                        return new WorkspaceBuilder(name);
+                    }
+
+                    throw new ArgumentException($"Workspace named \"{name}\" not found.");
+                }).GetWorkspace(budget);
 
         public async Task<IWorkspaceServer> GetWorkspaceServer(string name, TimeBudget budget = null)
         {

@@ -8,6 +8,7 @@ ENV NUGET_PACKAGES=/root/.nuget/packages/
 
 # set up workspaces directory
 ENV TRYDOTNET_WORKSPACES_PATH=/workspaces
+
 WORKDIR /workspaces/console
 RUN dotnet new console
 RUN dotnet add package Newtonsoft.Json
@@ -17,6 +18,7 @@ WORKDIR /workspaces/nodatime.api
 RUN dotnet new console
 RUN dotnet add package Newtonsoft.Json
 RUN dotnet add package NodaTime
+RUN dotnet add package NodaTime.Testing
 RUN dotnet build
 
 # hack to get the emit plugin into the package cache
