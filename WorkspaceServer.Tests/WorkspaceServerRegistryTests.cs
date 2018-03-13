@@ -134,5 +134,22 @@ namespace Twilio_try.dot.net_sample
                 resolvedWorkspace.IsBuilt.Should().BeTrue();
             }
         }
+
+        [Fact]
+        public async Task When_workspace_was_not_registered_then_GetWorkspaceServer_will_return_a_working_server()
+        {
+            var unregisteredWorkspace = await Default.TemplateWorkspace;
+
+            using (var registry = new WorkspaceServerRegistry())
+            {
+                var server = await registry.GetWorkspaceServer(unregisteredWorkspace.Name);
+
+                var workspaceRequest = WorkspaceRequest.FromDirectory(unregisteredWorkspace.Directory, "console");
+
+                var result = await server.Run(workspaceRequest);
+
+                result.Succeeded.Should().BeTrue();
+            }
+        }
     }
 }
