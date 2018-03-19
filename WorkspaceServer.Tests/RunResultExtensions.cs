@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using FluentAssertions;
 using FluentAssertions.Execution;
 using WorkspaceServer.Models.Execution;
@@ -8,27 +7,22 @@ namespace WorkspaceServer.Tests
 {
     public static class RunResultExtensions
     {
-        public static void ShouldFailWithOutput(this RunResult result, params string[] output)
+        public static void ShouldFailWithOutput(this RunResult result, params string[] expected)
         {
             using (new AssertionScope("result"))
             {
                 result.Succeeded.Should().BeFalse();
-                result.Output.ShouldBeEquivalentTo(output);
+                result.Output.ShouldMatch(expected);
                 result.Exception.Should().BeNull();
             }
         }
 
-        public static void ShouldSucceedWithOutput(this RunResult result, params string[] output)
+        public static void ShouldSucceedWithOutput(this RunResult result, params string[] expected)
         {
             using (new AssertionScope("result"))
             {
                 result.Succeeded.Should().BeTrue();
-                for (var i = 0; i < output.Length; i++)
-                {
-                    var line = output[i];
-                    line.Should().Match(result.Output.ElementAt(i));
-                }
-
+                result.Output.ShouldMatch(expected);
                 result.Exception.Should().BeNull();
             }
         }
@@ -42,7 +36,7 @@ namespace WorkspaceServer.Tests
             {
                 result.Succeeded.Should().BeFalse();
                 result.Output.Should().NotBeNull();
-                result.Output.ShouldBeEquivalentTo(output);
+                result.Output.ShouldMatch(output);
                 result.Exception.Should().Contain(text);
             }
         }
@@ -52,7 +46,7 @@ namespace WorkspaceServer.Tests
             using (new AssertionScope("result"))
             {
                 result.Succeeded.Should().BeTrue();
-                result.Output.ShouldBeEquivalentTo(output);
+                result.Output.ShouldMatch(output);
                 result.Exception.Should().Contain(text);
             }
         }

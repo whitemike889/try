@@ -284,7 +284,7 @@ public class Program {
             result.ShouldSucceedWithOutput(
                 "Status code: 200 OK",
                 "Content headers:",
-                $"  Date: {DateTime.UtcNow:R}",
+                $"  Date:*",
                 "  Transfer-Encoding: chunked",
                 "  Server: Kestrel",
                 "  Content-Type: application/json; charset=utf-8",
