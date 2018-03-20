@@ -27,7 +27,6 @@ namespace WorkspaceServer.WorkspaceFeatures
             {
                 await workspace.EnsurePublished();
 
-
                 var process = CommandLine.StartProcess(
                     DotnetMuxer.Path.FullName,
                     workspace.EntryPointAssemblyPath.FullName,

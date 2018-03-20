@@ -38,16 +38,10 @@ namespace WorkspaceServer.Servers.Dotnet
 
             _defaultTimeoutInSeconds = TimeSpan.FromSeconds(defaultTimeoutInSeconds ?? 30);
 
-#if DEBUG
-            var logToPocketLogger = false;
-#else
-            var logToPocketLogger = false;
-#endif
-
             _omniSharpServer = new OmniSharpServer(
                 _workspace.Directory,
                 Paths.EmitPlugin,
-                logToPocketLogger: logToPocketLogger);
+                logToPocketLogger: false);
 
             _initialized = new AsyncLazy<bool>(async () =>
             {
