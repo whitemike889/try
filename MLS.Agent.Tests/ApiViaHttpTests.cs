@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using FluentAssertions;
 using System.Net;
 using System.Net.Http;
@@ -13,7 +14,6 @@ using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Tests;
 using Xunit;
 using Xunit.Abstractions;
-using static Pocket.Logger;
 using Workspace = WorkspaceServer.Models.Execution.Workspace;
 
 namespace MLS.Agent.Tests
@@ -277,10 +277,6 @@ public class Program {
                                .EnsureSuccess()
                                .DeserializeAs<RunResult>();
 
-            VerifySucceeded(result);
-
-            Log.Info("output: {x}", result.Output);
-
             result.ShouldSucceedWithOutput(
                 "Status code: 200 OK",
                 "Content headers:",
@@ -296,12 +292,25 @@ public class Program {
         }
 
         [Fact]
-        public async Task When_invoked_with_aspnet_webapi_workspace_request_that_does_not_compile_then______()
+        public async Task When_invoked_with_aspnet_webapi_workspace_request_that_does_not_compile_then_diagnostics_are_returned()
         {
+            var webApiWorkspace = await Default.WebApiWorkspace;
+            var workspace = Workspace.FromDirectory(webApiWorkspace.Directory, "aspnet.webapi");
+            var nonCompilingBuffer = new Workspace.Buffer("broken.cs", "this does not compile", 0);
+            workspace = new Workspace(
+                buffers: workspace.Buffers.Concat(new[] { nonCompilingBuffer }).ToArray(),
+                files: workspace.Files.ToArray(),
+                workspaceType: workspace.WorkspaceType);
 
+            var request = new WorkspaceRequest(workspace, new HttpRequest("/api/values", "get"));
 
+            var response = await CallRun(request);
 
-           throw new Exception();
+            var result = await response
+                               .EnsureSuccess()
+                               .DeserializeAs<RunResult>();
+
+            result.ShouldFailWithOutput("(1,1): error CS1031: Type expected");
         }
 
         [Fact]
