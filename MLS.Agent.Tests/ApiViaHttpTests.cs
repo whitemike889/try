@@ -14,6 +14,7 @@ using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Tests;
 using Xunit;
 using Xunit.Abstractions;
+using static Pocket.Logger<MLS.Agent.Tests.ApiViaHttpTests>;
 using Workspace = WorkspaceServer.Models.Execution.Workspace;
 
 namespace MLS.Agent.Tests
@@ -265,7 +266,7 @@ public class Program {
         }
 
         [Fact]
-        public async Task When_invoked_with_aspnet_webapi_workspace_request_then_output_shows_web_response()
+        public async Task When_aspnet_webapi_workspace_request_succeeds_then_output_shows_web_response()
         {
             var workspace = Workspace.FromDirectory((await Default.WebApiWorkspace).Directory, "aspnet.webapi");
 
@@ -291,8 +292,27 @@ public class Program {
                 "]");
         }
 
+        [Fact(Skip="WIP")]
+        public async Task When_aspnet_webapi_workspace_request_succeeds_then_standard_out_is_available_on_response()
+        {
+            var workspace = Workspace.FromDirectory((await Default.WebApiWorkspace).Directory, "aspnet.webapi");
+
+            var request = new WorkspaceRequest(workspace, new HttpRequest("/api/values", "get"));
+
+            var response = await CallRun(request, 30000);
+
+            var result = await response
+                               .EnsureSuccess()
+                               .Content
+                               .ReadAsStringAsync();
+
+            Log.Info("result: {x}", result);
+
+            throw new NotImplementedException();
+        }
+
         [Fact]
-        public async Task When_invoked_with_aspnet_webapi_workspace_request_that_does_not_compile_then_diagnostics_are_returned()
+        public async Task When_aspnet_webapi_workspace_request_fails_then_diagnostics_are_returned()
         {
             var webApiWorkspace = await Default.WebApiWorkspace;
             var workspace = Workspace.FromDirectory(webApiWorkspace.Directory, "aspnet.webapi");
