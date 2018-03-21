@@ -66,8 +66,8 @@ namespace WorkspaceServer.Models.Execution
                     var o = new JObject
                     {
                         new JProperty("diagnostics", JArray.FromObject(runResult.Diagnostics)),
-                        new JProperty("succeeded", new JValue(runResult.Succeeded)),
-                        new JProperty("output", JArray.FromObject(runResult.Output)),
+                        new JProperty("succeeded", runResult.Succeeded),
+                        new JProperty("output", runResult.Output),
                         new JProperty("exception", runResult.Exception)
                     };
 
