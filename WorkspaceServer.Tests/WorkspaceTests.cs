@@ -162,7 +162,7 @@ namespace WorkspaceServer.Tests
                              workspace.Directory.FullName,
                              "bin",
                              "Debug",
-                             "netcoreapp2.0",
+                             workspace.TargetFramework,
                              "test.dll"));
         }
 
@@ -182,7 +182,7 @@ namespace WorkspaceServer.Tests
                              workspace.Directory.FullName,
                              "bin",
                              "Debug",
-                             "netcoreapp2.0",
+                             workspace.TargetFramework,
                              "publish",
                              "test.dll"));
         }

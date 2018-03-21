@@ -11,7 +11,6 @@ using WorkspaceServer.Servers.Dotnet;
 using WorkspaceServer.WorkspaceFeatures;
 using Xunit;
 using Xunit.Abstractions;
-using static Pocket.Logger;
 
 namespace WorkspaceServer.Tests
 {
@@ -33,8 +32,7 @@ namespace WorkspaceServer.Tests
 
             var workspace = Workspace.FromDirectory((await Default.WebApiWorkspace).Directory, "aspnet.webapi");
 
-            using (var runResult = await workspaceServer.Run(
-                                           workspace))
+            using (var runResult = await workspaceServer.Run(workspace))
             {
                 var webServer = runResult.GetFeature<WebServer>();
 

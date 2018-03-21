@@ -34,12 +34,13 @@ namespace MLS.Agent.Tools
         }
 
         private readonly IWorkspaceInitializer _initializer;
-
+        private static readonly object _lockObj = new object();
         private readonly AsyncLazy<bool> _created;
         private readonly AsyncLazy<bool> _built;
         private readonly AsyncLazy<bool> _published;
         private bool? _isWebProject;
         private FileInfo _entryPointAssemblyPath;
+        private static string _targetFramework;
 
         public Workspace(
             string name,
@@ -88,8 +89,7 @@ namespace MLS.Agent.Tools
             {
                 if (_entryPointAssemblyPath == null)
                 {
-                    var depsFile = Directory.GetFiles("*.deps.json", SearchOption.AllDirectories)
-                                            .FirstOrDefault();
+                    var depsFile = Directory.GetFiles("*.deps.json", SearchOption.AllDirectories).First();
 
                     var entryPointAssemblyName = DepsFile.GetEntryPointAssemblyName(depsFile);
 
@@ -98,7 +98,7 @@ namespace MLS.Agent.Tools
                             Directory.FullName,
                             "bin",
                             "Debug",
-                            "netcoreapp2.0");
+                            TargetFramework);
 
                     if (IsWebProject)
                     {
@@ -111,6 +111,10 @@ namespace MLS.Agent.Tools
                 return _entryPointAssemblyPath;
             }
         }
+
+        public string TargetFramework => _targetFramework ??
+                                         (_targetFramework = RuntimeConfig.GetTargetFramework(
+                                              Directory.GetFiles("*.runtimeconfig.json", SearchOption.AllDirectories).First()));
 
         public async Task EnsureCreated(Budget budget = null) =>
             await _created.ValueAsync()
@@ -228,8 +232,6 @@ namespace MLS.Agent.Tools
 
             return copy;
         }
-
-        private static readonly object _lockObj = new object();
 
         public static DirectoryInfo CreateDirectory(
             string folderNameStartsWith,

@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Linq;
 using Newtonsoft.Json.Linq;
@@ -8,6 +9,11 @@ namespace MLS.Agent.Tools
     {
         public static string GetEntryPointAssemblyName(FileInfo depsFile)
         {
+            if (depsFile == null)
+            {
+                throw new ArgumentNullException(nameof(depsFile));
+            }
+
             var content = depsFile.Read();
 
             var projectName = depsFile.Name.Replace(".deps.json", "");
