@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Net.Http;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
@@ -51,7 +49,6 @@ namespace WorkspaceServer.WorkspaceFeatures
                                       .FirstAsync();
 
                 Log.Trace("Starting Kestrel at {uri}.", uriString);
-
 
                 return new Uri(uriString);
             });

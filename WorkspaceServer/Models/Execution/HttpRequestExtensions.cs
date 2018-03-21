@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net.Http;
+using System.Text;
 
 namespace WorkspaceServer.Models.Execution
 {
@@ -14,7 +15,10 @@ namespace WorkspaceServer.Models.Execution
 
             return new HttpRequestMessage(
                 new HttpMethod(request.Verb),
-                request.Uri);
+                request.Uri)
+            {
+                Content = new StringContent(request.Body, Encoding.UTF8, "application/json")
+            };
         }
     }
 }
