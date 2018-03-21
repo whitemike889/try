@@ -23,7 +23,7 @@ namespace WorkspaceServer.Tests
         }
 
         [Fact]
-        public void RunResult()
+        public void RunResult_with_no_features()
         {
             var runResult = new RunResult(
                 true,
@@ -38,7 +38,9 @@ namespace WorkspaceServer.Tests
                         id: "CS1234")
                 });
 
-            this.Assent(Serialize(runResult), configuration);
+            var serialized = Serialize(runResult);
+
+            this.Assent(serialized, configuration);
         }
 
         private static string Serialize(RunResult runResult) =>

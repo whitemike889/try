@@ -1,5 +1,8 @@
-﻿using FluentAssertions;
+﻿using System;
+using FluentAssertions;
+using Newtonsoft.Json.Linq;
 using Pocket;
+using Recipes;
 using WorkspaceServer.Models.Execution;
 using Xunit;
 
@@ -19,6 +22,89 @@ namespace WorkspaceServer.Tests
             result.Dispose();
 
             wasDisposed.Should().BeTrue();
+        }
+
+        [Fact]
+        public void Features_can_add_object_properties_to_serialized_RunResult_by_implementing_IAugmentRunResult()
+        {
+            var result = new RunResult(true);
+
+            result.AddFeature(new TestFeature<TestClass>("object", new TestClass("a", 1)));
+
+            var json = result.ToJson();
+
+            var obj = json.FromJsonTo<JObject>().Property("object").Value.ToObject<TestClass>();
+
+            obj.StringProperty.Should().Be("a");
+            obj.IntProperty.Should().Be(1);
+        }
+
+        [Fact]
+        public void Features_can_add_string_properties_to_serialized_RunResult_by_implementing_IAugmentRunResult()
+        {
+            var result = new RunResult(true);
+
+            result.AddFeature(new TestFeature<string>("string", "here i am!"));
+
+            var json = result.ToJson().FromJsonTo<dynamic>();
+
+            var scalar = (string) json.@string;
+
+            scalar.Should().Be("here i am!");
+        }
+
+        [Fact]
+        public void Features_can_add_int_properties_to_serialized_RunResult_by_implementing_IAugmentRunResult()
+        {
+            var result = new RunResult(true);
+
+            result.AddFeature(new TestFeature<int>("int", 123));
+
+            var json = result.ToJson().FromJsonTo<dynamic>();
+
+            var scalar = (int) json.@int;
+
+            scalar.Should().Be(123);
+        }
+
+        [Fact]
+        public void Features_can_add_array_properties_to_serialized_RunResult_by_implementing_IAugmentRunResult()
+        {
+            var result = new RunResult(true);
+
+            result.AddFeature(new TestFeature<string[]>("array", new[] { "one", "two", "three" }));
+
+            var json = result.ToJson().FromJsonTo<JObject>();
+
+            var array = json.Property("array").Value.ToObject<string[]>();
+
+            array.Should().Equal("one", "two", "three");
+        }
+
+        public class TestClass
+        {
+            public TestClass(string stringProperty, int intProperty)
+            {
+                StringProperty = stringProperty;
+                IntProperty = intProperty;
+            }
+
+            public string StringProperty { get; }
+            public int IntProperty { get; }
+        }
+
+        private class TestFeature<T> : IAddRunResultProperties
+        {
+            private readonly string name;
+            private readonly T value;
+
+            public TestFeature(string name, T value)
+            {
+                this.name = name;
+                this.value = value;
+            }
+
+            public void Augment(RunResult runResult, AddRunResultProperty add) => add(name, value);
         }
     }
 }

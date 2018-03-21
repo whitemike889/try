@@ -1,5 +1,5 @@
 {
-  "Diagnostics": [
+  "diagnostics": [
     {
       "Start": 1,
       "End": 4,
@@ -8,11 +8,11 @@
       "Id": "CS1234"
     }
   ],
-  "Succeeded": true,
-  "Output": [
+  "succeeded": true,
+  "output": [
     "output one",
     "output two",
     "output three"
   ],
-  "Exception": null
+  "exception": null
 }
