@@ -1,4 +1,5 @@
-using System;
+using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using MLS.Agent.Tools;
 
@@ -22,7 +23,18 @@ namespace WorkspaceServer.Tests
         {
             var workspace = new Workspace(
                 "TestTemplate.WebApi",
-                new DotnetWorkspaceInitializer("webapi", "test"));
+                new DotnetWorkspaceInitializer(
+                    "webapi",
+                    "test",
+                    afterCreate: async (directory, budget) =>
+                    {
+                        // the 2.1 template includes a forced HTTPS redirect that doesn't work without a cert installed, so we delete that line of code
+                        var startupCs = directory.GetFiles("Startup.cs").Single();
+
+                        string text = startupCs.Read();
+                        text = text.Replace("app.UseHttpsRedirection();", "");
+                        File.WriteAllText(startupCs.FullName, text);
+                    }));
 
             await workspace.EnsureCreated();
             await workspace.EnsureBuilt();

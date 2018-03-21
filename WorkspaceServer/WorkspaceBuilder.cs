@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using Clockwise;
 using MLS.Agent.Tools;
@@ -76,7 +77,7 @@ namespace WorkspaceServer
             }
         }
 
-        private async Task AfterCreate(Budget budget)
+        private async Task AfterCreate(DirectoryInfo directoryInfo, Budget budget)
         {
             foreach (var action in _afterCreateActions)
             {

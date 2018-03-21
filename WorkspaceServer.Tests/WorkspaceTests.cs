@@ -43,7 +43,7 @@ namespace WorkspaceServer.Tests
             var initializer = new DotnetWorkspaceInitializer(
                 "console",
                 "test",
-                async _ => afterCreateCallCount++);
+                async ( _, __) => afterCreateCallCount++);
 
             var workspace = Create.EmptyWorkspace(initializer: initializer);
 

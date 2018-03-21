@@ -7,7 +7,7 @@ namespace MLS.Agent.Tools
 {
     public class DotnetWorkspaceInitializer : IWorkspaceInitializer
     {
-        private readonly Func<Budget, Task> afterCreate;
+        private readonly Func<DirectoryInfo, Budget, Task> afterCreate;
 
         public string Template { get; }
 
@@ -16,7 +16,7 @@ namespace MLS.Agent.Tools
         public DotnetWorkspaceInitializer(
             string template, 
             string name,
-            Func<Budget, Task> afterCreate = null)
+            Func<DirectoryInfo, Budget, Task> afterCreate = null)
         {
             if (string.IsNullOrWhiteSpace(template))
             {
@@ -51,7 +51,7 @@ namespace MLS.Agent.Tools
 
             if (afterCreate != null)
             {
-                await afterCreate(budget);
+                await afterCreate(directory, budget);
             }
         }
     }
