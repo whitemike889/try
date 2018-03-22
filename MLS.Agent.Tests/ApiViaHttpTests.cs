@@ -278,6 +278,8 @@ public class Program {
                                .EnsureSuccess()
                                .DeserializeAs<RunResult>();
 
+            Log.Info("output: {x}", result.Output);
+
             result.ShouldSucceedWithOutput(
                 "Status code: 200 OK",
                 "Content headers:",
