@@ -82,7 +82,7 @@ build:
                                                                         #                  code coverage files. and associate with the build.
       name: 'build.sh'                                                   # This is name for this step. The step name will be in logs and in the
                                                                         # future, will be associated with metrics, timelines, journal etc.
-      command: './.build/cdpxbuild.sh'                                             # A root relative path to the script to execute. Any console output
+      command: '.build/cdpxbuild.sh'                                             # A root relative path to the script to execute. Any console output
       fail_on_stderr: false                                                              # will be automatically pushed to VSTS logs. Any files explicitly
                                                                         # written to file can be collected via the logs list.
                                                                         # Note that the best way to code these scripts is such that they run
