@@ -1,3 +1,5 @@
+FROM microsoft/aspnetcore-build:2.0
+
 ARG source
 
 # set up OmniSharp
