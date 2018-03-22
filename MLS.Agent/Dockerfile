@@ -1,4 +1,3 @@
-FROM mls-ls/dependencies
 ARG source
 
 # set up OmniSharp
