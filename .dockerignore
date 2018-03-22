@@ -1,0 +1,7 @@
+*/obj/*
+*/bin/*
+*/TestResults/*
+.build/*
+docker-compose*.yml
+*/Dockerfile
+.dockerignore
