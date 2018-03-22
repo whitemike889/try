@@ -13,11 +13,13 @@ namespace MLS.Agent
             bool isProduction, 
             string key, 
             string[] loadWorkspaces,
-            bool logToFile = false)
+            bool logToFile = false,
+            string id = null)
         {
             LoadWorkspaces = loadWorkspaces;
             LogToFile = logToFile;
             WasSuccess = wasSuccess;
+            Id = id;
             IsProduction = isProduction;
             HelpRequested = helpRequested;
             HelpText = helpText;
@@ -25,6 +27,7 @@ namespace MLS.Agent
         }
 
         public bool WasSuccess { get; }
+        public string Id { get; }
         public bool IsProduction { get; }
         public bool HelpRequested { get; }
         public string HelpText { get; }
@@ -36,6 +39,7 @@ namespace MLS.Agent
         {
             var parser = new Parser(
                 Create.Option("-h|--help", "Shows this help text"),
+                Create.Option("--id", "A unique id for the agent instance (e.g. its development environment id)", ExactlyOneArgument()),
                 Create.Option("--production", "Specifies if the agent is being run using production resources or not"),
                 Create.Option("-k|--key", "The encryption key", ExactlyOneArgument()),
                 Create.Option("--load-workspace", "Starts OmniSharp in the specified workspace folder.", OneOrMoreArguments()),
@@ -66,6 +70,9 @@ namespace MLS.Agent
                 helpText: helpRequested
                               ? parseResult.Command().HelpView()
                               : errorText,
+                id: parseResult.HasOption("id")
+                        ? parseResult["id"].Value<string>()
+                        : null,
                 isProduction: parseResult.HasOption("production"),
                 logToFile: parseResult.HasOption("log-to-file"),
                 key: parseResult.HasOption("key")
