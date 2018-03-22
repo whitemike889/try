@@ -1,6 +1,7 @@
 #!/bin/bash
 set -e
 
+cd /source
 pwd
 ls .
 dotnet restore ./MLS-LS.sln
