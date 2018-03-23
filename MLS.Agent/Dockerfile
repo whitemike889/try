@@ -4,33 +4,14 @@ ARG source
 
 # set up OmniSharp
 RUN mkdir -p /dependencies/omnisharp 
-COPY omnisharp.tar.gz ./omnisharp.tar.gz
-RUN tar -xvzf ./omnisharp.tar.gz -C /dependencies/omnisharp/
-RUN rm ./omnisharp.tar.gz
+COPY dependencies /dependencies/
 ENV TRYDOTNET_OMNISHARP_PATH=/dependencies/omnisharp/
 ENV NUGET_PACKAGES=/root/.nuget/packages/
+COPY packages /root/.nuget/packages/
 
 # set up workspaces directory
 ENV TRYDOTNET_WORKSPACES_PATH=/workspaces
-
-WORKDIR /workspaces/console
-RUN dotnet new console
-RUN dotnet add package Newtonsoft.Json
-RUN dotnet build
-
-WORKDIR /workspaces/nodatime.api
-RUN dotnet new console
-RUN dotnet add package Newtonsoft.Json
-RUN dotnet add package NodaTime
-RUN dotnet add package NodaTime.Testing
-RUN dotnet build
-
-# hack to get the emit plugin into the package cache
-WORKDIR /workspaces/emit
-RUN dotnet new library
-# dotnet objects to trying to add this package, so we use some coercion and return true in order to prevent the resulting error from stopping the Docker build
-RUN sed -i 's/netstandard2.0/net46/' emit.csproj
-RUN dotnet add package -v 1.29.0-beta2 trydotnet.omnisharp.emit ; true
+COPY workspaces /workspaces/
 
 # set up the working directory where the Agent ASP.NET app runs
 RUN mkdir -p /app
