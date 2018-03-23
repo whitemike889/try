@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
-
 PWD=$(pwd)
+PWD=${CDP_USER_SOURCE_FOLDER:-$PWD}
 DOCKER_CONTEXT_ROOT=$PWD/MLS.Agent/obj/Docker/publish
 WORKSPACES_ROOT=$DOCKER_CONTEXT_ROOT/workspaces
 DEPENDENCIES_ROOT=$DOCKER_CONTEXT_ROOT/dependencies
