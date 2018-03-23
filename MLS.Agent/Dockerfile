@@ -4,7 +4,7 @@ ARG source
 
 # set up OmniSharp
 COPY omnisharp.tar.gz ./omnisharp.tar.gz
-RUN tar xvzf ./omnisharp.tar.gz -C /dependencies/omnisharp/
+RUN tar -xvzf ./omnisharp.tar.gz -C /dependencies/omnisharp/
 RUN rm ./omnisharp.tar.gz
 ENV TRYDOTNET_OMNISHARP_PATH=/dependencies/omnisharp/
 ENV NUGET_PACKAGES=/root/.nuget/packages/
