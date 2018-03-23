@@ -3,8 +3,9 @@ FROM microsoft/aspnetcore-build:2.0
 ARG source
 
 # set up OmniSharp
-RUN mkdir -p /dependencies/omnisharp
-RUN curl -SL https://github.com/OmniSharp/omnisharp-roslyn/releases/download/v1.29.0-beta1/omnisharp-linux-x64.tar.gz | tar xvz -C /dependencies/omnisharp
+COPY omnisharp.tar.gz ./omnisharp.tar.gz
+RUN tar xvzf ./omnisharp.tar.gz -C /dependencies/omnisharp/
+RUN rm ./omnisharp.tar.gz
 ENV TRYDOTNET_OMNISHARP_PATH=/dependencies/omnisharp/
 ENV NUGET_PACKAGES=/root/.nuget/packages/
 
