@@ -3,6 +3,7 @@ FROM microsoft/aspnetcore-build:2.0
 ARG source
 
 # set up OmniSharp
+RUN mkdir -p /dependencies/omnisharp 
 COPY omnisharp.tar.gz ./omnisharp.tar.gz
 RUN tar -xvzf ./omnisharp.tar.gz -C /dependencies/omnisharp/
 RUN rm ./omnisharp.tar.gz
