@@ -1,7 +1,8 @@
 #!/bin/bash
 set -e
 
-DOCKER_CONTEXT_ROOT=./MLS.Agent/obj/Docker/publish
+PWD=$(pwd)
+DOCKER_CONTEXT_ROOT=$PWD/MLS.Agent/obj/Docker/publish
 WORKSPACES_ROOT=$DOCKER_CONTEXT_ROOT/workspaces
 DEPENDENCIES_ROOT=$DOCKER_CONTEXT_ROOT/dependencies
 
@@ -16,7 +17,7 @@ export NUGET_PACKAGES=$DOCKER_CONTEXT_ROOT/packages
 
 # acquire O#
 mkdir -p ./MLS.Agent/obj/Docker/publish/dependencies/omnisharp
-curl -SL https://github.com/OmniSharp/omnisharp-roslyn/releases/download/v1.29.0-beta1/omnisharp-linux-x64.tar.gz | tar xvz -C $DEPENDENCIES_ROOT/omnisharp
+curl -SL https://github.com/OmniSharp/omnisharp-roslyn/releases/download/v1.29.0-beta1/omnisharp-linux-x64.tar.gz | tar -xvz -C $DEPENDENCIES_ROOT/omnisharp
 
 # prepopulate workspaces
 mkdir -p $WORKSPACES_ROOT/console
