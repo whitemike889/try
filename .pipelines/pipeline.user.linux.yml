@@ -132,7 +132,7 @@ test:
   commands:
     - !!testcommand
       name: 'Test Agent'
-      command: './.build/test.sh'
+      command: './.build/cdpxtest.sh'
       fail_on_stderr: false 
       testresults:
         - from: 'source'
