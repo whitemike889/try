@@ -1,0 +1,43 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <AssetTargetFallback>$(AssetTargetFallback);dotnet5.4;portable-net45+win8</AssetTargetFallback>
+    <LangVersion>Latest</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Servers\Local\**" />
+    <EmbeddedResource Remove="Servers\Local\**" />
+    <None Remove="Servers\Local\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="clockwise" Version="1.0.149-beta" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Scripting" Version="2.8.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Features" Version="2.8.0" />
+    <PackageReference Include="NewtonSoft.Json" Version="10.0.3" />
+    <PackageReference Include="pocket.disposable" Version="1.0.3">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="pocketlogger" Version="0.2.13">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="PocketLogger.For.MicrosoftExtensionsLogging" Version="0.1.2">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="System.Reactive" Version="3.1.1" />
+    <PackageReference Include="System.Runtime.Loader" Version="4.3.0" />
+    <PackageReference Include="TryDotNet.OmniSharp.Emit" Version="1.29.0-beta2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MLS.Agent.Tools\MLS.Agent.Tools.csproj" />
+    <ProjectReference Include="..\OmniSharp.Client\OmniSharp.Client.csproj" />
+  </ItemGroup>
+
+</Project>

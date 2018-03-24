@@ -1,0 +1,9 @@
+version: '2'
+
+services:
+  mls.agent:
+    image: "${IMAGE_NAME}"
+    build:
+      context: ./MLS.Agent
+      dockerfile: Dockerfile
+    env_file: .env
