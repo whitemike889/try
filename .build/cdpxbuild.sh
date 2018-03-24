@@ -43,5 +43,5 @@ pushd $WORKSPACES_ROOT/emit
 dotnet new library
 # dotnet objects to trying to add this package, so we use some coercion and return true in order to prevent the resulting error from stopping the Docker build
 sed -i 's/netstandard2.0/net46/' emit.csproj
-dotnet add package -v 1.29.0-beta2 trydotnet.omnisharp.emit ; true
+dotnet add package -v 1.29.0-beta2 trydotnet.omnisharp.emit || true
 popd
