@@ -2,6 +2,7 @@
 using Clockwise;
 using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
+using WorkspaceServer.Models.SingatureHelp;
 
 namespace WorkspaceServer
 {
@@ -9,8 +10,9 @@ namespace WorkspaceServer
     {
         Task<RunResult> Run(Workspace workspace, Budget budget = null);
 
-        Task<CompletionResult> GetCompletionList(CompletionRequest request);
+        Task<CompletionResult> GetCompletionList(CompletionRequest request, Budget budget = null);
 
         Task<DiagnosticResult> GetDiagnostics(Workspace request);
+        Task<SignatureHelpResponse> GetSignatureHelp(SignatureHelpRequest request, Budget budget = null);
     }
 }

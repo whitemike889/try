@@ -5,6 +5,7 @@ using Pocket;
 using Recipes;
 using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
+using WorkspaceServer.Models.SingatureHelp;
 using WorkspaceServer.Servers.Scripting;
 using Xunit;
 using Xunit.Abstractions;
@@ -57,7 +58,7 @@ Console.WriteLine(banana);");
             result.ShouldBeEquivalentTo(new
             {
                 Succeeded = false,
-                Output = new string[] { "(2,19): error CS0103: The name \'banana\' does not exist in the current context" },
+                Output = new[] { "(2,19): error CS0103: The name \'banana\' does not exist in the current context" },
                 Exception = (string) null, // we already display the error in Output
             }, config => config.ExcludingMissingMembers());
         }
@@ -65,13 +66,30 @@ Console.WriteLine(banana);");
         [Fact]
         public async Task Get_completion_for_console()
         {
-            var request = new CompletionRequest("Console.", position: 8);
+            var ws = new Workspace(workspaceType:"script", buffers:new []{new Workspace.Buffer("program.cs","Console.",0) });
+
+            var request = new CompletionRequest(ws, position: 8, activeBufferId: "program.cs");
 
             var server = await GetWorkspaceServer();
 
             var result = await server.GetCompletionList(request);
 
             result.Items.Should().ContainSingle(item => item.DisplayText == "WriteLine");
+        }
+
+        [Fact]
+        public async Task Get_signature_help_for_console_writeline()
+        {
+            var ws = new Workspace(workspaceType: "script", buffers: new[] { new Workspace.Buffer("program.cs", "Console.WriteLine()", 0) });
+
+            var request = new SignatureHelpRequest(ws, position: 18, activeBufferId: "program.cs");
+
+            var server = await GetWorkspaceServer();
+
+            var result = await server.GetSignatureHelp(request);
+
+            result.Signatures.Should().NotBeNullOrEmpty();
+            result.Signatures.Should().Contain(signature => signature.Label == "void Console.WriteLine(string format, params object[] arg)");
         }
 
         [Fact]

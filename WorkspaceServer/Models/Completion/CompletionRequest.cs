@@ -1,14 +1,11 @@
-﻿namespace WorkspaceServer.Models.Completion
-{
-    public class CompletionRequest
-    {
-        public CompletionRequest(string source, int position)
-        {
-            RawSource = source ?? string.Empty;
-            Position = position;
-        }
+﻿using WorkspaceServer.Models.Execution;
 
-        public string RawSource { get; }
-        public int Position { get; }
+namespace WorkspaceServer.Models.Completion
+{
+    public class CompletionRequest : WorkspacePositionRequest
+    {
+        public CompletionRequest(Workspace workspace, string activeBufferId, int position, string[] implicitUsings = null) : base(workspace, activeBufferId, position, implicitUsings)
+        {
+        }
     }
 }

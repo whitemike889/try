@@ -196,8 +196,9 @@ namespace MLS.Agent.Tests
                     Content = new StringContent(
                         JsonConvert.SerializeObject(new
                         {
-                            Source = "Console.",
-                            Position = 8
+                            workspace = new {workspaceType = "script", buffers = new []{ new { content = "Console.", id = "default.cs" }}},
+                            position = 8,
+                            activeBufferId = "default.cs"
                         }),
                         Encoding.UTF8,
                         "application/json")

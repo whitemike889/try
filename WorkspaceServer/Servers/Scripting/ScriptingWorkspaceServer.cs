@@ -13,8 +13,10 @@ using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.Scripting;
 using Pocket;
+using WorkspaceServer.Models;
 using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
+using WorkspaceServer.Models.SingatureHelp;
 using WorkspaceServer.Transformations;
 using static Pocket.Logger<WorkspaceServer.Servers.Scripting.ScriptingWorkspaceServer>;
 using static WorkspaceServer.Servers.WorkspaceServer;
@@ -103,6 +105,7 @@ namespace WorkspaceServer.Servers.Scripting
             return filter.Concat(errormessages).ToArray();
         }
 
+
         private bool IsNotDisagnostic(string line)
         {
             var filter = new Regex(@"^(?<location>\(\d+,\d+\):)\s*(?<level>\S+)\s*(?<code>[A-Z]{2}\d+:)(?<message>.+)", RegexOptions.Compiled);
@@ -156,22 +159,48 @@ namespace WorkspaceServer.Servers.Scripting
         private static string[] GetDefultUsings() =>
             new[] { "System", "System.Linq", "System.Collections.Generic" };
 
-        public async Task<CompletionResult> GetCompletionList(CompletionRequest request)
+        public async Task<CompletionResult> GetCompletionList(CompletionRequest request, Budget budget = null)
         {
+            budget = budget ?? new Budget();
             using (Log.OnExit())
             {
-                var sourceFile = SourceFile.Create(request.RawSource, request.Position);
-
-                var document = CreateDocument(sourceFile);
+                var (document, position) = await GenerateDocumentAndPositon(request, budget);
                 var service = CompletionService.GetService(document);
 
-                var completionList = await service.GetCompletionsAsync(
-                                         document,
-                                         request.Position);
+                var completionList = await service.GetCompletionsAsync(document, position);
 
                 return new CompletionResult(
                     items: completionList.Items.Select(item => item.ToModel()).ToArray());
             }
+        }
+
+        public async Task<SignatureHelpResponse> GetSignatureHelp(SignatureHelpRequest request, Budget budget = null)
+        {
+            budget = budget ?? new Budget();
+            using (Log.OnExit())
+            {
+                var (document, position) = await GenerateDocumentAndPositon(request, budget);
+                var response = await SignatureHelpService.GetSignatureHelp(document, position, budget);
+                return response;
+            }
+        }
+
+        private static async Task<(Document document, int position)> GenerateDocumentAndPositon(WorkspacePositionRequest request, Budget budget)
+        {
+            var processor = new BufferInliningTransformer();
+            var workspace = await processor.TransformAsync(request.Workspace, budget);
+
+            if (workspace.Files.Count != 1)
+            {
+                throw new ArgumentException($"{nameof(request)} should have exactly one source file.");
+            }
+
+            var code = workspace.Files.Single().Text;
+            var position = workspace.Buffers.First(b => b.Id == request.ActiveBufferId).Position + request.Position;
+
+            var sourceFile = SourceFile.Create(code, position);
+            var document = CreateDocument(sourceFile);
+            return (document, position);
         }
 
         private static Document CreateDocument(SourceFile sourceFile)

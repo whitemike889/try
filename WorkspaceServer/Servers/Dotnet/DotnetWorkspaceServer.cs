@@ -8,6 +8,7 @@ using MLS.Agent.Tools;
 using Pocket;
 using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
+using WorkspaceServer.Models.SingatureHelp;
 using WorkspaceServer.Transformations;
 using WorkspaceServer.WorkspaceFeatures;
 using static Pocket.Logger<WorkspaceServer.Servers.Dotnet.DotnetWorkspaceServer>;
@@ -188,7 +189,12 @@ namespace WorkspaceServer.Servers.Dotnet
             return emitResponse;
         }
 
-        public Task<CompletionResult> GetCompletionList(CompletionRequest request)
+        public Task<CompletionResult> GetCompletionList(CompletionRequest request, Budget budget = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<SignatureHelpResponse> GetSignatureHelp(SignatureHelpRequest request, Budget budget = null)
         {
             throw new NotImplementedException();
         }
