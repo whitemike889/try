@@ -24,7 +24,6 @@ namespace MLS.Agent.Controllers
 
         [HttpPost]
         [Route("/workspace/run")]
-        [Route("/workspace/{DEPRECATED}/compile")] // FIX: (Run) remove this endpoint when Orchestrator no longer calls it
         public async Task<IActionResult> Run(
             [FromBody] WorkspaceRequest request,
             [FromHeader(Name = "Referer")] string referer,
