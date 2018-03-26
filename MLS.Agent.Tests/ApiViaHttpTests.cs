@@ -11,6 +11,7 @@ using Pocket;
 using Recipes;
 using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
+using WorkspaceServer.Models.SingatureHelp;
 using WorkspaceServer.Tests;
 using Xunit;
 using Xunit.Abstractions;
@@ -211,6 +212,36 @@ namespace MLS.Agent.Tests
                                    .DeserializeAs<CompletionResult>();
 
                 result.Items.Should().ContainSingle(item => item.DisplayText == "WriteLine");
+            }
+        }
+
+        [Fact]
+        public async Task When_they_load_a_snippet_then_they_can_use_the_workspace_endpoint_to_get_signature_help()
+        {
+            using (var agent = new AgentService())
+            {
+                var request = new HttpRequestMessage(
+                    HttpMethod.Post,
+                    @"/workspace/signaturehelp")
+                {
+                    Content = new StringContent(
+                        JsonConvert.SerializeObject(new
+                        {
+                            workspace = new { workspaceType = "script", buffers = new[] { new { content = "Console.WriteLine()", id = "default.cs" } } },
+                            position = 18,
+                            activeBufferId = "default.cs"
+                        }),
+                        Encoding.UTF8,
+                        "application/json")
+                };
+
+                var response = await agent.SendAsync(request);
+
+                var result = await response
+                    .EnsureSuccess()
+                    .DeserializeAs<SignatureHelpResponse>();
+                result.Signatures.Should().NotBeNullOrEmpty();
+                result.Signatures.Should().Contain(signature => signature.Label == "void Console.WriteLine(string format, params object[] arg)");
             }
         }
 

@@ -7,6 +7,7 @@ using Pocket;
 using WorkspaceServer;
 using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
+using WorkspaceServer.Models.SingatureHelp;
 using WorkspaceServer.Servers.Dotnet;
 using WorkspaceServer.Servers.Scripting;
 using WorkspaceServer.WorkspaceFeatures;
@@ -98,7 +99,6 @@ namespace MLS.Agent.Controllers
 
         [HttpPost]
         [Route("/workspace/completion")]
-        [Route("/workspace/{DEPRECATED}/getCompletionItems")]
         public async Task<IActionResult> Completion(
             [FromBody] CompletionRequest request)
         {
@@ -116,7 +116,6 @@ namespace MLS.Agent.Controllers
 
         [HttpPost]
         [Route("/workspace/diagnostics")]
-        [Route("/workspace/{DEPRECATED}/diagnostics")]
         public async Task<IActionResult> Diagnostics(
             [FromBody] Workspace request)
         {
@@ -125,6 +124,23 @@ namespace MLS.Agent.Controllers
                 var server = new ScriptingWorkspaceServer();
 
                 var result = await server.GetDiagnostics(request);
+
+                operation.Succeed();
+
+                return Ok(result);
+            }
+        }
+
+        [HttpPost]
+        [Route("/workspace/signaturehelp")]
+        public async Task<IActionResult> SignatureHelp(
+            [FromBody] SignatureHelpRequest request)
+        {
+            using (var operation = Log.ConfirmOnExit())
+            {
+                var server = new ScriptingWorkspaceServer();
+
+                var result = await server.GetSignatureHelp(request);
 
                 operation.Succeed();
 
