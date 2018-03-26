@@ -100,13 +100,20 @@ namespace MLS.Agent.Controllers
         [HttpPost]
         [Route("/workspace/completion")]
         public async Task<IActionResult> Completion(
-            [FromBody] CompletionRequest request)
+            [FromBody] CompletionRequest request,
+            [FromHeader(Name = "Timeout")] string timeoutInMilliseconds = "15000")
         {
             using (var operation = Log.ConfirmOnExit())
             {
-                var server = new ScriptingWorkspaceServer();
+                if (!int.TryParse(timeoutInMilliseconds, out var timeoutMs))
+                {
+                    return BadRequest();
+                }
 
-                var result = await server.GetCompletionList(request);
+                var runTimeout = TimeSpan.FromMilliseconds(timeoutMs);
+                var budget = new TimeBudget(runTimeout);
+                var server = new ScriptingWorkspaceServer();
+                var result = await server.GetCompletionList(request, budget);
 
                 operation.Succeed();
 
@@ -117,13 +124,20 @@ namespace MLS.Agent.Controllers
         [HttpPost]
         [Route("/workspace/diagnostics")]
         public async Task<IActionResult> Diagnostics(
-            [FromBody] Workspace request)
+            [FromBody] Workspace request,
+            [FromHeader(Name = "Timeout")] string timeoutInMilliseconds = "15000")
         {
             using (var operation = Log.ConfirmOnExit())
             {
-                var server = new ScriptingWorkspaceServer();
+                if (!int.TryParse(timeoutInMilliseconds, out var timeoutMs))
+                {
+                    return BadRequest();
+                }
 
-                var result = await server.GetDiagnostics(request);
+                var runTimeout = TimeSpan.FromMilliseconds(timeoutMs);
+                var budget = new TimeBudget(runTimeout);
+                var server = new ScriptingWorkspaceServer();
+                var result = await server.GetDiagnostics(request, budget);
 
                 operation.Succeed();
 
@@ -134,13 +148,20 @@ namespace MLS.Agent.Controllers
         [HttpPost]
         [Route("/workspace/signaturehelp")]
         public async Task<IActionResult> SignatureHelp(
-            [FromBody] SignatureHelpRequest request)
+            [FromBody] SignatureHelpRequest request,
+            [FromHeader(Name = "Timeout")] string timeoutInMilliseconds = "15000")
         {
             using (var operation = Log.ConfirmOnExit())
             {
-                var server = new ScriptingWorkspaceServer();
+                if (!int.TryParse(timeoutInMilliseconds, out var timeoutMs))
+                {
+                    return BadRequest();
+                }
 
-                var result = await server.GetSignatureHelp(request);
+                var runTimeout = TimeSpan.FromMilliseconds(timeoutMs);
+                var budget = new TimeBudget(runTimeout);
+                var server = new ScriptingWorkspaceServer();
+                var result = await server.GetSignatureHelp(request, budget);
 
                 operation.Succeed();
 

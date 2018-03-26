@@ -199,9 +199,9 @@ namespace WorkspaceServer.Servers.Dotnet
             throw new NotImplementedException();
         }
 
-        public async Task<DiagnosticResult> GetDiagnostics(Models.Execution.Workspace request)
+        public async Task<DiagnosticResult> GetDiagnostics(Models.Execution.Workspace request, Budget budget = null)
         {
-            var budget =  new TimeBudget(_defaultTimeoutInSeconds);
+            budget = budget ?? new TimeBudget(_defaultTimeoutInSeconds);
             await EnsureInitializedAndNotDisposed(budget);
             request = await _transformer.TransformAsync(request, budget);
             var emitResponse = await Emit(request, new Budget());

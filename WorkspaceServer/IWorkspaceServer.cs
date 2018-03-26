@@ -12,7 +12,7 @@ namespace WorkspaceServer
 
         Task<CompletionResult> GetCompletionList(CompletionRequest request, Budget budget = null);
 
-        Task<DiagnosticResult> GetDiagnostics(Workspace request);
+        Task<DiagnosticResult> GetDiagnostics(Workspace request, Budget budget = null);
         Task<SignatureHelpResponse> GetSignatureHelp(SignatureHelpRequest request, Budget budget = null);
     }
 }
