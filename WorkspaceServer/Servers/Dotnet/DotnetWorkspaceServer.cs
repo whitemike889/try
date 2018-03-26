@@ -6,6 +6,7 @@ using Clockwise;
 using Microsoft.CodeAnalysis;
 using MLS.Agent.Tools;
 using Pocket;
+using WorkspaceServer.Models;
 using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Models.SingatureHelp;
@@ -16,6 +17,8 @@ using static WorkspaceServer.Servers.WorkspaceServer;
 using static WorkspaceServer.Transformations.OmniSharpDiagnosticTransformer;
 using Workspace = MLS.Agent.Tools.Workspace;
 using OmnisharpEmitResponse = OmniSharp.Client.Commands.OmniSharpResponseMessage<OmniSharp.Client.Commands.EmitResponse>;
+using OmniSharp = MLS.Agent.Tools.OmniSharp;
+using TextSpan = Microsoft.CodeAnalysis.Text.TextSpan;
 
 namespace WorkspaceServer.Servers.Dotnet
 {
@@ -161,16 +164,7 @@ namespace WorkspaceServer.Servers.Dotnet
 
         private async Task<OmnisharpEmitResponse> Emit(Models.Execution.Workspace request, Budget budget)
         {
-            await EnsureInitializedAndNotDisposed(budget);
-
-            foreach (var sourceFile in request.Files)
-            {
-                var file = new FileInfo(Path.Combine(_workspace.Directory.FullName, sourceFile.Name));
-
-                var text = sourceFile.Text;
-
-                await _omniSharpServer.UpdateBuffer(file, text);
-            }
+            await UpdateOmnisharpWorkspace(request);
 
             var emitResponse = await _omniSharpServer.Emit(budget);
 
@@ -189,14 +183,58 @@ namespace WorkspaceServer.Servers.Dotnet
             return emitResponse;
         }
 
-        public Task<CompletionResult> GetCompletionList(CompletionRequest request, Budget budget = null)
+        private async Task UpdateOmnisharpWorkspace(Models.Execution.Workspace workspace)
         {
-            throw new NotImplementedException();
+            foreach (var sourceFile in workspace.Files)
+            {
+                var file = new FileInfo(Path.Combine(_workspace.Directory.FullName, sourceFile.Name));
+
+                var text = sourceFile.Text;
+
+                await _omniSharpServer.UpdateBuffer(file, text);
+            }
         }
 
-        public Task<SignatureHelpResponse> GetSignatureHelp(SignatureHelpRequest request, Budget budget = null)
+        public async Task<CompletionResult> GetCompletionList(CompletionRequest request, Budget budget = null)
         {
-            throw new NotImplementedException();
+            budget = budget ?? new TimeBudget(_defaultTimeoutInSeconds);
+
+            using (var operation = Log.OnEnterAndConfirmOnExit())
+            {
+                await EnsureInitializedAndNotDisposed(budget);
+                var processor = new BufferInliningTransformer();
+                var workspaceProcessing = processor.TransformAsync(request.Workspace, budget);
+                await FlushBuffers(budget);
+                var workspace = await workspaceProcessing;
+                await UpdateOmnisharpWorkspace(workspace);
+                var fileName = workspace.GetFileFromActiveBuffer(request.ActiveBufferId)?.Name;
+                var position = workspace.GetAbsolutePosiiton(request.ActiveBufferId, request.Position);
+               
+                throw new NotImplementedException();
+            }
+        }
+
+        public async Task<SignatureHelpResponse> GetSignatureHelp(SignatureHelpRequest request, Budget budget = null)
+        {
+            budget = budget ?? new TimeBudget(_defaultTimeoutInSeconds);
+
+            using (var operation = Log.OnEnterAndConfirmOnExit())
+            {
+                await EnsureInitializedAndNotDisposed(budget);
+                var processor = new BufferInliningTransformer();
+                var workspaceProcessing =  processor.TransformAsync(request.Workspace, budget);
+                await FlushBuffers(budget);
+                var workspace = await workspaceProcessing;
+                await UpdateOmnisharpWorkspace(workspace);
+                var fileName = workspace.GetFileFromActiveBuffer(request.ActiveBufferId)?.Name;
+                var position = workspace.GetAbsolutePosiiton(request.ActiveBufferId, request.Position);
+                var wsInfo = await _omniSharpServer.GetWorkspaceInformation(budget);
+
+                var sourceFile = wsInfo?.Body.MSBuildSolution.Projects.SelectMany(prj => prj.SourceFiles).FirstOrDefault(src => src.FullName.EndsWith(fileName));
+
+                budget.RecordEntry();
+                return new SignatureHelpResponse();
+            }
         }
 
         public async Task<DiagnosticResult> GetDiagnostics(Models.Execution.Workspace request, Budget budget = null)
