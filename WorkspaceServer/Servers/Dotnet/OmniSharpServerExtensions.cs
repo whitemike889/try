@@ -6,7 +6,6 @@ using System.Reactive.Threading.Tasks;
 using System.Threading.Tasks;
 using Clockwise;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using OmniSharp.Client;
 using OmniSharp.Client.Commands;
 using Recipes;
