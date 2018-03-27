@@ -77,7 +77,7 @@ namespace WorkspaceServer.Tests
             {
                 Func<Task> secondCapture = async () => await ConsoleOutput.Capture(new TimeBudget(10.Milliseconds()));
 
-                secondCapture.ShouldThrow<BudgetExceededException>();
+                secondCapture.ShouldThrow<TaskCanceledException>();
             }
         }
 

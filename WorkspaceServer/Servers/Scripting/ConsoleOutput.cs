@@ -32,7 +32,7 @@ namespace WorkspaceServer.Servers.Scripting
 
             budget.CancellationToken.Register(redirector.Dispose);
 
-            await consoleLock.WaitAsync().CancelIfExceeds(budget);
+            await consoleLock.WaitAsync(budget.CancellationToken);
 
             try
             {
