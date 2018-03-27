@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -10,8 +9,10 @@ using Pocket;
 using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Transformations;
+using WorkspaceServer.WorkspaceFeatures;
 using static Pocket.Logger<WorkspaceServer.Servers.Dotnet.DotnetWorkspaceServer>;
 using static WorkspaceServer.Servers.WorkspaceServer;
+using static WorkspaceServer.Transformations.OmniSharpDiagnosticTransformer;
 using Workspace = MLS.Agent.Tools.Workspace;
 using OmnisharpEmitResponse = OmniSharp.Client.Commands.OmniSharpResponseMessage<OmniSharp.Client.Commands.EmitResponse>;
 
@@ -25,7 +26,10 @@ namespace WorkspaceServer.Servers.Dotnet
         private bool _disposed;
         private readonly Budget _initializationBudget = new Budget();
         private readonly TimeSpan _defaultTimeoutInSeconds;
+        private readonly BufferInliningTransformer _transformer = new BufferInliningTransformer();
 
+        public static string UserCodeCompletedBudgetEntryName = "UserCodeCompleted";
+        
         public DotnetWorkspaceServer(
             Workspace workspace,
             int? defaultTimeoutInSeconds = 30)
@@ -34,16 +38,10 @@ namespace WorkspaceServer.Servers.Dotnet
 
             _defaultTimeoutInSeconds = TimeSpan.FromSeconds(defaultTimeoutInSeconds ?? 30);
 
-#if DEBUG
-            var logToPocketLogger = true;
-#else
-            var logToPocketLogger = false;
-#endif
-
             _omniSharpServer = new OmniSharpServer(
                 _workspace.Directory,
                 Paths.EmitPlugin,
-                logToPocketLogger: logToPocketLogger);
+                logToPocketLogger: false);
 
             _initialized = new AsyncLazy<bool>(async () =>
             {
@@ -66,73 +64,76 @@ namespace WorkspaceServer.Servers.Dotnet
                               .CancelIfExceeds(budget ?? new Budget());
         }
 
-        public async Task<RunResult> Run(WorkspaceRequest request, Budget budget = null)
+        public async Task<RunResult> Run(Models.Execution.Workspace workspace, Budget budget = null)
         {
             budget = budget ?? new TimeBudget(_defaultTimeoutInSeconds);
 
             using (var operation = Log.OnEnterAndConfirmOnExit())
             {
                 await EnsureInitializedAndNotDisposed(budget);
-                var processor = new BufferInliningTransformer();
-                var processedRequest = await processor.TransformAsync(request.Workspace, budget);
-                Dictionary<string, Viewport> viewPorts = null;
-                IEnumerable<(SerializableDiagnostic Diagnostic, string ErrorMessage)> processedDiagnostics;
-                CommandLineResult commandLineResult = null;
-                Exception exception = null;
+
+                workspace = await _transformer.TransformAsync(workspace, budget);
+
                 string exceptionMessage = null;
-                OmnisharpEmitResponse emitResponse = null;
 
                 await FlushBuffers(budget);
-                emitResponse = await Emit(processedRequest, budget);
+
+                var emitResponse = await Emit(workspace, budget);
+
+                var diagnostics = ReconstructDiagnosticLocations(
+                    emitResponse.Body.Diagnostics,
+                    _transformer.ExtractViewPorts(workspace),
+                    BufferInliningTransformer.PaddingSize).ToArray();
 
                 if (emitResponse.Body.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error))
                 {
-                    if (emitResponse.Body.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error))
+                    return new RunResult(
+                        false,
+                        diagnostics
+                            .Where(d => d.Diagnostic.Severity == DiagnosticSeverity.Error)
+                            .Select(d => d.Message)
+                            .ToArray(),
+                        diagnostics: diagnostics.Select(d => d.Diagnostic).ToArray());
+                }
+
+                RunResult runResult = null;
+
+                if (_workspace.IsWebProject)
+                {
+                    var webServer = new WebServer(_workspace);
+
+                    runResult = new RunResult(
+                        succeeded: true,
+                        diagnostics: diagnostics.Select(d => d.Diagnostic).ToArray());
+
+                    runResult.AddFeature(webServer);
+                }
+                else
+                {
+                    var dotnet = new MLS.Agent.Tools.Dotnet(_workspace.Directory);
+
+                    var commandLineResult = await dotnet.Execute(
+                                                _workspace.EntryPointAssemblyPath.FullName,
+                                                budget);
+
+                    budget.RecordEntry(UserCodeCompletedBudgetEntryName);
+
+                    if (commandLineResult.ExitCode == 124)
                     {
-                        viewPorts = processor.ExtractViewPorts(processedRequest);
-                        processedDiagnostics = OmniSharpDiagnosticTransformer.ReconstructDiagnosticLocations(emitResponse.Body.Diagnostics, viewPorts, BufferInliningTransformer.PaddingSize).ToArray();
-
-                        return new RunResult(
-                            false,
-                            processedDiagnostics
-                                .Where(d => d.Diagnostic.Severity == DiagnosticSeverity.Error)
-                                .Select(d => d.ErrorMessage)
-                                .ToArray(),
-                            diagnostics: processedDiagnostics.Select(d => d.Diagnostic).ToArray());
+                        throw new BudgetExceededException(budget);
                     }
+
+                    if (commandLineResult.Error.Count > 0)
+                    {
+                        exceptionMessage = string.Join(Environment.NewLine, commandLineResult.Error);
+                    }
+
+                    runResult = new RunResult(
+                        succeeded: true,
+                        output: commandLineResult?.Output,
+                        exception: exceptionMessage,
+                        diagnostics: diagnostics.Select(d => d.Diagnostic).ToArray());
                 }
-
-                var dotnet = new MLS.Agent.Tools.Dotnet(_workspace.Directory);
-
-                commandLineResult = await dotnet.Execute(emitResponse.Body.OutputAssemblyPath, budget);
-
-                budget.RecordEntry(UserCodeCompletedBudgetEntryName);
-
-                if (commandLineResult.ExitCode == 124)
-                {
-                    throw new BudgetExceededException(budget);
-                }
-
-                if (commandLineResult.Exception != null)
-                {
-                    exceptionMessage = commandLineResult.Exception.ToString();
-                }
-                else if (commandLineResult.Error.Count > 0)
-                {
-                    exceptionMessage = string.Join(Environment.NewLine, commandLineResult.Error);
-                }
-
-                if (emitResponse?.Body.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error) == true
-                    && viewPorts == null)
-                {
-                    viewPorts = processor.ExtractViewPorts(processedRequest);
-                }
-                processedDiagnostics = OmniSharpDiagnosticTransformer.ReconstructDiagnosticLocations(emitResponse?.Body.Diagnostics, viewPorts, BufferInliningTransformer.PaddingSize).ToArray();
-                var runResult = new RunResult(
-                    succeeded: !exception.IsConsideredRunFailure(),
-                    output: commandLineResult?.Output,
-                    exception: exceptionMessage ?? exception.ToDisplayString(),
-                    diagnostics: processedDiagnostics.Select(d => d.Diagnostic).ToArray());
 
                 operation.Complete(runResult, budget);
 
@@ -153,6 +154,7 @@ namespace WorkspaceServer.Servers.Dotnet
                     await _omniSharpServer.UpdateBuffer(file, "//empty",budget);
                 }
             }
+
             budget.RecordEntry();
         }
 
@@ -164,7 +166,7 @@ namespace WorkspaceServer.Servers.Dotnet
             {
                 var file = new FileInfo(Path.Combine(_workspace.Directory.FullName, sourceFile.Name));
 
-                var text = sourceFile.Text.ToString();
+                var text = sourceFile.Text;
 
                 await _omniSharpServer.UpdateBuffer(file, text);
             }
@@ -172,6 +174,16 @@ namespace WorkspaceServer.Servers.Dotnet
             var emitResponse = await _omniSharpServer.Emit(budget);
 
             budget.RecordEntryAndThrowIfBudgetExceeded();
+
+            var builtLocation = emitResponse.Body.OutputAssemblyPath;
+
+            if (_workspace.IsWebProject)
+            {
+                File.Copy(
+                    builtLocation,
+                    _workspace.EntryPointAssemblyPath.FullName,
+                    true);
+            }
 
             return emitResponse;
         }
@@ -185,21 +197,19 @@ namespace WorkspaceServer.Servers.Dotnet
         {
             var budget =  new TimeBudget(_defaultTimeoutInSeconds);
             await EnsureInitializedAndNotDisposed(budget);
-            var processor = new BufferInliningTransformer();
-            var processedRequest = await processor.TransformAsync(request, budget);
-            var emitResult = await Emit(processedRequest, new Budget());
+            request = await _transformer.TransformAsync(request, budget);
+            var emitResponse = await Emit(request, new Budget());
             SerializableDiagnostic[] diagnostics;
 
-            if (emitResult.Body.Diagnostics.Any())
+            if (emitResponse.Body.Diagnostics.Any())
             {
-
-                var viewPorts = processor.ExtractViewPorts(processedRequest);
-                IEnumerable<(SerializableDiagnostic Diagnostic, string ErrorMessage)> processedDiagnostics = OmniSharpDiagnosticTransformer.ReconstructDiagnosticLocations(emitResult.Body.Diagnostics, viewPorts, BufferInliningTransformer.PaddingSize).ToArray();
+                var viewPorts = _transformer.ExtractViewPorts(request);
+                var processedDiagnostics = ReconstructDiagnosticLocations(emitResponse.Body.Diagnostics, viewPorts, BufferInliningTransformer.PaddingSize).ToArray();
                 diagnostics = processedDiagnostics?.Select(d => d.Diagnostic).ToArray();
             }
             else
             {
-                diagnostics = emitResult.Body.Diagnostics.Select(d => new SerializableDiagnostic(d)).ToArray();
+                diagnostics = emitResponse.Body.Diagnostics.Select(d => new SerializableDiagnostic(d)).ToArray();
             }
 
             return new DiagnosticResult(diagnostics);

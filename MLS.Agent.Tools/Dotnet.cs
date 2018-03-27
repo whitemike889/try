@@ -34,5 +34,8 @@ namespace MLS.Agent.Tools
                 args,
                 _workingDirectory,
                 budget);
+
+        public Task<CommandLineResult> Publish(string args, Budget budget = null) =>
+            Execute("publish".AppendArgs(args), budget);
     }
 }

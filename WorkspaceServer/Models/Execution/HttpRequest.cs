@@ -4,10 +4,6 @@ namespace WorkspaceServer.Models.Execution
 {
     public class HttpRequest
     {
-        public Uri Uri { get; }
-        public string Verb { get; }
-        public string Body { get; }
-
         public HttpRequest(string uri, string verb, string body = null)
         {
             if (!Uri.TryCreate(uri, UriKind.Relative, out var parseduri))
@@ -22,7 +18,13 @@ namespace WorkspaceServer.Models.Execution
 
             Uri = parseduri;
             Verb = verb;
-            Body = body;
+            Body = body ?? string.Empty;
         }
+
+        public Uri Uri { get; }
+
+        public string Verb { get; }
+
+        public string Body { get; }
     }
 }

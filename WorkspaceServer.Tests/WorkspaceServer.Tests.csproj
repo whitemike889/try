@@ -13,6 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Assent" Version="1.2.1" />
     <PackageReference Include="clockwise" Version="1.0.149-beta" />
     <PackageReference Include="fluentassertions" Version="4.19.4" />
     <PackageReference Include="Microsoft.CodeAnalysis" Version="2.8.0" />

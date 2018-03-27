@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using FluentAssertions;
 using System.Net;
 using System.Net.Http;
@@ -13,7 +14,7 @@ using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Tests;
 using Xunit;
 using Xunit.Abstractions;
-using static Pocket.Logger;
+using static Pocket.Logger<MLS.Agent.Tests.ApiViaHttpTests>;
 using Workspace = WorkspaceServer.Models.Execution.Workspace;
 
 namespace MLS.Agent.Tests
@@ -25,6 +26,7 @@ namespace MLS.Agent.Tests
         public ApiViaHttpTests(ITestOutputHelper output)
         {
             disposables.Add(output.SubscribeToPocketLogger());
+            disposables.Add(VirtualClock.Start());
         }
 
         public void Dispose() => disposables.Dispose();
@@ -93,90 +95,80 @@ namespace MLS.Agent.Tests
         [Fact]
         public async Task The_workspace_endpoint_compiles_code_using_dotnet_when_a_non_script_workspace_type_is_specified()
         {
-            using (VirtualClock.Start())
-            {
-                var output = Guid.NewGuid().ToString();
-                var requestJson = Create.SimpleWorkspaceAsJson(output, "console");
+            var output = Guid.NewGuid().ToString();
+            var requestJson = Create.SimpleWorkspaceAsJson(output, "console");
 
-                var response = await CallRun(requestJson);
+            var response = await CallRun(requestJson);
 
-                var result = await response
-                                   .EnsureSuccess()
-                                   .DeserializeAs<RunResult>();
+            var result = await response
+                                .EnsureSuccess()
+                                .DeserializeAs<RunResult>();
 
-                VerifySucceeded(result);
+            VerifySucceeded(result);
 
-                result.ShouldSucceedWithOutput(output);
-            }
+            result.ShouldSucceedWithOutput(output);
         }
 
         [Fact]
         public async Task When_a_non_script_workspace_type_is_specified_then_code_fragments_cannot_be_compiled_successfully()
         {
-            using (VirtualClock.Start())
+            var requestJson = JsonConvert.SerializeObject(new
             {
-                var requestJson = JsonConvert.SerializeObject(new
-                {
-                    Buffer = @"Console.WriteLine(""hello!"");",
-                    WorkspaceType = "console"
-                });
+                Buffer = @"Console.WriteLine(""hello!"");",
+                WorkspaceType = "console"
+            });
 
-                var response = await CallRun(requestJson);
+            var response = await CallRun(requestJson);
 
-                var result = await response
-                                   .EnsureSuccess()
-                                   .DeserializeAs<RunResult>();
+            var result = await response
+                                .EnsureSuccess()
+                                .DeserializeAs<RunResult>();
 
-                result.ShouldFailWithOutput(
-                    "(1,19): error CS1022: Type or namespace definition, or end-of-file expected",
-                    "(1,19): error CS1026: ) expected",
-                    "(1,1): error CS5001: Program does not contain a static 'Main' method suitable for an entry point"
-                );
-            }
+            result.ShouldFailWithOutput(
+                "(1,19): error CS1022: Type or namespace definition, or end-of-file expected",
+                "(1,19): error CS1026: ) expected",
+                "(1,1): error CS5001: Program does not contain a static 'Main' method suitable for an entry point"
+            );
         }
 
         [Fact]
         public async Task When_they_load_a_snippet_then_they_get_diagnostics_for_the_first_line()
         {
-            using (VirtualClock.Start())
+            var output = Guid.NewGuid().ToString();
+
+            using (var agent = new AgentService())
             {
-                var output = Guid.NewGuid().ToString();
-
-                using (var agent = new AgentService())
+                var request = new HttpRequestMessage(
+                    HttpMethod.Post,
+                    @"/workspace/run")
                 {
-                    var request = new HttpRequestMessage(
-                        HttpMethod.Post,
-                        @"/workspace/run")
-                    {
-                        Content = new StringContent(
-                            JsonConvert.SerializeObject(new
-                            {
-                                Buffer = $@"Console.WriteLine(""{output}"""
-                            }),
-                            Encoding.UTF8,
-                            "application/json")
-                    };
+                    Content = new StringContent(
+                        JsonConvert.SerializeObject(new
+                        {
+                            Buffer = $@"Console.WriteLine(""{output}"""
+                        }),
+                        Encoding.UTF8,
+                        "application/json")
+                };
 
-                    var response = await agent.SendAsync(request);
+                var response = await agent.SendAsync(request);
 
-                    var result = await response
-                                       .EnsureSuccess()
-                                       .DeserializeAs<RunResult>();
+                var result = await response
+                                    .EnsureSuccess()
+                                    .DeserializeAs<RunResult>();
 
-                    result.Diagnostics.Should().Contain(d =>
-                                                            d.Start== 56 &&
-                                                            d.End == 56 &&
-                                                            d.Message == ") expected" &&
-                                                            d.Id == "CS1026");
-                }
+                result.Diagnostics.Should().Contain(d =>
+                                                        d.Start== 56 &&
+                                                        d.End == 56 &&
+                                                        d.Message == ") expected" &&
+                                                        d.Id == "CS1026");
             }
         }
 
-        [Theory]
-        [InlineData("{}")]
-        public async Task Sending_payloads_that_dont_include_source_strings_results_in_BadRequest(string content)
+        [Fact]
+        public async Task Sending_payloads_that_dont_include_source_strings_results_in_BadRequest()
         {
-            var response = await CallRun(content);
+            var response = await CallRun("{}");
 
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
@@ -187,12 +179,9 @@ namespace MLS.Agent.Tests
         [InlineData("garbage 1235")]
         public async Task Sending_payloads_that_cannot_be_deserialized_results_in_BadRequest(string content)
         {
-            using (VirtualClock.Start())
-            {
-                var response = await CallRun(content);
+            var response = await CallRun(content);
 
-                response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-            }
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
 
         [Fact]
@@ -242,7 +231,7 @@ namespace MLS.Agent.Tests
         }
 
         [Fact]
-        public async Task When_invoked_with_workspace_request_it_executes_correctly()
+        public async Task When_invoked_with_script_workspace_request_it_executes_correctly()
         {
             var output = "1";
             var sourceCode = @"using System;
@@ -277,8 +266,83 @@ public class Program {
         }
 
         [Fact]
+        public async Task When_aspnet_webapi_workspace_request_succeeds_then_output_shows_web_response()
+        {
+            var workspaceType = Tools.Workspace.Copy(await Default.WebApiWorkspace);
+            var workspace = Workspace.FromDirectory(workspaceType.Directory, workspaceType.Directory.Name);
+
+            var request = new WorkspaceRequest(workspace, new HttpRequest("/api/values", "get"));
+
+            var response = await CallRun(request);
+
+            var result = await response
+                               .EnsureSuccess()
+                               .DeserializeAs<RunResult>();
+
+            Log.Info("output: {x}", result.Output);
+
+            result.ShouldSucceedWithOutput(
+                "Status code: 200 OK",
+                "Content headers:",
+                "  Date:*",
+                // the order of these two varies for some reason
+                "  *", // e.g. Transfer-Encoding: chunked
+                "  *", // e.g. Server: Kestrel
+                "  Content-Type: application/json; charset=utf-8",
+                "Content:",
+                "[",
+                "  \"value1\",",
+                "  \"value2\"",
+                "]");
+        }
+
+        [Fact(Skip="WIP")]
+        public async Task When_aspnet_webapi_workspace_request_succeeds_then_standard_out_is_available_on_response()
+        {
+            var workspaceType = Tools.Workspace.Copy(await Default.WebApiWorkspace);
+            var workspace = Workspace.FromDirectory(workspaceType.Directory, workspaceType.Directory.Name);
+
+            var request = new WorkspaceRequest(workspace, new HttpRequest("/api/values", "get"));
+
+            var response = await CallRun(request, 30000);
+
+            var result = await response
+                               .EnsureSuccess()
+                               .Content
+                               .ReadAsStringAsync();
+
+            Log.Info("result: {x}", result);
+
+            throw new NotImplementedException();
+        }
+
+        [Fact]
+        public async Task When_aspnet_webapi_workspace_request_fails_then_diagnostics_are_returned()
+        {
+            var workspaceType = Tools.Workspace.Copy(await Default.WebApiWorkspace);
+            var workspace = Workspace.FromDirectory(workspaceType.Directory, workspaceType.Directory.Name);
+            var nonCompilingBuffer = new Workspace.Buffer("broken.cs", "this does not compile", 0);
+            workspace = new Workspace(
+                buffers: workspace.Buffers.Concat(new[] { nonCompilingBuffer }).ToArray(),
+                files: workspace.Files.ToArray(),
+                workspaceType: workspace.WorkspaceType);
+
+            var request = new WorkspaceRequest(workspace, new HttpRequest("/api/values", "get"));
+
+            var response = await CallRun(request);
+
+            var result = await response
+                               .EnsureSuccess()
+                               .DeserializeAs<RunResult>();
+
+            result.ShouldFailWithOutput("(1,1): error CS1031: Type expected");
+        }
+
+        [Fact]
         public async Task When_Run_times_out_in_workspace_server_code_then_the_response_code_is_504()
         {
+            Clock.Reset();
+
             var requestJson =
                 @"{ ""Buffers"":[{""Id"":"""",""Content"":""public class Program { public static void Main()\n  {\n  System.Threading.Thread.Sleep(System.TimeSpan.FromTicks(30));  }  }""}],""Usings"":[],""WorkspaceType"":""console""}";
 
@@ -290,6 +354,10 @@ public class Program {
         [Fact]
         public async Task When_Run_times_out_in_user_code_in_a_console_workspace_type_then_the_response_code_is_417()
         {
+            // TODO-JOSEQU: (When_Run_times_out_in_user_code_then_the_response_code_is_417) make this test faster
+
+            Clock.Reset();
+
             var requestJson =
                 @"{ ""Buffers"":[{""Id"":"""",""Content"":""public class Program { public static void Main()\n  {\n  System.Threading.Thread.Sleep(System.TimeSpan.FromSeconds(30));  }  }""}],""WorkspaceType"":""console""}";
 
@@ -301,6 +369,10 @@ public class Program {
         [Fact]
         public async Task When_Run_times_out_in_user_code_in_a_script_workspace_type_then_the_response_code_is_417()
         {
+            // TODO: (When_Run_times_out_in_user_code_in_a_script_workspace_type_then_the_response_code_is_417) make this test faster
+
+            Clock.Reset();
+
             var requestJson =
                 @"{ ""Buffers"":[{""Id"":"""",""Content"":""public class Program { public static void Main()\n  {\n  System.Threading.Thread.Sleep(System.TimeSpan.FromSeconds(30));  }  }""}],""WorkspaceType"":""script""}";
 

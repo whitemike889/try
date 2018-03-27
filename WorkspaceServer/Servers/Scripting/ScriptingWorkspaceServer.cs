@@ -24,27 +24,28 @@ namespace WorkspaceServer.Servers.Scripting
 {
     public class ScriptingWorkspaceServer : IWorkspaceServer
     {
-        public async Task<RunResult> Run(WorkspaceRequest request, Budget budget = null)
+        private readonly BufferInliningTransformer _transformer = new BufferInliningTransformer();
+
+        public async Task<RunResult> Run(Workspace workspace, Budget budget = null)
         {
             budget = budget ?? new Budget();
 
             using (var operation = Log.OnEnterAndConfirmOnExit())
             using (var console = await ConsoleOutput.Capture(budget))
             {
-                var processor = new BufferInliningTransformer();
-                var processedRequest = await processor.TransformAsync(request.Workspace, budget);
+                workspace = await _transformer.TransformAsync(workspace, budget);
 
-                if (processedRequest.Files.Count != 1)
+                if (workspace.Files.Count != 1)
                 {
-                    throw new ArgumentException($"{nameof(request)} should have exactly one source file.");
+                    throw new ArgumentException($"{nameof(workspace)} should have exactly one source file.");
                 }
 
-                var options = CreateOptions(request.Workspace);
-
+                var options = CreateOptions(workspace);
+               
                 ScriptState<object> state = null;
                 Exception userException = null;
 
-                var buffer = new StringBuilder(processedRequest.GetSourceFiles().Single().Text.ToString());
+                var buffer = new StringBuilder(workspace.GetSourceFiles().Single().Text.ToString());
 
                 try
                 {
@@ -73,7 +74,7 @@ namespace WorkspaceServer.Servers.Scripting
 
                 budget.RecordEntryAndThrowIfBudgetExceeded();
 
-                var processeddiagnostics = await GetDiagnostics(processedRequest, options);
+                var processeddiagnostics = await GetDiagnostics(workspace, options);
                 var diagnostics = processeddiagnostics.Select(e => e.Diagnostic).ToArray();
                 var output = console.StandardOutput
                                     .Replace("\r\n", "\n")
@@ -86,7 +87,6 @@ namespace WorkspaceServer.Servers.Scripting
                 var result = new RunResult(
                     succeeded: !userException.IsConsideredRunFailure(),
                     output: output,
-                    returnValue: state?.ReturnValue,
                     exception: (userException ?? state?.Exception).ToDisplayString(),
                     diagnostics: diagnostics);
 

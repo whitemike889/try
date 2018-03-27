@@ -6,7 +6,7 @@ namespace MLS.Agent.Tools
     {
         public static void ThrowOnFailure(this CommandLineResult result)
         {
-            if (result.ExitCode != 0 || result.Exception != null)
+            if (result.ExitCode != 0)
             {
                 throw new CommandLineInvocationException(result);
             }

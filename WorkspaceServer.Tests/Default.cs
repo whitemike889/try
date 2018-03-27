@@ -1,28 +1,50 @@
-using System;
+using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using MLS.Agent.Tools;
-using Pocket;
 
 namespace WorkspaceServer.Tests
 {
-    internal static class Default
+    public static class Default
     {
-        private static readonly AsyncLazy<Workspace> _templateWorkspace = new AsyncLazy<Workspace>(async () =>
+        private static readonly AsyncLazy<Workspace> _consoleWorkspace = new AsyncLazy<Workspace>(async () =>
         {
-            var workspace = new Workspace("TestTemplate");
+            var workspace = new Workspace(
+                "TestTemplate.Console",
+                new DotnetWorkspaceInitializer("console", "test"));
 
-            workspace.Directory.Refresh();
-
-            if (!workspace.Directory.Exists)
-            {
-                Logger.Log.Info("Creating directory {directory}", workspace.Directory);
-                workspace.Directory.Create();
-            }
+            await workspace.EnsureCreated();
+            await workspace.EnsureBuilt();
 
             return workspace;
         });
 
-        public static Task<Workspace> TemplateWorkspace => _templateWorkspace.ValueAsync();
+        private static readonly AsyncLazy<Workspace> _webApiWorkspace = new AsyncLazy<Workspace>(async () =>
+        {
+            var workspace = new Workspace(
+                "TestTemplate.WebApi",
+                new DotnetWorkspaceInitializer(
+                    "webapi",
+                    "test",
+                    afterCreate: async (directory, budget) =>
+                    {
+                        // the 2.1 template includes a forced HTTPS redirect that doesn't work without a cert installed, so we delete that line of code
+                        var startupCs = directory.GetFiles("Startup.cs").Single();
+
+                        string text = startupCs.Read();
+                        text = text.Replace("app.UseHttpsRedirection();", "");
+                        File.WriteAllText(startupCs.FullName, text);
+                    }));
+
+            await workspace.EnsureCreated();
+            await workspace.EnsureBuilt();
+            await workspace.EnsurePublished();
+
+            return workspace;
+        });
+
+        public static Task<Workspace> ConsoleWorkspace => _consoleWorkspace.ValueAsync();
+
+        public static Task<Workspace> WebApiWorkspace => _webApiWorkspace.ValueAsync();
     }
 }
-

@@ -51,59 +51,64 @@ namespace MLS.Agent.Tools
                     operation.Error("{data}", args: data);
                 }))
             {
-                var exitCode =
-                    await Task.Run(() =>
-                              {
-                                  using (operation.OnEnterAndExit("Execute:happy"))
-                                  {
-                                      process.WaitForExit();
+                var exitCode = await process.Complete(budget);
 
-                                      operation.Succeed(
-                                          "{command} {args} exited with {code}",
-                                          command,
-                                          args,
-                                          process.ExitCode);
-
-                                      return process.ExitCode;
-                                  }
-                              })
-                              .CancelIfExceeds(
-                                  budget,
-                                  ifCancelled: () =>
-                                  {
-                                      using (operation.OnEnterAndExit($"Execute:sad"))
-                                      {
-                                          var ex = new BudgetExceededException(budget);
-
-                                          Task.Run(() =>
-                                          {
-                                              if (!process.HasExited)
-                                              {
-                                                  process.Kill();
-                                              }
-                                          }).DontAwait();
-
-                                          operation.Fail(ex);
-
-                                          return 124; // like the Linux timeout command 
-                                      }
-                                  });
-
-                return new CommandLineResult(
+                var result = new CommandLineResult(
                     exitCode: exitCode,
                     output: stdOut.Replace("\r\n", "\n").ToString().Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries),
                     error: stdErr.Replace("\r\n", "\n").ToString().Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries));
+
+                if (exitCode == 0)
+                {
+                    operation.Succeed(
+                        "{command} {args} exited with {code}",
+                        process.StartInfo.FileName,
+                        process.StartInfo.Arguments,
+                        process.ExitCode);
+                }
+                else
+                {
+                    var ex = new BudgetExceededException(budget);
+                    operation.Fail(ex);
+                }
+
+                return result;
             }
         }
+
+        public static async Task<int> Complete(
+            this Process process,
+            Budget budget = null) =>
+            await Task.Run(() =>
+                      {
+                          process.WaitForExit();
+
+                          return process.ExitCode;
+                      })
+                      .CancelIfExceeds(
+                          budget ?? new Budget(),
+                          ifCancelled: () =>
+                          {
+                              Task.Run(() =>
+                              {
+                                  if (!process.HasExited)
+                                  {
+                                      process.Kill();
+                                  }
+                              }).DontAwait();
+
+                              return 124; // like the Linux timeout command 
+                          });
 
         public static Process StartProcess(
             string command,
             string args,
             DirectoryInfo workingDir,
             Action<string> output = null,
-            Action<string> error = null)
+            Action<string> error = null,
+            params (string key, string value)[] environmentVariables)
         {
-            using (Log.OnEnterAndExit())
+            using (var operation = Log.OnEnterAndExit())
             {
                 args = args ?? "";
 
@@ -119,6 +124,15 @@ namespace MLS.Agent.Tools
                         WorkingDirectory = workingDir?.FullName
                     }
                 };
+
+                if (environmentVariables?.Length > 0)
+                {
+                    foreach (var tuple in environmentVariables)
+                    {
+                        operation.Trace("Adding environment variable {tuple}", tuple);
+                        process.StartInfo.Environment.Add(tuple.key, tuple.value);
+                    }
+                }
 
                 if (output != null)
                 {
