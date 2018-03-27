@@ -45,7 +45,7 @@ namespace WorkspaceServer.Servers.Scripting
                 ScriptState<object> state = null;
                 Exception userException = null;
 
-                var buffer = new StringBuilder(processedRequest.GetSourceFiles().Single().Text.ToString());
+                var buffer = new StringBuilder(workspace.GetSourceFiles().Single().Text.ToString());
 
                 try
                 {
@@ -74,7 +74,7 @@ namespace WorkspaceServer.Servers.Scripting
 
                 budget.RecordEntryAndThrowIfBudgetExceeded();
 
-                var processeddiagnostics = await GetDiagnostics(processedRequest, options);
+                var processeddiagnostics = await GetDiagnostics(workspace, options);
                 var diagnostics = processeddiagnostics.Select(e => e.Diagnostic).ToArray();
                 var output = console.StandardOutput
                                     .Replace("\r\n", "\n")
