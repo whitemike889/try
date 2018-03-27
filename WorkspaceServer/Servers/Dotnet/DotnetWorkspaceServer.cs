@@ -4,10 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Text;
 using MLS.Agent.Tools;
 using Pocket;
-using WorkspaceServer.Models;
 using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Models.SingatureHelp;
@@ -18,8 +16,6 @@ using static WorkspaceServer.Servers.WorkspaceServer;
 using static WorkspaceServer.Transformations.OmniSharpDiagnosticTransformer;
 using Workspace = MLS.Agent.Tools.Workspace;
 using OmnisharpEmitResponse = OmniSharp.Client.Commands.OmniSharpResponseMessage<OmniSharp.Client.Commands.EmitResponse>;
-using OmniSharp = MLS.Agent.Tools.OmniSharp;
-using TextSpan = Microsoft.CodeAnalysis.Text.TextSpan;
 
 namespace WorkspaceServer.Servers.Dotnet
 {
@@ -32,6 +28,7 @@ namespace WorkspaceServer.Servers.Dotnet
         private readonly Budget _initializationBudget = new Budget();
         private readonly TimeSpan _defaultTimeoutInSeconds;
         private readonly BufferInliningTransformer _transformer = new BufferInliningTransformer();
+        private readonly HashSet<FileInfo> _bufferNameCache = new HashSet<FileInfo>();
 
         public static string UserCodeCompletedBudgetEntryName = "UserCodeCompleted";
         
@@ -81,8 +78,7 @@ namespace WorkspaceServer.Servers.Dotnet
 
                 string exceptionMessage = null;
 
-                await FlushBuffers(budget);
-
+                await CleanBuffer(budget);
                 var emitResponse = await Emit(workspace, budget);
 
                 var diagnostics = ReconstructDiagnosticLocations(
@@ -146,20 +142,28 @@ namespace WorkspaceServer.Servers.Dotnet
             }
         }
 
-        private async Task FlushBuffers(Budget budget)
+        private async Task CleanBuffer(Budget budget)
         {
-            var wi = await _omniSharpServer.GetWorkspaceInformation(budget);
-            var omnisharpFile = wi.Body.MSBuildSolution.Projects.SelectMany(p => p.SourceFiles);
-
-            foreach (var serverBuffer in omnisharpFile)
+            if (_bufferNameCache.Count == 0)
             {
-                if (Path.GetExtension(serverBuffer.Name).EndsWith("cs", StringComparison.OrdinalIgnoreCase))
+                var wi = await _omniSharpServer.GetWorkspaceInformation(budget);
+                var omnisharpFile = wi.Body.MSBuildSolution.Projects.SelectMany(p => p.SourceFiles);
+
+                foreach (var serverBuffer in omnisharpFile)
                 {
-                    var file = new FileInfo(Path.Combine(_workspace.Directory.FullName, serverBuffer.Name));
-                    await _omniSharpServer.UpdateBuffer(file, "//empty", budget);
+                    if (Path.GetExtension(serverBuffer.Name).EndsWith("cs", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var file = new FileInfo(Path.Combine(_workspace.Directory.FullName, serverBuffer.Name));
+                        _bufferNameCache.Add(file);
+                        await _omniSharpServer.UpdateBuffer(file, "//empty", budget);
+                    }
                 }
             }
 
+            foreach (var buffer in _bufferNameCache)
+            {
+                await _omniSharpServer.UpdateBuffer(buffer, "//empty", budget);
+            }
             budget.RecordEntry();
         }
 
@@ -189,13 +193,16 @@ namespace WorkspaceServer.Servers.Dotnet
             foreach (var sourceFile in workspace.Files)
             {
                 var file = new FileInfo(Path.Combine(_workspace.Directory.FullName, sourceFile.Name));
-
-                var text = sourceFile.Text;
+                if (sourceFile.Name.EndsWith(".cs"))
+                {
+                    _bufferNameCache.Add(file);
+                }
+                var text = sourceFile.Text.ToString();
 
                 await _omniSharpServer.UpdateBuffer(file, text);
             }
         }
-
+        
         public async Task<CompletionResult> GetCompletionList(CompletionRequest request, Budget budget = null)
         {
             budget = budget ?? new TimeBudget(_defaultTimeoutInSeconds);
@@ -205,7 +212,7 @@ namespace WorkspaceServer.Servers.Dotnet
                 await EnsureInitializedAndNotDisposed(budget);
                 var processor = new BufferInliningTransformer();
                 var workspaceProcessing = processor.TransformAsync(request.Workspace, budget);
-                await FlushBuffers(budget);
+                await CleanBuffer(budget);
                 var workspace = await workspaceProcessing;
                 await UpdateOmnisharpWorkspace(workspace);
 
@@ -222,7 +229,7 @@ namespace WorkspaceServer.Servers.Dotnet
                 await EnsureInitializedAndNotDisposed(budget);
                 var processor = new BufferInliningTransformer();
                 var workspace = await processor.TransformAsync(request.Workspace, budget);
-                await FlushBuffers(budget);
+                await CleanBuffer(budget);
                 await UpdateOmnisharpWorkspace(workspace);
                 var file = workspace.GetFileInfoFromBufferId(request.ActiveBufferId, _workspace.Directory.FullName);
                 var code = workspace.GetFileFromBufferId(request.ActiveBufferId).Text;
