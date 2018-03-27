@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Reflection;
 using System.Linq;
 using System.Text;
@@ -31,7 +30,7 @@ namespace WorkspaceServer.Servers.Scripting
             budget = budget ?? new Budget();
 
             using (var operation = Log.OnEnterAndConfirmOnExit())
-            using (var console = await ConsoleOutput.Capture())
+            using (var console = await ConsoleOutput.Capture(budget))
             {
                 var processor = new BufferInliningTransformer();
                 var processedRequest = await processor.TransformAsync(request.Workspace, budget);
@@ -75,18 +74,22 @@ namespace WorkspaceServer.Servers.Scripting
 
                 budget.RecordEntryAndThrowIfBudgetExceeded();
 
-                (SerializableDiagnostic Diagnostic, string ErrorMessage)[] processeddiagnostics = GetDiagnostics(processedRequest, options).ToArray();
+                var processeddiagnostics = GetDiagnostics(processedRequest, options).ToArray();
                 var diagnostics = processeddiagnostics.Select(e => e.Diagnostic).ToArray();
                 var output = console.StandardOutput
                                     .Replace("\r\n", "\n")
                                     .Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
-                output = ProcessOutputLines(output, processeddiagnostics.Where(e => e.Diagnostic.Severity == DiagnosticSeverity.Error).Select(e => e.ErrorMessage).ToArray());
+                output = ProcessOutputLines(output,
+                                            processeddiagnostics
+                                                .Where(e => e.Diagnostic.Severity == DiagnosticSeverity.Error)
+                                                .Select(e => e.ErrorMessage)
+                                                .ToArray());
                 var result = new RunResult(
                     succeeded: !userException.IsConsideredRunFailure(),
                     output: output,
                     returnValue: state?.ReturnValue,
                     exception: (userException ?? state?.Exception).ToDisplayString(),
-                    diagnostics:diagnostics);
+                    diagnostics: diagnostics);
 
                 operation.Complete(result, budget);
 
@@ -100,7 +103,6 @@ namespace WorkspaceServer.Servers.Scripting
 
             return filter.Concat(errormessages).ToArray();
         }
-        
 
         private bool IsNotDisagnostic(string line)
         {
@@ -113,21 +115,25 @@ namespace WorkspaceServer.Servers.Scripting
                          .AddReferences(GetReferenceAssemblies())
                          .AddImports(GetDefultUsings().Concat(request.Usings));
 
-        private IEnumerable<(SerializableDiagnostic Diagnostic, string ErrorMessage)> GetDiagnostics(Workspace workspace, ScriptOptions options)
+        private IEnumerable<(SerializableDiagnostic Diagnostic, string ErrorMessage)> GetDiagnostics(
+            Workspace workspace, 
+            ScriptOptions options)
         {
             var processor = new BufferInliningTransformer();
             var processed = processor.TransformAsync(workspace).Result;
             var viewPorts = processor.ExtractViewPorts(processed);
             var sourceFile = processed.GetSourceFiles().Single();
-            var sourceDiagnostics = CSharpScript.Create(sourceFile.Text.ToString(), options)
-                .GetCompilation()
-                .GetDiagnostics()
-                .Where(d => d.Id != "CS7022");
+            var code = sourceFile.Text.ToString();
+            var sourceDiagnostics = CSharpScript.Create(code, options)
+                                                .GetCompilation()
+                                                .GetDiagnostics()
+                                                .Where(d => d.Id != "CS7022");
 
-            IEnumerable<(SerializableDiagnostic Diagnostic, string ErrorMessage)> processedDiagnostics =  DiagnosticTransformer.ReconstructDiagnosticLocations(sourceDiagnostics, viewPorts, BufferInliningTransformer
-                                                                                                                                                                   .PaddingSize)
-                                                                                                                               .ToArray();
-            return processedDiagnostics;
+            return DiagnosticTransformer.ReconstructDiagnosticLocations(
+                                            sourceDiagnostics,
+                                            viewPorts,
+                                            BufferInliningTransformer.PaddingSize)
+                                        .ToArray();
         }
 
         private static async Task<ScriptState<object>> Run(
