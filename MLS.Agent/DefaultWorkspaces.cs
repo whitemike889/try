@@ -14,13 +14,6 @@ namespace MLS.Agent
                                       workspace.CreateUsingDotnet("console");
                                       workspace.AddPackageReference("Newtonsoft.Json");
                                   });
-
-            registry.AddWorkspace("aspnet.webapi",
-                                  workspace =>
-                                  {
-                                      workspace.CreateUsingDotnet("webapi");
-                                      workspace.RequiresPublish = true;
-                                  });
             
             return registry;
         }
