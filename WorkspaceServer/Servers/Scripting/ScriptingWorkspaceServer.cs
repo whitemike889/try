@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Reflection;
 using System.Linq;
 using System.Text;
@@ -74,7 +73,7 @@ namespace WorkspaceServer.Servers.Scripting
 
                 budget.RecordEntryAndThrowIfBudgetExceeded();
 
-                var processeddiagnostics = GetDiagnostics(processedRequest, options).ToArray();
+                var processeddiagnostics = await GetDiagnostics(processedRequest, options);
                 var diagnostics = processeddiagnostics.Select(e => e.Diagnostic).ToArray();
                 var output = console.StandardOutput
                                     .Replace("\r\n", "\n")
@@ -115,12 +114,12 @@ namespace WorkspaceServer.Servers.Scripting
                          .AddReferences(GetReferenceAssemblies())
                          .AddImports(GetDefultUsings().Concat(request.Usings));
 
-        private IEnumerable<(SerializableDiagnostic Diagnostic, string ErrorMessage)> GetDiagnostics(
+        private async Task<(SerializableDiagnostic Diagnostic, string ErrorMessage)[]> GetDiagnostics(
             Workspace workspace, 
             ScriptOptions options)
         {
             var processor = new BufferInliningTransformer();
-            var processed = processor.TransformAsync(workspace).Result;
+            var processed = await processor.TransformAsync(workspace);
             var viewPorts = processor.ExtractViewPorts(processed);
             var sourceFile = processed.GetSourceFiles().Single();
             var code = sourceFile.Text.ToString();
@@ -136,14 +135,15 @@ namespace WorkspaceServer.Servers.Scripting
                                         .ToArray();
         }
 
-        private static async Task<ScriptState<object>> Run(
+        private static Task<ScriptState<object>> Run(
             StringBuilder buffer,
             ScriptOptions options,
             Budget budget) =>
-            await CSharpScript.RunAsync(
-                                  buffer.ToString(),
-                                  options)
-                              .CancelIfExceeds(budget);
+            Task.Run(() =>
+                         CSharpScript.RunAsync(
+                             buffer.ToString(),
+                             options))
+                .CancelIfExceeds(budget, () => null);
 
         private static Assembly[] GetReferenceAssemblies() =>
             new[]
@@ -254,7 +254,7 @@ typeof({entryPointMethod.ContainingType.Name})
                                               : "null";
         }
 
-        public Task<DiagnosticResult> GetDiagnostics(Workspace request) => 
-            Task.FromResult(new DiagnosticResult(GetDiagnostics(request, CreateOptions(request)).Select(e => e.Diagnostic).ToArray()));
+        public async Task<DiagnosticResult> GetDiagnostics(Workspace request) => 
+            new DiagnosticResult((await GetDiagnostics(request, CreateOptions(request))).Select(e => e.Diagnostic).ToArray());
     }
 }
