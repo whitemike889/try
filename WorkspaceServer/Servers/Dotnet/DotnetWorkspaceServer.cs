@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Text;
 using MLS.Agent.Tools;
 using Pocket;
 using WorkspaceServer.Models;
@@ -207,9 +208,9 @@ namespace WorkspaceServer.Servers.Dotnet
                 await FlushBuffers(budget);
                 var workspace = await workspaceProcessing;
                 await UpdateOmnisharpWorkspace(workspace);
-                var fileName = workspace.GetFileFromActiveBuffer(request.ActiveBufferId)?.Name;
-                var position = workspace.GetAbsolutePosiiton(request.ActiveBufferId, request.Position);
-               
+                var fileName = workspace.GetFileFromBufferId(request.ActiveBufferId)?.Name;
+                var location = workspace.GetLocation(request.ActiveBufferId, request.Position);
+
                 throw new NotImplementedException();
             }
         }
@@ -226,11 +227,8 @@ namespace WorkspaceServer.Servers.Dotnet
                 await FlushBuffers(budget);
                 var workspace = await workspaceProcessing;
                 await UpdateOmnisharpWorkspace(workspace);
-                var fileName = workspace.GetFileFromActiveBuffer(request.ActiveBufferId)?.Name;
-                var position = workspace.GetAbsolutePosiiton(request.ActiveBufferId, request.Position);
-                var wsInfo = await _omniSharpServer.GetWorkspaceInformation(budget);
-
-                var sourceFile = wsInfo?.Body.MSBuildSolution.Projects.SelectMany(prj => prj.SourceFiles).FirstOrDefault(src => src.FullName.EndsWith(fileName));
+                var fileName = workspace.GetFileFromBufferId(request.ActiveBufferId)?.Name;
+                var location = workspace.GetLocation(request.ActiveBufferId, request.Position);
 
                 budget.RecordEntry();
                 return new SignatureHelpResponse();
