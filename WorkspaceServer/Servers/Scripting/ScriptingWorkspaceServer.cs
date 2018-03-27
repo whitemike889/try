@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reflection;
 using System.Linq;
 using System.Text;
@@ -18,6 +19,7 @@ using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Transformations;
 using static Pocket.Logger<WorkspaceServer.Servers.Scripting.ScriptingWorkspaceServer>;
+using static WorkspaceServer.Servers.WorkspaceServer;
 using Workspace = WorkspaceServer.Models.Execution.Workspace;
 
 namespace WorkspaceServer.Servers.Scripting
@@ -27,7 +29,7 @@ namespace WorkspaceServer.Servers.Scripting
         public async Task<RunResult> Run(WorkspaceRequest request, Budget budget = null)
         {
             budget = budget ?? new Budget();
-          
+
             using (var operation = Log.OnEnterAndConfirmOnExit())
             using (var console = await ConsoleOutput.Capture())
             {
@@ -40,63 +42,44 @@ namespace WorkspaceServer.Servers.Scripting
                 }
 
                 var options = CreateOptions(request.Workspace);
-               
+
                 ScriptState<object> state = null;
                 Exception userException = null;
 
-                await Task.Run(async () =>
+                var buffer = new StringBuilder(processedRequest.GetSourceFiles().Single().Text.ToString());
+
+                try
                 {
-                    var sourceLines = processedRequest.GetSourceFiles().Single().Text.Lines;
+                    state = await Run(buffer, options, budget);
 
-                    var buffer = new StringBuilder();
-
-                    for (var index = 0; index < sourceLines.Count; index++)
+                    if (console.IsEmpty())
                     {
-                        var sourceLine = sourceLines[index];
-                        buffer.AppendLine(sourceLine.ToString());
-
-                        // Convert from 0-based to 1-based.
-                        var lineNumber = sourceLine.LineNumber + 1;
-
-                        try
-                        {
-                            console.Clear();
-
-                            state = await Run(state, buffer, options);
-
-                            if (index == sourceLines.Count - 1 &&
-                                console.IsEmpty())
-                            {
-                                state = await EmulateConsoleMainInvocation(state, buffer, options);
-                            }
-                        }
-                        catch (CompilationErrorException ex)
-                        {
-                            if (lineNumber == sourceLines.Count)
-                            {
-                                userException = ex;
-
-                                Console.WriteLine(
-                                    string.Join(Environment.NewLine,
-                                                ex.Diagnostics
-                                                  .Select(d => d.ToString())));
-
-                                break;
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            userException = ex;
-                            break;
-                        }
+                        state = await EmulateConsoleMainInvocation(state, buffer, options, budget);
                     }
-                }).CancelIfExceeds(budget);
+
+                    budget.RecordEntry(UserCodeCompletedBudgetEntryName);
+                }
+                catch (CompilationErrorException ex)
+                {
+                    userException = ex;
+
+                    Console.WriteLine(
+                        string.Join(Environment.NewLine,
+                                    ex.Diagnostics
+                                      .Select(d => d.ToString())));
+                }
+                catch (Exception ex)
+                {
+                    userException = ex;
+                }
+
+                budget.RecordEntryAndThrowIfBudgetExceeded();
 
                 (SerializableDiagnostic Diagnostic, string ErrorMessage)[] processeddiagnostics = GetDiagnostics(processedRequest, options).ToArray();
                 var diagnostics = processeddiagnostics.Select(e => e.Diagnostic).ToArray();
                 var output = console.StandardOutput
-                    .Replace("\r\n", "\n")
-                    .Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+                                    .Replace("\r\n", "\n")
+                                    .Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
                 output = ProcessOutputLines(output, processeddiagnostics.Where(e => e.Diagnostic.Severity == DiagnosticSeverity.Error).Select(e => e.ErrorMessage).ToArray());
                 var result = new RunResult(
                     succeeded: !userException.IsConsideredRunFailure(),
@@ -141,21 +124,20 @@ namespace WorkspaceServer.Servers.Scripting
                 .GetDiagnostics()
                 .Where(d => d.Id != "CS7022");
 
-            IEnumerable<(SerializableDiagnostic Diagnostic, string ErrorMessage)> processedDiagnostics =  DiagnosticTransformer.ReconstructDiagnosticLocations(sourceDiagnostics, viewPorts, BufferInliningTransformer.PaddingSize).ToArray();
+            IEnumerable<(SerializableDiagnostic Diagnostic, string ErrorMessage)> processedDiagnostics =  DiagnosticTransformer.ReconstructDiagnosticLocations(sourceDiagnostics, viewPorts, BufferInliningTransformer
+                                                                                                                                                                   .PaddingSize)
+                                                                                                                               .ToArray();
             return processedDiagnostics;
         }
 
         private static async Task<ScriptState<object>> Run(
-            ScriptState<object> state,
             StringBuilder buffer,
-            ScriptOptions options) =>
-            state == null
-                ? await CSharpScript.RunAsync(
-                      buffer.ToString(),
-                      options)
-                : await state.ContinueWithAsync(
-                      buffer.ToString(),
-                      catchException: ex => false);
+            ScriptOptions options,
+            Budget budget) =>
+            await CSharpScript.RunAsync(
+                                  buffer.ToString(),
+                                  options)
+                              .CancelIfExceeds(budget);
 
         private static Assembly[] GetReferenceAssemblies() =>
             new[]
@@ -229,7 +211,8 @@ namespace WorkspaceServer.Servers.Scripting
         private static async Task<ScriptState<object>> EmulateConsoleMainInvocation(
             ScriptState<object> state,
             StringBuilder buffer,
-            ScriptOptions options)
+            ScriptOptions options, 
+            Budget budget)
         {
             var script = state.Script;
             var compiled = script.Compile();
@@ -251,7 +234,7 @@ typeof({entryPointMethod.ContainingType.Name})
                System.Reflection.BindingFlags.Public)
     .Invoke(null, {ParametersForMain()});");
 
-                state = await Run(state, buffer, options);
+                state = await Run(buffer, options, budget);
             }
 
             return state;
