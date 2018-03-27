@@ -5,5 +5,7 @@ namespace OmniSharp.Client.Commands
         public static string CodeCheck => "/codecheck";
         public static string Emit => "/emit";
         public static string UpdateBuffer => "/updatebuffer";
+
+        public static string signatureHelp => "/signatureHelp";
     }
 }

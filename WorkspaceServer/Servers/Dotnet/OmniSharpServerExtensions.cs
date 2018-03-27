@@ -6,9 +6,12 @@ using System.Reactive.Threading.Tasks;
 using System.Threading.Tasks;
 using Clockwise;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using OmniSharp.Client;
 using OmniSharp.Client.Commands;
 using Recipes;
+using WorkspaceServer.Models.SingatureHelp;
+using SignatureHelpRequest = OmniSharp.Client.Commands.SignatureHelpRequest;
 
 namespace WorkspaceServer.Servers.Dotnet
 {
@@ -84,24 +87,27 @@ namespace WorkspaceServer.Servers.Dotnet
             var received = await omniSharp.SendCommand(
                                commandMessage,
                                budget);
-
+            
+            OmniSharpResponseMessage<TResponse> response;
             switch (received)
             {
                 case OmniSharpResponseMessage<TResponse> expected:
-                    return expected;
-
+                    response = expected;
+                    break;
                 case OmniSharpUnknownResponseMessage unknown:
-                    return new OmniSharpResponseMessage<TResponse>(
+                    response = new OmniSharpResponseMessage<TResponse>(
                         unknown.Body.ToObject<TResponse>(),
                         unknown.Success,
                         unknown.Message,
                         unknown.Command,
                         unknown.Seq,
                         unknown.Request_seq);
-
+                    break;
                 default:
                     throw new OmniSharpMessageSerializationException($"Unrecognized: {received.Message}");
             }
+
+            return response;
         }
 
         public static Task<OmniSharpResponseMessage<CodeCheckResponse>> CodeCheck(
@@ -126,6 +132,21 @@ namespace WorkspaceServer.Servers.Dotnet
             FileInfo file,
             string newText,
             Budget budget = null) =>
-            server.SendCommand<UpdateBuffer, bool?>(new UpdateBuffer(file, newText), budget);
+            server.SendCommand<UpdateBuffer, bool>(new UpdateBuffer(file, newText), budget);
+
+        public static async Task<SignatureHelpResponse> GetSignatureHelp(this OmniSharpServer server, FileInfo fileName, string code, int line, int column, Budget budget = null)
+        {
+            // as omnisharp deserialisation does a -1 in the contract we add 1
+            // look at https://github.com/OmniSharp/omnisharp-roslyn/blob/e18913e887144119c41d60f1842e49f8e9bfcf72/src/OmniSharp.Abstractions/Models/Request.cs
+            var command = new SignatureHelpRequest(fileName,code, line + 1, column + 1);
+ 
+            var received = await server.SendCommand<SignatureHelpRequest, SignatureHelpResponse>(
+                command,
+                budget);
+
+            return received.Body;
+
+        }
+
     }
 }

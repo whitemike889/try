@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
+using System.IO;
 using System.Linq;
 using Microsoft.CodeAnalysis.Text;
 
@@ -21,13 +21,21 @@ namespace WorkspaceServer.Models.Execution
             return ret;
         }
 
-        public static int GetAbsolutePosition(this Workspace workspace, string bufferId, int bufferPosition)
+        public static FileInfo GetFileInfoFromBufferId(this Workspace workspace, string bufferId, string root = null)
         {
-            var aboslutePosition = workspace.Buffers.FirstOrDefault(b => b.Id == bufferId)?.Position ?? 0 + bufferPosition;
-            return aboslutePosition;
+            var file = workspace.GetFileFromBufferId(bufferId);
+            var fileFullPath = string.IsNullOrWhiteSpace(root) ? file.Name : Path.Combine(root, file.Name);
+            var ret = new FileInfo(fileFullPath);
+            return ret;
         }
 
-        public static (int line, int column) GetLocation(this Workspace workspace, string bufferId, int bufferPosition)
+        public static int GetAbsolutePosition(this Workspace workspace, string bufferId, int bufferPosition)
+        {
+            var aboslutePosition = (workspace.Buffers.FirstOrDefault(b => b.Id == bufferId)?.Position ?? 0) + bufferPosition;
+            return aboslutePosition;
+        }
+        
+        public static (int line, int column) GetTextLocation(this Workspace workspace, string bufferId, int bufferPosition)
         {
             var file = workspace.GetFileFromBufferId(bufferId);
             var absolutePosition = GetAbsolutePosition(workspace, bufferId, bufferPosition);
