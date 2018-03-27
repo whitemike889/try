@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Reflection;
 using System.Linq;
 using System.Text;
@@ -18,6 +17,7 @@ using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Transformations;
 using static Pocket.Logger<WorkspaceServer.Servers.Scripting.ScriptingWorkspaceServer>;
+using static WorkspaceServer.Servers.WorkspaceServer;
 using Workspace = WorkspaceServer.Models.Execution.Workspace;
 
 namespace WorkspaceServer.Servers.Scripting
@@ -27,9 +27,9 @@ namespace WorkspaceServer.Servers.Scripting
         public async Task<RunResult> Run(WorkspaceRequest request, Budget budget = null)
         {
             budget = budget ?? new Budget();
-          
+
             using (var operation = Log.OnEnterAndConfirmOnExit())
-            using (var console = await ConsoleOutput.Capture())
+            using (var console = await ConsoleOutput.Capture(budget))
             {
                 var processor = new BufferInliningTransformer();
                 var processedRequest = await processor.TransformAsync(request.Workspace, budget);
@@ -40,70 +40,55 @@ namespace WorkspaceServer.Servers.Scripting
                 }
 
                 var options = CreateOptions(request.Workspace);
-               
+
                 ScriptState<object> state = null;
                 Exception userException = null;
 
-                await Task.Run(async () =>
+                var buffer = new StringBuilder(processedRequest.GetSourceFiles().Single().Text.ToString());
+
+                try
                 {
-                    var sourceLines = processedRequest.GetSourceFiles().Single().Text.Lines;
+                    state = await Run(buffer, options, budget);
 
-                    var buffer = new StringBuilder();
-
-                    for (var index = 0; index < sourceLines.Count; index++)
+                    if (console.IsEmpty())
                     {
-                        var sourceLine = sourceLines[index];
-                        buffer.AppendLine(sourceLine.ToString());
-
-                        // Convert from 0-based to 1-based.
-                        var lineNumber = sourceLine.LineNumber + 1;
-
-                        try
-                        {
-                            console.Clear();
-
-                            state = await Run(state, buffer, options);
-
-                            if (index == sourceLines.Count - 1 &&
-                                console.IsEmpty())
-                            {
-                                state = await EmulateConsoleMainInvocation(state, buffer, options);
-                            }
-                        }
-                        catch (CompilationErrorException ex)
-                        {
-                            if (lineNumber == sourceLines.Count)
-                            {
-                                userException = ex;
-
-                                Console.WriteLine(
-                                    string.Join(Environment.NewLine,
-                                                ex.Diagnostics
-                                                  .Select(d => d.ToString())));
-
-                                break;
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            userException = ex;
-                            break;
-                        }
+                        state = await EmulateConsoleMainInvocation(state, buffer, options, budget);
                     }
-                }).CancelIfExceeds(budget);
 
-                (SerializableDiagnostic Diagnostic, string ErrorMessage)[] processeddiagnostics = GetDiagnostics(processedRequest, options).ToArray();
+                    budget.RecordEntry(UserCodeCompletedBudgetEntryName);
+                }
+                catch (CompilationErrorException ex)
+                {
+                    userException = ex;
+
+                    Console.WriteLine(
+                        string.Join(Environment.NewLine,
+                                    ex.Diagnostics
+                                      .Select(d => d.ToString())));
+                }
+                catch (Exception ex)
+                {
+                    userException = ex;
+                }
+
+                budget.RecordEntryAndThrowIfBudgetExceeded();
+
+                var processeddiagnostics = await GetDiagnostics(processedRequest, options);
                 var diagnostics = processeddiagnostics.Select(e => e.Diagnostic).ToArray();
                 var output = console.StandardOutput
-                    .Replace("\r\n", "\n")
-                    .Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
-                output = ProcessOutputLines(output, processeddiagnostics.Where(e => e.Diagnostic.Severity == DiagnosticSeverity.Error).Select(e => e.ErrorMessage).ToArray());
+                                    .Replace("\r\n", "\n")
+                                    .Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+                output = ProcessOutputLines(output,
+                                            processeddiagnostics
+                                                .Where(e => e.Diagnostic.Severity == DiagnosticSeverity.Error)
+                                                .Select(e => e.ErrorMessage)
+                                                .ToArray());
                 var result = new RunResult(
                     succeeded: !userException.IsConsideredRunFailure(),
                     output: output,
                     returnValue: state?.ReturnValue,
                     exception: (userException ?? state?.Exception).ToDisplayString(),
-                    diagnostics:diagnostics);
+                    diagnostics: diagnostics);
 
                 operation.Complete(result, budget);
 
@@ -117,7 +102,6 @@ namespace WorkspaceServer.Servers.Scripting
 
             return filter.Concat(errormessages).ToArray();
         }
-        
 
         private bool IsNotDisagnostic(string line)
         {
@@ -130,32 +114,36 @@ namespace WorkspaceServer.Servers.Scripting
                          .AddReferences(GetReferenceAssemblies())
                          .AddImports(GetDefultUsings().Concat(request.Usings));
 
-        private IEnumerable<(SerializableDiagnostic Diagnostic, string ErrorMessage)> GetDiagnostics(Workspace workspace, ScriptOptions options)
+        private async Task<(SerializableDiagnostic Diagnostic, string ErrorMessage)[]> GetDiagnostics(
+            Workspace workspace, 
+            ScriptOptions options)
         {
             var processor = new BufferInliningTransformer();
-            var processed = processor.TransformAsync(workspace).Result;
+            var processed = await processor.TransformAsync(workspace);
             var viewPorts = processor.ExtractViewPorts(processed);
             var sourceFile = processed.GetSourceFiles().Single();
-            var sourceDiagnostics = CSharpScript.Create(sourceFile.Text.ToString(), options)
-                .GetCompilation()
-                .GetDiagnostics()
-                .Where(d => d.Id != "CS7022");
+            var code = sourceFile.Text.ToString();
+            var sourceDiagnostics = CSharpScript.Create(code, options)
+                                                .GetCompilation()
+                                                .GetDiagnostics()
+                                                .Where(d => d.Id != "CS7022");
 
-            IEnumerable<(SerializableDiagnostic Diagnostic, string ErrorMessage)> processedDiagnostics =  DiagnosticTransformer.ReconstructDiagnosticLocations(sourceDiagnostics, viewPorts, BufferInliningTransformer.PaddingSize).ToArray();
-            return processedDiagnostics;
+            return DiagnosticTransformer.ReconstructDiagnosticLocations(
+                                            sourceDiagnostics,
+                                            viewPorts,
+                                            BufferInliningTransformer.PaddingSize)
+                                        .ToArray();
         }
 
-        private static async Task<ScriptState<object>> Run(
-            ScriptState<object> state,
+        private static Task<ScriptState<object>> Run(
             StringBuilder buffer,
-            ScriptOptions options) =>
-            state == null
-                ? await CSharpScript.RunAsync(
-                      buffer.ToString(),
-                      options)
-                : await state.ContinueWithAsync(
-                      buffer.ToString(),
-                      catchException: ex => false);
+            ScriptOptions options,
+            Budget budget) =>
+            Task.Run(() =>
+                         CSharpScript.RunAsync(
+                             buffer.ToString(),
+                             options))
+                .CancelIfExceeds(budget, () => null);
 
         private static Assembly[] GetReferenceAssemblies() =>
             new[]
@@ -229,7 +217,8 @@ namespace WorkspaceServer.Servers.Scripting
         private static async Task<ScriptState<object>> EmulateConsoleMainInvocation(
             ScriptState<object> state,
             StringBuilder buffer,
-            ScriptOptions options)
+            ScriptOptions options, 
+            Budget budget)
         {
             var script = state.Script;
             var compiled = script.Compile();
@@ -251,7 +240,7 @@ typeof({entryPointMethod.ContainingType.Name})
                System.Reflection.BindingFlags.Public)
     .Invoke(null, {ParametersForMain()});");
 
-                state = await Run(state, buffer, options);
+                state = await Run(buffer, options, budget);
             }
 
             return state;
@@ -265,7 +254,7 @@ typeof({entryPointMethod.ContainingType.Name})
                                               : "null";
         }
 
-        public Task<DiagnosticResult> GetDiagnostics(Workspace request) => 
-            Task.FromResult(new DiagnosticResult(GetDiagnostics(request, CreateOptions(request)).Select(e => e.Diagnostic).ToArray()));
+        public async Task<DiagnosticResult> GetDiagnostics(Workspace request) => 
+            new DiagnosticResult((await GetDiagnostics(request, CreateOptions(request))).Select(e => e.Diagnostic).ToArray());
     }
 }

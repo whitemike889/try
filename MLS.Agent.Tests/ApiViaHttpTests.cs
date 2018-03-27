@@ -13,6 +13,7 @@ using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Tests;
 using Xunit;
 using Xunit.Abstractions;
+using static Pocket.Logger;
 using Workspace = WorkspaceServer.Models.Execution.Workspace;
 
 namespace MLS.Agent.Tests
@@ -287,12 +288,23 @@ public class Program {
         }
 
         [Fact]
-        public async Task When_Run_times_out_in_user_code_then_the_response_code_is_417()
+        public async Task When_Run_times_out_in_user_code_in_a_console_workspace_type_then_the_response_code_is_417()
         {
             var requestJson =
-                @"{ ""Buffers"":[{""Id"":"""",""Content"":""public class Program { public static void Main()\n  {\n  System.Threading.Thread.Sleep(System.TimeSpan.FromSeconds(30));  }  }""}],""Usings"":[],""WorkspaceType"":""console""}";
+                @"{ ""Buffers"":[{""Id"":"""",""Content"":""public class Program { public static void Main()\n  {\n  System.Threading.Thread.Sleep(System.TimeSpan.FromSeconds(30));  }  }""}],""WorkspaceType"":""console""}";
 
-            var response = await CallRun(requestJson, 30000);
+            var response = await CallRun(requestJson, 15000);
+
+            response.StatusCode.Should().Be(HttpStatusCode.ExpectationFailed);
+        }
+
+        [Fact]
+        public async Task When_Run_times_out_in_user_code_in_a_script_workspace_type_then_the_response_code_is_417()
+        {
+            var requestJson =
+                @"{ ""Buffers"":[{""Id"":"""",""Content"":""public class Program { public static void Main()\n  {\n  System.Threading.Thread.Sleep(System.TimeSpan.FromSeconds(30));  }  }""}],""WorkspaceType"":""script""}";
+
+            var response = await CallRun(requestJson, 15000);
 
             response.StatusCode.Should().Be(HttpStatusCode.ExpectationFailed);
         }

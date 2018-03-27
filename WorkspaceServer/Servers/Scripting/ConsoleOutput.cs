@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Clockwise;
 
 namespace WorkspaceServer.Servers.Scripting
 {
@@ -23,10 +24,15 @@ namespace WorkspaceServer.Servers.Scripting
         {
         }
 
-        public static async Task<ConsoleOutput> Capture()
+        public static async Task<ConsoleOutput> Capture(Budget budget = null)
         {
+            budget = budget ?? new TimeBudget(TimeSpan.FromSeconds(15));
+
             var redirector = new ConsoleOutput();
-            await consoleLock.WaitAsync();
+
+            budget.CancellationToken.Register(redirector.Dispose);
+
+            await consoleLock.WaitAsync(budget.CancellationToken);
 
             try
             {

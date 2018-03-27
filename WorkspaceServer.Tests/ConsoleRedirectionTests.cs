@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Clockwise;
 using FluentAssertions;
 using WorkspaceServer.Servers.Scripting;
 using Xunit;
@@ -66,6 +67,34 @@ namespace WorkspaceServer.Tests
             foreach (var thread in threads)
             {
                 await thread;
+            }
+        }
+
+        [Fact]
+        public void When_a_console_output_capture_times_out_then_a_BudgetExceededException_is_thrown()
+        {
+            using (ConsoleOutput.Capture(new Budget()))
+            {
+                Func<Task> secondCapture = async () => await ConsoleOutput.Capture(new TimeBudget(10.Milliseconds()));
+
+                secondCapture.ShouldThrow<TaskCanceledException>();
+            }
+        }
+
+        [Fact]
+        public async Task Console_capture_is_disposed_when_the_budget_expires()
+        {
+            using (var clock = VirtualClock.Start())
+            {
+                var console = await ConsoleOutput.Capture(new TimeBudget(30.Seconds()));
+
+                Console.Write("before");
+
+                await clock.AdvanceBy(31.Seconds());
+
+                Console.Write("after");
+
+                console.StandardOutput.Should().BeEquivalentTo("before");
             }
         }
     }
