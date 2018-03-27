@@ -351,9 +351,7 @@ namespace FibonacciTest
                 new Workspace.Buffer("generators/FibonacciGenerator.cs",generator,0)
             });
 
-
             var position = generator.IndexOf(consoleWriteline, StringComparison.Ordinal) + consoleWriteline.Length;
-
             var request = new SignatureHelpRequest(workspace, position: position, activeBufferId: "generators/FibonacciGenerator.cs");
 
             using (var clock = VirtualClock.Start())
@@ -411,12 +409,10 @@ namespace FibonacciTest
 
             var workspace = new Workspace(
                 workspaceType: "console",
-                buffers: new[]
-            {
-                new Workspace.Buffer("Program.cs",program,0),
-                new Workspace.Buffer("generators/FibonacciGenerator.cs@codeRegion","Console.WriteLine()",0)
-            }, files: new[]
-                {
+                buffers: new[] {
+                    new Workspace.Buffer("Program.cs",program,0),
+                    new Workspace.Buffer("generators/FibonacciGenerator.cs@codeRegion","Console.WriteLine()",0)
+                }, files: new[] {
                     new Workspace.File("generators/FibonacciGenerator.cs",generator),
                 });
 
@@ -480,33 +476,39 @@ namespace FibonacciTest
 
             #endregion
 
+            var workspaceType = GetWorkspaceType();
             var workspace = new Workspace(
-                workspaceType: "console",
-                buffers: new[]
-            {
-                new Workspace.Buffer("Program.cs",program,0),
-                new Workspace.Buffer("generators/FibonacciGenerator.cs@codeRegion","JToken.FromObject();",0)
-            }, files: new[]
-                {
+                workspaceType: workspaceType,
+                buffers: new[] {
+                    new Workspace.Buffer("Program.cs",program,0),
+                    new Workspace.Buffer("generators/FibonacciGenerator.cs@codeRegion","JToken.FromObject();",0)
+                }, files: new[] {
                     new Workspace.File("generators/FibonacciGenerator.cs",generator),
                 });
 
-
             var position = 18;
-
 
             var request = new SignatureHelpRequest(workspace, position: position, activeBufferId: "generators/FibonacciGenerator.cs@codeRegion");
 
             using (var clock = VirtualClock.Start())
             {
-                var project = await GetWorkspace();
-                project = await AddPackageReference(project, "Newtonsoft.Json");
+                var wb = new WorkspaceBuilder(workspaceType);
+                wb.CreateUsingDotnet("console");
+                wb.AddPackageReference("Newtonsoft.Json");
+
+                var project = await wb.GetWorkspace();
+
                 var server = await GetWorkspaceServer(project);
                 var result = await server.GetSignatureHelp(request);
 
                 result.Signatures.Should().NotBeNullOrEmpty();
                 result.Signatures.Should().Contain(signature => signature.Label == "JToken JToken.FromObject(object o)");
             }
+        }
+
+        private static string GetWorkspaceType([CallerMemberName] string testName = null)
+        {
+            return testName;
         }
 
         protected override async Task<IWorkspaceServer> GetWorkspaceServer(
@@ -532,29 +534,6 @@ namespace FibonacciTest
             await workspaceServer.EnsureInitializedAndNotDisposed();
 
             return workspaceServer;
-        }
-
-        private async Task<MLS.Agent.Tools.Workspace> GetWorkspace(
-            [CallerMemberName] string testName = null)
-        {
-            var project = await Create.TestWorkspace(testName);
-
-            return project;
-        }
-
-
-        private async Task<MLS.Agent.Tools.Workspace> AddPackageReference(MLS.Agent.Tools.Workspace project, string packageId, string version = null)
-        {
-            var dotnet = new Dotnet(project.Directory);
-
-            var versionArg = string.IsNullOrWhiteSpace(version)
-                ? ""
-                : $"--version {version}";
-
-            await dotnet.Execute($"add package {versionArg} {packageId}",new Budget());
-            await dotnet.Execute($"restore", new Budget());
-            await project.EnsureBuilt();
-            return project;
         }
     }
 }
