@@ -118,24 +118,27 @@ namespace WorkspaceServer.Servers.Scripting
                          .AddImports(GetDefultUsings().Concat(request.Usings));
 
         private async Task<(SerializableDiagnostic Diagnostic, string ErrorMessage)[]> GetDiagnostics(
-            Workspace workspace, 
-            ScriptOptions options)
+            Workspace workspace,
+            ScriptOptions options, Budget budget = null)
         {
+            budget = budget ?? new Budget();
+
             var processor = new BufferInliningTransformer();
-            var processed = await processor.TransformAsync(workspace);
+            var processed = await processor.TransformAsync(workspace, budget);
             var viewPorts = processor.ExtractViewPorts(processed);
             var sourceFile = processed.GetSourceFiles().Single();
             var code = sourceFile.Text.ToString();
             var sourceDiagnostics = CSharpScript.Create(code, options)
-                                                .GetCompilation()
-                                                .GetDiagnostics()
-                                                .Where(d => d.Id != "CS7022");
-
+                .GetCompilation()
+                .GetDiagnostics()
+                .Where(d => d.Id != "CS7022");
+            budget.RecordEntry();
             return DiagnosticTransformer.ReconstructDiagnosticLocations(
-                                            sourceDiagnostics,
-                                            viewPorts,
-                                            BufferInliningTransformer.PaddingSize)
-                                        .ToArray();
+                    sourceDiagnostics,
+                    viewPorts,
+                    BufferInliningTransformer.PaddingSize)
+                .ToArray();
+
         }
 
         private static Task<ScriptState<object>> Run(
@@ -246,7 +249,7 @@ namespace WorkspaceServer.Servers.Scripting
         private static async Task<ScriptState<object>> EmulateConsoleMainInvocation(
             ScriptState<object> state,
             StringBuilder buffer,
-            ScriptOptions options, 
+            ScriptOptions options,
             Budget budget)
         {
             var script = state.Script;
@@ -283,7 +286,7 @@ typeof({entryPointMethod.ContainingType.Name})
                                               : "null";
         }
 
-        public async Task<DiagnosticResult> GetDiagnostics(Workspace request) => 
-            new DiagnosticResult((await GetDiagnostics(request, CreateOptions(request))).Select(e => e.Diagnostic).ToArray());
+        public async Task<DiagnosticResult> GetDiagnostics(Workspace request, Budget budget = null) =>
+            new DiagnosticResult((await GetDiagnostics(request, CreateOptions(request), budget)).Select(e => e.Diagnostic).ToArray());
     }
 }
