@@ -358,6 +358,75 @@ namespace FibonacciTest
             }
         }
 
+        [Fact]
+        public async Task Get_signature_help_for_console_writeline_with_region()
+        {
+            #region bufferSources
+
+            const string program = @"using System;
+using System.Linq;
+
+namespace FibonacciTest
+{
+    public class Program
+    {
+        public static void Main()
+        {
+            foreach (var i in FibonacciGenerator.Fibonacci().Take(20))
+            {
+                Console.WriteLine(i);
+            }
+        }       
+    }
+}";
+            const string generator = @"using System.Collections.Generic;
+using System;
+namespace FibonacciTest
+{
+    public static class FibonacciGenerator
+    {
+        public static IEnumerable<int> Fibonacci()
+        {
+            int current = 1, next = 1;
+            while (true)
+            {
+                yield return current;
+                next = current + (current = next);
+                #region codeRegion
+                #endregion
+            }
+        }
+    }
+}";
+
+            #endregion
+
+            var workspace = new Workspace(
+                workspaceType: "console", 
+                buffers: new[]
+            {
+                new Workspace.Buffer("Program.cs",program,0),
+                new Workspace.Buffer("generators/FibonacciGenerator.cs@codeRegion","Console.WriteLine()",0)
+            },files: new []
+                {
+                    new Workspace.File("generators/FibonacciGenerator.cs",generator), 
+                });
+
+
+            var position = 18;
+
+            var request = new SignatureHelpRequest(workspace, position: position, activeBufferId: "generators/FibonacciGenerator.cs@codeRegion");
+
+            using (var clock = VirtualClock.Start())
+            {
+                var server = await GetWorkspaceServer();
+                var result = await server.GetSignatureHelp(request);
+
+                result.Signatures.Should().NotBeNullOrEmpty();
+                result.Signatures.Should().Contain(signature => signature.Label == "void Console.WriteLine(string format, params object[] arg)");
+            }
+        }
+
         protected override async Task<IWorkspaceServer> GetWorkspaceServer(
             [CallerMemberName] string testName = null)
         {
