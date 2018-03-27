@@ -10,11 +10,10 @@ using Pocket;
 using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Transformations;
-using Diagnostic = OmniSharp.Client.Diagnostic;
 using static Pocket.Logger<WorkspaceServer.Servers.Dotnet.DotnetWorkspaceServer>;
+using static WorkspaceServer.Servers.WorkspaceServer;
 using Workspace = MLS.Agent.Tools.Workspace;
 using OmnisharpEmitResponse = OmniSharp.Client.Commands.OmniSharpResponseMessage<OmniSharp.Client.Commands.EmitResponse>;
-using TextSpan = Microsoft.CodeAnalysis.Text.TextSpan;
 
 namespace WorkspaceServer.Servers.Dotnet
 {
@@ -26,7 +25,6 @@ namespace WorkspaceServer.Servers.Dotnet
         private bool _disposed;
         private readonly Budget _initializationBudget = new Budget();
         private readonly TimeSpan _defaultTimeoutInSeconds;
-        public static string UserCodeCompletedBudgetEntryName = "UserCodeCompleted";
 
         public DotnetWorkspaceServer(
             Workspace workspace,

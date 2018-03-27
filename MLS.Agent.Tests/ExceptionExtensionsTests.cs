@@ -2,8 +2,8 @@ using System;
 using System.Threading.Tasks;
 using Clockwise;
 using FluentAssertions;
-using WorkspaceServer.Servers.Dotnet;
 using Xunit;
+using static WorkspaceServer.Servers.WorkspaceServer;
 
 namespace MLS.Agent.Tests
 {
@@ -18,7 +18,7 @@ namespace MLS.Agent.Tests
 
                 await Clock.Current.Wait(11.Seconds());
 
-                budget.RecordEntry(DotnetWorkspaceServer.UserCodeCompletedBudgetEntryName);
+                budget.RecordEntry(UserCodeCompletedBudgetEntryName);
 
                 var exception = new BudgetExceededException(budget);
 
