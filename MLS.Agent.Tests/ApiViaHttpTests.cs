@@ -367,6 +367,10 @@ public class Program {
         [Fact]
         public async Task When_Run_times_out_in_user_code_in_a_script_workspace_type_then_the_response_code_is_417()
         {
+            // TODO: (When_Run_times_out_in_user_code_in_a_script_workspace_type_then_the_response_code_is_417) make this test faster
+
+            Clock.Reset();
+
             var requestJson =
                 @"{ ""Buffers"":[{""Id"":"""",""Content"":""public class Program { public static void Main()\n  {\n  System.Threading.Thread.Sleep(System.TimeSpan.FromSeconds(30));  }  }""}],""WorkspaceType"":""script""}";
 
