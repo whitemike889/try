@@ -71,7 +71,7 @@ namespace WorkspaceServer.Tests
         }
 
         [Fact]
-        public void Failed_console_output_capture_attempts_time_out()
+        public void When_a_console_output_capture_times_out_then_a_BudgetExceededException_is_thrown()
         {
             using (ConsoleOutput.Capture(new Budget()))
             {
