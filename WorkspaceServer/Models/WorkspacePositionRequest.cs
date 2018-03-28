@@ -1,15 +1,11 @@
-﻿using System;
-using System.Threading.Tasks;
-using WorkspaceServer.Models.Execution;
-using WorkspaceServer.Transformations;
+﻿using WorkspaceServer.Models.Execution;
 
 namespace WorkspaceServer.Models
 {
     public class WorkspacePositionRequest
     {
-        public WorkspacePositionRequest(Workspace workspace, string activeBufferId, int position, string[] implicitUsings = null)
+        public WorkspacePositionRequest(Workspace workspace, string activeBufferId, int position)
         {
-            ImplicitUsings = implicitUsings ?? Array.Empty<string>();
             Position = position;
             ActiveBufferId = activeBufferId ?? string.Empty;
             Workspace = workspace;
@@ -19,6 +15,5 @@ namespace WorkspaceServer.Models
 
         public string ActiveBufferId { get; }
         public int Position { get; }
-        public string[] ImplicitUsings { get; }
     }
 }
