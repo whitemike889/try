@@ -131,7 +131,7 @@ namespace WorkspaceServer.Servers.Dotnet
             FileInfo file,
             string newText,
             Budget budget = null) =>
-            server.SendCommand<UpdateBuffer, bool>(new UpdateBuffer(file, newText), budget);
+            server.SendCommand<UpdateBuffer, bool?>(new UpdateBuffer(file, newText), budget);
 
         public static async Task<SignatureHelpResponse> GetSignatureHelp(this OmniSharpServer server, FileInfo fileName, string code, int line, int column, Budget budget = null)
         {

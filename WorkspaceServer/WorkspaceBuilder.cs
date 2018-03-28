@@ -40,12 +40,7 @@ namespace WorkspaceServer
             _afterCreateActions.Add(async (workspace, budget) =>
             {
                 var dotnet = new Dotnet(workspace.Directory);
-
-                var versionArg = string.IsNullOrWhiteSpace(version)
-                                     ? ""
-                                     : $"--version {version}";
-
-                await dotnet.Execute($"add package {versionArg} {packageId}", budget);
+                await dotnet.AddPackageReference(packageId, version);
             });
         }
 
