@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using OmniSharp.Client.Commands;
 
@@ -22,6 +23,20 @@ namespace WorkspaceServer.Models.Completion
             }
 
             return source.Substring(index, position - index);
+        }
+
+        public static CompletionResult ToCompletionResult(this IEnumerable<AutoCompleteResponse> items)
+        {
+            var source = items ?? Array.Empty<AutoCompleteResponse>();
+
+            var transformed = source.Select(item => new CompletionItem(
+                item.DisplayText,
+                item.Kind,
+                item.CompletionText,
+                item.DisplayText));
+
+            return new CompletionResult(transformed.ToArray());
+
         }
     }
 }

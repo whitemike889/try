@@ -35,7 +35,7 @@ namespace WorkspaceServer.Models.Execution
             return aboslutePosition;
         }
         
-        public static (int line, int column) GetTextLocation(this Workspace workspace, string bufferId, int bufferPosition)
+        public static (int line, int column, int absolutePosition) GetTextLocation(this Workspace workspace, string bufferId, int bufferPosition)
         {
             var file = workspace.GetFileFromBufferId(bufferId);
             var absolutePosition = GetAbsolutePosition(workspace, bufferId, bufferPosition);
@@ -43,7 +43,7 @@ namespace WorkspaceServer.Models.Execution
             var src = SourceText.From(file.Text);
             var line = src.Lines.GetLineFromPosition(absolutePosition);
 
-            return (line: line.LineNumber, column: absolutePosition - line.Start);
+            return (line: line.LineNumber, column: absolutePosition - line.Start, absolutePosition);
         }
     }
 }

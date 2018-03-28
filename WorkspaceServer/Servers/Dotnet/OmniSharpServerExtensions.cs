@@ -148,7 +148,7 @@ namespace WorkspaceServer.Servers.Dotnet
 
         }
 
-        public static async Task<CompletionResult> GetCompletionList(this OmniSharpServer server, FileInfo fileName, string code, string wordToComplete, int line, int column, Budget budget = null)
+        public static async Task<AutoCompleteResponse[]> GetCompletionList(this OmniSharpServer server, FileInfo fileName, string code, string wordToComplete, int line, int column, Budget budget = null)
         {
             // as omnisharp deserialisation does a -1 in the contract we add 1
             // look at https://github.com/OmniSharp/omnisharp-roslyn/blob/e18913e887144119c41d60f1842e49f8e9bfcf72/src/OmniSharp.Abstractions/Models/Request.cs
@@ -157,7 +157,7 @@ namespace WorkspaceServer.Servers.Dotnet
                 WordToComplete = wordToComplete
             };
 
-            var received = await server.SendCommand<AutoCompleteRequest, CompletionResult>(
+            var received = await server.SendCommand<AutoCompleteRequest, AutoCompleteResponse[]>(
                 command,
                 budget);
 

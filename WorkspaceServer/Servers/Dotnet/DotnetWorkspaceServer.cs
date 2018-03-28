@@ -212,9 +212,9 @@ namespace WorkspaceServer.Servers.Dotnet
             using (var operation = Log.OnEnterAndConfirmOnExit())
             {
                 await EnsureInitializedAndNotDisposed(budget);
-                var (file, code, line, column) = await TransformWorkspaceAndPreparePositionalRequest(request, budget);
-                var wordToComplete = code.GetWordAt(request.Position);
-                var response = await _omniSharpServer.GetCompletionList(file, code, wordToComplete, line, column, budget);
+                var (file, code, line, column, absolutePosition) = await TransformWorkspaceAndPreparePositionalRequest(request, budget);
+                var wordToComplete = code.GetWordAt(absolutePosition);
+                var response = (await _omniSharpServer.GetCompletionList(file, code, wordToComplete, line, column, budget)).ToCompletionResult();
                 budget.RecordEntry();
                 return response;
             }
@@ -227,14 +227,14 @@ namespace WorkspaceServer.Servers.Dotnet
             using (var operation = Log.OnEnterAndConfirmOnExit())
             {
                 await EnsureInitializedAndNotDisposed(budget);
-                var (file,code,line,column) = await TransformWorkspaceAndPreparePositionalRequest(request, budget);
+                var (file,code,line,column,_) = await TransformWorkspaceAndPreparePositionalRequest(request, budget);
                 var response = await _omniSharpServer.GetSignatureHelp(file, code, line, column, budget);
                 budget.RecordEntry();
                 return response;
             }
         }
 
-        private async Task<(FileInfo file,string code, int line, int column)> TransformWorkspaceAndPreparePositionalRequest(WorkspacePositionRequest request, Budget budget)
+        private async Task<(FileInfo file,string code, int line, int column, int absolutePosition)> TransformWorkspaceAndPreparePositionalRequest(WorkspacePositionRequest request, Budget budget)
         {
             var workspace = await _transformer.TransformAsync(request.Workspace, budget);
             await CleanBuffer(budget);
@@ -242,8 +242,8 @@ namespace WorkspaceServer.Servers.Dotnet
             var file = workspace.GetFileInfoFromBufferId(request.ActiveBufferId, _workspace.Directory.FullName);
             var code = workspace.GetFileFromBufferId(request.ActiveBufferId).Text;
             // line and colum are 0 based
-            var (line,column) = workspace.GetTextLocation(request.ActiveBufferId, request.Position);
-            return (file,code, line, column);
+            var (line,column, absolutePosition) = workspace.GetTextLocation(request.ActiveBufferId, request.Position);
+            return (file,code, line, column, absolutePosition);
         }
 
         public async Task<DiagnosticResult> GetDiagnostics(Models.Execution.Workspace request, Budget budget = null)
