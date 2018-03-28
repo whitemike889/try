@@ -31,8 +31,8 @@ namespace WorkspaceServer.Models.Execution
 
         public static int GetAbsolutePosition(this Workspace workspace, string bufferId, int bufferPosition)
         {
-            var aboslutePosition = (workspace.Buffers.FirstOrDefault(b => b.Id == bufferId)?.Position ?? 0) + bufferPosition;
-            return aboslutePosition;
+            var absolutePosition = (workspace.Buffers.FirstOrDefault(b => b.Id == bufferId)?.Position ?? 0) + bufferPosition;
+            return absolutePosition;
         }
         
         public static (int line, int column, int absolutePosition) GetTextLocation(this Workspace workspace, string bufferId, int bufferPosition)
