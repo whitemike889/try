@@ -9,6 +9,6 @@ namespace OmniSharp.Client.Commands
         {
         }
 
-        public override string Command => CommandNames.signatureHelp;
+        public override string Command => CommandNames.SignatureHelp;
     }
 }

@@ -7,6 +7,7 @@ using Clockwise;
 using Microsoft.CodeAnalysis;
 using MLS.Agent.Tools;
 using Pocket;
+using WorkspaceServer.Models;
 using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Models.SingatureHelp;
@@ -211,13 +212,11 @@ namespace WorkspaceServer.Servers.Dotnet
             using (var operation = Log.OnEnterAndConfirmOnExit())
             {
                 await EnsureInitializedAndNotDisposed(budget);
-                var processor = new BufferInliningTransformer();
-                var workspaceProcessing = processor.TransformAsync(request.Workspace, budget);
-                await CleanBuffer(budget);
-                var workspace = await workspaceProcessing;
-                await UpdateOmnisharpWorkspace(workspace);
-
-                throw new NotImplementedException();
+                var (file, code, line, column) = await TransformWorkspaceAndPreparePositionalRequest(request, budget);
+                var wordToComplete = code.GetWordAt(request.Position);
+                var response = await _omniSharpServer.GetCompletionList(file, code, wordToComplete, line, column, budget);
+                budget.RecordEntry();
+                return response;
             }
         }
 
@@ -228,18 +227,23 @@ namespace WorkspaceServer.Servers.Dotnet
             using (var operation = Log.OnEnterAndConfirmOnExit())
             {
                 await EnsureInitializedAndNotDisposed(budget);
-                var processor = new BufferInliningTransformer();
-                var workspace = await processor.TransformAsync(request.Workspace, budget);
-                await CleanBuffer(budget);
-                await UpdateOmnisharpWorkspace(workspace);
-                var file = workspace.GetFileInfoFromBufferId(request.ActiveBufferId, _workspace.Directory.FullName);
-                var code = workspace.GetFileFromBufferId(request.ActiveBufferId).Text;
-                // line and colum are 0 based
-                var location = workspace.GetTextLocation(request.ActiveBufferId, request.Position);
-                var response = await _omniSharpServer.GetSignatureHelp(file, code, location.line, location.column, budget);
+                var (file,code,line,column) = await TransformWorkspaceAndPreparePositionalRequest(request, budget);
+                var response = await _omniSharpServer.GetSignatureHelp(file, code, line, column, budget);
                 budget.RecordEntry();
                 return response;
             }
+        }
+
+        private async Task<(FileInfo file,string code, int line, int column)> TransformWorkspaceAndPreparePositionalRequest(WorkspacePositionRequest request, Budget budget)
+        {
+            var workspace = await _transformer.TransformAsync(request.Workspace, budget);
+            await CleanBuffer(budget);
+            await UpdateOmnisharpWorkspace(workspace);
+            var file = workspace.GetFileInfoFromBufferId(request.ActiveBufferId, _workspace.Directory.FullName);
+            var code = workspace.GetFileFromBufferId(request.ActiveBufferId).Text;
+            // line and colum are 0 based
+            var (line,column) = workspace.GetTextLocation(request.ActiveBufferId, request.Position);
+            return (file,code, line, column);
         }
 
         public async Task<DiagnosticResult> GetDiagnostics(Models.Execution.Workspace request, Budget budget = null)

@@ -5,14 +5,14 @@ using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using WorkspaceServer.Models.SingatureHelp;
 
 // Adapted from https://github.com/OmniSharp/omnisharp-roslyn/blob/master/src/OmniSharp.Roslyn.CSharp/Services/Signatures/SignatureHelpService.cs
 
-namespace WorkspaceServer.Models.SingatureHelp
+namespace WorkspaceServer.Servers.Scripting
 {
     public class SignatureHelpService
     {
-
         public static async Task<SignatureHelpResponse> GetSignatureHelp(Document document, int position, Budget budget = null)
         {
             var invocation = await GetInvocation(document, position);
