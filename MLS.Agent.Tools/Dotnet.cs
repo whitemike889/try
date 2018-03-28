@@ -25,7 +25,7 @@ namespace MLS.Agent.Tools
             return Execute($"new {templateName} {args}", budget);
         }
 
-        public Task<CommandLineResult> AddPackageReference(string packageId, string version = null, Budget budget = null)
+        public Task<CommandLineResult> AddPackage(string packageId, string version = null, Budget budget = null)
         {
             var versionArg = string.IsNullOrWhiteSpace(version)
                 ? ""
