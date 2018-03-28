@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -14,7 +14,6 @@ using WorkspaceServer.Models.SingatureHelp;
 using WorkspaceServer.Transformations;
 using WorkspaceServer.WorkspaceFeatures;
 using static Pocket.Logger<WorkspaceServer.Servers.Dotnet.DotnetWorkspaceServer>;
-using static WorkspaceServer.Servers.WorkspaceServer;
 using static WorkspaceServer.Transformations.OmniSharpDiagnosticTransformer;
 using Workspace = MLS.Agent.Tools.Workspace;
 using OmnisharpEmitResponse = OmniSharp.Client.Commands.OmniSharpResponseMessage<OmniSharp.Client.Commands.EmitResponse>;
@@ -30,7 +29,7 @@ namespace WorkspaceServer.Servers.Dotnet
         private readonly Budget _initializationBudget = new Budget();
         private readonly TimeSpan _defaultTimeoutInSeconds;
         private readonly BufferInliningTransformer _transformer = new BufferInliningTransformer();
-        private readonly HashSet<FileInfo> _bufferNameCache = new HashSet<FileInfo>();
+        private ImmutableHashSet<FileInfo> _bufferNameCache = ImmutableHashSet<FileInfo>.Empty;
 
         public static string UserCodeCompletedBudgetEntryName = "UserCodeCompleted";
         
@@ -197,7 +196,7 @@ namespace WorkspaceServer.Servers.Dotnet
                 var file = new FileInfo(Path.Combine(_workspace.Directory.FullName, sourceFile.Name));
                 if (sourceFile.Name.EndsWith(".cs"))
                 {
-                    _bufferNameCache.Add(file);
+                    _bufferNameCache = _bufferNameCache.Add(file);
                 }
                 var text = sourceFile.Text.ToString();
 
@@ -216,6 +215,7 @@ namespace WorkspaceServer.Servers.Dotnet
                 var wordToComplete = code.GetWordAt(absolutePosition);
                 var response = (await _omniSharpServer.GetCompletionList(file, code, wordToComplete, line, column, budget)).ToCompletionResult();
                 budget.RecordEntry();
+                operation.Succeed();
                 return response;
             }
         }
@@ -230,6 +230,7 @@ namespace WorkspaceServer.Servers.Dotnet
                 var (file,code,line,column,_) = await TransformWorkspaceAndPreparePositionalRequest(request, budget);
                 var response = await _omniSharpServer.GetSignatureHelp(file, code, line, column, budget);
                 budget.RecordEntry();
+                operation.Succeed();
                 return response;
             }
         }
@@ -249,24 +250,28 @@ namespace WorkspaceServer.Servers.Dotnet
         public async Task<DiagnosticResult> GetDiagnostics(Models.Execution.Workspace request, Budget budget = null)
         {
             budget = budget ?? new TimeBudget(_defaultTimeoutInSeconds);
-            await EnsureInitializedAndNotDisposed(budget);
-            request = await _transformer.TransformAsync(request, budget);
-            var emitResponse = await Emit(request, new Budget());
-            SerializableDiagnostic[] diagnostics;
-
-            if (emitResponse.Body.Diagnostics.Any())
+          
+            using (var operation = Log.OnEnterAndConfirmOnExit())
             {
-                var viewPorts = _transformer.ExtractViewPorts(request);
-                var processedDiagnostics = ReconstructDiagnosticLocations(emitResponse.Body.Diagnostics, viewPorts, BufferInliningTransformer.PaddingSize).ToArray();
-                diagnostics = processedDiagnostics?.Select(d => d.Diagnostic).ToArray();
+                await EnsureInitializedAndNotDisposed(budget);
+                request = await _transformer.TransformAsync(request, budget);
+                var emitResponse = await Emit(request, new Budget());
+                SerializableDiagnostic[] diagnostics;
+                if (emitResponse.Body.Diagnostics.Any())
+                {
+                    var viewPorts = _transformer.ExtractViewPorts(request);
+                    var processedDiagnostics = ReconstructDiagnosticLocations(emitResponse.Body.Diagnostics, viewPorts, BufferInliningTransformer.PaddingSize).ToArray();
+                    diagnostics = processedDiagnostics?.Select(d => d.Diagnostic).ToArray();
+                }
+                else
+                {
+                    diagnostics = emitResponse.Body.Diagnostics.Select(d => new SerializableDiagnostic(d)).ToArray();
+                }
+                var result = new DiagnosticResult(diagnostics);
+                budget.RecordEntry();
+                operation.Succeed();
+                return result;
             }
-            else
-            {
-                diagnostics = emitResponse.Body.Diagnostics.Select(d => new SerializableDiagnostic(d)).ToArray();
-            }
-            
-            budget.RecordEntry();
-            return new DiagnosticResult(diagnostics);
         }
 
         public void Dispose()

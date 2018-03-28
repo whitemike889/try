@@ -167,7 +167,7 @@ namespace WorkspaceServer.Servers.Scripting
             budget = budget ?? new Budget();
             using (Log.OnExit())
             {
-                var (document, position) = await GenerateDocumentAndPositon(request, budget);
+                var (document, position) = await GenerateDocumentAndPosition(request, budget);
                 var service = CompletionService.GetService(document);
 
                 var completionList = await service.GetCompletionsAsync(document, position);
@@ -182,13 +182,13 @@ namespace WorkspaceServer.Servers.Scripting
             budget = budget ?? new Budget();
             using (Log.OnExit())
             {
-                var (document, position) = await GenerateDocumentAndPositon(request, budget);
+                var (document, position) = await GenerateDocumentAndPosition(request, budget);
                 var response = await SignatureHelpService.GetSignatureHelp(document, position, budget);
                 return response;
             }
         }
 
-        private static async Task<(Document document, int position)> GenerateDocumentAndPositon(WorkspacePositionRequest request, Budget budget)
+        private static async Task<(Document document, int position)> GenerateDocumentAndPosition(WorkspacePositionRequest request, Budget budget)
         {
             var processor = new BufferInliningTransformer();
             var workspace = await processor.TransformAsync(request.Workspace, budget);
