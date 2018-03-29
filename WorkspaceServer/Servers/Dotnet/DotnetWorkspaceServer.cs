@@ -155,7 +155,7 @@ namespace WorkspaceServer.Servers.Dotnet
                     if (Path.GetExtension(serverBuffer.Name).EndsWith("cs", StringComparison.OrdinalIgnoreCase))
                     {
                         var file = new FileInfo(Path.Combine(_workspace.Directory.FullName, serverBuffer.Name));
-                        _bufferNameCache.Add(file);
+                        _bufferNameCache = _bufferNameCache.Add(file);
                         await _omniSharpServer.UpdateBuffer(file, "//empty", budget);
                     }
                 }
