@@ -1,22 +1,22 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using Clockwise;
 using FluentAssertions;
 using WorkspaceServer.Models;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Servers.Dotnet;
 using Xunit;
 using Xunit.Abstractions;
+using static Pocket.Logger<WorkspaceServer.Tests.DotnetWorkspaceServerConsoleProjectIntellisenseTests>;
 
 namespace WorkspaceServer.Tests
 {
-    public class DotnetWorkspaceServerConsoleProjectIntellisenseTests : WorkspaceServerTests
+    public class DotnetWorkspaceServerConsoleProjectIntellisenseTests : WorkspaceServerTestsCore
     {
         public DotnetWorkspaceServerConsoleProjectIntellisenseTests(ITestOutputHelper output) : base(output)
         {
+           
         }
-
         [Fact]
         public async Task Get_autocompletion_for_console_class()
         {
@@ -447,14 +447,6 @@ namespace FibonacciTest
 
         }
 
-        protected override Workspace CreateWorkspaceContaining(string text)
-        {
-            return new Workspace(
-                $@"using System; using System.Linq; using System.Collections.Generic; class Program {{ static void Main() {{ {text}
-                    }}
-                }}
-");
-        }
 
         protected override async Task<IWorkspaceServer> GetWorkspaceServer(
             [CallerMemberName] string testName = null)
@@ -463,7 +455,6 @@ namespace FibonacciTest
             var workspaceServer = new DotnetWorkspaceServer(project, 45);
             RegisterForDisposal(workspaceServer);
             await workspaceServer.EnsureInitializedAndNotDisposed();
-
             return workspaceServer;
         }
     }

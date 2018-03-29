@@ -1,6 +1,5 @@
 ﻿using System;
 using FluentAssertions;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Clockwise;
 using FluentAssertions.Extensions;
@@ -13,18 +12,10 @@ using Workspace = WorkspaceServer.Models.Execution.Workspace;
 
 namespace WorkspaceServer.Tests
 {
-    public abstract class WorkspaceServerTests : IDisposable
+    public abstract class WorkspaceServerTests : WorkspaceServerTestsCore
     {
-        private readonly CompositeDisposable _disposables = new CompositeDisposable();
-
-        protected abstract Task<IWorkspaceServer> GetWorkspaceServer(
-            [CallerMemberName] string testName = null);
-
+       
         protected abstract Workspace CreateWorkspaceContaining(string text);
-
-        public void Dispose() => _disposables.Dispose();
-
-        protected void RegisterForDisposal(IDisposable disposable) => _disposables.Add(disposable);
 
         [Fact]
         public async Task Diagnostic_logs_do_not_show_up_in_captured_console_output()
@@ -39,9 +30,9 @@ namespace WorkspaceServer.Tests
             }
         }
 
-        protected WorkspaceServerTests(ITestOutputHelper output)
+        protected WorkspaceServerTests(ITestOutputHelper output) : base(output)
         {
-            _disposables.Add(output.SubscribeToPocketLogger());
+            
         }
 
         [Fact]
