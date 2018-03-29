@@ -204,7 +204,7 @@ namespace WorkspaceServer.Servers.Dotnet
             }
         }
         
-        public async Task<CompletionResult> GetCompletionList(CompletionRequest request, Budget budget = null)
+        public async Task<CompletionResult> GetCompletionList(WorkspaceRequest request, Budget budget = null)
         {
             budget = budget ?? new TimeBudget(_defaultTimeoutInSeconds);
 
@@ -220,7 +220,7 @@ namespace WorkspaceServer.Servers.Dotnet
             }
         }
 
-        public async Task<SignatureHelpResponse> GetSignatureHelp(SignatureHelpRequest request, Budget budget = null)
+        public async Task<SignatureHelpResponse> GetSignatureHelp(WorkspaceRequest request, Budget budget = null)
         {
             budget = budget ?? new TimeBudget(_defaultTimeoutInSeconds);
 
@@ -235,7 +235,7 @@ namespace WorkspaceServer.Servers.Dotnet
             }
         }
 
-        private async Task<(FileInfo file,string code, int line, int column, int absolutePosition)> TransformWorkspaceAndPreparePositionalRequest(WorkspacePositionRequest request, Budget budget)
+        private async Task<(FileInfo file,string code, int line, int column, int absolutePosition)> TransformWorkspaceAndPreparePositionalRequest(WorkspaceRequest request, Budget budget)
         {
             var workspace = await _transformer.TransformAsync(request.Workspace, budget);
             await CleanBuffer(budget);

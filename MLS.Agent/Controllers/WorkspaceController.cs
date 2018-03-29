@@ -5,6 +5,7 @@ using Clockwise;
 using Microsoft.AspNetCore.Mvc;
 using Pocket;
 using WorkspaceServer;
+using WorkspaceServer.Models;
 using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Models.SingatureHelp;
@@ -100,7 +101,7 @@ namespace MLS.Agent.Controllers
         [HttpPost]
         [Route("/workspace/completion")]
         public async Task<IActionResult> Completion(
-            [FromBody] CompletionRequest request,
+            [FromBody] WorkspaceRequest request,
             [FromHeader(Name = "Timeout")] string timeoutInMilliseconds = "15000")
         {
             using (var operation = Log.ConfirmOnExit())
@@ -184,7 +185,7 @@ namespace MLS.Agent.Controllers
         [HttpPost]
         [Route("/workspace/signaturehelp")]
         public async Task<IActionResult> SignatureHelp(
-            [FromBody] SignatureHelpRequest request,
+            [FromBody] WorkspaceRequest request,
             [FromHeader(Name = "Timeout")] string timeoutInMilliseconds = "15000")
         {
             using (var operation = Log.ConfirmOnExit())

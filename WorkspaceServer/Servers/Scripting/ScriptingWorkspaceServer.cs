@@ -162,7 +162,7 @@ namespace WorkspaceServer.Servers.Scripting
         private static string[] GetDefultUsings() =>
             new[] { "System", "System.Linq", "System.Collections.Generic" };
 
-        public async Task<CompletionResult> GetCompletionList(CompletionRequest request, Budget budget = null)
+        public async Task<CompletionResult> GetCompletionList(WorkspaceRequest request, Budget budget = null)
         {
             budget = budget ?? new Budget();
             using (Log.OnExit())
@@ -177,7 +177,7 @@ namespace WorkspaceServer.Servers.Scripting
             }
         }
 
-        public async Task<SignatureHelpResponse> GetSignatureHelp(SignatureHelpRequest request, Budget budget = null)
+        public async Task<SignatureHelpResponse> GetSignatureHelp(WorkspaceRequest request, Budget budget = null)
         {
             budget = budget ?? new Budget();
             using (Log.OnExit())
@@ -188,7 +188,7 @@ namespace WorkspaceServer.Servers.Scripting
             }
         }
 
-        private static async Task<(Document document, int position)> GenerateDocumentAndPosition(WorkspacePositionRequest request, Budget budget)
+        private static async Task<(Document document, int position)> GenerateDocumentAndPosition(WorkspaceRequest request, Budget budget)
         {
             var processor = new BufferInliningTransformer();
             var workspace = await processor.TransformAsync(request.Workspace, budget);

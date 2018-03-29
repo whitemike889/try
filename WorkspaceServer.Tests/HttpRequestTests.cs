@@ -24,7 +24,7 @@ namespace WorkspaceServer.Tests
         {
             Action create = () => new HttpRequest("http://try.dot.net", "GET");
 
-            create.ShouldThrow<ArgumentException>()
+            create.Should().Throw<ArgumentException>()
                   .Which
                   .Message
                   .Should()

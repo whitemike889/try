@@ -14,7 +14,7 @@ namespace WorkspaceServer.Tests
 
             alreadyOneBasedPosition
                 .OneBased()
-                .ShouldBeEquivalentTo(new LinePosition(1, 1, isOneBased: true));
+                .Should().BeEquivalentTo(new LinePosition(1, 1, isOneBased: true));
         }
 
         [Fact]
@@ -24,7 +24,7 @@ namespace WorkspaceServer.Tests
 
             var oneBasedPosition = zeroBasedPosition.OneBased();
 
-            oneBasedPosition.ShouldBeEquivalentTo(new LinePosition(1, 1, isOneBased: true));
+            oneBasedPosition.Should().BeEquivalentTo(new LinePosition(1, 1, isOneBased: true));
         }
     }
 }

@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Pocket;
 using Recipes;
+using WorkspaceServer.Models;
 using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Models.SingatureHelp;
@@ -37,7 +38,7 @@ $""{person.Name} is {person.Age} year(s) old""");
 
             Log.Trace(result.ToJson());
 
-            result.ShouldBeEquivalentTo(new
+            result.Should().BeEquivalentTo(new
             {
                 Succeeded = true,
                 Output = new string[] { },
@@ -55,7 +56,7 @@ Console.WriteLine(banana);");
 
             var result = await server.Run(workspace);
 
-            result.ShouldBeEquivalentTo(new
+            result.Should().BeEquivalentTo(new
             {
                 Succeeded = false,
                 Output = new[] { "(2,19): error CS0103: The name \'banana\' does not exist in the current context" },
@@ -68,7 +69,7 @@ Console.WriteLine(banana);");
         {
             var ws = new Workspace(workspaceType:"script", buffers:new []{new Workspace.Buffer("program.cs","Console.",0) });
 
-            var request = new CompletionRequest(ws, position: 8, activeBufferId: "program.cs");
+            var request = new WorkspaceRequest(ws, position: 8, activeBufferId: "program.cs");
 
             var server = await GetWorkspaceServer();
 
@@ -82,7 +83,7 @@ Console.WriteLine(banana);");
         {
             var ws = new Workspace(workspaceType: "script", buffers: new[] { new Workspace.Buffer("program.cs", "Console.WriteLine()", 0) });
 
-            var request = new SignatureHelpRequest(ws, position: 18, activeBufferId: "program.cs");
+            var request = new WorkspaceRequest(ws, position: 18, activeBufferId: "program.cs");
 
             var server = await GetWorkspaceServer();
 
@@ -112,7 +113,7 @@ public static class Hello
 
             var result = await server.Run(workspace);
 
-            result.ShouldBeEquivalentTo(new
+            result.Should().BeEquivalentTo(new
             {
                 Succeeded = true,
                 Output = new[] { "Hello there!" },
@@ -207,7 +208,7 @@ public static class Hello
             var server = await GetWorkspaceServer();
             var result = await server.Run(workspace);
 
-            result.ShouldBeEquivalentTo(new
+            result.Should().BeEquivalentTo(new
             {
                 Succeeded = false,
                 Output = new[] { "(1,19): error CS0103: The name \'banana\' does not exist in the current context" },

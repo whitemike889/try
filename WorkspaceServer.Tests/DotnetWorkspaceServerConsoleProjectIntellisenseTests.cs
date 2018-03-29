@@ -3,9 +3,8 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Clockwise;
 using FluentAssertions;
-using WorkspaceServer.Models.Completion;
+using WorkspaceServer.Models;
 using WorkspaceServer.Models.Execution;
-using WorkspaceServer.Models.SingatureHelp;
 using WorkspaceServer.Servers.Dotnet;
 using Xunit;
 using Xunit.Abstractions;
@@ -68,7 +67,7 @@ namespace FibonacciTest
             });
 
             var position = generator.IndexOf(consoleWriteline, StringComparison.Ordinal) + consoleWriteline.Length;
-            var request = new CompletionRequest(workspace, position: position, activeBufferId: "generators/FibonacciGenerator.cs");
+            var request = new WorkspaceRequest(workspace, position: position, activeBufferId: "generators/FibonacciGenerator.cs");
 
             using (var clock = VirtualClock.Start())
             {
@@ -130,7 +129,7 @@ namespace FibonacciTest
             });
 
             var position = generator.IndexOf(consoleWriteline, StringComparison.Ordinal) + consoleWriteline.Length;
-            var request = new CompletionRequest(workspace, position: position, activeBufferId: "generators/FibonacciGenerator.cs");
+            var request = new WorkspaceRequest(workspace, position: position, activeBufferId: "generators/FibonacciGenerator.cs");
 
             using (var clock = VirtualClock.Start())
             {
@@ -198,7 +197,7 @@ namespace FibonacciTest
 
             var position = 3;
 
-            var request = new CompletionRequest(workspace, position: position, activeBufferId: "generators/FibonacciGenerator.cs@codeRegion");
+            var request = new WorkspaceRequest(workspace, position: position, activeBufferId: "generators/FibonacciGenerator.cs@codeRegion");
 
             using (var clock = VirtualClock.Start())
             {
@@ -268,7 +267,7 @@ namespace FibonacciTest
 
             var position = 9;
 
-            var request = new CompletionRequest(workspace, position: position, activeBufferId: "generators/FibonacciGenerator.cs@codeRegion");
+            var request = new WorkspaceRequest(workspace, position: position, activeBufferId: "generators/FibonacciGenerator.cs@codeRegion");
 
             using (var clock = VirtualClock.Start())
             {
@@ -332,7 +331,7 @@ namespace FibonacciTest
             });
 
             var position = generator.IndexOf(consoleWriteline, StringComparison.Ordinal) + consoleWriteline.Length;
-            var request = new SignatureHelpRequest(workspace, position: position, activeBufferId: "generators/FibonacciGenerator.cs");
+            var request = new WorkspaceRequest(workspace, position: position, activeBufferId: "generators/FibonacciGenerator.cs");
 
             using (var clock = VirtualClock.Start())
             {
@@ -399,7 +398,7 @@ namespace FibonacciTest
 
             var position = 18;
 
-            var request = new SignatureHelpRequest(workspace, position: position, activeBufferId: "generators/FibonacciGenerator.cs@codeRegion");
+            var request = new WorkspaceRequest(workspace, position: position, activeBufferId: "generators/FibonacciGenerator.cs@codeRegion");
 
             using (var clock = VirtualClock.Start())
             {
@@ -467,7 +466,7 @@ namespace FibonacciTest
 
             var position = 18;
 
-            var request = new SignatureHelpRequest(workspace, position: position, activeBufferId: "generators/FibonacciGenerator.cs@codeRegion");
+            var request = new WorkspaceRequest(workspace, position: position, activeBufferId: "generators/FibonacciGenerator.cs@codeRegion");
 
             using (var clock = VirtualClock.Start())
             {

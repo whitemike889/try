@@ -58,7 +58,7 @@ namespace WorkspaceServer.Tests
             request.WorkspaceType.Should().Be("console");
             request.Buffers.FirstOrDefault(b => b.Id == "test").Should().NotBeNull();
             request.Files.FirstOrDefault(b => b.Name == "filedOne.cs").Should().NotBeNull();
-            request.Usings.ShouldBeEquivalentTo(new []{ "using System1;", "using System2;"});
+            request.Usings.Should().BeEquivalentTo("using System1;", "using System2;");
         }
     }
 }

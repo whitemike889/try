@@ -3,6 +3,7 @@ using FluentAssertions;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Clockwise;
+using FluentAssertions.Extensions;
 using Microsoft.CodeAnalysis;
 using Pocket;
 using Xunit;
@@ -112,7 +113,7 @@ Console.WriteLine(banana);");
 
             var result = await server.Run(request);
             
-            result.ShouldBeEquivalentTo(new
+            result.Should().BeEquivalentTo(new
             {
                 Succeeded = false,
                 Output = new[] { "(2,19): error CS0103: The name \'banana\' does not exist in the current context" },
