@@ -68,15 +68,11 @@ namespace FibonacciTest
 
             var position = generator.IndexOf(consoleWriteline, StringComparison.Ordinal) + consoleWriteline.Length;
             var request = new WorkspaceRequest(workspace, position: position, activeBufferId: "generators/FibonacciGenerator.cs");
+            var server = await GetWorkspaceServer();
+            var result = await server.GetCompletionList(request);
+            result.Items.Should().NotBeNullOrEmpty();
+            result.Items.Should().Contain(completion => completion.SortText == "Console");
 
-            using (var clock = VirtualClock.Start())
-            {
-                var server = await GetWorkspaceServer();
-                var result = await server.GetCompletionList(request);
-
-                result.Items.Should().NotBeNullOrEmpty();
-                result.Items.Should().Contain(completion => completion.SortText == "Console");
-            }
         }
 
         [Fact]
@@ -130,15 +126,12 @@ namespace FibonacciTest
 
             var position = generator.IndexOf(consoleWriteline, StringComparison.Ordinal) + consoleWriteline.Length;
             var request = new WorkspaceRequest(workspace, position: position, activeBufferId: "generators/FibonacciGenerator.cs");
+            var server = await GetWorkspaceServer();
+            var result = await server.GetCompletionList(request);
 
-            using (var clock = VirtualClock.Start())
-            {
-                var server = await GetWorkspaceServer();
-                var result = await server.GetCompletionList(request);
+            result.Items.Should().NotBeNullOrEmpty();
+            result.Items.Should().Contain(completion => completion.SortText == "Beep(int frequency, int duration)");
 
-                result.Items.Should().NotBeNullOrEmpty();
-                result.Items.Should().Contain(completion => completion.SortText == "Beep(int frequency, int duration)");
-            }
         }
 
         [Fact]
@@ -198,17 +191,11 @@ namespace FibonacciTest
             var position = 3;
 
             var request = new WorkspaceRequest(workspace, position: position, activeBufferId: "generators/FibonacciGenerator.cs@codeRegion");
+            var server = await GetWorkspaceServer();
+            var result = await server.GetCompletionList(request);
 
-            using (var clock = VirtualClock.Start())
-            {
-
-                var server = await GetWorkspaceServer();
-                var run = await server.Run(workspace, new Budget());
-                var result = await server.GetCompletionList(request);
-
-                result.Items.Should().NotBeNullOrEmpty();
-                result.Items.Should().Contain(signature => signature.SortText == "JToken");
-            }
+            result.Items.Should().NotBeNullOrEmpty();
+            result.Items.Should().Contain(signature => signature.SortText == "JToken");
         }
 
         [Fact]
@@ -266,19 +253,12 @@ namespace FibonacciTest
                 });
 
             var position = 9;
-
             var request = new WorkspaceRequest(workspace, position: position, activeBufferId: "generators/FibonacciGenerator.cs@codeRegion");
+            var server = await GetWorkspaceServer();
+            var result = await server.GetCompletionList(request);
+            result.Items.Should().NotBeNullOrEmpty();
+            result.Items.Should().Contain(signature => signature.SortText == "FromObject(object o, JsonSerializer jsonSerializer)");
 
-            using (var clock = VirtualClock.Start())
-            {
-
-                var server = await GetWorkspaceServer();
-                var run = await server.Run(workspace, new Budget());
-                var result = await server.GetCompletionList(request);
-
-                result.Items.Should().NotBeNullOrEmpty();
-                result.Items.Should().Contain(signature => signature.SortText == "FromObject(object o, JsonSerializer jsonSerializer)");
-            }
         }
 
         [Fact]
@@ -332,15 +312,12 @@ namespace FibonacciTest
 
             var position = generator.IndexOf(consoleWriteline, StringComparison.Ordinal) + consoleWriteline.Length;
             var request = new WorkspaceRequest(workspace, position: position, activeBufferId: "generators/FibonacciGenerator.cs");
+            var server = await GetWorkspaceServer();
+            var result = await server.GetSignatureHelp(request);
 
-            using (var clock = VirtualClock.Start())
-            {
-                var server = await GetWorkspaceServer();
-                var result = await server.GetSignatureHelp(request);
+            result.Signatures.Should().NotBeNullOrEmpty();
+            result.Signatures.Should().Contain(signature => signature.Label == "void Console.WriteLine(string format, params object[] arg)");
 
-                result.Signatures.Should().NotBeNullOrEmpty();
-                result.Signatures.Should().Contain(signature => signature.Label == "void Console.WriteLine(string format, params object[] arg)");
-            }
         }
 
         [Fact]
@@ -397,17 +374,13 @@ namespace FibonacciTest
 
 
             var position = 18;
-
             var request = new WorkspaceRequest(workspace, position: position, activeBufferId: "generators/FibonacciGenerator.cs@codeRegion");
+            var server = await GetWorkspaceServer();
+            var result = await server.GetSignatureHelp(request);
 
-            using (var clock = VirtualClock.Start())
-            {
-                var server = await GetWorkspaceServer();
-                var result = await server.GetSignatureHelp(request);
+            result.Signatures.Should().NotBeNullOrEmpty();
+            result.Signatures.Should().Contain(signature => signature.Label == "void Console.WriteLine(string format, params object[] arg)");
 
-                result.Signatures.Should().NotBeNullOrEmpty();
-                result.Signatures.Should().Contain(signature => signature.Label == "void Console.WriteLine(string format, params object[] arg)");
-            }
         }
 
         [Fact]
@@ -465,19 +438,13 @@ namespace FibonacciTest
                 });
 
             var position = 18;
-
             var request = new WorkspaceRequest(workspace, position: position, activeBufferId: "generators/FibonacciGenerator.cs@codeRegion");
+            var server = await GetWorkspaceServer();
+            var result = await server.GetSignatureHelp(request);
 
-            using (var clock = VirtualClock.Start())
-            {
+            result.Signatures.Should().NotBeNullOrEmpty();
+            result.Signatures.Should().Contain(signature => signature.Label == "JToken JToken.FromObject(object o)");
 
-                var server = await GetWorkspaceServer();
-                var run = await server.Run(workspace, new Budget());
-                var result = await server.GetSignatureHelp(request);
-
-                result.Signatures.Should().NotBeNullOrEmpty();
-                result.Signatures.Should().Contain(signature => signature.Label == "JToken JToken.FromObject(object o)");
-            }
         }
 
         protected override Workspace CreateWorkspaceContaining(string text)
@@ -493,11 +460,8 @@ namespace FibonacciTest
             [CallerMemberName] string testName = null)
         {
             var project = await Create.ConsoleWorkspace(testName);
-
             var workspaceServer = new DotnetWorkspaceServer(project, 45);
-
             RegisterForDisposal(workspaceServer);
-
             await workspaceServer.EnsureInitializedAndNotDisposed();
 
             return workspaceServer;
