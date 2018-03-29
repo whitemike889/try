@@ -51,7 +51,8 @@ namespace WorkspaceServer.Tests
                     TimeSpan.FromMinutes(5), (disposable, _) =>
                     {
                         _sharedServer = null;
-                        disposable.Dispose();
+                        _sharedDisposable = null;
+                        disposable?.Dispose();
                     }
                 );
             }));
