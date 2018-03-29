@@ -11,7 +11,7 @@ using static Pocket.Logger<WorkspaceServer.Tests.DotnetWorkspaceServerConsolePro
 
 namespace WorkspaceServer.Tests
 {
-    public class DotnetWorkspaceServerConsoleProjectIntellisenseTests : WorkspaceServerTestsCore
+    public class DotnetWorkspaceServerConsoleProjectIntellisenseTests : SharedWorkspaceServerTestsCore
     {
         public DotnetWorkspaceServerConsoleProjectIntellisenseTests(ITestOutputHelper output) : base(output)
         {
@@ -68,11 +68,10 @@ namespace FibonacciTest
 
             var position = generator.IndexOf(consoleWriteline, StringComparison.Ordinal) + consoleWriteline.Length;
             var request = new WorkspaceRequest(workspace, position: position, activeBufferId: "generators/FibonacciGenerator.cs");
-            var server = await GetWorkspaceServer();
+            var server = await GetSharedWorkspaceServer();
             var result = await server.GetCompletionList(request);
             result.Items.Should().NotBeNullOrEmpty();
             result.Items.Should().Contain(completion => completion.SortText == "Console");
-
         }
 
         [Fact]
@@ -126,7 +125,7 @@ namespace FibonacciTest
 
             var position = generator.IndexOf(consoleWriteline, StringComparison.Ordinal) + consoleWriteline.Length;
             var request = new WorkspaceRequest(workspace, position: position, activeBufferId: "generators/FibonacciGenerator.cs");
-            var server = await GetWorkspaceServer();
+            var server = await GetSharedWorkspaceServer();
             var result = await server.GetCompletionList(request);
 
             result.Items.Should().NotBeNullOrEmpty();
@@ -191,7 +190,7 @@ namespace FibonacciTest
             var position = 3;
 
             var request = new WorkspaceRequest(workspace, position: position, activeBufferId: "generators/FibonacciGenerator.cs@codeRegion");
-            var server = await GetWorkspaceServer();
+            var server = await GetSharedWorkspaceServer();
             var result = await server.GetCompletionList(request);
 
             result.Items.Should().NotBeNullOrEmpty();
@@ -254,7 +253,7 @@ namespace FibonacciTest
 
             var position = 9;
             var request = new WorkspaceRequest(workspace, position: position, activeBufferId: "generators/FibonacciGenerator.cs@codeRegion");
-            var server = await GetWorkspaceServer();
+            var server = await GetSharedWorkspaceServer();
             var result = await server.GetCompletionList(request);
             result.Items.Should().NotBeNullOrEmpty();
             result.Items.Should().Contain(signature => signature.SortText == "FromObject(object o, JsonSerializer jsonSerializer)");
@@ -312,7 +311,7 @@ namespace FibonacciTest
 
             var position = generator.IndexOf(consoleWriteline, StringComparison.Ordinal) + consoleWriteline.Length;
             var request = new WorkspaceRequest(workspace, position: position, activeBufferId: "generators/FibonacciGenerator.cs");
-            var server = await GetWorkspaceServer();
+            var server = await GetSharedWorkspaceServer();
             var result = await server.GetSignatureHelp(request);
 
             result.Signatures.Should().NotBeNullOrEmpty();
@@ -375,7 +374,7 @@ namespace FibonacciTest
 
             var position = 18;
             var request = new WorkspaceRequest(workspace, position: position, activeBufferId: "generators/FibonacciGenerator.cs@codeRegion");
-            var server = await GetWorkspaceServer();
+            var server = await GetSharedWorkspaceServer();
             var result = await server.GetSignatureHelp(request);
 
             result.Signatures.Should().NotBeNullOrEmpty();
@@ -439,7 +438,7 @@ namespace FibonacciTest
 
             var position = 18;
             var request = new WorkspaceRequest(workspace, position: position, activeBufferId: "generators/FibonacciGenerator.cs@codeRegion");
-            var server = await GetWorkspaceServer();
+            var server = await GetSharedWorkspaceServer();
             var result = await server.GetSignatureHelp(request);
 
             result.Signatures.Should().NotBeNullOrEmpty();
