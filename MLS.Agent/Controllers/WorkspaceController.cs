@@ -110,10 +110,28 @@ namespace MLS.Agent.Controllers
                     return BadRequest();
                 }
 
+                CompletionResult result;
                 var runTimeout = TimeSpan.FromMilliseconds(timeoutMs);
                 var budget = new TimeBudget(runTimeout);
-                var server = new ScriptingWorkspaceServer();
-                var result = await server.GetCompletionList(request, budget);
+                var workspaceType = request.Workspace.WorkspaceType;
+
+                if (string.Equals(workspaceType, "script", StringComparison.OrdinalIgnoreCase))
+                {
+                    var server = new ScriptingWorkspaceServer();
+
+                    result = await server.GetCompletionList(request, budget);
+                }
+                else
+                {
+                    var server = await _workspaceServerRegistry.GetWorkspaceServer(workspaceType);
+
+                    if (server is DotnetWorkspaceServer dotnetWorkspaceServer)
+                    {
+                        await dotnetWorkspaceServer.EnsureInitializedAndNotDisposed(budget);
+                    }
+
+                    result = await server.GetCompletionList(request, budget);
+                }
 
                 operation.Succeed();
 
@@ -134,10 +152,28 @@ namespace MLS.Agent.Controllers
                     return BadRequest();
                 }
 
+                DiagnosticResult result;
                 var runTimeout = TimeSpan.FromMilliseconds(timeoutMs);
                 var budget = new TimeBudget(runTimeout);
-                var server = new ScriptingWorkspaceServer();
-                var result = await server.GetDiagnostics(request, budget);
+                var workspaceType = request.WorkspaceType;
+
+                if (string.Equals(workspaceType, "script", StringComparison.OrdinalIgnoreCase))
+                {
+                    var server = new ScriptingWorkspaceServer();
+
+                    result = await server.GetDiagnostics(request, budget);
+                }
+                else
+                {
+                    var server = await _workspaceServerRegistry.GetWorkspaceServer(workspaceType);
+
+                    if (server is DotnetWorkspaceServer dotnetWorkspaceServer)
+                    {
+                        await dotnetWorkspaceServer.EnsureInitializedAndNotDisposed(budget);
+                    }
+
+                    result = await server.GetDiagnostics(request, budget);
+                }
 
                 operation.Succeed();
 
@@ -158,10 +194,28 @@ namespace MLS.Agent.Controllers
                     return BadRequest();
                 }
 
+                SignatureHelpResponse result;
                 var runTimeout = TimeSpan.FromMilliseconds(timeoutMs);
                 var budget = new TimeBudget(runTimeout);
-                var server = new ScriptingWorkspaceServer();
-                var result = await server.GetSignatureHelp(request, budget);
+                var workspaceType = request.Workspace.WorkspaceType;
+
+                if (string.Equals(workspaceType, "script", StringComparison.OrdinalIgnoreCase))
+                {
+                    var server = new ScriptingWorkspaceServer();
+
+                    result = await server.GetSignatureHelp(request, budget);
+                }
+                else
+                {
+                    var server = await _workspaceServerRegistry.GetWorkspaceServer(workspaceType);
+
+                    if (server is DotnetWorkspaceServer dotnetWorkspaceServer)
+                    {
+                        await dotnetWorkspaceServer.EnsureInitializedAndNotDisposed(budget);
+                    }
+
+                    result = await server.GetSignatureHelp(request, budget);
+                }
 
                 operation.Succeed();
 

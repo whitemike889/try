@@ -159,7 +159,7 @@ namespace MLS.Agent.Tests
                                     .DeserializeAs<RunResult>();
 
                 result.Diagnostics.Should().Contain(d =>
-                                                        d.Start== 56 &&
+                                                        d.Start == 56 &&
                                                         d.End == 56 &&
                                                         d.Message == ") expected" &&
                                                         d.Id == "CS1026");
@@ -197,7 +197,7 @@ namespace MLS.Agent.Tests
                     Content = new StringContent(
                         JsonConvert.SerializeObject(new
                         {
-                            workspace = new {workspaceType = "script", buffers = new []{ new { content = "Console.", id = "default.cs" }}},
+                            workspace = new { workspaceType = "script", buffers = new[] { new { content = "Console.", id = "default.cs" } } },
                             position = 8,
                             activeBufferId = "default.cs"
                         }),
@@ -246,9 +246,249 @@ namespace MLS.Agent.Tests
         }
 
         [Fact]
+        public async Task When_they_load_a_project_then_they_can_use_the_workspace_endpoint_to_get_signature_help()
+        {
+            #region bufferSources
+
+            const string program = @"using System;
+using System.Linq;
+
+namespace FibonacciTest
+{
+    public class Program
+    {
+        public static void Main()
+        {
+            foreach (var i in FibonacciGenerator.Fibonacci().Take(20))
+            {
+                Console.WriteLine(i);
+            }
+        }       
+    }
+}";
+            const string generator = @"using System.Collections.Generic;
+using System;
+namespace FibonacciTest
+{
+    public static class FibonacciGenerator
+    {
+        public static IEnumerable<int> Fibonacci()
+        {
+            int current = 1, next = 1;
+            while (true)
+            {
+                yield return current;
+                next = current + (current = next);
+                Console.WriteLine();
+            }
+        }
+    }
+}";
+
+            const string consoleWriteline = @"                Console.WriteLine(";
+            #endregion
+
+            var position = generator.IndexOf(consoleWriteline, StringComparison.Ordinal) + consoleWriteline.Length;
+
+            using (var agent = new AgentService())
+            {
+                var request = new HttpRequestMessage(
+                    HttpMethod.Post,
+                    @"/workspace/signaturehelp")
+                {
+                    Content = new StringContent(
+                        JsonConvert.SerializeObject(new
+                        {
+                            workspace = new
+                            {
+                                workspaceType = "console",
+                                buffers = new[]
+                            {
+                                new { content = program, id = "Program.cs" },
+                                new { content = generator, id = "generators/FibonacciGenerator.cs" }
+                            }
+                            },
+                            position = position,
+                            activeBufferId = "generators/FibonacciGenerator.cs"
+                        }),
+                        Encoding.UTF8,
+                        "application/json")
+                };
+
+                var response = await agent.SendAsync(request);
+
+                var result = await response
+                    .EnsureSuccess()
+                    .DeserializeAs<SignatureHelpResponse>();
+                result.Signatures.Should().NotBeNullOrEmpty();
+                result.Signatures.Should().Contain(signature => signature.Label == "void Console.WriteLine(string format, params object[] arg)");
+            }
+        }
+
+        [Fact]
+        public async Task When_they_load_a_project_then_they_can_use_the_workspace_endpoint_to_get_type_completion()
+        {
+            #region bufferSources
+
+            const string program = @"using System;
+using System.Linq;
+
+namespace FibonacciTest
+{
+    public class Program
+    {
+        public static void Main()
+        {
+            foreach (var i in FibonacciGenerator.Fibonacci().Take(20))
+            {
+                Console.WriteLine(i);
+            }
+        }       
+    }
+}";
+            const string generator = @"using System.Collections.Generic;
+using System;
+namespace FibonacciTest
+{
+    public static class FibonacciGenerator
+    {
+        public static IEnumerable<int> Fibonacci()
+        {
+            int current = 1, next = 1;
+            while (true)
+            {
+                yield return current;
+                next = current + (current = next);
+                Cons
+            }
+        }
+    }
+}";
+
+            const string consoleWriteline = @"                Cons";
+            #endregion
+
+            var position = generator.IndexOf(consoleWriteline, StringComparison.Ordinal) + consoleWriteline.Length;
+
+            using (var agent = new AgentService())
+            {
+                var request = new HttpRequestMessage(
+                    HttpMethod.Post,
+                    @"/workspace/completion")
+                {
+                    Content = new StringContent(
+                        JsonConvert.SerializeObject(new
+                        {
+                            workspace = new
+                            {
+                                workspaceType = "console",
+                                buffers = new[]
+                            {
+                                new { content = program, id = "Program.cs" },
+                                new { content = generator, id = "generators/FibonacciGenerator.cs" }
+                            }
+                            },
+                            position = position,
+                            activeBufferId = "generators/FibonacciGenerator.cs"
+                        }),
+                        Encoding.UTF8,
+                        "application/json")
+                };
+
+                var response = await agent.SendAsync(request);
+
+                var result = await response
+                    .EnsureSuccess()
+                    .DeserializeAs<CompletionResult>();
+                result.Items.Should().NotBeNullOrEmpty();
+                result.Items.Should().Contain(completion => completion.SortText == "Console");
+            }
+        }
+
+        [Fact]
+        public async Task When_they_load_a_project_then_they_can_use_the_workspace_endpoint_to_get_method_completion()
+        {
+            #region bufferSources
+
+            const string program = @"using System;
+using System.Linq;
+
+namespace FibonacciTest
+{
+    public class Program
+    {
+        public static void Main()
+        {
+            foreach (var i in FibonacciGenerator.Fibonacci().Take(20))
+            {
+                Console.WriteLine(i);
+            }
+        }       
+    }
+}";
+            const string generator = @"using System.Collections.Generic;
+using System;
+namespace FibonacciTest
+{
+    public static class FibonacciGenerator
+    {
+        public static IEnumerable<int> Fibonacci()
+        {
+            int current = 1, next = 1;
+            while (true)
+            {
+                yield return current;
+                next = current + (current = next);
+                Console.
+            }
+        }
+    }
+}";
+
+            const string consoleWriteline = @"                Console.";
+            #endregion
+
+            var position = generator.IndexOf(consoleWriteline, StringComparison.Ordinal) + consoleWriteline.Length;
+
+            using (var agent = new AgentService())
+            {
+                var request = new HttpRequestMessage(
+                    HttpMethod.Post,
+                    @"/workspace/completion")
+                {
+                    Content = new StringContent(
+                        JsonConvert.SerializeObject(new
+                        {
+                            workspace = new
+                            {
+                                workspaceType = "console",
+                                buffers = new[]
+                            {
+                                new { content = program, id = "Program.cs" },
+                                new { content = generator, id = "generators/FibonacciGenerator.cs" }
+                            }
+                            },
+                            position = position,
+                            activeBufferId = "generators/FibonacciGenerator.cs"
+                        }),
+                        Encoding.UTF8,
+                        "application/json")
+                };
+
+                var response = await agent.SendAsync(request);
+
+                var result = await response
+                    .EnsureSuccess()
+                    .DeserializeAs<CompletionResult>();
+                result.Items.Should().NotBeNullOrEmpty();
+                result.Items.Should().Contain(completion => completion.SortText == "Beep(int frequency, int duration)");
+            }
+        }
+
+        [Fact]
         public async Task When_invoked_with_workspace_it_executes_correctly()
         {
-            var output ="1";
+            var output = "1";
             var requestJson = @"{ ""Buffers"":[{""Id"":"""",""Content"":""using System;\nusing System.Linq;\n\npublic class Program\n{\n  public static void Main()\n  {\n    foreach (var i in Fibonacci().Take(1))\n    {\n      Console.WriteLine(i);\n    }\n  }\n\n  private static IEnumerable<int> Fibonacci()\n  {\n    int current = 1, next = 1;\n\n    while (true) \n    {\n      yield return current;\n      next = current + (current = next);\n    }\n  }\n}\n"",""Position"":0}],""Usings"":[],""WorkspaceType"":""script"",""Files"":[]}";
 
             var response = await CallRun(requestJson);
@@ -284,7 +524,7 @@ public class Program {
         }
     }
 }";
-            var request = new WorkspaceRequest(new Workspace(workspaceType: "script", buffers: new[] { new Workspace.Buffer(string.Empty, sourceCode, 0 )}));
+            var request = new WorkspaceRequest(new Workspace(workspaceType: "script", buffers: new[] { new Workspace.Buffer(string.Empty, sourceCode, 0) }));
 
             var response = await CallRun(request);
 
@@ -328,7 +568,7 @@ public class Program {
                 "]");
         }
 
-        [Fact(Skip="WIP")]
+        [Fact(Skip = "WIP")]
         public async Task When_aspnet_webapi_workspace_request_succeeds_then_standard_out_is_available_on_response()
         {
             var workspaceType = Tools.Workspace.Copy(await Default.WebApiWorkspace);
