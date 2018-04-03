@@ -88,7 +88,7 @@ namespace MLS.Agent.Tools
             var omniSharpRunScript = new FileInfo(
                 Path.Combine(
                     _omniSharpInstallFolder.FullName,
-                    "run"));
+                    "run2"));
 
             if (!omniSharpRunScript.Exists)
             {
