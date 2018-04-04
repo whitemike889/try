@@ -20,6 +20,44 @@ namespace WorkspaceServer.Tests
             return Task.FromResult<IWorkspaceServer>(new ScriptingWorkspaceServer());
         }
 
+        [Fact]
+        public async Task Can_show_signature_help_for_extensions()
+        {
+            var code = @"using System;
+using System.Collections.Generic;
+using System.Linq;
+
+public class Program
+{
+  public static void Main()
+  {
+    foreach (var i in Fibonacci().Take())
+    {
+      Console.WriteLine(i);
+    }
+  }
+
+  private static IEnumerable<int> Fibonacci()
+  {
+    int current = 1, next = 1;
+
+    while (true) 
+    {
+      yield return current;
+      next = current + (current = next);
+    }
+  }
+}";
+
+            var toFind = @"    foreach (var i in Fibonacci().Take(";
+            var position = code.IndexOf(toFind) + toFind.Length;
+            var ws = new Workspace(buffers: new[] { new Workspace.Buffer("", code, 0) });
+            var request = new WorkspaceRequest(ws, activeBufferId: "", position: position);
+            var server = await GetWorkspaceServer();
+            var result = await server.GetSignatureHelp(request);
+            result.Signatures.Should().NotBeEmpty();
+            result.Signatures.First().Label.Should().Be("IEnumerable<TSource> Enumerable.Take<TSource>(IEnumerable<TSource> source, int count)");
+        }
 
         [Fact]
         public async Task Can_show_KeyValuePair_because_it_uses_the_right_reference_assemblies()
