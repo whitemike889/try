@@ -17,6 +17,8 @@ namespace WorkspaceServer.Tests
         {
            
         }
+
+
         [Fact]
         public async Task Get_autocompletion_for_console_class()
         {
