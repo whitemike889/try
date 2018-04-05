@@ -60,7 +60,7 @@ namespace MLS.Agent
 
                 services.AddSingleton(_ => DefaultWorkspaces.CreateWorkspaceServerRegistry());
 
-                services.AddSingleton<IHostedService, WarmUpWorkspaces>();
+                services.AddSingleton<IHostedService, Warmup>();
 
                 operation.Succeed();
             }
