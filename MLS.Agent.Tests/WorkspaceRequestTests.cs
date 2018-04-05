@@ -4,6 +4,7 @@ using FluentAssertions;
 using FluentAssertions.Common;
 using MLS.Agent.JsonContracts;
 using Newtonsoft.Json;
+using WorkspaceServer.Models;
 using WorkspaceServer.Models.Execution;
 using Xunit;
 
@@ -41,7 +42,7 @@ namespace MLS.Agent.Tests
             {
                 var wr = new HttpRequest(@"/handler", string.Empty);
             });
-            action.ShouldThrow<ArgumentException>();
+            action.Should().Throw<ArgumentException>();
         }
 
         [Fact]
@@ -51,7 +52,7 @@ namespace MLS.Agent.Tests
             {
                 var wr = new HttpRequest(@"http://www.microsoft.com", "post");
             });
-            action.ShouldThrow<ArgumentException>();
+            action.Should().Throw<ArgumentException>();
         }
     }
 }

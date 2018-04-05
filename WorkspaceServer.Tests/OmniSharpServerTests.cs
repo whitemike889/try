@@ -6,6 +6,7 @@ using System.Reactive.Linq;
 using FluentAssertions;
 using System.Linq;
 using System.Threading.Tasks;
+using FluentAssertions.Extensions;
 using MLS.Agent.Tools;
 using Pocket;
 using WorkspaceServer.Servers.Dotnet;

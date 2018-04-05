@@ -1,8 +1,8 @@
 ﻿using System;
 using FluentAssertions;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Clockwise;
+using FluentAssertions.Extensions;
 using Microsoft.CodeAnalysis;
 using Pocket;
 using Xunit;
@@ -12,18 +12,10 @@ using Workspace = WorkspaceServer.Models.Execution.Workspace;
 
 namespace WorkspaceServer.Tests
 {
-    public abstract class WorkspaceServerTests : IDisposable
+    public abstract class WorkspaceServerTests : WorkspaceServerTestsCore
     {
-        private readonly CompositeDisposable _disposables = new CompositeDisposable();
-
-        protected abstract Task<IWorkspaceServer> GetWorkspaceServer(
-            [CallerMemberName] string testName = null);
-
+       
         protected abstract Workspace CreateWorkspaceContaining(string text);
-
-        public void Dispose() => _disposables.Dispose();
-
-        protected void RegisterForDisposal(IDisposable disposable) => _disposables.Add(disposable);
 
         [Fact]
         public async Task Diagnostic_logs_do_not_show_up_in_captured_console_output()
@@ -38,9 +30,9 @@ namespace WorkspaceServer.Tests
             }
         }
 
-        protected WorkspaceServerTests(ITestOutputHelper output)
+        protected WorkspaceServerTests(ITestOutputHelper output) : base(output)
         {
-            _disposables.Add(output.SubscribeToPocketLogger());
+            
         }
 
         [Fact]
@@ -112,7 +104,7 @@ Console.WriteLine(banana);");
 
             var result = await server.Run(request);
             
-            result.ShouldBeEquivalentTo(new
+            result.Should().BeEquivalentTo(new
             {
                 Succeeded = false,
                 Output = new[] { "(2,19): error CS0103: The name \'banana\' does not exist in the current context" },

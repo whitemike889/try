@@ -2,6 +2,7 @@
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using FluentAssertions;
+using WorkspaceServer.Models;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Servers.Dotnet;
 using Xunit;
@@ -35,7 +36,7 @@ namespace WorkspaceServer.Tests
 
             var result = await server.Run(workspace);
 
-            result.ShouldBeEquivalentTo(new
+            result.Should().BeEquivalentTo(new
             {
                 Succeeded = false,
                 Output = new[] { "(1,19): error CS0103: The name \'banana\' does not exist in the current context" },
@@ -54,7 +55,7 @@ namespace WorkspaceServer.Tests
 
             var result = await server.Run(workspace);
 
-            result.ShouldBeEquivalentTo(new
+            result.Should().BeEquivalentTo(new
             {
                 Succeeded = false,
                 Output = new[] { "(2,19): error CS0103: The name \'banana\' does not exist in the current context" },
@@ -86,8 +87,7 @@ namespace WorkspaceServer.Tests
         {
             #region bufferSources
 
-            var program = @"
-using System;
+            const string program = @"using System;
 using System.Linq;
 
 namespace FibonacciTest
@@ -103,8 +103,7 @@ namespace FibonacciTest
         }       
     }
 }";
-            var generator = @"
-using System.Collections.Generic;
+            const string generator = @"using System.Collections.Generic;
 
 namespace FibonacciTest
 {
@@ -150,8 +149,7 @@ namespace FibonacciTest
         {
             #region bufferSources
 
-            var program = @"
-using System;
+            const string program = @"using System;
 using System.Linq;
 
 namespace FibonacciTest
@@ -167,8 +165,7 @@ namespace FibonacciTest
         }       
     }
 }";
-            var generator = @"
-using System.Collections.Generic;
+            const string generator = @"using System.Collections.Generic;
 
 namespace FibonacciTest
 {
@@ -198,27 +195,7 @@ namespace FibonacciTest
 
             result.Succeeded.Should().BeTrue();
             result.Output.Count.Should().Be(20);
-            result.Output.ShouldAllBeEquivalentTo(new[]{
-                "1",
-                "1",
-                "2",
-                "3",
-                "5",
-                "8",
-                "13",
-                "21",
-                "34",
-                "55",
-                "89",
-                "144",
-                "233",
-                "377",
-                "610",
-                "987",
-                "1597",
-                "2584",
-                "4181",
-                "6765"});
+            result.Output.Should().BeEquivalentTo("1", "1", "2", "3", "5", "8", "13", "21", "34", "55", "89", "144", "233", "377", "610", "987", "1597", "2584", "4181", "6765");
         }
 
         [Fact]
@@ -226,8 +203,7 @@ namespace FibonacciTest
         {
             #region bufferSources
 
-            var program = @"
-using System;
+            const string program = @"using System;
 using System.Linq;
 
 namespace FibonacciTest
@@ -243,8 +219,7 @@ namespace FibonacciTest
         }       
     }
 }";
-            var generator = @"
-using System.Collections.Generic;
+            const string generator = @"using System.Collections.Generic;
 
 namespace FibonacciTest
 {
@@ -275,27 +250,7 @@ namespace FibonacciTest
 
             result.Succeeded.Should().BeTrue();
             result.Output.Count.Should().Be(20);
-            result.Output.ShouldAllBeEquivalentTo(new[]{
-                "1",
-                "1",
-                "2",
-                "3",
-                "5",
-                "8",
-                "13",
-                "21",
-                "34",
-                "55",
-                "89",
-                "144",
-                "233",
-                "377",
-                "610",
-                "987",
-                "1597",
-                "2584",
-                "4181",
-                "6765"});
+            result.Output.Should().BeEquivalentTo("1", "1", "2", "3", "5", "8", "13", "21", "34", "55", "89", "144", "233", "377", "610", "987", "1597", "2584", "4181", "6765");
         }
 
         protected override async Task<IWorkspaceServer> GetWorkspaceServer(

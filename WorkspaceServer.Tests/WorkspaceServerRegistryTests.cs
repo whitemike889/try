@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Pocket;
+using WorkspaceServer.Models;
 using WorkspaceServer.Models.Execution;
 using Xunit;
 using Xunit.Abstractions;
@@ -95,7 +96,7 @@ namespace Twilio_try.dot.net_sample
 
             Func<Task> dispose = async () => await workspaceServer.Run(Create.SimpleRunRequest());
 
-            dispose.ShouldThrow<ObjectDisposedException>();
+            dispose.Should().Throw<ObjectDisposedException>();
         }
 
         [Fact]

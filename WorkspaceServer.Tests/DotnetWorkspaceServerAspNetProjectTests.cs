@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Clockwise;
 using FluentAssertions;
+using FluentAssertions.Extensions;
 using Pocket;
 using Recipes;
 using WorkspaceServer.Models.Execution;
