@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using Clockwise;
 using Newtonsoft.Json;
@@ -53,7 +54,6 @@ namespace MLS.Agent
             await _httpClient.PostAsync(
                 relativeUri,
                 new StringContent(
-                    JsonConvert.SerializeObject(
-                        workspaceRequest)));
+                    JsonConvert.SerializeObject(workspaceRequest), Encoding.UTF8, "application/json"));
     }
 }
