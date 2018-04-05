@@ -5,6 +5,7 @@ using Clockwise;
 using Newtonsoft.Json;
 using Pocket;
 using WorkspaceServer;
+using WorkspaceServer.Models;
 using WorkspaceServer.Models.Execution;
 using static Pocket.Logger<MLS.Agent.Warmup>;
 
@@ -12,16 +13,16 @@ namespace MLS.Agent
 {
     public class Warmup : HostedService
     {
-        private readonly WorkspaceServerRegistry workspaceServerRegistry;
+        private readonly WorkspaceServerRegistry _workspaceServerRegistry;
 
-        private readonly HttpClient httpClient = new HttpClient
+        private readonly HttpClient _httpClient = new HttpClient
         {
             BaseAddress = new Uri("http://127.0.0.1:4242")
         };
 
         public Warmup(WorkspaceServerRegistry workspaceServerRegistry)
         {
-            this.workspaceServerRegistry = workspaceServerRegistry ??
+            this._workspaceServerRegistry = workspaceServerRegistry ??
                                            throw new ArgumentNullException(nameof(workspaceServerRegistry));
         }
 
@@ -29,14 +30,14 @@ namespace MLS.Agent
         {
             await WarmUpRoutes();
 
-            await workspaceServerRegistry.StartAllServers(budget);
+            await _workspaceServerRegistry.StartAllServers(budget);
         }
 
         private async Task WarmUpRoutes()
         {
             using (Log.OnEnterAndExit())
             {
-                await httpClient.GetAsync("/sensors/version");
+                await _httpClient.GetAsync("/sensors/version");
 
                 await Post("/workspace/run",
                            new WorkspaceRequest(
@@ -49,7 +50,7 @@ namespace MLS.Agent
         }
 
         private async Task Post(string relativeUri, WorkspaceRequest workspaceRequest) =>
-            await httpClient.PostAsync(
+            await _httpClient.PostAsync(
                 relativeUri,
                 new StringContent(
                     JsonConvert.SerializeObject(
