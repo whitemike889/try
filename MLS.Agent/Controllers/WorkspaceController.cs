@@ -17,12 +17,14 @@ namespace MLS.Agent.Controllers
     public class WorkspaceController : Controller
     {
         private readonly WorkspaceServerRegistry _workspaceServerRegistry;
+        public readonly WorkspaceSettings _workspaceSettings;
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
 
-        public WorkspaceController(WorkspaceServerRegistry workspaceServerRegistry)
+        public WorkspaceController(WorkspaceServerRegistry workspaceServerRegistry, WorkspaceSettings workspaceSettings)
         {
             _workspaceServerRegistry = workspaceServerRegistry ??
                                            throw new ArgumentNullException(nameof(workspaceServerRegistry));
+            _workspaceSettings = workspaceSettings;
         }
 
         [HttpPost]
@@ -42,6 +44,11 @@ namespace MLS.Agent.Controllers
                 if (!int.TryParse(timeoutInMilliseconds, out var timeoutMs))
                 {
                     return BadRequest();
+                }
+
+                if (!_workspaceSettings.CanRun)
+                {
+                    return Forbid();
                 }
 
                 RunResult result;
@@ -102,6 +109,11 @@ namespace MLS.Agent.Controllers
             [FromBody] WorkspaceRequest request,
             [FromHeader(Name = "Timeout")] string timeoutInMilliseconds = "15000")
         {
+            if (Debugger.IsAttached && !(Clock.Current is VirtualClock))
+            {
+                _disposables.Add(VirtualClock.Start());
+            }
+
             using (var operation = Log.ConfirmOnExit())
             {
                 if (!int.TryParse(timeoutInMilliseconds, out var timeoutMs))
@@ -126,6 +138,11 @@ namespace MLS.Agent.Controllers
             [FromBody] Workspace request,
             [FromHeader(Name = "Timeout")] string timeoutInMilliseconds = "15000")
         {
+            if (Debugger.IsAttached && !(Clock.Current is VirtualClock))
+            {
+                _disposables.Add(VirtualClock.Start());
+            }
+
             using (var operation = Log.ConfirmOnExit())
             {
                 if (!int.TryParse(timeoutInMilliseconds, out var timeoutMs))
@@ -150,6 +167,11 @@ namespace MLS.Agent.Controllers
             [FromBody] WorkspaceRequest request,
             [FromHeader(Name = "Timeout")] string timeoutInMilliseconds = "15000")
         {
+            if (Debugger.IsAttached && !(Clock.Current is VirtualClock))
+            {
+                _disposables.Add(VirtualClock.Start());
+            }
+
             using (var operation = Log.ConfirmOnExit())
             {
                 if (!int.TryParse(timeoutInMilliseconds, out var timeoutMs))

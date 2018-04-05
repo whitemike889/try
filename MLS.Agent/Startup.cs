@@ -2,6 +2,7 @@
 using Clockwise;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -26,19 +27,25 @@ namespace MLS.Agent
 
             var configurationBuilder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath);
-
+            
             Configuration = configurationBuilder.Build();
+
+            AgentConfiguration = new AgentConfiguration(Configuration, Environment);
         }
 
         protected IConfigurationRoot Configuration { get; }
 
         protected IHostingEnvironment Environment { get; }
 
+        public AgentConfiguration AgentConfiguration { get; }
+
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
             using (var operation = Log.OnEnterAndConfirmOnExit())
             {
+                services.AddSingleton<IControllerActivator>(c => AgentConfiguration.GetService<ControllerActivator>());
+
                 services.AddApplicationInsightsTelemetry(
                     Program.GetInstrumentationKey(
                         Environment.IsProduction()));
