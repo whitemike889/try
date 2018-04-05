@@ -19,7 +19,7 @@ namespace MLS.Agent
             }
 
 
-            var environment1 = environment ?? throw new ArgumentNullException(nameof(environment));
+            environment = environment ?? throw new ArgumentNullException(nameof(environment));
 
             _container = new PocketContainer();
             _container.AddStrategy(type =>
@@ -75,9 +75,10 @@ namespace MLS.Agent
 
                 return null;
             });
-                ConfigureForAllEnvironments();
 
-            if (environment1.IsProduction())
+            ConfigureForAllEnvironments();
+
+            if (environment.IsProduction())
             {
                 ConfigureForProduction();
             }
@@ -85,12 +86,12 @@ namespace MLS.Agent
             {
                 ConfigureForLocal();
 
-                if (environment1.IsTest())
+                if (environment.IsTest())
                 {
                     ConfigureForTest();
                 }
 
-                if (environment1.IsDevelopment())
+                if (environment.IsDevelopment())
                 {
                     ConfigureForDevelopment();
                 }
@@ -105,7 +106,7 @@ namespace MLS.Agent
 
         private void ConfigureForTest()
         {
-            _container.RegisterSingle(c => new WorkspaceSettings { CanRun = true });
+            _container.RegisterSingle(c => EnvironmentVariableDeserializer.DeserializeFromEnvVars<WorkspaceSettings>());
         }
 
         private void ConfigureForLocal()
@@ -120,6 +121,7 @@ namespace MLS.Agent
 
         private void ConfigureForAllEnvironments()
         {
+         
         }
 
         public object GetService(Type serviceType)
