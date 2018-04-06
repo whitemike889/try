@@ -8,7 +8,7 @@ namespace MLS.Orchestrator.Integration.Tests
 {
     public class PeakyTests : PeakyXunitTestBase, IDisposable
     {
-        private readonly PeakyClient _peakyClient = new PeakyClient(new Uri("https://mls-monitoring.azurewebsites.net/tests/staging/agent"));
+        private readonly PeakyClient _peakyClient = new PeakyClient(new Uri("https://mls-monitoring.azurewebsites.net/tests/staging/agent?deployment=true"));
 
         public override PeakyClient PeakyClient => _peakyClient;
         
