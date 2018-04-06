@@ -17,14 +17,14 @@ namespace MLS.Agent.Controllers
     public class WorkspaceController : Controller
     {
         private readonly WorkspaceServerRegistry _workspaceServerRegistry;
-        public readonly WorkspaceSettings _workspaceSettings;
+     
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
 
-        public WorkspaceController(WorkspaceServerRegistry workspaceServerRegistry, WorkspaceSettings workspaceSettings)
+        public WorkspaceController(WorkspaceServerRegistry workspaceServerRegistry)
         {
             _workspaceServerRegistry = workspaceServerRegistry ??
                                            throw new ArgumentNullException(nameof(workspaceServerRegistry));
-            _workspaceSettings = workspaceSettings;
+       
         }
 
         [HttpPost]
@@ -44,11 +44,6 @@ namespace MLS.Agent.Controllers
                 if (!int.TryParse(timeoutInMilliseconds, out var timeoutMs))
                 {
                     return BadRequest();
-                }
-
-                if (!_workspaceSettings.CanRun)
-                {
-                    return Forbid();
                 }
 
                 RunResult result;
