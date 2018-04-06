@@ -20,7 +20,7 @@ namespace MLS.Agent.Controllers
      
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
 
-        public WorkspaceController(WorkspaceServerRegistry workspaceServerRegistry, WorkspaceSettings workspaceSettings)
+        public WorkspaceController(WorkspaceServerRegistry workspaceServerRegistry)
         {
             _workspaceServerRegistry = workspaceServerRegistry ??
                                            throw new ArgumentNullException(nameof(workspaceServerRegistry));
