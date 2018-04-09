@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using FluentAssertions;
 using Peaky.Client;
 using Peaky.XUnit;
@@ -15,7 +16,7 @@ namespace MLS.LanguageServices.Integration.Tests
 
         [Theory]
         [ClassData(typeof(LanguageServicesTests))]
-        public async void The_peaky_test_passes(Uri url)
+        public async Task The_peaky_test_passes(Uri url)
         {
             var result = await PeakyClient.GetResultFor(url);
 
