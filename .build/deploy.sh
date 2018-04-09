@@ -57,7 +57,11 @@ restart_appservice "trydotnetlanguageservices-staging"
 
 dotnet restore $REPO_ROOT/MLS.Agent.Integration.Tests/MLS.Agent.Integration.Tests.csproj
 
+dotnet restore $REPO_ROOT/MLS.LanguageServices.Integration.Tests/MLS.LanguageServices.Integration.Tests.csproj
+
 dotnet test $REPO_ROOT/MLS.Agent.Integration.Tests/MLS.Agent.Integration.Tests.csproj --logger trx
+
+dotnet test $REPO_ROOT/MLS.LanguageServices.Integration.Tests/MLS.LanguageServices.Integration.Tests.csproj --logger trx
 
 docker push $DOCKER_REPOSITORY_SERVER/$IMAGE_NAME:latest
 

@@ -4,7 +4,7 @@ using Peaky.Client;
 using Peaky.XUnit;
 using Xunit;
 
-namespace MLS.Agent.Integration.Tests
+namespace MLS.LanguageServices.Integration.Tests
 {
     public class LanguageServicesTests : PeakyXunitTestBase, IDisposable
     {
