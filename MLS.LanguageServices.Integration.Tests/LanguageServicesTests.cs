@@ -3,23 +3,11 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Peaky.Client;
-using Peaky.XUnit;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace MLS.LanguageServices.Integration.Tests
 {
-
-    public class LanguageServicesTestsDiscovery : PeakyXunitTestBase, IDisposable
-    {
-        private static readonly Uri TestDiscoveryUri = new Uri("https://mls-monitoring.azurewebsites.net/tests/staging/LanguageServices?deployment=true");
-
-        private readonly PeakyClient _peakyClient = new PeakyClient(TestDiscoveryUri);
-
-        public override PeakyClient PeakyClient => _peakyClient;
-
-        public void Dispose() => _peakyClient.Dispose();
-    }
     public class LanguageServicesTests :  IDisposable
     {
         private readonly ITestOutputHelper _output;
