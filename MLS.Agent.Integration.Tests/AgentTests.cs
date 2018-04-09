@@ -24,6 +24,12 @@ namespace MLS.Agent.Integration.Tests
         {
             var result = await _peakyClient.GetResultFor(url);
 
+            if (!result.Passed)
+            {
+                await Task.Delay(45000);
+                result = await _peakyClient.GetResultFor(url);
+            }
+
             _output.WriteLine(result.Content);
 
             result.Passed.Should().BeTrue();
