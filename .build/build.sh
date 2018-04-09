@@ -51,3 +51,7 @@ cp -r "$REPO_ROOT/.build" "$BUILD_ARTIFACTSTAGINGDIRECTORY"
 mkdir -p "$BUILD_ARTIFACTSTAGINGDIRECTORY/MLS.Agent.Integration.Tests"
 
 cp -r "$REPO_ROOT/MLS.Agent.Integration.Tests" "$BUILD_ARTIFACTSTAGINGDIRECTORY"
+
+mkdir -p "$BUILD_ARTIFACTSTAGINGDIRECTORY/MLS.LanguageServices.Integration.Tests"
+
+cp -r "$REPO_ROOT/MLS.LanguageServices.Integration.Tests" "$BUILD_ARTIFACTSTAGINGDIRECTORY"
