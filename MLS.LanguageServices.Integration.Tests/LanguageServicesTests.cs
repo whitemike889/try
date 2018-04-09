@@ -1,31 +1,35 @@
 using System;
+using System.Net.Http;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Peaky.Client;
-using Peaky.XUnit;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace MLS.LanguageServices.Integration.Tests
 {
-    public class LanguageServicesTests : PeakyXunitTestBase, IDisposable
+    public class LanguageServicesTests :  IDisposable
     {
-        private readonly PeakyClient _peakyClient = new PeakyClient(new Uri("https://mls-monitoring.azurewebsites.net/tests/staging/LanguageServices?deployment=true"));
+        private readonly ITestOutputHelper _output;
 
-        public override PeakyClient PeakyClient => _peakyClient;
+        private readonly PeakyClient _peakyClient = new PeakyClient(new HttpClient() { Timeout = TimeSpan.FromMinutes(10) });
 
+        public LanguageServicesTests(ITestOutputHelper output)
+        {
+            _output = output;
+        }
 
         [Theory]
-        [ClassData(typeof(LanguageServicesTests))]
+        [ClassData(typeof(LanguageServicesTestsDiscovery))]
         public async Task The_peaky_test_passes(Uri url)
         {
-            var result = await PeakyClient.GetResultFor(url);
+            var result = await _peakyClient.GetResultFor(url);
+
+            _output.WriteLine(result.Content);
 
             result.Passed.Should().BeTrue();
         }
 
-        public void Dispose()
-        {
-            _peakyClient.Dispose();
-        }
+        public void Dispose() => _peakyClient.Dispose();
     }
 }
