@@ -8,7 +8,7 @@ namespace WorkspaceServer.Transformations
 {
     public class OmniSharpDiagnosticTransformer
     {
-        public static IEnumerable<(SerializableDiagnostic, string)> ReconstructDiagnosticLocations(IEnumerable<OmniSharp.Client.Diagnostic> bodyDiagnostics,
+        public static IEnumerable<(SerializableDiagnostic Diagnostic, string Message)> ReconstructDiagnosticLocations(IEnumerable<OmniSharp.Client.Diagnostic> bodyDiagnostics,
             Dictionary<string, Viewport> viewPortsByBufferId, int paddingSize)
         {
             var diagnostics = bodyDiagnostics ?? Enumerable.Empty<OmniSharp.Client.Diagnostic>();

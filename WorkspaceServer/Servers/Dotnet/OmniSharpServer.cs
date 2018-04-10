@@ -2,7 +2,6 @@
 using System.Diagnostics;
 using System.IO;
 using System.Reactive.Linq;
-using System.Reactive.Subjects;
 using System.Threading;
 using System.Threading.Tasks;
 using Clockwise;
@@ -10,6 +9,7 @@ using MLS.Agent.Tools;
 using OmniSharp.Client;
 using OmniSharp.Client.Events;
 using Pocket;
+using WorkspaceServer.WorkspaceFeatures;
 using static Pocket.Logger<WorkspaceServer.Servers.Dotnet.OmniSharpServer>;
 
 namespace WorkspaceServer.Servers.Dotnet
@@ -20,8 +20,8 @@ namespace WorkspaceServer.Servers.Dotnet
         private readonly string _pluginPath;
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
         private int _seq;
-        private readonly ReplaySubject<string> _standardOutput = new ReplaySubject<string>();
-        private readonly ReplaySubject<string> _standardError = new ReplaySubject<string>();
+        private readonly StandardOutput _standardOutput = new StandardOutput();
+        private readonly StandardError _standardError = new StandardError();
         private readonly AsyncLazy<Process> _omnisharpProcess;
 
         public OmniSharpServer(
@@ -80,9 +80,9 @@ namespace WorkspaceServer.Servers.Dotnet
             }
         }
 
-        public IObservable<string> StandardOutput => _standardOutput;
+        public StandardOutput StandardOutput => _standardOutput;
 
-        public IObservable<string> StandardError => _standardError;
+        public StandardError StandardError => _standardError;
 
         public async Task Send(string text)
         {

@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
 using Clockwise;
-using WorkspaceServer.Servers.Dotnet;
+using static WorkspaceServer.Servers.WorkspaceServer;
 
 namespace MLS.Agent
 {
@@ -15,7 +15,7 @@ namespace MLS.Agent
 
                     var firstExceededEntry = budgetExceededException.Budget.Entries.FirstOrDefault(e => e.BudgetWasExceeded);
 
-                    if (firstExceededEntry?.Name == DotnetWorkspaceServer.UserCodeCompletedBudgetEntryName)
+                    if (firstExceededEntry?.Name == UserCodeCompletedBudgetEntryName)
                     {
                         return 417;
                     }

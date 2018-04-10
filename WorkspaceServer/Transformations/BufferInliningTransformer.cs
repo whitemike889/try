@@ -11,18 +11,24 @@ using Workspace = WorkspaceServer.Models.Execution.Workspace;
 
 namespace WorkspaceServer.Transformations
 {
-    public class BufferInliningTransformer : IWorksapceTransformer
+    public class BufferInliningTransformer : IWorkspaceTransformer
     {
         private static readonly string ProcessorName = typeof(BufferInliningTransformer).Name;
         private static readonly string Padding = Environment.NewLine;
+
         public static int PaddingSize => Padding.Length;
+
         public async Task<Workspace> TransformAsync(Workspace source, Budget timeBudget = null)
         {
             if (source == null) throw new ArgumentNullException(nameof(source));
 
             var results = await InlineBuffersAsync(source, timeBudget);
 
-            return new Workspace(workspaceType: source.WorkspaceType, files: results.files, buffers: results.buffers);
+            return new Workspace(
+                workspaceType: source.WorkspaceType, 
+                files: results.files,
+                buffers: results.buffers,
+                usings: source.Usings);
         }
 
         public Dictionary<string, Viewport> ExtractViewPorts(Workspace ws)
