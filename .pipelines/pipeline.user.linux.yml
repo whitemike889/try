@@ -69,37 +69,29 @@ versioning:
 # The signed files will be restored back to the original locations before the next stage is invoked.
 # Eventually, network access will be limited or cut-off in this stage.
 build:
-  commands:                                                             # This is a sequence of script files to be executed one after another
-                                                                        # in the order they appear here.
-    - !!buildcommand                                                    # There are three types of commands, buildcommand, testcommand and
-                                                                        # defaultcommand.
-                                                                        # The only difference is that they collect different types of
-                                                                        # artifacts.
-                                                                        # buildcommand --- run a build script, collect artifacts, specify
-                                                                        #                  files to sign and logs.
-                                                                        # defaultcommand - run any script, collect logs only.
-                                                                        # testcommand ---- run a test script, collect logs, test results and
-                                                                        #                  code coverage files. and associate with the build.
-      name: '.build/cdpxbuild.sh'                                       # This is name for this step. The step name will be in logs and in the
-                                                                        # future, will be associated with metrics, timelines, journal etc.
-      command: '.build/cdpxbuild.sh'                                    # A root relative path to the script to execute. Any console output
-      fail_on_stderr: false                                             # will be automatically pushed to VSTS logs. Any files explicitly
-                                                                        # written to file can be collected via the logs list.
-                                                                        # Note that the best way to code these scripts is such that they run
-                                                                        # on a developer desktop. Invariably, if you can get it working on
-                                                                        # your dev desktop, it should work in the CDP pipeline.
-      logs:                                                             # This is a sequence of include and exclude glob patterns.
-        - include:                                                      # Include patterns are evaluated fully first. All of them are relative
-                                                                        # to the root of the source directory.
-            - 'samples/c/build.log'
-          exclude:                                                      # Exclude patterns are evaluated after all include patterns are
-                                                                        # evaluated.
-                                                                        # There may be spurious log files. Exclude them.
-      artifacts:                                                        # The artifacts to collect after the build is done.
-        - from: 'artifacts'                                             # The patterns here will be evaluated on this folder.
-          to: 'artifacts'                                               # The files found will be copied to this folder in the drop.
-          include:                                                      # The include patterns.
-            - '**/*'                                                    # Include all files in all sub-folders under the from location.  
+  commands:                                          
+                                                     
+    - !!buildcommand                                 
+                                                     
+                                                     
+                                                     
+                                                     
+                                                     
+                                                     
+                                                     
+                                                     
+      name: '.build/cdpxbuild.sh'                    
+                                                     
+      command: '.build/cdpxbuild.sh'                 
+      fail_on_stderr: false                          
+                                                     
+                                                     
+                                                     
+      artifacts:                                     
+        - from: '.'
+          to: '.'
+          include:
+            - 'build.artifact.commit.sha'                                                  
 
                                                                         # We always preserve the root relative path for every matched file.
                                                                         # Sometimes that's OK and sometimes it's not. The from, to options
