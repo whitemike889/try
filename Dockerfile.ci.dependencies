@@ -21,6 +21,11 @@ RUN dotnet add package NodaTime
 RUN dotnet add package NodaTime.Testing
 RUN dotnet build
 
+WORKDIR /workspaces/aspnet.webapi
+RUN dotnet new webapi
+RUN dotnet build
+RUN dotnet publish
+
 # hack to get the emit plugin into the package cache
 WORKDIR /workspaces/emit
 RUN dotnet new library

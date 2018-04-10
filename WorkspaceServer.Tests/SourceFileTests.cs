@@ -13,7 +13,7 @@ namespace WorkspaceServer.Tests
         {
             Action act = () => SourceFile.Create(text: null);
 
-            act.ShouldThrow<ArgumentNullException>();
+            act.Should().Throw<ArgumentNullException>();
         }
 
         [Fact]
@@ -35,7 +35,7 @@ namespace WorkspaceServer.Tests
             var span = TextSpan.FromBounds(1, 1);
             Action act = () => SourceFile.Create(string.Empty, span);
 
-            act.ShouldThrow<ArgumentOutOfRangeException>();
+            act.Should().Throw<ArgumentOutOfRangeException>();
         }
 
         [Fact]
@@ -44,7 +44,7 @@ namespace WorkspaceServer.Tests
             var span = TextSpan.FromBounds(0, 1);
             Action act = () => SourceFile.Create(string.Empty, span);
 
-            act.ShouldThrow<ArgumentOutOfRangeException>();
+            act.Should().Throw<ArgumentOutOfRangeException>();
         }
     }
 }

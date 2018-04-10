@@ -2,6 +2,7 @@
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using FluentAssertions;
+using WorkspaceServer.Models;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Servers.Dotnet;
 using Xunit;
@@ -9,20 +10,19 @@ using Xunit.Abstractions;
 
 namespace WorkspaceServer.Tests
 {
-    public class DotnetWorkspaceServerTests : WorkspaceServerTests
+    public class DotnetWorkspaceServerConsoleProjectTests : WorkspaceServerTests
     {
-        public DotnetWorkspaceServerTests(ITestOutputHelper output) : base(output)
+        public DotnetWorkspaceServerConsoleProjectTests(ITestOutputHelper output) : base(output)
         {
         }
 
-        protected override WorkspaceRequest CreateRunRequestContaining(string text)
+        protected override Workspace CreateWorkspaceContaining(string text)
         {
-            var workspace = new Workspace(
+            return new Workspace(
                 $@"using System; using System.Linq; using System.Collections.Generic; class Program {{ static void Main() {{ {text}
                     }}
                 }}
 ");
-           return new WorkspaceRequest(workspace);
         }
 
         [Fact]
@@ -32,12 +32,11 @@ namespace WorkspaceServer.Tests
                 workspaceType: "console",
                 files: new[] { new Workspace.File("Program.cs", CodeSamples.SourceCodeProvider.ConsoleProgramSingleRegion) },
                 buffers: new[] { new Workspace.Buffer("Program.cs@alpha", @"Console.WriteLine(banana);", 0) });
-            var request = new WorkspaceRequest(workspace);
             var server = await GetWorkspaceServer();
 
-            var result = await server.Run(request);
+            var result = await server.Run(workspace);
 
-            result.ShouldBeEquivalentTo(new
+            result.Should().BeEquivalentTo(new
             {
                 Succeeded = false,
                 Output = new[] { "(1,19): error CS0103: The name \'banana\' does not exist in the current context" },
@@ -52,12 +51,11 @@ namespace WorkspaceServer.Tests
                 workspaceType: "console",
                 files: new[] { new Workspace.File("Program.cs", CodeSamples.SourceCodeProvider.ConsoleProgramSingleRegion) },
                 buffers: new[] { new Workspace.Buffer("Program.cs@alpha", @"var a = 10;" + Environment.NewLine + "Console.WriteLine(banana);", 0) });
-            var request = new WorkspaceRequest(workspace);
             var server = await GetWorkspaceServer();
 
-            var result = await server.Run(request);
+            var result = await server.Run(workspace);
 
-            result.ShouldBeEquivalentTo(new
+            result.Should().BeEquivalentTo(new
             {
                 Succeeded = false,
                 Output = new[] { "(2,19): error CS0103: The name \'banana\' does not exist in the current context" },
@@ -85,12 +83,11 @@ namespace WorkspaceServer.Tests
         }
 
         [Fact]
-        public async Task Workspace_cleans_previous_files()
+        public async Task When_Run_is_called_again_then_previous_file_state_is_cleaned_up()
         {
             #region bufferSources
 
-            var program = @"
-using System;
+            const string program = @"using System;
 using System.Linq;
 
 namespace FibonacciTest
@@ -106,8 +103,7 @@ namespace FibonacciTest
         }       
     }
 }";
-            var generator = @"
-using System.Collections.Generic;
+            const string generator = @"using System.Collections.Generic;
 
 namespace FibonacciTest
 {
@@ -132,10 +128,9 @@ namespace FibonacciTest
                 new Workspace.Buffer("Program.cs", program, 0),
                 new Workspace.Buffer("FibonacciGenerator.cs", generator, 0)
             });
-            var request = new WorkspaceRequest(workspace);
             var server = await GetWorkspaceServer();
 
-            var result = await server.Run(request);
+            var result = await server.Run(workspace);
 
             result.Succeeded.Should().BeTrue();
 
@@ -144,8 +139,7 @@ namespace FibonacciTest
                 new Workspace.Buffer("NotProgram.cs", program, 0),
                 new Workspace.Buffer("FibonacciGenerator.cs", generator, 0)
             });
-            request = new WorkspaceRequest(workspace);
-            result = await server.Run(request);
+            result = await server.Run(workspace);
 
             result.Succeeded.Should().BeTrue();
         }
@@ -155,8 +149,7 @@ namespace FibonacciTest
         {
             #region bufferSources
 
-            var program = @"
-using System;
+            const string program = @"using System;
 using System.Linq;
 
 namespace FibonacciTest
@@ -172,8 +165,7 @@ namespace FibonacciTest
         }       
     }
 }";
-            var generator = @"
-using System.Collections.Generic;
+            const string generator = @"using System.Collections.Generic;
 
 namespace FibonacciTest
 {
@@ -197,34 +189,13 @@ namespace FibonacciTest
                 new Workspace.Buffer("Program.cs",program,0),
                 new Workspace.Buffer("FibonacciGenerator.cs",generator,0)
             });
-            var request = new WorkspaceRequest(workspace);
             var server = await GetWorkspaceServer();
 
-            var result = await server.Run(request);
+            var result = await server.Run(workspace);
 
             result.Succeeded.Should().BeTrue();
             result.Output.Count.Should().Be(20);
-            result.Output.ShouldAllBeEquivalentTo(new[]{
-                "1",
-                "1",
-                "2",
-                "3",
-                "5",
-                "8",
-                "13",
-                "21",
-                "34",
-                "55",
-                "89",
-                "144",
-                "233",
-                "377",
-                "610",
-                "987",
-                "1597",
-                "2584",
-                "4181",
-                "6765"});
+            result.Output.Should().BeEquivalentTo("1", "1", "2", "3", "5", "8", "13", "21", "34", "55", "89", "144", "233", "377", "610", "987", "1597", "2584", "4181", "6765");
         }
 
         [Fact]
@@ -232,8 +203,7 @@ namespace FibonacciTest
         {
             #region bufferSources
 
-            var program = @"
-using System;
+            const string program = @"using System;
 using System.Linq;
 
 namespace FibonacciTest
@@ -249,8 +219,7 @@ namespace FibonacciTest
         }       
     }
 }";
-            var generator = @"
-using System.Collections.Generic;
+            const string generator = @"using System.Collections.Generic;
 
 namespace FibonacciTest
 {
@@ -274,40 +243,20 @@ namespace FibonacciTest
                 new Workspace.Buffer("Program.cs",program,0),
                 new Workspace.Buffer("generators/FibonacciGenerator.cs",generator,0)
             });
-            var request = new WorkspaceRequest(workspace);
+
             var server = await GetWorkspaceServer();
 
-            var result = await server.Run(request);
+            var result = await server.Run(workspace);
 
             result.Succeeded.Should().BeTrue();
             result.Output.Count.Should().Be(20);
-            result.Output.ShouldAllBeEquivalentTo(new[]{
-                "1",
-                "1",
-                "2",
-                "3",
-                "5",
-                "8",
-                "13",
-                "21",
-                "34",
-                "55",
-                "89",
-                "144",
-                "233",
-                "377",
-                "610",
-                "987",
-                "1597",
-                "2584",
-                "4181",
-                "6765"});
+            result.Output.Should().BeEquivalentTo("1", "1", "2", "3", "5", "8", "13", "21", "34", "55", "89", "144", "233", "377", "610", "987", "1597", "2584", "4181", "6765");
         }
 
         protected override async Task<IWorkspaceServer> GetWorkspaceServer(
             [CallerMemberName] string testName = null)
         {
-            var project = await Create.TestWorkspace(testName);
+            var project = await Create.ConsoleWorkspace(testName);
 
             var workspaceServer = new DotnetWorkspaceServer(project, 45);
 

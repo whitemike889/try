@@ -25,6 +25,15 @@ namespace MLS.Agent.Tools
             return Execute($"new {templateName} {args}", budget);
         }
 
+        public Task<CommandLineResult> AddPackage(string packageId, string version = null, Budget budget = null)
+        {
+            var versionArg = string.IsNullOrWhiteSpace(version)
+                ? ""
+                : $"--version {version}";
+
+            return Execute($"add package {versionArg} {packageId}", budget);
+        }
+
         public Task<CommandLineResult> Build(string args = null, Budget budget = null) =>
             Execute("build".AppendArgs(args), budget);
 
@@ -34,5 +43,8 @@ namespace MLS.Agent.Tools
                 args,
                 _workingDirectory,
                 budget);
+
+        public Task<CommandLineResult> Publish(string args, Budget budget = null) =>
+            Execute("publish".AppendArgs(args), budget);
     }
 }

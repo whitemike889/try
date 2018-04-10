@@ -7,31 +7,23 @@ using MLS.Agent.Tools;
 
 namespace WorkspaceServer.Models.Execution
 {
-
-    public static class WorkspaceExtensions
-    {
-        public static IReadOnlyCollection<SourceFile> GetSourceFiles(this Workspace workspace)
-        {
-            return workspace.Files?.Select(f => SourceFile.Create(f.Text, f.Name)).ToArray() ?? Array.Empty<SourceFile>();
-        }
-    }
     public class Workspace
     {
         private const string DefaultWorkspaceType = "script";
 
         public Workspace(
-        string buffer = null, // TODO: added for backward comaptibility
-        string source = null, // TODO: added for backward comaptibility
-        string bufferid = null, // TODO: added for backward comaptibility
-        int position = 0,
-        string[] usings = null,
-        File[] files = null,
-        Buffer[] buffers = null,
-        string workspaceType = DefaultWorkspaceType)
+            string buffer = null, // TODO: added for backward comaptibility
+            string source = null, // TODO: added for backward comaptibility
+            string bufferid = null, // TODO: added for backward comaptibility
+            int position = 0,
+            string[] usings = null,
+            File[] files = null,
+            Buffer[] buffers = null,
+            string workspaceType = DefaultWorkspaceType)
         {
             WorkspaceType = workspaceType ?? DefaultWorkspaceType;
             Usings = usings ?? Array.Empty<string>();
-            var code  = buffer ?? source ??string.Empty;
+            var code = buffer ?? source ?? string.Empty;
             var id = bufferid ?? string.Empty;
 
             Usings = usings ?? Array.Empty<string>();
@@ -52,7 +44,7 @@ namespace WorkspaceServer.Models.Execution
         public string[] Usings { get; }
 
         public string WorkspaceType { get; }
-
+        
         [Required]
         [MinLength(1)]
         public IReadOnlyCollection<Buffer> Buffers { get; }
@@ -66,6 +58,7 @@ namespace WorkspaceServer.Models.Execution
             }
 
             public string Name { get; }
+
             public string Text { get; }
         }
 
@@ -79,6 +72,7 @@ namespace WorkspaceServer.Models.Execution
             }
 
             public string Id { get; }
+
             public string Content { get; }
 
             public int Position { get; }
