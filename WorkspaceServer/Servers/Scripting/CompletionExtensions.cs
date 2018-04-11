@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Completion;
 using WorkspaceServer.Models;
@@ -24,7 +20,7 @@ namespace WorkspaceServer.Servers.Scripting
         private static readonly string SymbolCompletionItem = "Microsoft.CodeAnalysis.Completion.Providers.SymbolCompletionItem";
         private static readonly string GetSymbolsAsync = nameof(GetSymbolsAsync);
 
-        private static readonly ImmutableArray<string> s_kindTags = ImmutableArray.Create(
+        private static readonly ImmutableArray<string> KindTags = ImmutableArray.Create(
             CompletionTags.Class,
             CompletionTags.Constant,
             CompletionTags.Delegate,
@@ -51,7 +47,7 @@ namespace WorkspaceServer.Servers.Scripting
 
         public static string GetKind(this CompletionItem completionItem)
         {
-            foreach (var tag in s_kindTags)
+            foreach (var tag in KindTags)
             {
                 if (completionItem.Tags.Contains(tag))
                 {
@@ -89,6 +85,7 @@ namespace WorkspaceServer.Servers.Scripting
 
             return documentation;
         }
+
         public static async Task<ISymbol> GetCompletionSymbolAsync(
             CompletionItem completionItem, Dictionary<(string, int), ISymbol> recommendedSymbols,
             Document document)

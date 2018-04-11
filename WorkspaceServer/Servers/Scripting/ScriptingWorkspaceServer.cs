@@ -390,13 +390,6 @@ namespace WorkspaceServer.Servers.Scripting
             }
         }
 
-        private void ProcessCompletionItem()
-        {
-
-        }
-
-     
-
         public async Task<SignatureHelpResponse> GetSignatureHelp(WorkspaceRequest request, Budget budget = null)
         {
             budget = budget ?? new Budget();
