@@ -13,9 +13,9 @@ namespace WorkspaceServer.Models.Completion
             {
                 if (ReferenceEquals(x, y))
                     return true;
-                if (ReferenceEquals(x, null))
+                if (x is null)
                     return false;
-                if (ReferenceEquals(y, null))
+                if (y is null)
                     return false;
                 if (x.GetType() != y.GetType())
                     return false;
@@ -54,13 +54,15 @@ namespace WorkspaceServer.Models.Completion
         {
             var source = items ?? Array.Empty<AutoCompleteResponse>();
 
-            var transformed = source.Distinct(CompletionTextKindComparer).Select(item => new CompletionItem(
-                displayText: item.CompletionText,
-                kind: item.Kind,
-                filterText: item.CompletionText,
-                insertText: item.CompletionText,
-                sortText: item.CompletionText,
-                documentation: DocumentationConverter.ConvertDocumentation(item.Description,"\n")));
+            var transformed = source
+                .Distinct(CompletionTextKindComparer)
+                .Select(item => new CompletionItem(
+                    displayText: item.CompletionText,
+                    kind: item.Kind,
+                    filterText: item.CompletionText,
+                    insertText: item.CompletionText,
+                    sortText: item.CompletionText,
+                    documentation: DocumentationConverter.ConvertDocumentation(item.Description,"\n")));
 
             return new CompletionResult(transformed.ToArray());
 

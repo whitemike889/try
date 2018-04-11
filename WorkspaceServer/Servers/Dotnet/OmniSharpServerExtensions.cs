@@ -156,7 +156,8 @@ namespace WorkspaceServer.Servers.Dotnet
                 WordToComplete = wordToComplete,
                 WantKind = true,
                 WantDocumentationForEveryCompletionResult = true,
-                WantReturnType = true
+                WantReturnType = true,
+                WantMethodHeader = true
             };
 
             var received = await server.SendCommand<AutoCompleteRequest, AutoCompleteResponse[]>(
