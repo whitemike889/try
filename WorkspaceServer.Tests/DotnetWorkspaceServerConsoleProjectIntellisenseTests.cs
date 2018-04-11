@@ -73,6 +73,7 @@ namespace FibonacciTest
             var server = await GetSharedWorkspaceServer();
             var result = await server.GetCompletionList(request);
             result.Items.Should().NotBeNullOrEmpty();
+            result.Items.Should().NotContain(signature => string.IsNullOrEmpty(signature.Kind));
             result.Items.Should().Contain(completion => completion.SortText == "Console");
         }
 
@@ -131,7 +132,8 @@ namespace FibonacciTest
             var result = await server.GetCompletionList(request);
 
             result.Items.Should().NotBeNullOrEmpty();
-            result.Items.Should().Contain(completion => completion.SortText == "Beep(int frequency, int duration)");
+            result.Items.Should().NotContain(signature => string.IsNullOrEmpty(signature.Kind));
+            result.Items.Should().Contain(completion => completion.SortText == "Beep");
 
         }
 
@@ -196,6 +198,7 @@ namespace FibonacciTest
             var result = await server.GetCompletionList(request);
 
             result.Items.Should().NotBeNullOrEmpty();
+            result.Items.Should().NotContain(signature => string.IsNullOrEmpty(signature.Kind));
             result.Items.Should().Contain(signature => signature.SortText == "JToken");
         }
 
@@ -258,7 +261,8 @@ namespace FibonacciTest
             var server = await GetSharedWorkspaceServer();
             var result = await server.GetCompletionList(request);
             result.Items.Should().NotBeNullOrEmpty();
-            result.Items.Should().Contain(signature => signature.SortText == "FromObject(object o, JsonSerializer jsonSerializer)");
+            result.Items.Should().NotContain(signature => string.IsNullOrEmpty(signature.Kind));
+            result.Items.Should().Contain(signature => signature.SortText == "FromObject");
 
         }
 

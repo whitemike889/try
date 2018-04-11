@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using OmniSharp.Client.Commands;
 
 namespace WorkspaceServer.Models.Completion
@@ -33,7 +32,9 @@ namespace WorkspaceServer.Models.Completion
                 item.DisplayText,
                 item.Kind,
                 item.CompletionText,
-                item.DisplayText));
+                item.CompletionText,
+                item.CompletionText,
+                item.Description));
 
             return new CompletionResult(transformed.ToArray());
 
