@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace OmniSharp.Client.Commands
 {
     public class AutoCompleteResponse

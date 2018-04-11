@@ -6,7 +6,6 @@ using System.Reflection;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.CodeAnalysis;
