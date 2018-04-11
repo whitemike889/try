@@ -25,5 +25,5 @@ docker tag cdpxlinuxtest.azurecr.io/artifact/150d87b4-235b-4cbb-a47e-b3d8eb54156
 docker login -u $TDNUSER -p $TDNPASSWORD  trydotnetcdpx.azurecr.io
 docker push trydotnetcdpx.azurecr.io/mls_agent:$COMMIT_HASH
 
-docker tag cdpxlinuxtest.azurecr.io/artifact/150d87b4-235b-4cbb-a47e-b3d8eb541563/pullrequest/mls_agent:1.0.0alpha trydotnetcdpx.azurecr.io/mls_agent:latest
-docker push trydotnetcdpx.azurecr.io/mls_agent:latest
+docker tag cdpxlinuxtest.azurecr.io/artifact/150d87b4-235b-4cbb-a47e-b3d8eb541563/pullrequest/mls_agent:1.0.0alpha trydotnetcdpx.azurecr.io/mls.agent:latest
+docker push trydotnetcdpx.azurecr.io/mls.agent:latest
