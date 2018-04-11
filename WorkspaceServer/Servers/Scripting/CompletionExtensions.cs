@@ -66,6 +66,7 @@ namespace WorkspaceServer.Servers.Scripting
             Document document)
         {
             var documentation = await GetDocumentation(item, recommendedSymbols, document);
+
             return new Models.Completion.CompletionItem(
                 displayText: item.DisplayText,
                 kind: item.GetKind(),

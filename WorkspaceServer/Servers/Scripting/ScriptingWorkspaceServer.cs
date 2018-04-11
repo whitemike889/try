@@ -377,7 +377,7 @@ namespace WorkspaceServer.Servers.Scripting
                 var symbolToSymbolKey = new Dictionary<(string, int), ISymbol>();
                 foreach (var symbol in symbols)
                 {
-                    (string Name, int) key = (symbol.Name, (int)symbol.Kind);
+                    var key = (symbol.Name, (int)symbol.Kind);
                     if (!symbolToSymbolKey.ContainsKey(key))
                     {
                         symbolToSymbolKey[key] = symbol;
