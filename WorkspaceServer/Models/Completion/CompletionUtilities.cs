@@ -35,6 +35,13 @@ namespace WorkspaceServer.Models.Completion
                 item.CompletionText,
                 item.CompletionText,
                 item.Description));
+            var transformed = source.Distinct(CompletionTextKindComparer).Select(item => new CompletionItem(
+                displayText: item.CompletionText,
+                kind: item.Kind,
+                filterText: item.CompletionText,
+                insertText: item.CompletionText,
+                sortText: item.CompletionText,
+                documentation: DocumentationConverter.ConvertDocumentation(item.Description,"\n")));
 
             return new CompletionResult(transformed.ToArray());
 
