@@ -482,7 +482,7 @@ namespace FibonacciTest
                     .EnsureSuccess()
                     .DeserializeAs<CompletionResult>();
                 result.Items.Should().NotBeNullOrEmpty();
-                result.Items.Should().Contain(completion => completion.SortText == "Beep(int frequency, int duration)");
+                result.Items.Should().Contain(completion => completion.SortText == "Beep");
             }
         }
 

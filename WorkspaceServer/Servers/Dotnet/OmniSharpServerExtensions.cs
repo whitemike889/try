@@ -154,7 +154,10 @@ namespace WorkspaceServer.Servers.Dotnet
             // look at https://github.com/OmniSharp/omnisharp-roslyn/blob/e18913e887144119c41d60f1842e49f8e9bfcf72/src/OmniSharp.Abstractions/Models/Request.cs
             var command = new AutoCompleteRequest(fileName, code, line + 1, column + 1)
             {
-                WordToComplete = wordToComplete
+                WordToComplete = wordToComplete,
+                WantKind = true,
+                WantDocumentationForEveryCompletionResult = true,
+                WantReturnType = true
             };
 
             var received = await server.SendCommand<AutoCompleteRequest, AutoCompleteResponse[]>(
