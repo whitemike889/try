@@ -7,31 +7,29 @@ namespace WorkspaceServer.Models.Completion
 {
     internal static class CompletionUtilities
     {
-        private sealed class CompletionTextKindEqualityComparer : IEqualityComparer<AutoCompleteResponse>
+        private sealed class CompletionTextEqualityComparer : IEqualityComparer<AutoCompleteResponse>
         {
             public bool Equals(AutoCompleteResponse x, AutoCompleteResponse y)
             {
                 if (ReferenceEquals(x, y))
                     return true;
-                if (x is null)
+                if (ReferenceEquals(x, null))
                     return false;
-                if (y is null)
+                if (ReferenceEquals(y, null))
                     return false;
                 if (x.GetType() != y.GetType())
                     return false;
-                return string.Equals(x.CompletionText, y.CompletionText) && string.Equals(x.Kind, y.Kind);
+                return string.Equals(x.CompletionText, y.CompletionText);
             }
 
             public int GetHashCode(AutoCompleteResponse obj)
             {
-                unchecked
-                {
-                    return ((obj.CompletionText != null ? obj.CompletionText.GetHashCode() : 0) * 397) ^ (obj.Kind != null ? obj.Kind.GetHashCode() : 0);
-                }
+                return (obj.CompletionText != null ? obj.CompletionText.GetHashCode() : 0);
             }
         }
 
-        public static IEqualityComparer<AutoCompleteResponse> CompletionTextKindComparer { get; } = new CompletionTextKindEqualityComparer();
+        public static IEqualityComparer<AutoCompleteResponse> CompletionTextComparer { get; } = new CompletionTextEqualityComparer();
+
 
         public static string GetWordAt(this string source, int position)
         {
@@ -55,12 +53,12 @@ namespace WorkspaceServer.Models.Completion
             var source = items ?? Array.Empty<AutoCompleteResponse>();
 
             var transformed = source
-                .Distinct(CompletionTextKindComparer)
+                .Distinct(CompletionTextComparer)
                 .Select(item => new CompletionItem(
                     displayText: item.CompletionText,
                     kind: item.Kind,
                     filterText: item.CompletionText,
-                    insertText: item.CompletionText,
+                    insertText: item.CompletionText.Replace("<>",string.Empty),
                     sortText: item.CompletionText,
                     documentation: DocumentationConverter.ConvertDocumentation(item.Description,"\n")));
 
