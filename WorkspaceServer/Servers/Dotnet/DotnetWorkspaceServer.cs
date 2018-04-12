@@ -229,6 +229,8 @@ namespace WorkspaceServer.Servers.Dotnet
                 await EnsureInitializedAndNotDisposed(budget);
                 var (file,code,line,column,_) = await TransformWorkspaceAndPreparePositionalRequest(request, budget);
                 var response = await _omniSharpServer.GetSignatureHelp(file, code, line, column, budget);
+
+                response = response.ProcessDocumentation();
                 budget.RecordEntry();
                 operation.Succeed();
                 return response;

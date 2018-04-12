@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using FluentAssertions;
 using WorkspaceServer.Models;
+using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Servers.Dotnet;
 using Xunit;
@@ -75,6 +77,8 @@ namespace FibonacciTest
             result.Items.Should().NotBeNullOrEmpty();
             result.Items.Should().NotContain(signature => string.IsNullOrEmpty(signature.Kind));
             result.Items.Should().Contain(completion => completion.SortText == "Console");
+            var hasDuplicatedEntries = HasDuplicatedCompletionItems(result);
+            hasDuplicatedEntries.Should().BeFalse();
         }
 
         [Fact]
@@ -134,6 +138,8 @@ namespace FibonacciTest
             result.Items.Should().NotBeNullOrEmpty();
             result.Items.Should().NotContain(signature => string.IsNullOrEmpty(signature.Kind));
             result.Items.Should().Contain(completion => completion.SortText == "Beep");
+            var hasDuplicatedEntries = HasDuplicatedCompletionItems(result);
+            hasDuplicatedEntries.Should().BeFalse();
 
         }
 
@@ -200,6 +206,8 @@ namespace FibonacciTest
             result.Items.Should().NotBeNullOrEmpty();
             result.Items.Should().NotContain(signature => string.IsNullOrEmpty(signature.Kind));
             result.Items.Should().Contain(signature => signature.SortText == "JToken");
+            var hasDuplicatedEntries = HasDuplicatedCompletionItems(result);
+            hasDuplicatedEntries.Should().BeFalse();
         }
 
         [Fact]
@@ -263,7 +271,16 @@ namespace FibonacciTest
             result.Items.Should().NotBeNullOrEmpty();
             result.Items.Should().NotContain(signature => string.IsNullOrEmpty(signature.Kind));
             result.Items.Should().Contain(signature => signature.SortText == "FromObject");
+            var hasDuplicatedEntries = HasDuplicatedCompletionItems(result);
+            hasDuplicatedEntries.Should().BeFalse();
+        }
 
+        private static bool HasDuplicatedCompletionItems(CompletionResult result)
+        {
+            bool hasDuplicatedEntries;
+            var g = result.Items.GroupBy(ci => ci.Kind + ci.InsertText).Select(cig => new { Key = cig.Key, Count = cig.Count() });
+            hasDuplicatedEntries = g.Any(cig => cig.Count > 1);
+            return hasDuplicatedEntries;
         }
 
         [Fact]

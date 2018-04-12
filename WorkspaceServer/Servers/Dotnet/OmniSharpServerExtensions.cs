@@ -9,7 +9,6 @@ using Newtonsoft.Json;
 using OmniSharp.Client;
 using OmniSharp.Client.Commands;
 using Recipes;
-using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.SingatureHelp;
 using SignatureHelpRequest = OmniSharp.Client.Commands.SignatureHelpRequest;
 
