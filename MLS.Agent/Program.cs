@@ -7,6 +7,7 @@ using Pocket;
 using System.Threading.Tasks;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.Extensibility;
+using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using MLS.Agent.Tools;
@@ -15,6 +16,7 @@ using Recipes;
 using Serilog.Sinks.RollingFileAlternate;
 using WorkspaceServer.Servers.Dotnet;
 using SerilogLoggerConfiguration = Serilog.LoggerConfiguration;
+using WorkspaceServer;
 
 namespace MLS.Agent
 {
@@ -79,18 +81,17 @@ namespace MLS.Agent
                 args.SetObserved();
             };
 
-            var telemetryClient = new TelemetryClient(
-                new TelemetryConfiguration(GetInstrumentationKey(options.IsProduction)));
-
-            disposables.Add(telemetryClient.SubscribeToPocketLogger(assembliesEmittingPocketLoggerLogs));
+            if (options.ApplicationInsightsKey != null)
+            {
+                var telemetryClient = new TelemetryClient(new TelemetryConfiguration(options.ApplicationInsightsKey))
+                {
+                    InstrumentationKey = options.ApplicationInsightsKey
+                };
+                disposables.Add(telemetryClient.SubscribeToPocketLogger(assembliesEmittingPocketLoggerLogs));
+            }
 
             Log.Event("AgentStarting");
         }
-
-        public static string GetInstrumentationKey(bool isProduction) =>
-            isProduction
-                ? "1bca19cc-3417-462c-bb60-7337605fee38"
-                : "6c13142c-8ddf-4335-b857-9d3e0cbb1ea1";
 
         public static IWebHost ConstructWebHost(CommandLineOptions options)
         {
@@ -105,17 +106,21 @@ namespace MLS.Agent
             {
                 Log.Info("Received Key: {key}", options.Key);
             }
-            
+
             var webHost = new WebHostBuilder()
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .ConfigureServices(c =>
                 {
+                    if (options.ApplicationInsightsKey != null)
+                    {
+                        c.AddApplicationInsightsTelemetry(options.ApplicationInsightsKey);
+                    }
                     c.AddSingleton(options);
                 })
-                .UseEnvironment(options.IsProduction 
-                                      ? EnvironmentName.Production 
-                                      : EnvironmentName.Development) 
+                .UseEnvironment(options.IsProduction
+                                      ? EnvironmentName.Production
+                                      : EnvironmentName.Development)
                 .UseStartup<Startup>()
                 .Build();
 
