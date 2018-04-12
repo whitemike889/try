@@ -19,6 +19,9 @@ x64/
 [Oo]bj/
 node_modules/
 
+# ApprovalTests / Assent output
+*.received.json
+
 # These are generated or copied by Init.cmd
 Roslyn.sln
 .editorconfig

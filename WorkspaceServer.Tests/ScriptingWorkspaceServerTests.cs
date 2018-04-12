@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Pocket;
 using Recipes;
-using WorkspaceServer.Models.Completion;
+using WorkspaceServer.Models;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Servers.Scripting;
 using Xunit;
@@ -18,7 +18,7 @@ namespace WorkspaceServer.Tests
         {
         }
 
-        protected override WorkspaceRequest CreateRunRequestContaining(string text) => new WorkspaceRequest(new Workspace(text));
+        protected override Workspace CreateWorkspaceContaining(string text) => new Workspace(text);
 
         protected override Task<IWorkspaceServer> GetWorkspaceServer(
             [CallerMemberName] string testName = null) =>
@@ -30,14 +30,13 @@ namespace WorkspaceServer.Tests
             var workspace = new Workspace(@"
 var person = new { Name = ""Jeff"", Age = 20 };
 $""{person.Name} is {person.Age} year(s) old""");
-            var request = new WorkspaceRequest(workspace);
             var server = await GetWorkspaceServer();
 
-            var result = await server.Run(request);
+            var result = await server.Run(workspace);
 
             Log.Trace(result.ToJson());
 
-            result.ShouldBeEquivalentTo(new
+            result.Should().BeEquivalentTo(new
             {
                 Succeeded = true,
                 Output = new string[] { },
@@ -51,15 +50,14 @@ $""{person.Name} is {person.Age} year(s) old""");
         {
             var workspace = new Workspace(@"
 Console.WriteLine(banana);");
-            var request = new WorkspaceRequest(workspace);
             var server = await GetWorkspaceServer();
 
-            var result = await server.Run(request);
+            var result = await server.Run(workspace);
 
-            result.ShouldBeEquivalentTo(new
+            result.Should().BeEquivalentTo(new
             {
                 Succeeded = false,
-                Output = new string[] { "(2,19): error CS0103: The name \'banana\' does not exist in the current context" },
+                Output = new[] { "(2,19): error CS0103: The name \'banana\' does not exist in the current context" },
                 Exception = (string) null, // we already display the error in Output
             }, config => config.ExcludingMissingMembers());
         }
@@ -67,13 +65,30 @@ Console.WriteLine(banana);");
         [Fact]
         public async Task Get_completion_for_console()
         {
-            var request = new CompletionRequest("Console.", position: 8);
+            var ws = new Workspace(workspaceType:"script", buffers:new []{new Workspace.Buffer("program.cs","Console.",0) });
+
+            var request = new WorkspaceRequest(ws, position: 8, activeBufferId: "program.cs");
 
             var server = await GetWorkspaceServer();
 
             var result = await server.GetCompletionList(request);
 
             result.Items.Should().ContainSingle(item => item.DisplayText == "WriteLine");
+        }
+
+        [Fact]
+        public async Task Get_signature_help_for_console_writeline()
+        {
+            var ws = new Workspace(workspaceType: "script", buffers: new[] { new Workspace.Buffer("program.cs", "Console.WriteLine()", 0) });
+
+            var request = new WorkspaceRequest(ws, position: 18, activeBufferId: "program.cs");
+
+            var server = await GetWorkspaceServer();
+
+            var result = await server.GetSignatureHelp(request);
+
+            result.Signatures.Should().NotBeNullOrEmpty();
+            result.Signatures.Should().Contain(signature => signature.Label == "void Console.WriteLine(string format, params object[] arg)");
         }
 
         [Fact]
@@ -89,23 +104,21 @@ public static class Hello
         Thread.Sleep(1);
         Console.WriteLine(""Hello there!"");
     }
-}
+}",
+                                          usings: new[] { "System.Threading" });
 
-Hello.Main();",
-                                         usings: new[] { "System.Threading" });
-            var request = new WorkspaceRequest(workspace);
             var server = await GetWorkspaceServer();
 
-            var result = await server.Run(request);
+            var result = await server.Run(workspace);
 
-            result.ShouldBeEquivalentTo(new
+            result.Should().BeEquivalentTo(new
             {
                 Succeeded = true,
                 Output = new[] { "Hello there!" },
                 Exception = (string) null,
             }, config => config.ExcludingMissingMembers());
         }
-           
+
         [Fact]
         public async Task When_a_public_void_Main_with_non_string_parameters_is_present_it_is_not_invoked()
         {
@@ -119,10 +132,9 @@ public static class Hello
         Console.WriteLine(""Hello there!"");
     }
 }");
-            var request = new WorkspaceRequest(workspace);
             var server = await GetWorkspaceServer();
 
-            var result = await server.Run(request);
+            var result = await server.Run(workspace);
 
             result.ShouldSucceedWithNoOutput();
         }
@@ -140,10 +152,9 @@ public static class Hello
         Console.WriteLine(""Hello there!"");
     }
 }");
-            var request = new WorkspaceRequest(workspace);
             var server = await GetWorkspaceServer();
 
-            var result = await server.Run(request);
+            var result = await server.Run(workspace);
 
             result.Diagnostics.Should().NotContain(d => d.Id == "CS7022");
         }
@@ -166,10 +177,9 @@ public static class Hello
                 workspaceType: "script",
                 files: new[] { new Workspace.File("Main.cs", fileCode) },
                 buffers: new[] { new Workspace.Buffer(@"Main.cs@toReplace", @"Console.WriteLine(""Hello there!"");", 0) });
-            var request = new WorkspaceRequest(workspace);
             var server = await GetWorkspaceServer();
 
-            var result = await server.Run(request);
+            var result = await server.Run(workspace);
 
             result.ShouldSucceedWithOutput("Hello there!");
         }
@@ -194,16 +204,14 @@ public static class Hello
                 buffers: new[] { new Workspace.Buffer(@"Main.cs@toReplace", @"Console.WriteLine(banana);", 0) });
 
             var server = await GetWorkspaceServer();
-            var request = new WorkspaceRequest(workspace);
-            var result = await server.Run(request);
+            var result = await server.Run(workspace);
 
-            result.ShouldBeEquivalentTo(new
+            result.Should().BeEquivalentTo(new
             {
                 Succeeded = false,
                 Output = new[] { "(1,19): error CS0103: The name \'banana\' does not exist in the current context" },
                 Exception = (string)null, 
             }, config => config.ExcludingMissingMembers());
-            
         }
     }
 }

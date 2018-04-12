@@ -20,7 +20,7 @@ namespace WorkspaceServer.Tests
             var processor = new BufferInliningTransformer();
             var viewPorts = processor.ExtractViewPorts(ws);
             viewPorts.Should().NotBeEmpty();
-            viewPorts.Keys.ShouldAllBeEquivalentTo(new[] { "Program.cs@alpha" });
+            viewPorts.Keys.Should().BeEquivalentTo("Program.cs@alpha");
         }
 
         [Fact]
@@ -32,7 +32,7 @@ namespace WorkspaceServer.Tests
             });
             var processor = new BufferInliningTransformer();
             Action extraction = () => processor.ExtractViewPorts(ws);
-            extraction.ShouldThrow<ArgumentException>();
+            extraction.Should().Throw<ArgumentException>();
         }
 
         [Fact]
@@ -45,7 +45,7 @@ namespace WorkspaceServer.Tests
             });
             var processor = new BufferInliningTransformer();
             Action extraction = () => processor.ExtractViewPorts(ws);
-            extraction.ShouldNotThrow<ArgumentException>();
+            extraction.Should().NotThrow<ArgumentException>();
         }
 
         [Fact]
@@ -53,7 +53,7 @@ namespace WorkspaceServer.Tests
         {
             var processor = new BufferInliningTransformer();
             Action extraction = () => processor.ExtractViewPorts(null);
-            extraction.ShouldThrow<ArgumentNullException>();
+            extraction.Should().Throw<ArgumentNullException>();
         }
 
         [Fact]
@@ -61,7 +61,7 @@ namespace WorkspaceServer.Tests
         {
             var processor = new BufferInliningTransformer();
             Func<Task> extraction = () => processor.TransformAsync(null);
-            extraction.ShouldThrow<ArgumentNullException>();
+            extraction.Should().Throw<ArgumentNullException>();
         }
 
         [Fact]

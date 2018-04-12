@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using WorkspaceServer.Models;
 using WorkspaceServer.Models.Execution;
 
 namespace MLS.Agent.JsonContracts

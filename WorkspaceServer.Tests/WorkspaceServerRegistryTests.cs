@@ -2,8 +2,8 @@ using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using FluentAssertions;
-using MLS.Agent.Tools;
 using Pocket;
+using WorkspaceServer.Models;
 using WorkspaceServer.Models.Execution;
 using Xunit;
 using Xunit.Abstractions;
@@ -72,8 +72,7 @@ namespace Twilio_try.dot.net_sample
         }
     }
 }");
-                var request = new WorkspaceRequest(workspace);
-                var result = await workspaceServer.Run(request);
+                var result = await workspaceServer.Run(workspace);
 
                 result.Succeeded.Should().BeTrue(because: "compilation can't succeed unless the NuGet package has been restored.");
             }
@@ -87,7 +86,7 @@ namespace Twilio_try.dot.net_sample
             using(Clockwise.VirtualClock.Start())
             using (var registry = new WorkspaceServerRegistry())
             {
-                var workspaceId = (await Default.TemplateWorkspace).Name;
+                var workspaceId = (await Default.ConsoleWorkspace).Name;
 
                 registry.AddWorkspace(workspaceId,
                                       options => options.CreateUsingDotnet("console"));
@@ -97,7 +96,7 @@ namespace Twilio_try.dot.net_sample
 
             Func<Task> dispose = async () => await workspaceServer.Run(Create.SimpleRunRequest());
 
-            dispose.ShouldThrow<ObjectDisposedException>();
+            dispose.Should().Throw<ObjectDisposedException>();
         }
 
         [Fact]
@@ -118,6 +117,38 @@ namespace Twilio_try.dot.net_sample
                 await registry.GetWorkspaceServer($"{name}.1");
 
                 stopwatch.ElapsedMilliseconds.Should().BeLessThan(5);
+            }
+        }
+
+        [Fact]
+        public async Task GetWorkspace_will_check_workspaces_directory_if_requested_workspace_was_not_registered()
+        {
+            var unregisteredWorkspace = await Default.ConsoleWorkspace;
+
+            using (var registry = new WorkspaceServerRegistry())
+            {
+                var resolvedWorkspace = await registry.GetWorkspace(unregisteredWorkspace.Name);
+
+                resolvedWorkspace.Directory.FullName.Should().Be(unregisteredWorkspace.Directory.FullName);
+                resolvedWorkspace.IsCreated.Should().BeTrue();
+                resolvedWorkspace.IsBuilt.Should().BeTrue();
+            }
+        }
+
+        [Fact]
+        public async Task When_workspace_was_not_registered_then_GetWorkspaceServer_will_return_a_working_server()
+        {
+            var unregisteredWorkspace = await Default.ConsoleWorkspace;
+
+            using (var registry = new WorkspaceServerRegistry())
+            {
+                var server = await registry.GetWorkspaceServer(unregisteredWorkspace.Name);
+
+                var workspaceRequest = WorkspaceRequest.FromDirectory(unregisteredWorkspace.Directory, "console");
+
+                var result = await server.Run(workspaceRequest.Workspace);
+
+                result.Succeeded.Should().BeTrue();
             }
         }
     }

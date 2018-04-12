@@ -59,7 +59,7 @@ namespace WorkspaceServer.Tests
 
         private async Task<OmniSharpServer> StartOmniSharp() =>
             new OmniSharpServer(
-                (await Create.TestWorkspace(nameof(EmitTests))).Directory,
+                (await Create.ConsoleWorkspace(nameof(EmitTests))).Directory,
                 Paths.EmitPlugin,
                 logToPocketLogger: true);
 
