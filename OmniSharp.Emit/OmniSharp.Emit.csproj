@@ -4,7 +4,6 @@
     <TargetFramework>net46</TargetFramework>
     <Version>1.29.0-beta2</Version>
     <PackageId>TryDotNet.OmniSharp.Emit</PackageId>
-    <LangVersion>Latest</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>

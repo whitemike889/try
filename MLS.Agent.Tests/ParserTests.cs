@@ -77,5 +77,27 @@ namespace MLS.Agent.Tests
                        "console",
                        "something-else");
         }
+
+        [Fact]
+        public void AiKey_defaults_to_null()
+        {
+            var options = CommandLineOptions.Parse(new string[] { });
+            options.ApplicationInsightsKey.Should().BeNull();
+        }
+
+        [Fact]
+        public void Parse_aiKey_without_parameter_fails_the_parse()
+        {
+            var options = CommandLineOptions.Parse(new string[] { "--ai-key" });
+            options.WasSuccess.Should().BeFalse();
+        }
+
+        [Fact]
+        public void Parse_aiKey_with_parameter_succeeds()
+        {
+            var options = CommandLineOptions.Parse(new string[] { "--ai-key", "abc123" });
+            VerifySuccessfulAndNoHelpText(options);
+            options.ApplicationInsightsKey.Should().Be("abc123");
+        }
     }
 }

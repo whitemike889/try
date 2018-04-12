@@ -14,7 +14,7 @@ namespace MLS.Agent
             string key,
             string[] loadWorkspaces,
             string applicationInsightsKey = null,
-            bool logToFile = false
+            bool logToFile = false,
             string id = null)
         {
             LoadWorkspaces = loadWorkspaces;

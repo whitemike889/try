@@ -117,22 +117,6 @@ namespace MLS.Agent
                         c.AddApplicationInsightsTelemetry(options.ApplicationInsightsKey);
                     }
                     c.AddSingleton(options);
-                    c.AddSingleton(_ =>
-                    {
-                        var registry = new WorkspaceServerRegistry();
-                        registry.AddWorkspace("console",
-                                            workspace =>
-                                            {
-                                                workspace.CreateUsingDotnet("console");
-                                            });
-                        registry.AddWorkspace("Twilio.Demo",
-                                            workspace =>
-                                            {
-                                                workspace.CreateUsingDotnet("console");
-                                                workspace.AddPackageReference("Twilio", "5.9.2");
-                                            });
-                        return registry;
-                    });
                 })
                 .UseEnvironment(options.IsProduction
                                       ? EnvironmentName.Production

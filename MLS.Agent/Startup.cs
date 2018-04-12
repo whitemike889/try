@@ -85,11 +85,6 @@ namespace MLS.Agent
 
                 _disposables.Add(() => budget.Cancel());
 
-                // Hack: don't start servers
-                //serviceProvider
-                //    .GetRequiredService<WorkspaceServerRegistry>()
-                //    .StartAllServers(Clock.Current.CreateCancellationToken(TimeSpan.FromSeconds(30)))
-                //    .DontAwait();
                 operation.Succeed();
             }
         }
