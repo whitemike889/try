@@ -24,12 +24,14 @@ RUN apt-get --assume-yes install xmlstarlet
 # set up workspaces directory
 ENV TRYDOTNET_WORKSPACES_PATH=/workspaces
 
-# set up workspaces
-WORKDIR /workspaces/console
-RUN dotnet new console
-RUN xmlstarlet ed --inplace --insert "/Project/PropertyGroup/OutputType" --type elem -n "LangVersion" --value "7.2" console.csproj
-RUN dotnet add package Newtonsoft.Json
-RUN dotnet build
+# hack to get the emit plugin into the package cache
+WORKDIR /workspaces/emit
+RUN dotnet new library
+# dotnet objects to trying to add this package, so we use some coercion and return true in order to prevent the resulting error from stopping the Docker build
+RUN sed -i 's/netstandard2.0/net46/' emit.csproj
+RUN dotnet add package -v 1.29.0-beta2 trydotnet.omnisharp.emit ; true
+
+# prepare workspace types
 
 # standard console app, compiled with 2.9 compiler
 WORKDIR /workspaces/roslyn2.9
@@ -53,9 +55,8 @@ RUN xmlstarlet ed --inplace --insert "/Project/PropertyGroup/OutputType" --type 
 RUN dotnet build
 RUN dotnet publish
 
-# hack to get the emit plugin into the package cache
-WORKDIR /workspaces/emit
-RUN dotnet new library
-# dotnet objects to trying to add this package, so we use some coercion and return true in order to prevent the resulting error from stopping the Docker build
-RUN sed -i 's/netstandard2.0/net46/' emit.csproj
-RUN dotnet add package -v 1.29.0-beta2 trydotnet.omnisharp.emit ; true
+WORKDIR /workspaces/console
+RUN dotnet new console
+RUN dotnet add package Newtonsoft.Json
+RUN dotnet build
+
