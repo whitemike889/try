@@ -16,13 +16,13 @@ ENV TRYDOTNET_WORKSPACES_PATH=/workspaces
 # set up workspaces
 WORKDIR /workspaces/console
 RUN dotnet new console
-RUN xml ed --inplace --insert "/Project/PropertyGroup/OutputType" --type elem -n "LangVersion" --value "7.2" console.csproj
+RUN xmlstarlet ed --inplace --insert "/Project/PropertyGroup/OutputType" --type elem -n "LangVersion" --value "7.2" console.csproj
 RUN dotnet add package Newtonsoft.Json
 RUN dotnet build
 
 WORKDIR /workspaces/nodatime.api
 RUN dotnet new console
-RUN xml ed --inplace --insert "/Project/PropertyGroup/OutputType" --type elem -n "LangVersion" --value "7.2" console.csproj
+RUN xmlstarlet ed --inplace --insert "/Project/PropertyGroup/OutputType" --type elem -n "LangVersion" --value "7.2" nodatime.api.csproj
 RUN dotnet add package Newtonsoft.Json
 RUN dotnet add package NodaTime
 RUN dotnet add package NodaTime.Testing
@@ -30,7 +30,7 @@ RUN dotnet build
 
 WORKDIR /workspaces/aspnet.webapi
 RUN dotnet new webapi
-RUN xml ed --inplace --insert "/Project/PropertyGroup/OutputType" --type elem -n "LangVersion" --value "7.2" console.csproj
+RUN xmlstarlet ed --inplace --insert "/Project/PropertyGroup/OutputType" --type elem -n "LangVersion" --value "7.2" aspnet.webapi.csproj
 RUN dotnet build
 RUN dotnet publish
 
