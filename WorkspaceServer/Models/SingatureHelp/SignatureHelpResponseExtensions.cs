@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 
 namespace WorkspaceServer.Models.SingatureHelp
 {
@@ -10,7 +11,7 @@ namespace WorkspaceServer.Models.SingatureHelp
             {
                 ActiveParameter = source.ActiveParameter,
                 ActiveSignature = source.ActiveSignature,
-                Signatures = source.Signatures.Select(s => ProcessDocumentation((SignatureHelpItem) s))
+                Signatures = source.Signatures?.Select(s => ProcessDocumentation((SignatureHelpItem)s)) ?? Enumerable.Empty<SignatureHelpItem>()
             };
 
             return ret;
@@ -22,8 +23,8 @@ namespace WorkspaceServer.Models.SingatureHelp
             {
                 Name = source.Name,
                 Label = source.Label,
-                Documentation =DocumentationConverter.ConvertDocumentation(source.Documentation, "\n"),
-                Parameters = source.Parameters.Select(p => p.ProcessDocumentation())
+                Documentation = DocumentationConverter.ConvertDocumentation(source.Documentation, "\n"),
+                Parameters = source.Parameters?.Select(p => p.ProcessDocumentation()) ?? Enumerable.Empty<SignatureHelpParameter>()
             };
 
             return ret;
@@ -35,7 +36,7 @@ namespace WorkspaceServer.Models.SingatureHelp
             {
                 Name = source.Name,
                 Label = source.Label,
-                Documentation = DocumentationConverter.ConvertDocumentation(source.Documentation, "\n")
+                Documentation = string.IsNullOrWhiteSpace(source.Documentation) ? source.Documentation : DocumentationConverter.ConvertDocumentation(source.Documentation, "\n")
             };
 
             return ret;

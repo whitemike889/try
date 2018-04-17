@@ -343,6 +343,63 @@ namespace FibonacciTest
         }
 
         [Fact]
+        public async Task Get_signature_help_for_invalid_location_return_empty()
+        {
+            #region bufferSources
+
+            const string program = @"using System;
+using System.Linq;
+
+namespace FibonacciTest
+{
+    public class Program
+    {
+        public static void Main()
+        {
+            foreach (var i in FibonacciGenerator.Fibonacci().Take(20))
+            {
+                Console.WriteLine(i);
+            }
+        }       
+    }
+}";
+            const string generator = @"using System.Collections.Generic;
+using System;
+namespace FibonacciTest
+{
+    public static class FibonacciGenerator
+    {
+        public static IEnumerable<int> Fibonacci()
+        {
+            int current = 1, next = 1;
+            while (true)
+            {
+                yield return current;
+                next = current + (current = next);
+                Console.WriteLine();
+            }
+        }
+    }
+}";
+
+            const string consoleWriteline = @"                Console.WriteLine();";
+            #endregion
+
+            var workspace = new Workspace(workspaceType: "console", buffers: new[]
+            {
+                new Workspace.Buffer("Program.cs",program,0),
+                new Workspace.Buffer("generators/FibonacciGenerator.cs",generator,0)
+            });
+
+            var position = generator.IndexOf(consoleWriteline, StringComparison.Ordinal) + consoleWriteline.Length;
+            var request = new WorkspaceRequest(workspace, position: position, activeBufferId: "generators/FibonacciGenerator.cs");
+            var server = await GetSharedWorkspaceServer();
+            var result = await server.GetSignatureHelp(request);
+            result.Should().NotBeNull();
+            result.Signatures.Should().BeNullOrEmpty();
+        }
+
+        [Fact]
         public async Task Get_signature_help_for_console_writeline_with_region()
         {
             #region bufferSources
