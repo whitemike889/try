@@ -21,6 +21,45 @@ namespace WorkspaceServer.Tests
         }
 
         [Fact]
+        public async Task Get_signature_help_for_invalid_location_return_empty()
+        {
+            var code = @"using System;
+using System.Collections.Generic;
+using System.Linq;
+
+public class Program
+{
+  public static void Main()
+  {
+    foreach (var i in Fibonacci().Take())
+    {
+      Console.WriteLine(i);
+    }
+  }
+
+  private static IEnumerable<int> Fibonacci()
+  {
+    int current = 1, next = 1;
+
+    while (true) 
+    {
+      yield return current;
+      next = current + (current = next);
+    }
+  }
+}";
+
+            var toFind = @"    foreach (var i in Fibonacci().Take())";
+            var position = code.IndexOf(toFind) + toFind.Length;
+            var ws = new Workspace(buffers: new[] { new Workspace.Buffer("", code, 0) });
+            var request = new WorkspaceRequest(ws, activeBufferId: "", position: position);
+            var server = await GetWorkspaceServer();
+            var result = await server.GetSignatureHelp(request);
+            result.Should().NotBeNull();
+            result.Signatures.Should().BeNullOrEmpty();
+        }
+
+        [Fact]
         public async Task Can_show_signature_help_for_extensions()
         {
             var code = @"using System;
