@@ -65,6 +65,13 @@ dotnet test $REPO_ROOT/MLS.LanguageServices.Integration.Tests/MLS.LanguageServic
 
 docker push $DOCKER_REPOSITORY_SERVER/$IMAGE_NAME:latest
 
+
 restart_appservice "trydotnetagent"
 
 restart_appservice "trydotnetlanguageservices"
+
+# We're done with all the release steps for the devdiv collection
+# For now: push images built in devdiv collection to container regististry used in 
+# "try dot net orchestrator prod" subscription
+docker push $MSAZURE_DOCKER_SERVER/$IMAGE_NAME:$COMMIT_HASH
+docker push $MSAZURE_DOCKER_SERVER/$IMAGE_NAME:latest

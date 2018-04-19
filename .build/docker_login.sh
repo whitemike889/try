@@ -36,4 +36,18 @@ function do_docker_login () {
         echo "Docker login failed with exit code $LOGIN_SUCCESS"
         exit 1
     fi
+
+    # We logged into the CR used by the devdiv collection.
+    # We're also logging into the one used by msazure
+    docker login -u $MSAZURE_DOCKER_USER -p $MSAZURE_DOCKER_PASSWORD $MSAZURE_DOCKER_SERVER
+
+    LOGIN_SUCCESS=$?
+
+    if [ $LOGIN_SUCCESS -eq 0 ]
+    then
+        return 0
+    else
+        echo "Docker login failed with exit code $LOGIN_SUCCESS"
+        exit 1
+    fi
 }
