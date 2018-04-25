@@ -1,8 +1,10 @@
 FROM microsoft/aspnetcore-build:2.0
 
 # set up OmniSharp
-RUN mkdir -p /dependencies/omnisharp
-RUN curl -SL https://github.com/OmniSharp/omnisharp-roslyn/releases/download/v1.29.0-beta1/omnisharp-linux-x64.tar.gz | tar xvz -C /dependencies/omnisharp
+RUN mkdir -p /dependencies/omnisharp/1.29.0-beta1
+RUN mkdir -p /dependencies/omnisharp/ca-2.9
+RUN curl -SL https://github.com/OmniSharp/omnisharp-roslyn/releases/download/v1.29.0-beta1/omnisharp-linux-x64.tar.gz | tar xvz -C /dependencies/omnisharp/1.29.0-beta1
+RUN curl -SL https://github.com/OmniSharp/omnisharp-roslyn/releases/download/ca-2.9/omnisharp-linux-x64.tar.gz | tar xvz -C /dependencies/omnisharp/ca-2.9
 ENV TRYDOTNET_OMNISHARP_PATH=/dependencies/omnisharp/
 ENV NUGET_PACKAGES=/root/.nuget/packages/
 

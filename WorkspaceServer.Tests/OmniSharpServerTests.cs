@@ -12,6 +12,8 @@ using Pocket;
 using WorkspaceServer.Servers.Dotnet;
 using Xunit;
 using Xunit.Abstractions;
+using System.Reactive.Subjects;
+using System.Collections.Generic;
 
 namespace WorkspaceServer.Tests
 {
@@ -36,7 +38,35 @@ namespace WorkspaceServer.Tests
             {
                 await omniSharp.WorkspaceReady();
                 await omniSharp.StandardOutput.FirstOrDefaultAsync().Timeout(10.Seconds());
+                await AssertVersionLoaded("v1.29.0-beta1", omniSharp);
             }
+        }
+
+        [Fact]
+        public async Task Can_load_version_from_dottrydotnet_file()
+        {
+            var info = new DirectoryInfo(Path.Combine(Paths.UserProfile,
+                             ".trydotnet",
+                             "ca29"));
+
+            var workspace = new Workspace(info, "ca29");
+            await workspace.EnsureCreated();
+            File.WriteAllText(Path.Combine(info.FullName, ".trydotnet"), "ca-2.9");
+
+            using (var omniSharp = new OmniSharpServer(workspace.Directory, logToPocketLogger: true))
+            {
+                await omniSharp.WorkspaceReady();
+                await omniSharp.StandardOutput.FirstOrDefaultAsync().Timeout(10.Seconds());
+                await AssertVersionLoaded("ca-2.9", omniSharp);
+            }
+        }
+
+        private async Task AssertVersionLoaded(string version, OmniSharpServer omnisharp)
+        {
+            // OmniSharp will have printed a message saying it located its standalone MSBuild
+            // Unfortunately, it doesn't print it's own path on starup.
+            // Messages are json so / are escaped to // 
+            Assert.NotNull(await omnisharp.StandardOutput.FirstOrDefaultAsync(o => o.Contains(version)).Timeout(30.Seconds()));
         }
 
         [Fact]
