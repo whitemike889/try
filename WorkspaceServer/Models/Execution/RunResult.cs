@@ -65,7 +65,7 @@ namespace WorkspaceServer.Models.Execution
                 {
                     var o = new JObject
                     {
-                        new JProperty("diagnostics", JArray.FromObject(runResult.Diagnostics)),
+                        new JProperty("diagnostics", JArray.FromObject(runResult.Diagnostics ,serializer)),
                         new JProperty("succeeded", runResult.Succeeded),
                         new JProperty("output", runResult.Output),
                         new JProperty("exception", runResult.Exception)
@@ -80,7 +80,7 @@ namespace WorkspaceServer.Models.Execution
 
                     void AddProperty(string name, object value1)
                     {
-                        var jToken = JToken.FromObject(value1);
+                        var jToken = JToken.FromObject(value1, serializer);
                         o.Add(new JProperty(name, jToken));
                     }
                 }

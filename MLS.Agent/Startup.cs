@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MLS.Agent.JsonContracts;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using Pocket;
 using Recipes;
 using static Pocket.Logger<MLS.Agent.Startup>;
@@ -51,6 +52,7 @@ namespace MLS.Agent
                         })
                         .AddJsonOptions(o =>
                         {
+                            o.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
                             o.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
                             o.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
                             o.SerializerSettings.Converters.Add(new WorkspaceRequestConverter());
