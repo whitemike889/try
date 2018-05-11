@@ -18,14 +18,14 @@ namespace MLS.Agent.Controllers
     public class WorkspaceController : Controller
     {
         private readonly WorkspaceServerRegistry _workspaceServerRegistry;
-     
+
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
 
         public WorkspaceController(WorkspaceServerRegistry workspaceServerRegistry)
         {
             _workspaceServerRegistry = workspaceServerRegistry ??
                                            throw new ArgumentNullException(nameof(workspaceServerRegistry));
-       
+
         }
 
         [HttpPost]
@@ -40,7 +40,7 @@ namespace MLS.Agent.Controllers
                 _disposables.Add(VirtualClock.Start());
             }
 
-            using (var operation = Log.OnEnterAndConfirmOnExit())
+            using (var operation = Log.OnEnterAndConfirmOnExit(properties: new object[] { ("WorkspaceType", request.Workspace.WorkspaceType) }))
             {
                 if (!int.TryParse(timeoutInMilliseconds, out var timeoutMs))
                 {
@@ -110,7 +110,9 @@ namespace MLS.Agent.Controllers
                 _disposables.Add(VirtualClock.Start());
             }
 
-            using (var operation = Log.OnEnterAndConfirmOnExit(name: "LanguageServices.Completion"))
+            using (var operation = Log.OnEnterAndConfirmOnExit(
+                name: "LanguageServices.Completion",
+                properties: new object[] { ("WorkspaceType", request.Workspace.WorkspaceType) }))
             {
                 if (!int.TryParse(timeoutInMilliseconds, out var timeoutMs))
                 {
@@ -168,7 +170,9 @@ namespace MLS.Agent.Controllers
                 _disposables.Add(VirtualClock.Start());
             }
 
-            using (var operation = Log.OnEnterAndConfirmOnExit(name:"LanguageServices.SignatureHelp"))
+            using (var operation = Log.OnEnterAndConfirmOnExit(
+                name: "LanguageServices.SignatureHelp",
+                properties: new object[] { ("WorkspaceType", request.Workspace.WorkspaceType) }))
             {
                 if (!int.TryParse(timeoutInMilliseconds, out var timeoutMs))
                 {
@@ -179,7 +183,7 @@ namespace MLS.Agent.Controllers
                 var budget = new TimeBudget(runTimeout);
                 var server = await GetServerForWorkspace(request.Workspace, budget);
                 var result = await server.GetSignatureHelp(request, budget);
-                
+
                 operation.Succeed();
 
                 return Ok(result);
