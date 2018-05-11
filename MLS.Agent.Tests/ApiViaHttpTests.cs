@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Linq;
 using FluentAssertions;
 using System.Net;
@@ -219,11 +220,11 @@ namespace MLS.Agent.Tests
         [Fact]
         public async Task When_they_load_a_snippet_then_they_can_use_the_workspace_endpoint_to_get_signature_help()
         {
+            var log = new LogEntryList();
+            using(LogEvents.Subscribe(log.Add))
             using (var agent = new AgentService())
             {
-                var request = new HttpRequestMessage(
-                    HttpMethod.Post,
-                    @"/workspace/signaturehelp")
+                var request = new HttpRequestMessage(HttpMethod.Post, @"/workspace/signaturehelp")
                 {
                     Content = new StringContent(
                         JsonConvert.SerializeObject(new
@@ -244,6 +245,9 @@ namespace MLS.Agent.Tests
                 result.Signatures.Should().NotBeNullOrEmpty();
                 result.Signatures.Should().Contain(signature => signature.Label == "void Console.WriteLine(string format, params object[] arg)");
             }
+
+            log.Should()
+                .Contain(e => e.OperationName == "LanguageServices.SignatureHelp");
         }
 
         [Fact]
@@ -290,7 +294,8 @@ namespace FibonacciTest
             #endregion
 
             var position = generator.IndexOf(consoleWriteline, StringComparison.Ordinal) + consoleWriteline.Length;
-
+            var log = new LogEntryList();
+            using (LogEvents.Subscribe(log.Add))
             using (var agent = new AgentService())
             {
                 var request = new HttpRequestMessage(
@@ -324,6 +329,8 @@ namespace FibonacciTest
                 result.Signatures.Should().NotBeNullOrEmpty();
                 result.Signatures.Should().Contain(signature => signature.Label == "void Console.WriteLine(string format, params object[] arg)");
             }
+            log.Should()
+                .Contain(e => e.OperationName == "LanguageServices.SignatureHelp");
         }
 
         [Fact]
@@ -370,7 +377,8 @@ namespace FibonacciTest
             #endregion
 
             var position = generator.IndexOf(consoleWriteline, StringComparison.Ordinal) + consoleWriteline.Length;
-
+            var log = new LogEntryList();
+            using (LogEvents.Subscribe(log.Add))
             using (var agent = new AgentService())
             {
                 var request = new HttpRequestMessage(
@@ -403,6 +411,8 @@ namespace FibonacciTest
                     .DeserializeAs<CompletionResult>();
                 result.Items.Should().NotBeNullOrEmpty();
                 result.Items.Should().Contain(completion => completion.SortText == "Console");
+                log.Should()
+                    .Contain(e => e.OperationName == "LanguageServices.Completion");
             }
         }
 
@@ -451,6 +461,8 @@ namespace FibonacciTest
 
             var position = generator.IndexOf(consoleWriteline, StringComparison.Ordinal) + consoleWriteline.Length;
 
+            var log = new LogEntryList();
+            using (LogEvents.Subscribe(log.Add))
             using (var agent = new AgentService())
             {
                 var request = new HttpRequestMessage(
@@ -484,6 +496,8 @@ namespace FibonacciTest
                 result.Items.Should().NotBeNullOrEmpty();
                 result.Items.Should().Contain(completion => completion.SortText == "Beep");
             }
+            log.Should()
+                .Contain(e => e.OperationName == "LanguageServices.Completion");
         }
 
         [Fact]

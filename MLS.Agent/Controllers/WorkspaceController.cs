@@ -110,7 +110,7 @@ namespace MLS.Agent.Controllers
                 _disposables.Add(VirtualClock.Start());
             }
 
-            using (var operation = Log.ConfirmOnExit())
+            using (var operation = Log.OnEnterAndConfirmOnExit(name: "LanguageServices.Completion"))
             {
                 if (!int.TryParse(timeoutInMilliseconds, out var timeoutMs))
                 {
@@ -139,7 +139,7 @@ namespace MLS.Agent.Controllers
                 _disposables.Add(VirtualClock.Start());
             }
 
-            using (var operation = Log.ConfirmOnExit())
+            using (var operation = Log.OnEnterAndConfirmOnExit(name: "LanguageServices.Diagnostics"))
             {
                 if (!int.TryParse(timeoutInMilliseconds, out var timeoutMs))
                 {
@@ -168,7 +168,7 @@ namespace MLS.Agent.Controllers
                 _disposables.Add(VirtualClock.Start());
             }
 
-            using (var operation = Log.ConfirmOnExit())
+            using (var operation = Log.OnEnterAndConfirmOnExit(name:"LanguageServices.SignatureHelp"))
             {
                 if (!int.TryParse(timeoutInMilliseconds, out var timeoutMs))
                 {
@@ -179,7 +179,7 @@ namespace MLS.Agent.Controllers
                 var budget = new TimeBudget(runTimeout);
                 var server = await GetServerForWorkspace(request.Workspace, budget);
                 var result = await server.GetSignatureHelp(request, budget);
-
+                
                 operation.Succeed();
 
                 return Ok(result);

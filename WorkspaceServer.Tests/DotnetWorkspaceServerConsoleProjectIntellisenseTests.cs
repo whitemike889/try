@@ -60,8 +60,6 @@ namespace FibonacciTest
         }
     }
 }";
-
-         
             #endregion
 
             var (processed, position) = CodeManipulation.ProcessMarkup(generator);
