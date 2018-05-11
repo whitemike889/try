@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using FluentAssertions;
 using WorkspaceServer.Models;
+using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Servers.Dotnet;
 using Xunit;
@@ -73,7 +75,10 @@ namespace FibonacciTest
             var server = await GetSharedWorkspaceServer();
             var result = await server.GetCompletionList(request);
             result.Items.Should().NotBeNullOrEmpty();
+            result.Items.Should().NotContain(signature => string.IsNullOrEmpty(signature.Kind));
             result.Items.Should().Contain(completion => completion.SortText == "Console");
+            var hasDuplicatedEntries = HasDuplicatedCompletionItems(result);
+            hasDuplicatedEntries.Should().BeFalse();
         }
 
         [Fact]
@@ -131,7 +136,10 @@ namespace FibonacciTest
             var result = await server.GetCompletionList(request);
 
             result.Items.Should().NotBeNullOrEmpty();
-            result.Items.Should().Contain(completion => completion.SortText == "Beep(int frequency, int duration)");
+            result.Items.Should().NotContain(signature => string.IsNullOrEmpty(signature.Kind));
+            result.Items.Should().Contain(completion => completion.SortText == "Beep");
+            var hasDuplicatedEntries = HasDuplicatedCompletionItems(result);
+            hasDuplicatedEntries.Should().BeFalse();
 
         }
 
@@ -196,7 +204,10 @@ namespace FibonacciTest
             var result = await server.GetCompletionList(request);
 
             result.Items.Should().NotBeNullOrEmpty();
+            result.Items.Should().NotContain(signature => string.IsNullOrEmpty(signature.Kind));
             result.Items.Should().Contain(signature => signature.SortText == "JToken");
+            var hasDuplicatedEntries = HasDuplicatedCompletionItems(result);
+            hasDuplicatedEntries.Should().BeFalse();
         }
 
         [Fact]
@@ -258,8 +269,18 @@ namespace FibonacciTest
             var server = await GetSharedWorkspaceServer();
             var result = await server.GetCompletionList(request);
             result.Items.Should().NotBeNullOrEmpty();
-            result.Items.Should().Contain(signature => signature.SortText == "FromObject(object o, JsonSerializer jsonSerializer)");
+            result.Items.Should().NotContain(signature => string.IsNullOrEmpty(signature.Kind));
+            result.Items.Should().Contain(signature => signature.SortText == "FromObject");
+            var hasDuplicatedEntries = HasDuplicatedCompletionItems(result);
+            hasDuplicatedEntries.Should().BeFalse();
+        }
 
+        private static bool HasDuplicatedCompletionItems(CompletionResult result)
+        {
+            bool hasDuplicatedEntries;
+            var g = result.Items.GroupBy(ci => ci.Kind + ci.InsertText).Select(cig => new { Key = cig.Key, Count = cig.Count() });
+            hasDuplicatedEntries = g.Any(cig => cig.Count > 1);
+            return hasDuplicatedEntries;
         }
 
         [Fact]
@@ -319,6 +340,63 @@ namespace FibonacciTest
             result.Signatures.Should().NotBeNullOrEmpty();
             result.Signatures.Should().Contain(signature => signature.Label == "void Console.WriteLine(string format, params object[] arg)");
 
+        }
+
+        [Fact]
+        public async Task Get_signature_help_for_invalid_location_return_empty()
+        {
+            #region bufferSources
+
+            const string program = @"using System;
+using System.Linq;
+
+namespace FibonacciTest
+{
+    public class Program
+    {
+        public static void Main()
+        {
+            foreach (var i in FibonacciGenerator.Fibonacci().Take(20))
+            {
+                Console.WriteLine(i);
+            }
+        }       
+    }
+}";
+            const string generator = @"using System.Collections.Generic;
+using System;
+namespace FibonacciTest
+{
+    public static class FibonacciGenerator
+    {
+        public static IEnumerable<int> Fibonacci()
+        {
+            int current = 1, next = 1;
+            while (true)
+            {
+                yield return current;
+                next = current + (current = next);
+                Console.WriteLine();
+            }
+        }
+    }
+}";
+
+            const string consoleWriteline = @"                Console.WriteLine();";
+            #endregion
+
+            var workspace = new Workspace(workspaceType: "console", buffers: new[]
+            {
+                new Workspace.Buffer("Program.cs",program,0),
+                new Workspace.Buffer("generators/FibonacciGenerator.cs",generator,0)
+            });
+
+            var position = generator.IndexOf(consoleWriteline, StringComparison.Ordinal) + consoleWriteline.Length;
+            var request = new WorkspaceRequest(workspace, position: position, activeBufferId: "generators/FibonacciGenerator.cs");
+            var server = await GetSharedWorkspaceServer();
+            var result = await server.GetSignatureHelp(request);
+            result.Should().NotBeNull();
+            result.Signatures.Should().BeNullOrEmpty();
         }
 
         [Fact]
