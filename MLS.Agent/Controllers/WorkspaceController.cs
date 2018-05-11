@@ -11,6 +11,7 @@ using WorkspaceServer.Servers.Dotnet;
 using WorkspaceServer.Servers.Scripting;
 using WorkspaceServer.WorkspaceFeatures;
 using static Pocket.Logger<MLS.Agent.Controllers.WorkspaceController>;
+using Workspace = WorkspaceServer.Models.Execution.Workspace;
 
 namespace MLS.Agent.Controllers
 {

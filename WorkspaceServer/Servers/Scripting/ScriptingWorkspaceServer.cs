@@ -14,6 +14,7 @@ using Microsoft.CodeAnalysis.Completion;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Host.Mef;
+using Microsoft.CodeAnalysis.Recommendations;
 using Microsoft.CodeAnalysis.Scripting;
 using Microsoft.CodeAnalysis.Text;
 using Pocket;
@@ -369,9 +370,22 @@ namespace WorkspaceServer.Servers.Scripting
                 var service = CompletionService.GetService(document);
 
                 var completionList = await service.GetCompletionsAsync(document, position);
+                var semanticModel = await document.GetSemanticModelAsync();
+                var symbols = await Recommender.GetRecommendedSymbolsAtPositionAsync(semanticModel, request.Position, document.Project.Solution.Workspace);
 
-                return new CompletionResult(
-                    items: completionList.Items.Select(item => item.ToModel()).ToArray());
+                var symbolToSymbolKey = new Dictionary<(string, int), ISymbol>();
+                foreach (var symbol in symbols)
+                {
+                    var key = (symbol.Name, (int)symbol.Kind);
+                    if (!symbolToSymbolKey.ContainsKey(key))
+                    {
+                        symbolToSymbolKey[key] = symbol;
+                    }
+                }
+
+                var items = completionList.Items.Select(item =>  item.ToModel(symbolToSymbolKey, document).Result).ToArray();
+
+                return new CompletionResult(items: items);
             }
         }
 

@@ -1,21 +1,38 @@
 FROM microsoft/aspnetcore-build:2.0
 
 # set up OmniSharp
-RUN mkdir -p /dependencies/omnisharp
-RUN curl -SL https://github.com/OmniSharp/omnisharp-roslyn/releases/download/v1.29.0-beta1/omnisharp-linux-x64.tar.gz | tar xvz -C /dependencies/omnisharp
+RUN mkdir -p /dependencies/omnisharp/v1.29.0-beta1
+RUN mkdir -p /dependencies/omnisharp/ca-2.9.2
+RUN curl -SL https://github.com/OmniSharp/omnisharp-roslyn/releases/download/v1.29.0-beta1/omnisharp-linux-x64.tar.gz | tar xvz -C /dependencies/omnisharp/v1.29.0-beta1
+RUN curl -SL https://github.com/OmniSharp/omnisharp-roslyn/releases/download/ca-2.9.2/omnisharp-linux-x64.tar.gz | tar xvz -C /dependencies/omnisharp/ca-2.9.2
 ENV TRYDOTNET_OMNISHARP_PATH=/dependencies/omnisharp/
 ENV NUGET_PACKAGES=/root/.nuget/packages/
+
+# install xmlstarlet
+RUN apt-get update
+RUN apt-get --assume-yes install xmlstarlet
 
 # set up workspaces directory
 ENV TRYDOTNET_WORKSPACES_PATH=/workspaces
 
+# set up workspaces
 WORKDIR /workspaces/console
 RUN dotnet new console
+RUN xmlstarlet ed --inplace --insert "/Project/PropertyGroup/OutputType" --type elem -n "LangVersion" --value "7.2" console.csproj
 RUN dotnet add package Newtonsoft.Json
 RUN dotnet build
 
+# standard console app, compiled with 2.9 compiler
+WORKDIR /workspaces/roslyn2.9
+RUN dotnet new console
+Run echo "ca-2.9.2" > .trydotnet
+RUN dotnet add package Newtonsoft.Json
+RUN dotnet build
+RUN xmlstarlet ed --inplace --insert "/Project/PropertyGroup/OutputType" --type elem -n "LangVersion" --value "7.3" roslyn2.9.csproj
+
 WORKDIR /workspaces/nodatime.api
 RUN dotnet new console
+RUN xmlstarlet ed --inplace --insert "/Project/PropertyGroup/OutputType" --type elem -n "LangVersion" --value "7.2" nodatime.api.csproj
 RUN dotnet add package Newtonsoft.Json
 RUN dotnet add package NodaTime
 RUN dotnet add package NodaTime.Testing
@@ -23,6 +40,7 @@ RUN dotnet build
 
 WORKDIR /workspaces/aspnet.webapi
 RUN dotnet new webapi
+RUN xmlstarlet ed --inplace --insert "/Project/PropertyGroup/OutputType" --type elem -n "LangVersion" --value "7.2" aspnet.webapi.csproj
 RUN dotnet build
 RUN dotnet publish
 

@@ -1,13 +1,36 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using OmniSharp.Client.Commands;
 
 namespace WorkspaceServer.Models.Completion
 {
     internal static class CompletionUtilities
     {
+        private sealed class CompletionTextEqualityComparer : IEqualityComparer<AutoCompleteResponse>
+        {
+            public bool Equals(AutoCompleteResponse x, AutoCompleteResponse y)
+            {
+                if (ReferenceEquals(x, y))
+                    return true;
+                if (ReferenceEquals(x, null))
+                    return false;
+                if (ReferenceEquals(y, null))
+                    return false;
+                if (x.GetType() != y.GetType())
+                    return false;
+                return string.Equals(x.CompletionText, y.CompletionText);
+            }
+
+            public int GetHashCode(AutoCompleteResponse obj)
+            {
+                return (obj.CompletionText != null ? obj.CompletionText.GetHashCode() : 0);
+            }
+        }
+
+        public static IEqualityComparer<AutoCompleteResponse> CompletionTextComparer { get; } = new CompletionTextEqualityComparer();
+
+
         public static string GetWordAt(this string source, int position)
         {
             var index = position;
@@ -29,11 +52,15 @@ namespace WorkspaceServer.Models.Completion
         {
             var source = items ?? Array.Empty<AutoCompleteResponse>();
 
-            var transformed = source.Select(item => new CompletionItem(
-                item.DisplayText,
-                item.Kind,
-                item.CompletionText,
-                item.DisplayText));
+            var transformed = source
+                .Distinct(CompletionTextComparer)
+                .Select(item => new CompletionItem(
+                    displayText: item.CompletionText,
+                    kind: item.Kind,
+                    filterText: item.CompletionText,
+                    insertText: item.CompletionText.Replace("<>",string.Empty),
+                    sortText: item.CompletionText,
+                    documentation: DocumentationConverter.ConvertDocumentation(item.Description,"\n")));
 
             return new CompletionResult(transformed.ToArray());
 

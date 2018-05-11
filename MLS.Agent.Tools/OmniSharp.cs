@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Net.Http;
@@ -8,25 +10,31 @@ using Pocket;
 
 namespace MLS.Agent.Tools
 {
-    public static class OmniSharp
+    public class OmniSharp
     {
-        private static readonly DirectoryInfo _omniSharpInstallFolder;
-        private static readonly string _version = @"v1.29.0-beta1";
-        private static readonly AsyncLazy<FileInfo> _omniSharp;
-        private static readonly Logger Log = new Logger(nameof(OmniSharp));
+        private readonly Logger Log = new Logger(nameof(OmniSharp));
 
-        static OmniSharp()
+        protected AsyncLazy<FileInfo> _omniSharp { get; }
+
+        private readonly DirectoryInfo _omniSharpInstallFolder;
+        private readonly string _version;
+
+        private static readonly ConcurrentDictionary<string, OmniSharp> _cache = new ConcurrentDictionary<string, OmniSharp>();
+        private const string defaultVersion = "v1.29.0-beta1";
+
+        public OmniSharp(string version)
         {
+            _version = version ?? throw new ArgumentNullException(nameof(version));
+
             var environmentVariable = Environment.GetEnvironmentVariable("TRYDOTNET_OMNISHARP_PATH");
 
-            var omniSharpInstallPath =
+            var omnisharpDirectory =
                 environmentVariable ??
                 Path.Combine(Paths.UserProfile,
                              ".trydotnet",
-                             "omnisharp",
-                             _version);
+                             "omnisharp");
 
-            _omniSharpInstallFolder = new DirectoryInfo(omniSharpInstallPath);
+            _omniSharpInstallFolder = new DirectoryInfo(Path.Combine(omnisharpDirectory, version));
 
             _omniSharp = new AsyncLazy<FileInfo>(CheckInstallationAndAcquireIfNeeded);
 
@@ -65,10 +73,17 @@ namespace MLS.Agent.Tools
             }
         }
 
-        public static async Task<FileInfo> EnsureInstalledOrAcquire() => 
-            await _omniSharp.ValueAsync();
+        public static async Task<FileInfo> EnsureInstalledOrAcquire(FileInfo dotTryDotNetPath)
+        {
+            var version = dotTryDotNetPath.Exists
+                ? await dotTryDotNetPath.ReadAsync()
+                : defaultVersion;
 
-        private static async Task<FileInfo> AcquireAndExtractWithTar(string file)
+            var omnisharp = _cache.GetOrAdd(version, v => new OmniSharp(v));
+            return await omnisharp._omniSharp.ValueAsync();
+        }
+
+        private async Task<FileInfo> AcquireAndExtractWithTar(string file)
         {
             var omniSharpRunScript = new FileInfo(
                 Path.Combine(
@@ -105,7 +120,7 @@ namespace MLS.Agent.Tools
             return omniSharpRunScript;
         }
 
-        private static async Task<FileInfo> AcquireAndExtractWithZip(string file)
+        private async Task<FileInfo> AcquireAndExtractWithZip(string file)
         {
             var omniSharpExe = new FileInfo(
                 Path.Combine(

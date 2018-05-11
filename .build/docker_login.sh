@@ -29,10 +29,8 @@ function do_docker_login () {
 
     LOGIN_SUCCESS=$?
 
-    if [ $LOGIN_SUCCESS -eq 0 ]
+    if [ $LOGIN_SUCCESS -ne 0 ]
     then
-        return 0
-    else
         echo "Docker login failed with exit code $LOGIN_SUCCESS"
         exit 1
     fi

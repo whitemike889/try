@@ -40,14 +40,15 @@ namespace WorkspaceServer.Servers.Dotnet
                 _disposables.Add(StandardError.Subscribe(e => Log.Error("{message}", args: e)));
             }
 
-            _omnisharpProcess = new AsyncLazy<Process>(StartOmniSharp);
+            var dotTdn = new FileInfo(Path.Combine(projectDirectory.FullName, ".trydotnet"));
+            _omnisharpProcess = new AsyncLazy<Process>(() => StartOmniSharp(dotTdn));
         }
 
-        private async Task<Process> StartOmniSharp()
+        private async Task<Process> StartOmniSharp(FileInfo dotTryDotNetPath)
         {
             using (var operation = Log.OnEnterAndConfirmOnExit())
             {
-                var omnisharpExe = await MLS.Agent.Tools.OmniSharp.EnsureInstalledOrAcquire();
+                var omnisharpExe = await MLS.Agent.Tools.OmniSharp.EnsureInstalledOrAcquire(dotTryDotNetPath);
 
                 var process =
                     CommandLine.StartProcess(

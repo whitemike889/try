@@ -7,12 +7,13 @@ namespace MLS.Agent
     public class CommandLineOptions
     {
         public CommandLineOptions(
-            bool wasSuccess, 
-            bool helpRequested, 
-            string helpText, 
-            bool isProduction, 
-            string key, 
+            bool wasSuccess,
+            bool helpRequested,
+            string helpText,
+            bool isProduction,
+            string key,
             string[] loadWorkspaces,
+            string applicationInsightsKey = null,
             bool logToFile = false,
             string id = null)
         {
@@ -24,6 +25,7 @@ namespace MLS.Agent
             HelpRequested = helpRequested;
             HelpText = helpText;
             Key = key;
+            ApplicationInsightsKey = applicationInsightsKey;
         }
 
         public bool WasSuccess { get; }
@@ -32,6 +34,7 @@ namespace MLS.Agent
         public bool HelpRequested { get; }
         public string HelpText { get; }
         public string Key { get; }
+        public string ApplicationInsightsKey { get; }
         public string[] LoadWorkspaces { get; }
         public bool LogToFile { get; }
 
@@ -42,6 +45,7 @@ namespace MLS.Agent
                 Create.Option("--id", "A unique id for the agent instance (e.g. its development environment id)", ExactlyOneArgument()),
                 Create.Option("--production", "Specifies if the agent is being run using production resources or not"),
                 Create.Option("-k|--key", "The encryption key", ExactlyOneArgument()),
+                Create.Option("--ai-key", "Application Insights key", ExactlyOneArgument()),
                 Create.Option("--load-workspace", "Starts OmniSharp in the specified workspace folder.", OneOrMoreArguments()),
                 Create.Option("--log-to-file", "Writes a log file", NoArguments()));
 
@@ -80,7 +84,8 @@ namespace MLS.Agent
                          : null,
                 loadWorkspaces: parseResult.HasOption("load-workspace")
                                        ? parseResult.AppliedOptions["load-workspace"].Value<string[]>()
-                                       : new string[] { });
+                                       : new string[] { },
+                applicationInsightsKey: parseResult.HasOption("ai-key") ? parseResult["ai-key"].Value<string>() : null);
         }
     }
 }

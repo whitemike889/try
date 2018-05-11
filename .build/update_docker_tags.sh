@@ -18,9 +18,16 @@ function update_docker_tags() {
     fi
 
     docker tag build.artifact:latest $DOCKER_REPOSITORY_SERVER/$IMAGE_NAME:$COMMIT_HASH
-    docker rmi build.artifact:latest
+
+    # Tag images for devdiv CR
     docker tag $DOCKER_REPOSITORY_SERVER/$IMAGE_NAME:$COMMIT_HASH $DOCKER_REPOSITORY_SERVER/$IMAGE_NAME:staging
     docker tag $DOCKER_REPOSITORY_SERVER/$IMAGE_NAME:$COMMIT_HASH $DOCKER_REPOSITORY_SERVER/$IMAGE_NAME:latest
+
+    # Tag images for msazure CR
+    docker tag build.artifact:latest $MSAZURE_DOCKER_SERVER/$IMAGE_NAME:$COMMIT_HASH
+    docker tag $MSAZURE_DOCKER_SERVER/$IMAGE_NAME:$COMMIT_HASH $MSAZURE_DOCKER_SERVER/$IMAGE_NAME:latest
+
+    docker rmi build.artifact:latest
 
     return 0
 }
