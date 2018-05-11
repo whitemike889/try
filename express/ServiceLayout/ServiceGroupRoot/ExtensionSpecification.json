@@ -1,0 +1,16 @@
+{
+    "$schema": "http://schema.express.azure.com/schemas/2016-11-01-preview/ExtensionMetadata.json",
+    "ContentVersion": "1.0.0.0",
+
+    "Extension": 
+    {
+        "Namespace": "Microsoft.TryDotNet", // Required: Your team namespace
+        "Type": "RunPeakyTests", // Required: Your extension type name
+        "Description": "Peaky testing extension for try.net",
+        "Endpoints": [ "https://trydotnetfn.azurewebsites.net/api"],
+        "Enabled": "true", // Required: true or false if you want to set the Extension as enable or disable
+        "OwnerGroupObjectId": "d09e39fd-bb2e-4b58-bb5c-54029fba2a38",
+       "IncidentEscalationAlias": "mlsdev@microsoft.com",
+        "SystemVersion" : "2016-11-01" // Required. This is Ev2's extension version
+    }
+}
