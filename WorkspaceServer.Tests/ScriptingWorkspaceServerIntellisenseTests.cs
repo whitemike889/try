@@ -31,7 +31,7 @@ public class Program
 {
   public static void Main()
   {
-    foreach (var i in Fibonacci().Take())
+    foreach (var i in Fibonacci().Take())$$
     {
       Console.WriteLine(i);
     }
@@ -48,11 +48,10 @@ public class Program
     }
   }
 }";
-
-            var toFind = @"    foreach (var i in Fibonacci().Take())";
-            var position = code.IndexOf(toFind) + toFind.Length;
-            var ws = new Workspace(buffers: new[] { new Workspace.Buffer("", code, 0) });
-            var request = new WorkspaceRequest(ws, activeBufferId: "", position: position);
+            var (processed, markLocation) = CodeManipulation.ProcessMarkup(code);
+          
+            var ws = new Workspace(buffers: new[] { new Workspace.Buffer("", processed, 0) });
+            var request = new WorkspaceRequest(ws, activeBufferId: "", position: markLocation);
             var server = await GetWorkspaceServer();
             var result = await server.GetSignatureHelp(request);
             result.Should().NotBeNull();
@@ -70,7 +69,7 @@ public class Program
 {
   public static void Main()
   {
-    foreach (var i in Fibonacci().Take())
+    foreach (var i in Fibonacci().Take($$))
     {
       Console.WriteLine(i);
     }
@@ -87,11 +86,10 @@ public class Program
     }
   }
 }";
-
-            var toFind = @"    foreach (var i in Fibonacci().Take(";
-            var position = code.IndexOf(toFind) + toFind.Length;
-            var ws = new Workspace(buffers: new[] { new Workspace.Buffer("", code, 0) });
-            var request = new WorkspaceRequest(ws, activeBufferId: "", position: position);
+            var (processed, markLocation) = CodeManipulation.ProcessMarkup(code);
+           
+            var ws = new Workspace(buffers: new[] { new Workspace.Buffer("", processed, 0) });
+            var request = new WorkspaceRequest(ws, activeBufferId: "", position: markLocation);
             var server = await GetWorkspaceServer();
             var result = await server.GetSignatureHelp(request);
             result.Signatures.Should().NotBeEmpty();
@@ -101,8 +99,10 @@ public class Program
         [Fact]
         public async Task Can_show_KeyValuePair_because_it_uses_the_right_reference_assemblies()
         {
-            var ws = new Workspace(buffers: new[] { new Workspace.Buffer("default.cs", "System.Collections.Generic.", 0) });
-            var request = new WorkspaceRequest(ws, activeBufferId: "default.cs", position: 27);
+            var (processed, markLocation) = CodeManipulation.ProcessMarkup("System.Collections.Generic.$$");
+
+            var ws = new Workspace(buffers: new[] { new Workspace.Buffer("default.cs", processed, 0) });
+            var request = new WorkspaceRequest(ws, activeBufferId: "default.cs", position: markLocation);
             var server = await GetWorkspaceServer();
             var result = await server.GetCompletionList(request);
 
@@ -113,8 +113,9 @@ public class Program
         [Fact]
         public async Task Can_show_completions()
         {
-            var ws = new Workspace(buffers: new[] { new Workspace.Buffer("default.cs", "var xa = 3;\na", 0) });
-            var request = new WorkspaceRequest(ws, activeBufferId: "default.cs", position: 13);
+            var (processed, markLocation) = CodeManipulation.ProcessMarkup("var xa = 3;\n$$a");
+            var ws = new Workspace(buffers: new[] { new Workspace.Buffer("default.cs", processed, 0) });
+            var request = new WorkspaceRequest(ws, activeBufferId: "default.cs", position: markLocation);
             var server = await GetWorkspaceServer();
             var result = await server.GetCompletionList(request);
 
@@ -139,14 +140,14 @@ public class Program
     public void Foo() { Foo($$ }
 }";
 
-            var source = markup.Replace("$$", string.Empty);
-            var position = markup.IndexOf("$$");
+            var (processed, markLocation) = CodeManipulation.ProcessMarkup(markup);
+
             var ws = new Workspace(
-                files: new[] { new Workspace.File("program.cs", container) },
-                buffers: new[] { new Workspace.Buffer("program.cs@nesting", source, 0) });
+                files: new[] { new Workspace.File("program.cs", CodeManipulation.EnforceLF(container)) },
+                buffers: new[] { new Workspace.Buffer("program.cs@nesting", processed, 0) });
            
           
-            var request = new WorkspaceRequest(ws, activeBufferId: "program.cs@nesting", position: position);
+            var request = new WorkspaceRequest(ws, activeBufferId: "program.cs@nesting", position: markLocation);
             var server = await GetWorkspaceServer();
             var result = await server.GetSignatureHelp(request);
 
@@ -162,11 +163,10 @@ public class Program
     void Foo() { Foo($$ }
 }";
 
-            var source = markup.Replace("$$", string.Empty);
-            var position = markup.IndexOf("$$");
-            var ws = new Workspace(buffers: new[] { new Workspace.Buffer("program.cs", source, 0) });
+            var (processed, markLocation) = CodeManipulation.ProcessMarkup(markup);
+            var ws = new Workspace(buffers: new[] { new Workspace.Buffer("program.cs", processed, 0) });
 
-            var request = new WorkspaceRequest(ws, activeBufferId: "program.cs", position: position);
+            var request = new WorkspaceRequest(ws, activeBufferId: "program.cs", position: markLocation);
             var server = await GetWorkspaceServer();
             var result = await server.GetSignatureHelp(request);
             result.Signatures.Should().NotBeEmpty();

@@ -55,23 +55,24 @@ namespace FibonacciTest
             {
                 yield return current;
                 next = current + (current = next);
-                Cons
+                Cons$$
             }
         }
     }
 }";
 
-            const string consoleWriteline = @"                Cons";
+         
             #endregion
+
+            var (processed, markLocation) = CodeManipulation.ProcessMarkup(generator);
 
             var workspace = new Workspace(workspaceType: "console", buffers: new[]
             {
-                new Workspace.Buffer("Program.cs",program,0),
-                new Workspace.Buffer("generators/FibonacciGenerator.cs",generator,0)
+                new Workspace.Buffer("Program.cs", CodeManipulation.EnforceLF(program),0),
+                new Workspace.Buffer("generators/FibonacciGenerator.cs",processed,0)
             });
 
-            var position = generator.IndexOf(consoleWriteline, StringComparison.Ordinal) + consoleWriteline.Length;
-            var request = new WorkspaceRequest(workspace, position: position, activeBufferId: "generators/FibonacciGenerator.cs");
+            var request = new WorkspaceRequest(workspace, position: markLocation, activeBufferId: "generators/FibonacciGenerator.cs");
             var server = await GetSharedWorkspaceServer();
             var result = await server.GetCompletionList(request);
             result.Items.Should().NotBeNullOrEmpty();
@@ -115,23 +116,23 @@ namespace FibonacciTest
             {
                 yield return current;
                 next = current + (current = next);
-                Console.
+                Console.$$
             }
         }
     }
 }";
-
-            const string consoleWriteline = @"                Console.";
+            
             #endregion
+
+            var (processed, markLocation) = CodeManipulation.ProcessMarkup(generator);
 
             var workspace = new Workspace(workspaceType: "console", buffers: new[]
             {
-                new Workspace.Buffer("Program.cs",program,0),
-                new Workspace.Buffer("generators/FibonacciGenerator.cs",generator,0)
+                new Workspace.Buffer("Program.cs", CodeManipulation.EnforceLF(program),0),
+                new Workspace.Buffer("generators/FibonacciGenerator.cs",processed,0)
             });
 
-            var position = generator.IndexOf(consoleWriteline, StringComparison.Ordinal) + consoleWriteline.Length;
-            var request = new WorkspaceRequest(workspace, position: position, activeBufferId: "generators/FibonacciGenerator.cs");
+            var request = new WorkspaceRequest(workspace, position: markLocation, activeBufferId: "generators/FibonacciGenerator.cs");
             var server = await GetSharedWorkspaceServer();
             var result = await server.GetCompletionList(request);
 
@@ -188,18 +189,19 @@ namespace FibonacciTest
 
             #endregion
 
+            var (processed, markLocation) = CodeManipulation.ProcessMarkup("JTo$$;");
+
             var workspace = new Workspace(
                 workspaceType: "console",
                 buffers: new[] {
-                    new Workspace.Buffer("Program.cs",program,0),
-                    new Workspace.Buffer("generators/FibonacciGenerator.cs@codeRegion","JTo;",0)
+                    new Workspace.Buffer("Program.cs", CodeManipulation.EnforceLF(program),0),
+                    new Workspace.Buffer("generators/FibonacciGenerator.cs@codeRegion",processed,0)
                 }, files: new[] {
-                    new Workspace.File("generators/FibonacciGenerator.cs",generator),
+                    new Workspace.File("generators/FibonacciGenerator.cs", CodeManipulation.EnforceLF(generator)),
                 });
 
-            var position = 3;
-
-            var request = new WorkspaceRequest(workspace, position: position, activeBufferId: "generators/FibonacciGenerator.cs@codeRegion");
+          
+            var request = new WorkspaceRequest(workspace, position: markLocation, activeBufferId: "generators/FibonacciGenerator.cs@codeRegion");
             var server = await GetSharedWorkspaceServer();
             var result = await server.GetCompletionList(request);
 
@@ -254,18 +256,19 @@ namespace FibonacciTest
 }";
 
             #endregion
+            
+            var (processed, markLocation) = CodeManipulation.ProcessMarkup("JToken.fr$$;");
 
             var workspace = new Workspace(
                 workspaceType: "console",
                 buffers: new[] {
-                    new Workspace.Buffer("Program.cs",program,0),
-                    new Workspace.Buffer("generators/FibonacciGenerator.cs@codeRegion","JToken.fr;",0)
+                    new Workspace.Buffer("Program.cs", CodeManipulation.EnforceLF(program),0),
+                    new Workspace.Buffer("generators/FibonacciGenerator.cs@codeRegion",processed,0)
                 }, files: new[] {
-                    new Workspace.File("generators/FibonacciGenerator.cs",generator),
+                    new Workspace.File("generators/FibonacciGenerator.cs", CodeManipulation.EnforceLF(generator)),
                 });
 
-            var position = 9;
-            var request = new WorkspaceRequest(workspace, position: position, activeBufferId: "generators/FibonacciGenerator.cs@codeRegion");
+            var request = new WorkspaceRequest(workspace, position: markLocation, activeBufferId: "generators/FibonacciGenerator.cs@codeRegion");
             var server = await GetSharedWorkspaceServer();
             var result = await server.GetCompletionList(request);
             result.Items.Should().NotBeNullOrEmpty();
@@ -317,23 +320,23 @@ namespace FibonacciTest
             {
                 yield return current;
                 next = current + (current = next);
-                Console.WriteLine();
+                Console.WriteLine($$);
             }
         }
     }
 }";
-
-            const string consoleWriteline = @"                Console.WriteLine(";
+            
             #endregion
+
+            var (processed, markLocation) = CodeManipulation.ProcessMarkup(generator);
 
             var workspace = new Workspace(workspaceType: "console", buffers: new[]
             {
-                new Workspace.Buffer("Program.cs",program,0),
-                new Workspace.Buffer("generators/FibonacciGenerator.cs",generator,0)
+                new Workspace.Buffer("Program.cs", CodeManipulation.EnforceLF(program),0),
+                new Workspace.Buffer("generators/FibonacciGenerator.cs",processed,0)
             });
 
-            var position = generator.IndexOf(consoleWriteline, StringComparison.Ordinal) + consoleWriteline.Length;
-            var request = new WorkspaceRequest(workspace, position: position, activeBufferId: "generators/FibonacciGenerator.cs");
+            var request = new WorkspaceRequest(workspace, position: markLocation, activeBufferId: "generators/FibonacciGenerator.cs");
             var server = await GetSharedWorkspaceServer();
             var result = await server.GetSignatureHelp(request);
 
@@ -376,23 +379,22 @@ namespace FibonacciTest
             {
                 yield return current;
                 next = current + (current = next);
-                Console.WriteLine();
+                Console.WriteLine();$$
             }
         }
     }
 }";
-
-            const string consoleWriteline = @"                Console.WriteLine();";
             #endregion
+
+            var (processed, markLocation) = CodeManipulation.ProcessMarkup(generator);
 
             var workspace = new Workspace(workspaceType: "console", buffers: new[]
             {
-                new Workspace.Buffer("Program.cs",program,0),
-                new Workspace.Buffer("generators/FibonacciGenerator.cs",generator,0)
+                new Workspace.Buffer("Program.cs", CodeManipulation.EnforceLF(program),0),
+                new Workspace.Buffer("generators/FibonacciGenerator.cs",processed,0)
             });
-
-            var position = generator.IndexOf(consoleWriteline, StringComparison.Ordinal) + consoleWriteline.Length;
-            var request = new WorkspaceRequest(workspace, position: position, activeBufferId: "generators/FibonacciGenerator.cs");
+            
+            var request = new WorkspaceRequest(workspace, position: markLocation, activeBufferId: "generators/FibonacciGenerator.cs");
             var server = await GetSharedWorkspaceServer();
             var result = await server.GetSignatureHelp(request);
             result.Should().NotBeNull();
@@ -442,18 +444,19 @@ namespace FibonacciTest
 
             #endregion
 
+
+            var (processed, markLocation) = CodeManipulation.ProcessMarkup("Console.WriteLine($$)");
+
             var workspace = new Workspace(
                 workspaceType: "console",
                 buffers: new[] {
-                    new Workspace.Buffer("Program.cs",program,0),
-                    new Workspace.Buffer("generators/FibonacciGenerator.cs@codeRegion","Console.WriteLine()",0)
+                    new Workspace.Buffer("Program.cs", CodeManipulation.EnforceLF(program),0),
+                    new Workspace.Buffer("generators/FibonacciGenerator.cs@codeRegion",processed,0)
                 }, files: new[] {
-                    new Workspace.File("generators/FibonacciGenerator.cs",generator),
+                    new Workspace.File("generators/FibonacciGenerator.cs", CodeManipulation.EnforceLF(generator)),
                 });
 
-
-            var position = 18;
-            var request = new WorkspaceRequest(workspace, position: position, activeBufferId: "generators/FibonacciGenerator.cs@codeRegion");
+            var request = new WorkspaceRequest(workspace, position: markLocation, activeBufferId: "generators/FibonacciGenerator.cs@codeRegion");
             var server = await GetSharedWorkspaceServer();
             var result = await server.GetSignatureHelp(request);
 
@@ -507,17 +510,18 @@ namespace FibonacciTest
 
             #endregion
 
+            var (processed, markLocation) = CodeManipulation.ProcessMarkup("JToken.FromObject($$);");
+
             var workspace = new Workspace(
                 workspaceType: "console",
                 buffers: new[] {
-                    new Workspace.Buffer("Program.cs",program,0),
-                    new Workspace.Buffer("generators/FibonacciGenerator.cs@codeRegion","JToken.FromObject();",0)
+                    new Workspace.Buffer("Program.cs",CodeManipulation.EnforceLF(program),0),
+                    new Workspace.Buffer("generators/FibonacciGenerator.cs@codeRegion",processed,0)
                 }, files: new[] {
-                    new Workspace.File("generators/FibonacciGenerator.cs",generator),
+                    new Workspace.File("generators/FibonacciGenerator.cs", CodeManipulation.EnforceLF(generator)),
                 });
 
-            var position = 18;
-            var request = new WorkspaceRequest(workspace, position: position, activeBufferId: "generators/FibonacciGenerator.cs@codeRegion");
+            var request = new WorkspaceRequest(workspace, position: markLocation, activeBufferId: "generators/FibonacciGenerator.cs@codeRegion");
             var server = await GetSharedWorkspaceServer();
             var result = await server.GetSignatureHelp(request);
 

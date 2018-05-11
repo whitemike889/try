@@ -10,12 +10,13 @@ namespace WorkspaceServer.Tests
 {
     public class Given_a_BufferInliningTransformer
     {
+
         [Fact]
         public void It_extracts_viewPorts_when_files_declare_region()
         {
             var ws = new Workspace(files: new[]
             {
-                new Workspace.File("Program.cs", CodeSamples.SourceCodeProvider.ConsoleProgramSingleRegion)
+                new Workspace.File("Program.cs", CodeManipulation.EnforceLF(CodeSamples.SourceCodeProvider.ConsoleProgramSingleRegion))
             });
             var processor = new BufferInliningTransformer();
             var viewPorts = processor.ExtractViewPorts(ws);
@@ -28,7 +29,7 @@ namespace WorkspaceServer.Tests
         {
             var ws = new Workspace(files: new[]
             {
-                new Workspace.File("Program.cs", CodeSamples.SourceCodeProvider.ConsoleProgramCollidingRegions)
+                new Workspace.File("Program.cs", CodeManipulation.EnforceLF(CodeSamples.SourceCodeProvider.ConsoleProgramCollidingRegions))
             });
             var processor = new BufferInliningTransformer();
             Action extraction = () => processor.ExtractViewPorts(ws);
@@ -40,8 +41,8 @@ namespace WorkspaceServer.Tests
         {
             var ws = new Workspace(files: new[]
             {
-                new Workspace.File("ProgramA.cs", CodeSamples.SourceCodeProvider.ConsoleProgramSingleRegion),
-                new Workspace.File("ProgramB.cs", CodeSamples.SourceCodeProvider.ConsoleProgramSingleRegion)
+                new Workspace.File("ProgramA.cs", CodeManipulation.EnforceLF(CodeSamples.SourceCodeProvider.ConsoleProgramSingleRegion)),
+                new Workspace.File("ProgramB.cs", CodeManipulation.EnforceLF(CodeSamples.SourceCodeProvider.ConsoleProgramSingleRegion))
             });
             var processor = new BufferInliningTransformer();
             Action extraction = () => processor.ExtractViewPorts(ws);
@@ -70,11 +71,11 @@ namespace WorkspaceServer.Tests
             var ws = new Workspace(
                 files: new[]
                 {
-                    new Workspace.File("Program.cs", CodeSamples.SourceCodeProvider.ConsoleProgramSingleRegion)
+                    new Workspace.File("Program.cs", CodeManipulation.EnforceLF(CodeSamples.SourceCodeProvider.ConsoleProgramSingleRegion))
                 },
                 buffers: new[]
                 {
-                    new Workspace.Buffer("Program.cs@alpha", "var newValue = 1000;", 0)
+                    new Workspace.Buffer("Program.cs@alpha", CodeManipulation.EnforceLF("var newValue = 1000;"), 0)
                 });
             var processor = new BufferInliningTransformer();
 
@@ -97,11 +98,11 @@ namespace WorkspaceServer.Tests
             var ws = new Workspace(
                 files: new[]
                 {
-                    new Workspace.File("Program.cs", CodeSamples.SourceCodeProvider.ConsoleProgramSingleRegion)
+                    new Workspace.File("Program.cs", CodeManipulation.EnforceLF(CodeSamples.SourceCodeProvider.ConsoleProgramSingleRegion))
                 },
                 buffers: new[]
                 {
-                    new Workspace.Buffer("Program.cs", "var newValue = 1000;", 0)
+                    new Workspace.Buffer("Program.cs", CodeManipulation.EnforceLF("var newValue = 1000;"), 0)
                 });
             var processor = new BufferInliningTransformer();
 
@@ -123,7 +124,7 @@ namespace WorkspaceServer.Tests
             var ws = new Workspace(
                 buffers: new[]
                 {
-                    new Workspace.Buffer("", CodeSamples.SourceCodeProvider.ConsoleProgramSingleRegion, 0)
+                    new Workspace.Buffer("", CodeManipulation.EnforceLF(CodeSamples.SourceCodeProvider.ConsoleProgramSingleRegion), 0)
                 });
             var processor = new BufferInliningTransformer();
 
@@ -131,7 +132,7 @@ namespace WorkspaceServer.Tests
             processed.Should().NotBeNull();
             processed.Files.Should().NotBeEmpty();
             var newCode = processed.Files.ElementAt(0).Text;
-            newCode.Should().Contain(CodeSamples.SourceCodeProvider.ConsoleProgramSingleRegion);
+            newCode.Should().Contain(CodeManipulation.EnforceLF(CodeSamples.SourceCodeProvider.ConsoleProgramSingleRegion));
 
         }
     }

@@ -59,7 +59,7 @@ namespace WorkspaceServer.Transformations
 
                         var txt = tree.WithChangedText(tree.GetText().WithChanges(textChange));
 
-                        var offset = tree.GetChangedSpans(txt).FirstOrDefault().Start;
+                        var offset = tree.GetChangedSpans(txt).FirstOrDefault().Start + PaddingSize;
 
                         var newCode = (await txt.GetTextAsync()).ToString();
 
