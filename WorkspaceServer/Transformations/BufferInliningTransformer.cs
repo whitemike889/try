@@ -14,7 +14,7 @@ namespace WorkspaceServer.Transformations
     public class BufferInliningTransformer : IWorkspaceTransformer
     {
         private static readonly string ProcessorName = typeof(BufferInliningTransformer).Name;
-        private static readonly string Padding = Environment.NewLine;
+        private static readonly string Padding = "\n";
 
         public static int PaddingSize => Padding.Length;
 
@@ -59,7 +59,7 @@ namespace WorkspaceServer.Transformations
 
                         var txt = tree.WithChangedText(tree.GetText().WithChanges(textChange));
 
-                        var offset = tree.GetChangedSpans(txt).FirstOrDefault().Start + PaddingSize;
+                        var offset = viewPort.Region.Start + PaddingSize;
 
                         var newCode = (await txt.GetTextAsync()).ToString();
 
