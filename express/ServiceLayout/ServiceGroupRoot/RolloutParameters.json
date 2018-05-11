@@ -1,0 +1,28 @@
+{
+    "$schema": "http://schema.express.azure.com/schemas/2015-01-01-alpha/RolloutParameters.json",
+    "contentVersion": "1.0.0.0",
+    "extensions": [
+    {
+      "name": "Peaky",
+      "type": "Microsoft.TryDotNet/RunPeakyTests",
+      "version": "2016-11-01",
+      "connectionProperties" : {
+        "maxExecutionTime": "PT1H",
+        "authentication": {
+          "type": "CertificateAuthentication",
+          "reference": {
+            "provider": "AzureKeyVault",
+            "parameters": {
+              "secretId": "https://trydotnet2keys.vault.azure.net/secrets/fncert/e93748501ac549419cacfc92e8dc3c88"
+            }
+          }
+        }
+      },
+      "payloadProperties": {
+        "target": {
+          "value": "https://trydotnet2.azurewebsites.net/tests"
+        }
+      }
+    }
+  ]
+}

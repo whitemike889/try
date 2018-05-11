@@ -1,0 +1,31 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {},
+  "resources": [
+    {
+      "type": "Microsoft.Web/certificates",
+      "name": "trydotnetcert",
+      "location": "West US",
+      "apiVersion": "2016-03-01",
+      "properties": {
+        "keyVaultId": "[resourceId(subscription().subscriptionId, 'immutable', 'Microsoft.KeyVault/vaults', 'trydotnet-prod-keys')]",
+        "keyVaultSecretName": "ExternallyRootedSSLCertificate",
+        "serverFarmId": "[resourceId('trydotnet-westus', 'Microsoft.Web/serverfarms', 'westus_tdn_sf')]"
+      },
+      "dependsOn": []
+    },
+    {
+      "apiVersion": "2016-08-01",
+      "name": "trydotnet-westus/try.dot.net",
+      "type": "Microsoft.Web/sites/hostNameBindings",
+      "properties": {
+        "sslState": "SniEnabled",
+        "thumbprint": "[reference(resourceId('Microsoft.Web/certificates', 'trydotnetcert')).Thumbprint]"
+      },
+      "dependsOn": [
+        "[resourceId(subscription().subscriptionId, resourceGroup().name, 'Microsoft.Web/certificates', 'trydotnetcert')]"
+      ]
+    }
+  ]
+}

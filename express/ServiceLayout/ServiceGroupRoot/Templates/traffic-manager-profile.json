@@ -1,0 +1,69 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {},
+  "resources": [
+    {
+      "name": "[Concat([resourceId(subscription().subscriptionId, 'traffic-manager-root', 'Microsoft.TrafficManager/profiles', 'tdn-root')], trydotnet-westus]",
+      "type": "Microsoft.Network/trafficManagerProfiles/azureEndpoints",
+      "dependsOn": [],
+      "location": "global",
+      "apiVersion": "",
+      "properties": {
+        "endpointStatus": "Enabled",
+        "targetResourceId": "[resourceId('Microsoft.Web/sites', 'trydotnet-westus')]",
+        "target": "trydotnet-westus.azurewebsites.net",
+        "endpointLocation": "[resourceGroup().location]",
+        "weight": 1,
+        "priority": 1
+      }
+    },
+    {
+      "type": "Microsoft.Web/serverfarms",
+      "kind": "linux",
+      "apiVersion": "2016-09-01",
+      "name": "westus_tdn_sf",
+      "sku": {
+        "name": "S3",
+        "tier": "Standard",
+        "size": "S3",
+        "family": "S",
+        "capacity": 10
+      },
+      "properties": {
+        "reserved": true,
+        "name": "westus_tdn_sf",
+        "numberOfWorkers": 1
+      },
+      "location": "[resourceGroup().location]",
+      "dependsOn": []
+    },
+    {
+      "type": "Microsoft.Web/certificates",
+      "name": "trydotnetcert",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2016-03-01",
+      "properties": {
+        "keyVaultId": "[resourceId(subscription().subscriptionId, 'trydotnet-util', 'Microsoft.KeyVault/vaults', 'trydotnet2keys')]",
+        "keyVaultSecretName": "ExternallyRootedSSLCertificate",
+        "serverFarmId": "[resourceId('Microsoft.Web/serverFarms','westus_tdn_sf')]"
+      },
+      "dependsOn": [
+        "[resourceId(subscription().subscriptionId, resourceGroup().name, 'Microsoft.Web/serverfarms', 'westus_tdn_sf')]"
+      ]
+    },
+    {
+      "apiVersion": "2016-08-01",
+      "name": "trydotnet-westus/try.dot.net",
+      "type": "Microsoft.Web/sites/hostNameBindings",
+      "properties": {
+        "sslState": "SniEnabled",
+        "thumbprint": "[reference(resourceId('Microsoft.Web/certificates', trydotnetcert)).Thumbprint]"
+      },
+      "dependsOn": [
+        "[resourceId(subscription().subscriptionId, resourceGroup().name, 'Microsoft.Web/certificates', 'trydotnetcert')]",
+        "[resourceId(subscription().subscriptionId, resourceGroup().name, 'Microsoft.Network/trafficManagerProfiles/azureEndpoints', '[Concat([resourceId(subscription().subscriptionId, 'traffic-manager-root', 'Microsoft.TrafficManager/profiles', 'tdn-root')], trydotnet-westus]')]"
+      ]
+    }
+  ]
+}
