@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.AspNetCore.Mvc;
 using Pocket;
+using Recipes;
 using WorkspaceServer;
 using WorkspaceServer.Models;
 using WorkspaceServer.Models.Execution;
@@ -40,7 +41,8 @@ namespace MLS.Agent.Controllers
                 _disposables.Add(VirtualClock.Start());
             }
 
-            using (var operation = Log.OnEnterAndConfirmOnExit())
+            using (var operation = Log.OnEnterAndConfirmOnExit("Run", 
+                properties: new object[] { ("WorkspaceType", request.Workspace.WorkspaceType) }))
             {
                 if (!int.TryParse(timeoutInMilliseconds, out var timeoutMs))
                 {
@@ -110,7 +112,9 @@ namespace MLS.Agent.Controllers
                 _disposables.Add(VirtualClock.Start());
             }
 
-            using (var operation = Log.OnEnterAndConfirmOnExit(name: "LanguageServices.Completion"))
+            using (var operation = Log.OnEnterAndConfirmOnExit(
+                name: "LanguageServices.Completion",
+                properties: new object[] { ("WorkspaceType", request.Workspace.WorkspaceType) }))
             {
                 if (!int.TryParse(timeoutInMilliseconds, out var timeoutMs))
                 {
@@ -168,7 +172,9 @@ namespace MLS.Agent.Controllers
                 _disposables.Add(VirtualClock.Start());
             }
 
-            using (var operation = Log.OnEnterAndConfirmOnExit(name: "LanguageServices.SignatureHelp"))
+            using (var operation = Log.OnEnterAndConfirmOnExit(
+                name: "LanguageServices.SignatureHelp",
+                properties: new object[] { ("WorkspaceType", request.Workspace.WorkspaceType) }))
             {
                 if (!int.TryParse(timeoutInMilliseconds, out var timeoutMs))
                 {
