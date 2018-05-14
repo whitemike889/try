@@ -8,8 +8,8 @@ namespace Recipes
     {
         internal static ConfirmationLogger OnEnterAndConfirmOnExit(
             this Logger logger,
-            string name,
-            object[] properties) =>
+            object[] properties, 
+            [CallerMemberName] string name = null) =>
             new ConfirmationLogger(
                 name,
                 logger.Category,

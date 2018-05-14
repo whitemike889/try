@@ -247,7 +247,7 @@ namespace MLS.Agent.Tests
             }
 
             log.Should()
-                .Contain(e => e.OperationName == "LanguageServices.SignatureHelp");
+                .Contain(e => e.OperationName == "SignatureHelp");
         }
 
         [Fact]
@@ -330,7 +330,7 @@ namespace FibonacciTest
                 result.Signatures.Should().Contain(signature => signature.Label == "void Console.WriteLine(string format, params object[] arg)");
             }
             log.Should()
-                .Contain(e => e.OperationName == "LanguageServices.SignatureHelp");
+                .Contain(e => e.OperationName == "SignatureHelp");
         }
 
         [Fact]
@@ -412,7 +412,7 @@ namespace FibonacciTest
                 result.Items.Should().NotBeNullOrEmpty();
                 result.Items.Should().Contain(completion => completion.SortText == "Console");
                 log.Should()
-                    .Contain(e => e.OperationName == "LanguageServices.Completion");
+                    .Contain(e => e.OperationName == "Completion");
             }
         }
 
@@ -497,7 +497,7 @@ namespace FibonacciTest
                 result.Items.Should().Contain(completion => completion.SortText == "Beep");
             }
             log.Should()
-                .Contain(e => e.OperationName == "LanguageServices.Completion");
+                .Contain(e => e.OperationName == "Completion");
         }
 
         [Fact]

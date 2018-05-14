@@ -41,7 +41,7 @@ namespace MLS.Agent.Controllers
                 _disposables.Add(VirtualClock.Start());
             }
 
-            using (var operation = Log.OnEnterAndConfirmOnExit("Run", 
+            using (var operation = Log.OnEnterAndConfirmOnExit( 
                 properties: new object[] { ("WorkspaceType", request.Workspace.WorkspaceType) }))
             {
                 if (!int.TryParse(timeoutInMilliseconds, out var timeoutMs))
@@ -113,7 +113,6 @@ namespace MLS.Agent.Controllers
             }
 
             using (var operation = Log.OnEnterAndConfirmOnExit(
-                name: "LanguageServices.Completion",
                 properties: new object[] { ("WorkspaceType", request.Workspace.WorkspaceType) }))
             {
                 if (!int.TryParse(timeoutInMilliseconds, out var timeoutMs))
@@ -143,7 +142,7 @@ namespace MLS.Agent.Controllers
                 _disposables.Add(VirtualClock.Start());
             }
 
-            using (var operation = Log.OnEnterAndConfirmOnExit(name: "LanguageServices.Diagnostics"))
+            using (var operation = Log.OnEnterAndConfirmOnExit())
             {
                 if (!int.TryParse(timeoutInMilliseconds, out var timeoutMs))
                 {
@@ -173,7 +172,6 @@ namespace MLS.Agent.Controllers
             }
 
             using (var operation = Log.OnEnterAndConfirmOnExit(
-                name: "LanguageServices.SignatureHelp",
                 properties: new object[] { ("WorkspaceType", request.Workspace.WorkspaceType) }))
             {
                 if (!int.TryParse(timeoutInMilliseconds, out var timeoutMs))
