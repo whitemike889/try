@@ -194,18 +194,24 @@ namespace MLS.Agent.Controllers
         {
             IWorkspaceServer server;
             var workspaceType = workspace.WorkspaceType;
-            if (string.Equals(workspaceType, "script", StringComparison.OrdinalIgnoreCase))
+            using (var operation = Log.OnEnterAndConfirmOnExit())
             {
-                server = new ScriptingWorkspaceServer();
-            }
-            else
-            {
-                server = await _workspaceServerRegistry.GetWorkspaceServer(workspaceType);
-
-                if (server is DotnetWorkspaceServer dotnetWorkspaceServer)
+                if (string.Equals(workspaceType, "script", StringComparison.OrdinalIgnoreCase))
                 {
-                    await dotnetWorkspaceServer.EnsureInitializedAndNotDisposed(budget);
+                    server = new ScriptingWorkspaceServer();
                 }
+                else
+                {
+                    server = await _workspaceServerRegistry.GetWorkspaceServer(workspaceType);
+
+                    if (server is DotnetWorkspaceServer dotnetWorkspaceServer)
+                    {
+                        await dotnetWorkspaceServer.EnsureInitializedAndNotDisposed(budget);
+                    }
+                }
+                budget.RecordEntryAndThrowIfBudgetExceeded();
+                operation.Succeed();
+
             }
 
             return server;
