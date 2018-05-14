@@ -42,7 +42,7 @@ namespace MLS.Agent.Controllers
             }
 
             using (var operation = Log.OnEnterAndConfirmOnExit( 
-                properties: new object[] { ("WorkspaceType", request.Workspace.WorkspaceType) }))
+                properties: new object[] { ("workspaceType", request.Workspace.WorkspaceType) }))
             {
                 if (!int.TryParse(timeoutInMilliseconds, out var timeoutMs))
                 {
@@ -113,7 +113,7 @@ namespace MLS.Agent.Controllers
             }
 
             using (var operation = Log.OnEnterAndConfirmOnExit(
-                properties: new object[] { ("WorkspaceType", request.Workspace.WorkspaceType) }))
+                properties: new object[] { ("workspaceType", request.Workspace.WorkspaceType) }))
             {
                 if (!int.TryParse(timeoutInMilliseconds, out var timeoutMs))
                 {
@@ -172,7 +172,7 @@ namespace MLS.Agent.Controllers
             }
 
             using (var operation = Log.OnEnterAndConfirmOnExit(
-                properties: new object[] { ("WorkspaceType", request.Workspace.WorkspaceType) }))
+                properties: new object[] { ("workspaceType", request.Workspace.WorkspaceType) }))
             {
                 if (!int.TryParse(timeoutInMilliseconds, out var timeoutMs))
                 {
