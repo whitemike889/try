@@ -26,6 +26,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OmniSharp.Client", "OmniSha
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MLS.Agent.Tools", "MLS.Agent.Tools\MLS.Agent.Tools.csproj", "{BAA738F1-211C-4111-B159-3D43C857ECB2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MLS.TestSupport", "MLS.TestSupport\MLS.TestSupport.csproj", "{CF3D4D15-914D-4EFC-B3B7-505DA9944CCE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -56,6 +58,10 @@ Global
 		{BAA738F1-211C-4111-B159-3D43C857ECB2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BAA738F1-211C-4111-B159-3D43C857ECB2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BAA738F1-211C-4111-B159-3D43C857ECB2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CF3D4D15-914D-4EFC-B3B7-505DA9944CCE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CF3D4D15-914D-4EFC-B3B7-505DA9944CCE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CF3D4D15-914D-4EFC-B3B7-505DA9944CCE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CF3D4D15-914D-4EFC-B3B7-505DA9944CCE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -68,6 +74,7 @@ Global
 		{376CF23C-4046-4962-B999-D0192B742DB2} = {5B03B52F-8C2A-41B5-AFFE-86B29FC5F061}
 		{47079096-8319-42EF-84C9-A3A6911748DA} = {6EE8F484-DFA2-4F0F-939F-400CE78DFAC2}
 		{BAA738F1-211C-4111-B159-3D43C857ECB2} = {6EE8F484-DFA2-4F0F-939F-400CE78DFAC2}
+		{CF3D4D15-914D-4EFC-B3B7-505DA9944CCE} = {8192FEAD-BCE6-4E62-97E5-2E9EA884BD71}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D6CD99BA-B16B-4570-8910-225CBDFFA3AD}

@@ -4,6 +4,8 @@ using System.IO;
 using System.Threading.Tasks;
 using Clockwise;
 using MLS.Agent.Tools;
+using Pocket;
+using static Pocket.Logger<WorkspaceServer.WorkspaceBuilder>;
 
 namespace WorkspaceServer
 {
@@ -50,25 +52,30 @@ namespace WorkspaceServer
             {
                 await PrepareWorkspace(budget);
             }
-
+            budget?.RecordEntry();
             return _workspace;
         }
 
         private async Task PrepareWorkspace(Budget budget = null)
         {
             budget = budget ?? new Budget();
-
-            _workspace = new Workspace(
-                WorkspaceName, 
-                WorkspaceInitializer);
-
-            await _workspace.EnsureCreated(budget);
-
-            await _workspace.EnsureBuilt(budget);
-
-            if (RequiresPublish)
+            using (var operation = Log.OnEnterAndConfirmOnExit())
             {
-                await _workspace.EnsurePublished(budget);
+                _workspace = new Workspace(
+                    WorkspaceName,
+                    WorkspaceInitializer);
+
+                await _workspace.EnsureCreated(budget);
+
+                await _workspace.EnsureBuilt(budget);
+
+                if (RequiresPublish)
+                {
+                    await _workspace.EnsurePublished(budget);
+                }
+
+                budget?.RecordEntry();
+                operation.Succeed();
             }
         }
 

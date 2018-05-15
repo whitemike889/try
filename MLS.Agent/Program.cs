@@ -7,7 +7,6 @@ using Pocket;
 using System.Threading.Tasks;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.Extensibility;
-using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using MLS.Agent.Tools;
@@ -16,7 +15,6 @@ using Recipes;
 using Serilog.Sinks.RollingFileAlternate;
 using WorkspaceServer.Servers.Dotnet;
 using SerilogLoggerConfiguration = Serilog.LoggerConfiguration;
-using WorkspaceServer;
 
 namespace MLS.Agent
 {

@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.AspNetCore.Mvc;
 using Pocket;
+using Recipes;
 using WorkspaceServer;
 using WorkspaceServer.Models;
 using WorkspaceServer.Models.Execution;
@@ -18,14 +19,14 @@ namespace MLS.Agent.Controllers
     public class WorkspaceController : Controller
     {
         private readonly WorkspaceServerRegistry _workspaceServerRegistry;
-     
+
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
 
         public WorkspaceController(WorkspaceServerRegistry workspaceServerRegistry)
         {
             _workspaceServerRegistry = workspaceServerRegistry ??
                                            throw new ArgumentNullException(nameof(workspaceServerRegistry));
-       
+
         }
 
         [HttpPost]
@@ -40,7 +41,8 @@ namespace MLS.Agent.Controllers
                 _disposables.Add(VirtualClock.Start());
             }
 
-            using (var operation = Log.OnEnterAndConfirmOnExit())
+            using (var operation = Log.OnEnterAndConfirmOnExit( 
+                properties: new object[] { ("workspaceType", request.Workspace.WorkspaceType) }))
             {
                 if (!int.TryParse(timeoutInMilliseconds, out var timeoutMs))
                 {
@@ -93,6 +95,7 @@ namespace MLS.Agent.Controllers
                     }
                 }
 
+                budget.RecordEntry();
                 operation.Succeed();
 
                 return Ok(result);
@@ -110,7 +113,8 @@ namespace MLS.Agent.Controllers
                 _disposables.Add(VirtualClock.Start());
             }
 
-            using (var operation = Log.ConfirmOnExit())
+            using (var operation = Log.OnEnterAndConfirmOnExit(
+                properties: new object[] { ("workspaceType", request.Workspace.WorkspaceType) }))
             {
                 if (!int.TryParse(timeoutInMilliseconds, out var timeoutMs))
                 {
@@ -122,6 +126,7 @@ namespace MLS.Agent.Controllers
                 var server = await GetServerForWorkspace(request.Workspace, budget);
                 var result = await server.GetCompletionList(request, budget);
 
+                budget.RecordEntry();
                 operation.Succeed();
 
                 return Ok(result);
@@ -139,7 +144,7 @@ namespace MLS.Agent.Controllers
                 _disposables.Add(VirtualClock.Start());
             }
 
-            using (var operation = Log.ConfirmOnExit())
+            using (var operation = Log.OnEnterAndConfirmOnExit())
             {
                 if (!int.TryParse(timeoutInMilliseconds, out var timeoutMs))
                 {
@@ -151,6 +156,7 @@ namespace MLS.Agent.Controllers
                 var server = await GetServerForWorkspace(request, budget);
                 var result = await server.GetDiagnostics(request, budget);
 
+                budget.RecordEntry();
                 operation.Succeed();
 
                 return Ok(result);
@@ -168,7 +174,8 @@ namespace MLS.Agent.Controllers
                 _disposables.Add(VirtualClock.Start());
             }
 
-            using (var operation = Log.ConfirmOnExit())
+            using (var operation = Log.OnEnterAndConfirmOnExit(
+                properties: new object[] { ("workspaceType", request.Workspace.WorkspaceType) }))
             {
                 if (!int.TryParse(timeoutInMilliseconds, out var timeoutMs))
                 {
@@ -180,8 +187,8 @@ namespace MLS.Agent.Controllers
                 var server = await GetServerForWorkspace(request.Workspace, budget);
                 var result = await server.GetSignatureHelp(request, budget);
 
+                budget.RecordEntry();
                 operation.Succeed();
-
                 return Ok(result);
             }
         }
@@ -190,18 +197,24 @@ namespace MLS.Agent.Controllers
         {
             IWorkspaceServer server;
             var workspaceType = workspace.WorkspaceType;
-            if (string.Equals(workspaceType, "script", StringComparison.OrdinalIgnoreCase))
+            using (var operation = Log.OnEnterAndConfirmOnExit())
             {
-                server = new ScriptingWorkspaceServer();
-            }
-            else
-            {
-                server = await _workspaceServerRegistry.GetWorkspaceServer(workspaceType);
-
-                if (server is DotnetWorkspaceServer dotnetWorkspaceServer)
+                if (string.Equals(workspaceType, "script", StringComparison.OrdinalIgnoreCase))
                 {
-                    await dotnetWorkspaceServer.EnsureInitializedAndNotDisposed(budget);
+                    server = new ScriptingWorkspaceServer();
                 }
+                else
+                {
+                    server = await _workspaceServerRegistry.GetWorkspaceServer(workspaceType);
+
+                    if (server is DotnetWorkspaceServer dotnetWorkspaceServer)
+                    {
+                        await dotnetWorkspaceServer.EnsureInitializedAndNotDisposed(budget);
+                    }
+                }
+                budget.RecordEntryAndThrowIfBudgetExceeded();
+                operation.Succeed();
+
             }
 
             return server;

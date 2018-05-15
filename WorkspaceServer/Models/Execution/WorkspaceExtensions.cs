@@ -10,7 +10,7 @@ namespace WorkspaceServer.Models.Execution
     {
         public static IReadOnlyCollection<SourceFile> GetSourceFiles(this Workspace workspace)
         {
-            return workspace.Files?.Select(f => SourceFile.Create((string) f.Text, (string) f.Name)).ToArray() ?? Array.Empty<SourceFile>();
+            return workspace.Files?.Select(f => SourceFile.Create(f.Text, f.Name)).ToArray() ?? Array.Empty<SourceFile>();
         }
 
         public static Workspace.File GetFileFromBufferId(this Workspace workspace, string bufferId)
