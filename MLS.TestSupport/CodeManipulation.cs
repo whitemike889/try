@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace WorkspaceServer.Tests
+namespace MLS.TestSupport
 {
-    internal static  class CodeManipulation
+    public static  class CodeManipulation
     {
         public static string EnforceLF(string source)
         {
