@@ -95,6 +95,7 @@ namespace MLS.Agent.Controllers
                     }
                 }
 
+                budget.RecordEntry();
                 operation.Succeed();
 
                 return Ok(result);
@@ -125,6 +126,7 @@ namespace MLS.Agent.Controllers
                 var server = await GetServerForWorkspace(request.Workspace, budget);
                 var result = await server.GetCompletionList(request, budget);
 
+                budget.RecordEntry();
                 operation.Succeed();
 
                 return Ok(result);
@@ -154,6 +156,7 @@ namespace MLS.Agent.Controllers
                 var server = await GetServerForWorkspace(request, budget);
                 var result = await server.GetDiagnostics(request, budget);
 
+                budget.RecordEntry();
                 operation.Succeed();
 
                 return Ok(result);
@@ -184,8 +187,8 @@ namespace MLS.Agent.Controllers
                 var server = await GetServerForWorkspace(request.Workspace, budget);
                 var result = await server.GetSignatureHelp(request, budget);
 
+                budget.RecordEntry();
                 operation.Succeed();
-
                 return Ok(result);
             }
         }
