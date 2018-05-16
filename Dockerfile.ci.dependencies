@@ -1,5 +1,12 @@
 FROM microsoft/aspnetcore-build:2.0
 
+# set up Mono and MSBuild
+RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
+RUN echo "deb http://download.mono-project.com/repo/debian stable-stretch main" | tee /etc/apt/sources.list.d/mono-official-stable.list
+RUN apt-get update
+RUN apt-get --assume-yes install mono-devel 
+RUN apt-get --assume-yes install msbuild 
+
 # set up OmniSharp
 RUN mkdir -p /dependencies/omnisharp/v1.29.0-beta1
 RUN mkdir -p /dependencies/omnisharp/ca-2.9.2
@@ -7,6 +14,8 @@ RUN curl -SL https://github.com/OmniSharp/omnisharp-roslyn/releases/download/v1.
 RUN curl -SL https://github.com/OmniSharp/omnisharp-roslyn/releases/download/ca-2.9.2/omnisharp-linux-x64.tar.gz | tar xvz -C /dependencies/omnisharp/ca-2.9.2
 ENV TRYDOTNET_OMNISHARP_PATH=/dependencies/omnisharp/
 ENV NUGET_PACKAGES=/root/.nuget/packages/
+RUN echo "/usr/bin/mono --assembly-loader=strict /dependencies/omnisharp/omnisharp/OmniSharp.exe \"\$@\"" > "${TRYDOTNET_OMNISHARP_PATH}run2"
+RUN chmod -R 777 "${TRYDOTNET_OMNISHARP_PATH}run2"
 
 # install xmlstarlet
 RUN apt-get update
@@ -15,7 +24,15 @@ RUN apt-get --assume-yes install xmlstarlet
 # set up workspaces directory
 ENV TRYDOTNET_WORKSPACES_PATH=/workspaces
 
-# set up workspaces
+# hack to get the emit plugin into the package cache
+WORKDIR /workspaces/emit
+RUN dotnet new library
+# dotnet objects to trying to add this package, so we use some coercion and return true in order to prevent the resulting error from stopping the Docker build
+RUN sed -i 's/netstandard2.0/net46/' emit.csproj
+RUN dotnet add package -v 1.29.0-beta2 trydotnet.omnisharp.emit ; true
+
+# prepare workspace types
+
 WORKDIR /workspaces/console
 RUN dotnet new console
 RUN xmlstarlet ed --inplace --insert "/Project/PropertyGroup/OutputType" --type elem -n "LangVersion" --value "7.2" console.csproj
@@ -25,10 +42,10 @@ RUN dotnet build
 # standard console app, compiled with 2.9 compiler
 WORKDIR /workspaces/roslyn2.9
 RUN dotnet new console
-Run echo "ca-2.9.2" > .trydotnet
+RUN xmlstarlet ed --inplace --insert "/Project/PropertyGroup/OutputType" --type elem -n "LangVersion" --value "7.3" roslyn2.9.csproj
+RUN echo "ca-2.9.2" > .trydotnet
 RUN dotnet add package Newtonsoft.Json
 RUN dotnet build
-RUN xmlstarlet ed --inplace --insert "/Project/PropertyGroup/OutputType" --type elem -n "LangVersion" --value "7.3" roslyn2.9.csproj
 
 WORKDIR /workspaces/nodatime.api
 RUN dotnet new console
@@ -43,10 +60,3 @@ RUN dotnet new webapi
 RUN xmlstarlet ed --inplace --insert "/Project/PropertyGroup/OutputType" --type elem -n "LangVersion" --value "7.2" aspnet.webapi.csproj
 RUN dotnet build
 RUN dotnet publish
-
-# hack to get the emit plugin into the package cache
-WORKDIR /workspaces/emit
-RUN dotnet new library
-# dotnet objects to trying to add this package, so we use some coercion and return true in order to prevent the resulting error from stopping the Docker build
-RUN sed -i 's/netstandard2.0/net46/' emit.csproj
-RUN dotnet add package -v 1.29.0-beta2 trydotnet.omnisharp.emit ; true
