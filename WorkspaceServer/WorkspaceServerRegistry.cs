@@ -60,9 +60,16 @@ namespace WorkspaceServer
                 throw new ArgumentException("Value cannot be null or whitespace.", nameof(name));
             }
 
-            var workspace = await GetWorkspace(name, budget);
+            IWorkspaceServer server;
+            using (var operation = Log.OnEnterAndConfirmOnExit())
+            {
+                budget?.RecordEntry();
+                var workspace = await GetWorkspace(name, budget);
+                server = workspaceServers.GetOrAdd(name, _ => new DotnetWorkspaceServer(workspace));
+                operation.Succeed();
+            }
 
-            return workspaceServers.GetOrAdd(name, _ => new DotnetWorkspaceServer(workspace));
+            return server;
         }
 
         public void Dispose()
