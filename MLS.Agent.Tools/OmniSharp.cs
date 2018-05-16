@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Net.Http;
@@ -20,7 +19,7 @@ namespace MLS.Agent.Tools
         private readonly string _version;
 
         private static readonly ConcurrentDictionary<string, OmniSharp> _cache = new ConcurrentDictionary<string, OmniSharp>();
-        private const string defaultVersion = "v1.29.0-beta1";
+        private const string DefaultVersion = "v1.29.0-beta1";
 
         public OmniSharp(string version)
         {
@@ -77,12 +76,12 @@ namespace MLS.Agent.Tools
         {
             var version = dotTryDotNetPath.Exists
                 ? await dotTryDotNetPath.ReadAsync()
-                : defaultVersion;
+                : DefaultVersion;
 
             var omnisharp = _cache.GetOrAdd(version, v => new OmniSharp(v));
             return await omnisharp._omniSharp.ValueAsync();
         }
-
+        
         private async Task<FileInfo> AcquireAndExtractWithTar(string file)
         {
             var omniSharpRunScript = new FileInfo(
@@ -92,6 +91,7 @@ namespace MLS.Agent.Tools
 
             if (!omniSharpRunScript.Exists)
             {
+#if DEBUG
                 using (var operation = Log.OnEnterAndConfirmOnExit())
                 {
                     var downloadUri = new Uri($@"https://github.com/OmniSharp/omnisharp-roslyn/releases/download/{_version}/{file}");
@@ -115,6 +115,9 @@ namespace MLS.Agent.Tools
 
                     operation.Succeed();
                 }
+#else
+            throw new InvalidOperationException("OmniSharp not found");
+#endif
             }
 
             return omniSharpRunScript;
@@ -129,6 +132,7 @@ namespace MLS.Agent.Tools
 
             if (!omniSharpExe.Exists)
             {
+#if DEBUG
                 using (var operation = Log.OnEnterAndConfirmOnExit())
                 {
                     var zipFile = await Download(new Uri($@"https://github.com/OmniSharp/omnisharp-roslyn/releases/download/{_version}/{file}"));
@@ -148,6 +152,9 @@ namespace MLS.Agent.Tools
 
                     operation.Succeed();
                 }
+#else
+            throw new InvalidOperationException("OmniSharp not found");
+#endif
             }
 
             return omniSharpExe;
