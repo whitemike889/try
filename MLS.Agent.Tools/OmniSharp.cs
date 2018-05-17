@@ -87,7 +87,7 @@ namespace MLS.Agent.Tools
             var omniSharpRunScript = new FileInfo(
                 Path.Combine(
                     _omniSharpInstallFolder.FullName,
-                    "run2"));
+                    "run"));
 
             if (!omniSharpRunScript.Exists)
             {
@@ -114,9 +114,10 @@ namespace MLS.Agent.Tools
                     }
 
                     operation.Succeed();
-                }
+                }                
 #else
-            throw new InvalidOperationException("OmniSharp not found");
+            Log.Error($"Omnisharp not found at {omniSharpRunScript.FullName}");
+            throw new InvalidOperationException($"Omnisharp not found at {omniSharpRunScript.FullName}");
 #endif
             }
 
@@ -150,10 +151,11 @@ namespace MLS.Agent.Tools
                         return null;
                     }
 
-                    operation.Succeed();
+                    operation.Succeed();                    
                 }
 #else
-            throw new InvalidOperationException("OmniSharp not found");
+            Log.Error($"Omnisharp not found at {omniSharpExe.FullName}");
+            throw new InvalidOperationException($"Omnisharp not found at {omniSharpExe.FullName}");
 #endif
             }
 

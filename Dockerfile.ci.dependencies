@@ -14,8 +14,11 @@ RUN curl -SL https://github.com/OmniSharp/omnisharp-roslyn/releases/download/v1.
 RUN curl -SL https://github.com/OmniSharp/omnisharp-roslyn/releases/download/ca-2.9.2/omnisharp-linux-x64.tar.gz | tar xvz -C /dependencies/omnisharp/ca-2.9.2
 ENV TRYDOTNET_OMNISHARP_PATH=/dependencies/omnisharp/
 ENV NUGET_PACKAGES=/root/.nuget/packages/
-RUN echo "/usr/bin/mono --assembly-loader=strict /dependencies/omnisharp/omnisharp/OmniSharp.exe \"\$@\"" > "${TRYDOTNET_OMNISHARP_PATH}run2"
-RUN chmod -R 777 "${TRYDOTNET_OMNISHARP_PATH}run2"
+RUN echo "/usr/bin/mono --assembly-loader=strict /dependencies/omnisharp/v1.29.0-beta1/omnisharp/OmniSharp.exe \"\$@\"" > "${TRYDOTNET_OMNISHARP_PATH}v1.29.0-beta1/run2"
+RUN chmod -R 777 "${TRYDOTNET_OMNISHARP_PATH}v1.29.0-beta1/run2"
+RUN echo "/usr/bin/mono --assembly-loader=strict /dependencies/omnisharp/ca-2.9.2/omnisharp/OmniSharp.exe \"\$@\"" > "${TRYDOTNET_OMNISHARP_PATH}ca-2.9.2/run2"
+RUN chmod -R 777 "${TRYDOTNET_OMNISHARP_PATH}ca-2.9.2/run2"
+
 
 # install xmlstarlet
 RUN apt-get update
