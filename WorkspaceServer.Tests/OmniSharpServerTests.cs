@@ -45,13 +45,9 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task Can_load_version_from_dottrydotnet_file()
         {
-            var info = new DirectoryInfo(Path.Combine(Paths.UserProfile,
-                             ".trydotnet",
-                             "ca29"));
+            var workspace = await Create.ConsoleWorkspace();
 
-            var workspace = new Workspace(info, "ca29");
-            await workspace.EnsureCreated();
-            File.WriteAllText(Path.Combine(info.FullName, ".trydotnet"), "ca-2.9.2");
+            File.WriteAllText(Path.Combine(workspace.Directory.FullName, ".trydotnet"), "ca-2.9.2");
 
             using (var omniSharp = new OmniSharpServer(workspace.Directory, logToPocketLogger: true))
             {
