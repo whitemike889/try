@@ -40,17 +40,19 @@ namespace MLS.Agent
             {
                 await _httpClient.GetAsync("/sensors/version");
 
-                await Post("/workspace/run",
+                var response = await Post("/workspace/run",
                            new WorkspaceRequest(
                                new Workspace(
                                    buffers: new[]
                                    {
                                        new Workspace.Buffer("Program.cs", "Console.WriteLine(42);", 0)
                                    })));
+
+                Log.Info("WarmUp response {response}", response);
             }
         }
 
-        private async Task Post(string relativeUri, WorkspaceRequest workspaceRequest) =>
+        private async Task<HttpResponseMessage> Post(string relativeUri, WorkspaceRequest workspaceRequest) =>
             await _httpClient.PostAsync(
                 relativeUri,
                 new StringContent(
