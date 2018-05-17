@@ -42,7 +42,7 @@ namespace MLS.Agent.Tests
             var builder = new WebHostBuilder()
                 .ConfigureServices(c =>
                 {
-                    c.AddSingleton(new WorkspaceControllerOptions(_options?.IsLanguageService == true));
+                    c.AddSingleton(new AgentOptions(_options?.IsLanguageService == true));
                 })
                 .UseTestEnvironment()
                 .UseStartup<Startup>();

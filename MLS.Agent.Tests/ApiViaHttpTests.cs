@@ -114,7 +114,7 @@ namespace MLS.Agent.Tests
         }
 
         [Fact]
-        public async Task The_workspace_endpoint_fails_to_compile_if_is_in_langua_service_mode()
+        public async Task The_workspace_endpoint_will_prevent_compiling_if_is_in_language_service_mode()
         {
             var output = Guid.NewGuid().ToString();
             var requestJson = Create.SimpleWorkspaceAsJson(output, "console");
@@ -122,7 +122,7 @@ namespace MLS.Agent.Tests
             var response = await CallRun(requestJson, options: new CommandLineOptions(true, false,string.Empty,false,true,string.Empty, Array.Empty<string>()));
 
             var result = response;
-                result.Should().BeForbidden();
+                result.Should().BeNotFound();
         }
 
         [Fact]

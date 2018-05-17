@@ -28,10 +28,10 @@ namespace Recipes
 
             return new AndConstraint<HttpResponseMessageAssertions>(this);
         }
-        public AndConstraint<HttpResponseMessageAssertions> BeForbidden()
+        public AndConstraint<HttpResponseMessageAssertions> BeNotFound()
         {
             Execute.Assertion
-                .ForCondition(_subject.StatusCode == HttpStatusCode.Forbidden)
+                .ForCondition(_subject.StatusCode == HttpStatusCode.NotFound)
                 .FailWith($"Expected Forbidden response but received: {_subject.ToString().Replace("{", "{{").Replace("}", "}}")}");
 
             return new AndConstraint<HttpResponseMessageAssertions>(this);

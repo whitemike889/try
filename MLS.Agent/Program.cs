@@ -116,7 +116,7 @@ namespace MLS.Agent
                         c.AddApplicationInsightsTelemetry(options.ApplicationInsightsKey);
                     }
                     c.AddSingleton(options);
-                    c.AddSingleton(new WorkspaceControllerOptions(options.IsLanguageService));
+                    c.AddSingleton(new AgentOptions(options.IsLanguageService));
                 })
                 .UseEnvironment(options.IsProduction
                                       ? EnvironmentName.Production
