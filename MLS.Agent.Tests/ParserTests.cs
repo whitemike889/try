@@ -30,6 +30,14 @@ namespace MLS.Agent.Tests
         }
 
         [Fact]
+        public void Parse_language_service_mode_flag_switches_option_to_language_service()
+        {
+            var options = CommandLineOptions.Parse(new string[] { "--language-service" });
+            VerifySuccessfulAndNoHelpText(options);
+            options.IsLanguageService.Should().BeTrue();
+        }
+
+        [Fact]
         public void Parse_help_flag()
         {
             {

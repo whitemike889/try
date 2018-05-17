@@ -122,29 +122,34 @@ namespace MLS.Agent.Tools
 
         private async Task<bool> VerifyOrCreate()
         {
-            if (!IsDirectoryCreated)
+            using (var operation = Log.OnEnterAndConfirmOnExit())
             {
-                Directory.Refresh();
-
-                if (!Directory.Exists)
+                if (!IsDirectoryCreated)
                 {
-                    Log.Info("Creating directory {directory}", Directory);
-                    Directory.Create();
                     Directory.Refresh();
+
+                    if (!Directory.Exists)
+                    {
+                        Log.Info("Creating directory {directory}", Directory);
+                        Directory.Create();
+                        Directory.Refresh();
+                    }
+
+                    IsDirectoryCreated = true;
                 }
 
-                IsDirectoryCreated = true;
-            }
-
-            if (!IsCreated)
-            {
-                if (Directory.GetFiles().Length == 0)
+                if (!IsCreated)
                 {
-                    Log.Info("Initializing workspace using {_initializer} in {directory}", _initializer, Directory);
-                    await _initializer.Initialize(Directory);
+                    if (Directory.GetFiles().Length == 0)
+                    {
+                        Log.Info("Initializing workspace using {_initializer} in {directory}", _initializer, Directory);
+                        await _initializer.Initialize(Directory);
+                    }
+
+                    IsCreated = true;
                 }
 
-                IsCreated = true;
+                operation.Succeed();
             }
 
             return true;
@@ -162,16 +167,20 @@ namespace MLS.Agent.Tools
         {
             if (!IsBuilt)
             {
-                if (Directory.GetFiles("*.deps.json", SearchOption.AllDirectories).Length == 0)
+                using (var operation = Log.OnEnterAndConfirmOnExit())
                 {
-                    Log.Info("Building workspace using {_initializer} in {directory}", _initializer, Directory);
-                    var result = await new Dotnet(Directory)
-                                     .Build(
-                                         args: "--no-dependencies");
-                    result.ThrowOnFailure();
-                }
+                    if (Directory.GetFiles("*.deps.json", SearchOption.AllDirectories).Length == 0)
+                    {
+                        Log.Info("Building workspace using {_initializer} in {directory}", _initializer, Directory);
+                        var result = await new Dotnet(Directory)
+                            .Build(
+                                args: "--no-dependencies");
+                        result.ThrowOnFailure();
+                    }
 
-                IsBuilt = true;
+                    IsBuilt = true;
+                    operation.Succeed();
+                }
             }
 
             return true;
@@ -189,15 +198,19 @@ namespace MLS.Agent.Tools
         {
             if (!IsPublished)
             {
-                if (Directory.GetDirectories("publish", SearchOption.AllDirectories).Length == 0)
+                using (var operation = Log.OnEnterAndConfirmOnExit())
                 {
-                    Log.Info("Publishing workspace in {directory}", Directory);
-                    var result = await new Dotnet(Directory)
-                                     .Publish("--no-dependencies --no-restore");
-                    result.ThrowOnFailure();
-                }
+                    if (Directory.GetDirectories("publish", SearchOption.AllDirectories).Length == 0)
+                    {
+                        Log.Info("Publishing workspace in {directory}", Directory);
+                        var result = await new Dotnet(Directory)
+                            .Publish("--no-dependencies --no-restore");
+                        result.ThrowOnFailure();
+                    }
 
-                IsPublished = true;
+                    IsPublished = true;
+                    operation.Succeed();
+                }
             }
 
             return true;
@@ -213,22 +226,20 @@ namespace MLS.Agent.Tools
             }
 
             folderNameStartsWith = folderNameStartsWith ?? fromWorkspace.Name;
-            var parentDirectory = fromWorkspace
-                                      .Directory
-                                      .Parent;
+            var parentDirectory = fromWorkspace.Directory.Parent;
 
             var destination = CreateDirectory(folderNameStartsWith, parentDirectory);
 
             fromWorkspace.Directory.CopyTo(destination);
 
-            var copy = new Workspace(destination,
-                                     folderNameStartsWith,
-                                     fromWorkspace._initializer);
+            var copy = new Workspace(destination, folderNameStartsWith, fromWorkspace._initializer)
+            {
+                IsCreated = fromWorkspace.IsCreated,
+                IsPublished = fromWorkspace.IsPublished,
+                IsBuilt = fromWorkspace.IsBuilt,
+                IsDirectoryCreated = true
+            };
 
-            copy.IsCreated = fromWorkspace.IsCreated;
-            copy.IsPublished = fromWorkspace.IsPublished;
-            copy.IsBuilt = fromWorkspace.IsBuilt;
-            copy.IsDirectoryCreated = true;
 
             return copy;
         }
