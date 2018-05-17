@@ -9,7 +9,7 @@ using WorkspaceServer;
 using WorkspaceServer.Models;
 using WorkspaceServer.Servers.Dotnet;
 using WorkspaceServer.Servers.Scripting;
-using static Pocket.Logger<MLS.Agent.Controllers.WorkspaceController>;
+using static Pocket.Logger<MLS.Agent.Controllers.LanguageServicesController>;
 using Workspace = WorkspaceServer.Models.Execution.Workspace;
 
 namespace MLS.Agent.Controllers
