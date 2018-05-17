@@ -42,7 +42,7 @@ namespace WorkspaceServer.Tests
             }
         }
 
-        [Fact]
+        [Fact(Skip = "WIP")]
         public async Task Can_load_version_from_dottrydotnet_file()
         {
             var workspace = await Create.ConsoleWorkspace();
