@@ -114,6 +114,18 @@ namespace MLS.Agent.Tests
         }
 
         [Fact]
+        public async Task The_workspace_endpoint_fails_to_compile_if_is_in_langua_service_mode()
+        {
+            var output = Guid.NewGuid().ToString();
+            var requestJson = Create.SimpleWorkspaceAsJson(output, "console");
+
+            var response = await CallRun(requestJson, options: new CommandLineOptions(true, false,string.Empty,false,true,string.Empty, Array.Empty<string>()));
+
+            var result = response;
+                result.Should().BeForbidden();
+        }
+
+        [Fact]
         public async Task When_a_non_script_workspace_type_is_specified_then_code_fragments_cannot_be_compiled_successfully()
         {
             var requestJson = JsonConvert.SerializeObject(new
@@ -678,10 +690,11 @@ public class Program {
 
         private static async Task<HttpResponseMessage> CallRun(
             string content,
-            int? runTimeoutMs = null)
+            int? runTimeoutMs = null, 
+            CommandLineOptions options = null)
         {
             HttpResponseMessage response;
-            using (var agent = new AgentService())
+            using (var agent = new AgentService(options))
             {
                 var request = new HttpRequestMessage(
                     HttpMethod.Post,

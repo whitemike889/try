@@ -11,6 +11,7 @@ namespace MLS.Agent
             bool helpRequested,
             string helpText,
             bool isProduction,
+            bool isLanguageService,
             string key,
             string[] loadWorkspaces,
             string applicationInsightsKey = null,
@@ -22,6 +23,7 @@ namespace MLS.Agent
             WasSuccess = wasSuccess;
             Id = id;
             IsProduction = isProduction;
+            IsLanguageService = isLanguageService;
             HelpRequested = helpRequested;
             HelpText = helpText;
             Key = key;
@@ -31,6 +33,7 @@ namespace MLS.Agent
         public bool WasSuccess { get; }
         public string Id { get; }
         public bool IsProduction { get; }
+        public bool IsLanguageService { get; }
         public bool HelpRequested { get; }
         public string HelpText { get; }
         public string Key { get; }
@@ -44,6 +47,7 @@ namespace MLS.Agent
                 Create.Option("-h|--help", "Shows this help text"),
                 Create.Option("--id", "A unique id for the agent instance (e.g. its development environment id)", ExactlyOneArgument()),
                 Create.Option("--production", "Specifies if the agent is being run using production resources or not"),
+                Create.Option("--language-service", "Specifies if the agent is being run as language service or not"),
                 Create.Option("-k|--key", "The encryption key", ExactlyOneArgument()),
                 Create.Option("--ai-key", "Application Insights key", ExactlyOneArgument()),
                 Create.Option("--load-workspace", "Starts OmniSharp in the specified workspace folder.", OneOrMoreArguments()),
@@ -78,6 +82,7 @@ namespace MLS.Agent
                         ? parseResult["id"].Value<string>()
                         : null,
                 isProduction: parseResult.HasOption("production"),
+                isLanguageService : parseResult.HasOption("language-service"),
                 logToFile: parseResult.HasOption("log-to-file"),
                 key: parseResult.HasOption("key")
                          ? parseResult["key"].Value<string>()

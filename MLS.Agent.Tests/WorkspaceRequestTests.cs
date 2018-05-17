@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using FluentAssertions;
-using FluentAssertions.Common;
 using MLS.Agent.JsonContracts;
 using Newtonsoft.Json;
 using WorkspaceServer.Models;

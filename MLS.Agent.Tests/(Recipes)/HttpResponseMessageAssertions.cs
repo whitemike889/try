@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using FluentAssertions;
 using FluentAssertions.Execution;
@@ -24,6 +25,14 @@ namespace Recipes
             Execute.Assertion
                    .ForCondition(_subject.IsSuccessStatusCode)
                    .FailWith($"Expected successful response but received: {_subject.ToString().Replace("{", "{{").Replace("}", "}}")}");
+
+            return new AndConstraint<HttpResponseMessageAssertions>(this);
+        }
+        public AndConstraint<HttpResponseMessageAssertions> BeForbidden()
+        {
+            Execute.Assertion
+                .ForCondition(_subject.StatusCode == HttpStatusCode.Forbidden)
+                .FailWith($"Expected Forbidden response but received: {_subject.ToString().Replace("{", "{{").Replace("}", "}}")}");
 
             return new AndConstraint<HttpResponseMessageAssertions>(this);
         }

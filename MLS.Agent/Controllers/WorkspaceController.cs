@@ -16,17 +16,26 @@ using Workspace = WorkspaceServer.Models.Execution.Workspace;
 
 namespace MLS.Agent.Controllers
 {
+    public class WorkspaceControllerOptions
+    {
+        public bool IsLanguageServiceMode { get; }
+
+        public WorkspaceControllerOptions(bool isLanguageServiceMode)
+        {
+            IsLanguageServiceMode = isLanguageServiceMode;
+        }
+    }
     public class WorkspaceController : Controller
     {
         private readonly WorkspaceServerRegistry _workspaceServerRegistry;
+        private readonly WorkspaceControllerOptions _options;
 
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
 
-        public WorkspaceController(WorkspaceServerRegistry workspaceServerRegistry)
+        public WorkspaceController(WorkspaceServerRegistry workspaceServerRegistry, WorkspaceControllerOptions options)
         {
-            _workspaceServerRegistry = workspaceServerRegistry ??
-                                           throw new ArgumentNullException(nameof(workspaceServerRegistry));
-
+            _workspaceServerRegistry = workspaceServerRegistry ?? throw new ArgumentNullException(nameof(workspaceServerRegistry));
+            _options = options ?? throw new ArgumentNullException(nameof(options));
         }
 
         [HttpPost]
@@ -36,6 +45,11 @@ namespace MLS.Agent.Controllers
             [FromHeader(Name = "Referer")] string referer,
             [FromHeader(Name = "Timeout")] string timeoutInMilliseconds = "15000")
         {
+            if (_options.IsLanguageServiceMode)
+            {
+                return StatusCode(403);
+            }
+
             if (Debugger.IsAttached && !(Clock.Current is VirtualClock))
             {
                 _disposables.Add(VirtualClock.Start());

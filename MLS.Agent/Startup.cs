@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using MLS.Agent.Controllers;
 using MLS.Agent.JsonContracts;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
@@ -61,7 +62,7 @@ namespace MLS.Agent
                 services.AddSingleton(Configuration);
 
                 services.AddSingleton(_ => DefaultWorkspaces.CreateWorkspaceServerRegistry());
-
+               
                 services.AddSingleton<IHostedService, Warmup>();
 
                 operation.Succeed();
