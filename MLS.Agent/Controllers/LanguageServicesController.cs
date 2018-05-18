@@ -13,15 +13,10 @@ using Workspace = WorkspaceServer.Models.Execution.Workspace;
 
 namespace MLS.Agent.Controllers
 {
-    public class LanguageServicesController : Controller
+    public class LanguageServicesController : WorkspaceServerController
     {
-        private readonly WorkspaceServerRegistry _workspaceServerRegistry;
-
-        private readonly CompositeDisposable _disposables = new CompositeDisposable();
-
-        public LanguageServicesController(WorkspaceServerRegistry workspaceServerRegistry)
+        public LanguageServicesController(WorkspaceServerRegistry workspaceServerRegistry) : base(workspaceServerRegistry)
         {
-            _workspaceServerRegistry = workspaceServerRegistry ?? throw new ArgumentNullException(nameof(workspaceServerRegistry));
         }
 
         [HttpPost]
@@ -32,7 +27,7 @@ namespace MLS.Agent.Controllers
         {
             if (Debugger.IsAttached && !(Clock.Current is VirtualClock))
             {
-                _disposables.Add(VirtualClock.Start());
+                AddToDisposeChain(VirtualClock.Start());
             }
 
             using (var operation = Log.OnEnterAndConfirmOnExit())
@@ -63,7 +58,7 @@ namespace MLS.Agent.Controllers
         {
             if (Debugger.IsAttached && !(Clock.Current is VirtualClock))
             {
-                _disposables.Add(VirtualClock.Start());
+                AddToDisposeChain(VirtualClock.Start());
             }
 
             using (var operation = Log.OnEnterAndConfirmOnExit())
@@ -93,7 +88,7 @@ namespace MLS.Agent.Controllers
         {
             if (Debugger.IsAttached && !(Clock.Current is VirtualClock))
             {
-                _disposables.Add(VirtualClock.Start());
+                AddToDisposeChain(VirtualClock.Start());
             }
 
             using (var operation = Log.OnEnterAndConfirmOnExit())
@@ -127,7 +122,7 @@ namespace MLS.Agent.Controllers
                 }
                 else
                 {
-                    server = await _workspaceServerRegistry.GetWorkspaceServer(workspaceType);
+                    server = await GetWorkspaceServer(workspaceType);
 
                     if (server is DotnetWorkspaceServer dotnetWorkspaceServer)
                     {
@@ -140,16 +135,6 @@ namespace MLS.Agent.Controllers
             }
 
             return server;
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                _disposables.Dispose();
-            }
-
-            base.Dispose(disposing);
         }
     }
 }
