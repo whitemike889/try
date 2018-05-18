@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.AspNetCore.Mvc;
 using Pocket;
-using Recipes;
 using WorkspaceServer;
 using WorkspaceServer.Models;
 using WorkspaceServer.Servers.Dotnet;
@@ -17,14 +16,12 @@ namespace MLS.Agent.Controllers
     public class LanguageServicesController : Controller
     {
         private readonly WorkspaceServerRegistry _workspaceServerRegistry;
-        private readonly AgentOptions _options;
 
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
 
-        public LanguageServicesController(WorkspaceServerRegistry workspaceServerRegistry, AgentOptions options)
+        public LanguageServicesController(WorkspaceServerRegistry workspaceServerRegistry)
         {
             _workspaceServerRegistry = workspaceServerRegistry ?? throw new ArgumentNullException(nameof(workspaceServerRegistry));
-            _options = options ?? throw new ArgumentNullException(nameof(options));
         }
 
         [HttpPost]
@@ -38,9 +35,9 @@ namespace MLS.Agent.Controllers
                 _disposables.Add(VirtualClock.Start());
             }
 
-            using (var operation = Log.OnEnterAndConfirmOnExit(
-                properties: new object[] { ("workspaceType", request.Workspace.WorkspaceType) }))
+            using (var operation = Log.OnEnterAndConfirmOnExit())
             {
+                operation.Info("Processing workspaceType {workspaceType}", request.Workspace.WorkspaceType);
                 if (!int.TryParse(timeoutInMilliseconds, out var timeoutMs))
                 {
                     return BadRequest();
@@ -99,9 +96,9 @@ namespace MLS.Agent.Controllers
                 _disposables.Add(VirtualClock.Start());
             }
 
-            using (var operation = Log.OnEnterAndConfirmOnExit(
-                properties: new object[] { ("workspaceType", request.Workspace.WorkspaceType) }))
+            using (var operation = Log.OnEnterAndConfirmOnExit())
             {
+                operation.Info("Processing workspaceType {workspaceType}", request.Workspace.WorkspaceType);
                 if (!int.TryParse(timeoutInMilliseconds, out var timeoutMs))
                 {
                     return BadRequest();

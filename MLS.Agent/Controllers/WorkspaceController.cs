@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.AspNetCore.Mvc;
 using Pocket;
-using Recipes;
 using WorkspaceServer;
 using WorkspaceServer.Models;
 using WorkspaceServer.Models.Execution;
@@ -45,9 +44,9 @@ namespace MLS.Agent.Controllers
                 _disposables.Add(VirtualClock.Start());
             }
 
-            using (var operation = Log.OnEnterAndConfirmOnExit(
-                properties: new object[] { ("workspaceType", request.Workspace.WorkspaceType) }))
+            using (var operation = Log.OnEnterAndConfirmOnExit())
             {
+                operation.Info("Processing workspaceType {workspaceType}", request.Workspace.WorkspaceType);
                 if (!int.TryParse(timeoutInMilliseconds, out var timeoutMs))
                 {
                     return BadRequest();

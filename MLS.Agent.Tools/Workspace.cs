@@ -42,6 +42,11 @@ namespace MLS.Agent.Tools
         private FileInfo _entryPointAssemblyPath;
         private static string _targetFramework;
 
+        public DateTimeOffset? ConstructionTime { get; }
+        public DateTimeOffset? CreationTime { get; private set; }
+        public DateTimeOffset? BuildTime { get; private set; }
+        public DateTimeOffset? PublicationTime { get; private set; }
+
         public Workspace(
             string name,
             IWorkspaceInitializer initializer = null) : this(
@@ -59,7 +64,7 @@ namespace MLS.Agent.Tools
             Name = name ?? directory.Name;
             Directory = directory ?? throw new ArgumentNullException(nameof(directory));
             _initializer = initializer ?? new DotnetWorkspaceInitializer("console", Name);
-
+            ConstructionTime = Clock.Current.Now();
             _created = new AsyncLazy<bool>(VerifyOrCreate);
             _built = new AsyncLazy<bool>(VerifyOrBuild);
             _published = new AsyncLazy<bool>(VerifyOrPublish);
@@ -130,7 +135,7 @@ namespace MLS.Agent.Tools
 
                     if (!Directory.Exists)
                     {
-                        Log.Info("Creating directory {directory}", Directory);
+                        operation.Info("Creating directory {directory}", Directory);
                         Directory.Create();
                         Directory.Refresh();
                     }
@@ -142,11 +147,12 @@ namespace MLS.Agent.Tools
                 {
                     if (Directory.GetFiles().Length == 0)
                     {
-                        Log.Info("Initializing workspace using {_initializer} in {directory}", _initializer, Directory);
+                        operation.Info("Initializing workspace using {_initializer} in {directory}", _initializer, Directory);
                         await _initializer.Initialize(Directory);
                     }
 
                     IsCreated = true;
+                    CreationTime = Clock.Current.Now();
                 }
 
                 operation.Succeed();
@@ -165,22 +171,32 @@ namespace MLS.Agent.Tools
 
         private async Task<bool> VerifyOrBuild()
         {
-            if (!IsBuilt)
+            using (var operation = Log.OnEnterAndConfirmOnExit())
             {
-                using (var operation = Log.OnEnterAndConfirmOnExit())
+                if (!IsBuilt)
                 {
+                    operation.Info("Building workspace");
                     if (Directory.GetFiles("*.deps.json", SearchOption.AllDirectories).Length == 0)
                     {
-                        Log.Info("Building workspace using {_initializer} in {directory}", _initializer, Directory);
+                        operation.Info("Building workspace using {_initializer} in {directory}", _initializer, Directory);
                         var result = await new Dotnet(Directory)
                             .Build(
                                 args: "--no-dependencies");
                         result.ThrowOnFailure();
                     }
-
+                    else
+                    {
+                        operation.Warning("Building workspace without initialiser");
+                    }
                     IsBuilt = true;
-                    operation.Succeed();
+                    BuildTime = Clock.Current.Now();
                 }
+                else
+                {
+                    operation.Info("Workspace already built");
+                }
+                operation.Succeed();
+                operation.Info("Workspace built");
             }
 
             return true;
@@ -196,21 +212,34 @@ namespace MLS.Agent.Tools
 
         private async Task<bool> VerifyOrPublish()
         {
-            if (!IsPublished)
+            using (var operation = Log.OnEnterAndConfirmOnExit())
             {
-                using (var operation = Log.OnEnterAndConfirmOnExit())
+                if (!IsPublished)
                 {
+                    operation.Info("Publishing workspace");
                     if (Directory.GetDirectories("publish", SearchOption.AllDirectories).Length == 0)
                     {
-                        Log.Info("Publishing workspace in {directory}", Directory);
+                        operation.Info("Publishing workspace in {directory}", Directory);
                         var result = await new Dotnet(Directory)
                             .Publish("--no-dependencies --no-restore");
                         result.ThrowOnFailure();
                     }
+                    else
+                    {
+                        operation.Warning("publish directory not found");
+                    }
 
                     IsPublished = true;
-                    operation.Succeed();
+                    PublicationTime = Clock.Current.Now();
+                    operation.Info("Workspace published");
                 }
+                else
+                {
+                    operation.Info("Workspace already published");
+                }
+
+                operation.Succeed();
+                
             }
 
             return true;
