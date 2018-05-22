@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.AspNetCore.Mvc;
 using Pocket;
-using Recipes;
 using WorkspaceServer;
 using WorkspaceServer.Models;
 using WorkspaceServer.Models.Execution;
@@ -15,16 +14,12 @@ using static Pocket.Logger<MLS.Agent.Controllers.WorkspaceController>;
 
 namespace MLS.Agent.Controllers
 {
-    public class WorkspaceController : Controller
+    public class WorkspaceController : WorkspaceServerController
     {
-        private readonly WorkspaceServerRegistry _workspaceServerRegistry;
         private readonly AgentOptions _options;
 
-        private readonly CompositeDisposable _disposables = new CompositeDisposable();
-
-        public WorkspaceController(WorkspaceServerRegistry workspaceServerRegistry, AgentOptions options)
+        public WorkspaceController(WorkspaceServerRegistry workspaceServerRegistry, AgentOptions options) : base(workspaceServerRegistry)
         {
-            _workspaceServerRegistry = workspaceServerRegistry ?? throw new ArgumentNullException(nameof(workspaceServerRegistry));
             _options = options ?? throw new ArgumentNullException(nameof(options));
         }
 
@@ -42,12 +37,12 @@ namespace MLS.Agent.Controllers
 
             if (Debugger.IsAttached && !(Clock.Current is VirtualClock))
             {
-                _disposables.Add(VirtualClock.Start());
+                AddToDisposeChain(VirtualClock.Start());
             }
 
-            using (var operation = Log.OnEnterAndConfirmOnExit(
-                properties: new object[] { ("workspaceType", request.Workspace.WorkspaceType) }))
+            using (var operation = Log.OnEnterAndConfirmOnExit())
             {
+                operation.Info("Processing workspaceType {workspaceType}", request.Workspace.WorkspaceType);
                 if (!int.TryParse(timeoutInMilliseconds, out var timeoutMs))
                 {
                     return BadRequest();
@@ -69,7 +64,7 @@ namespace MLS.Agent.Controllers
                 }
                 else
                 {
-                    var server = await _workspaceServerRegistry.GetWorkspaceServer(workspaceType);
+                    var server = await GetWorkspaceServer(workspaceType);
 
                     if (server is DotnetWorkspaceServer dotnetWorkspaceServer)
                     {
@@ -78,7 +73,7 @@ namespace MLS.Agent.Controllers
 
                     using (result = await server.Run(request.Workspace, budget))
                     {
-                        _disposables.Add(result);
+                        AddToDisposeChain(result);
 
                         if (result.Succeeded &&
                             request.HttpRequest != null)
@@ -104,16 +99,6 @@ namespace MLS.Agent.Controllers
 
                 return Ok(result);
             }
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                _disposables.Dispose();
-            }
-
-            base.Dispose(disposing);
         }
     }
 }

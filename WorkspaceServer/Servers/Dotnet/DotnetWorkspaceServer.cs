@@ -46,12 +46,20 @@ namespace WorkspaceServer.Servers.Dotnet
                 Paths.EmitPlugin,
                 logToPocketLogger: false);
 
-            _initialized = new AsyncLazy<bool>(async () =>
+            _initialized = new AsyncLazy<bool>(async () => await Initialise());
+        }
+
+        private async Task<bool> Initialise()
+        {
+            using (var operation = Log.OnEnterAndConfirmOnExit())
             {
                 await _workspace.EnsureBuilt(_initializationBudget);
                 await _omniSharpServer.WorkspaceReady(_initializationBudget);
-                return true;
-            });
+                _initializationBudget.RecordEntry();
+                operation.Succeed();
+            }
+
+            return true;
         }
 
         public async Task EnsureInitializedAndNotDisposed(Budget budget = null)

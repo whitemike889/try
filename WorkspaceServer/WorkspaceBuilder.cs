@@ -56,6 +56,23 @@ namespace WorkspaceServer
             return _workspace;
         }
 
+        public WorkspaceInfo GetWorkpaceInfo()
+        {
+            WorkspaceInfo info = null;
+            if (_workspace != null)
+            {
+                info = new WorkspaceInfo
+                {
+                    Type = _workspace.Name,
+                    BuildTime = _workspace.BuildTime,
+                    ConstructionTime = _workspace.ConstructionTime,
+                    CreationTime = _workspace.CreationTime
+                };
+                
+            }
+            return info;
+        }
+
         private async Task PrepareWorkspace(Budget budget = null)
         {
             budget = budget ?? new Budget();

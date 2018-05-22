@@ -20,8 +20,6 @@ namespace WorkspaceServer.Servers.Dotnet
         private readonly string _pluginPath;
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
         private int _seq;
-        private readonly StandardOutput _standardOutput = new StandardOutput();
-        private readonly StandardError _standardError = new StandardError();
         private readonly AsyncLazy<Process> _omnisharpProcess;
 
         public OmniSharpServer(
@@ -57,8 +55,8 @@ namespace WorkspaceServer.Servers.Dotnet
                             ? ""
                             : $"-pl {_pluginPath}",
                         _projectDirectory,
-                        _standardOutput.OnNext,
-                        _standardError.OnNext);
+                        StandardOutput.OnNext,
+                        StandardError.OnNext);
 
                 _disposables.Add(() =>
                 {
@@ -74,16 +72,16 @@ namespace WorkspaceServer.Servers.Dotnet
                       .AsOmniSharpMessages()
                       .OfType<OmniSharpEventMessage<ProjectAdded>>()
                       .FirstAsync();
-
+                
                 operation.Succeed();
 
                 return process;
             }
         }
 
-        public StandardOutput StandardOutput => _standardOutput;
+        public StandardOutput StandardOutput { get; } = new StandardOutput();
 
-        public StandardError StandardError => _standardError;
+        public StandardError StandardError { get; } = new StandardError();
 
         public async Task Send(string text)
         {
@@ -95,8 +93,11 @@ namespace WorkspaceServer.Servers.Dotnet
 
         public int NextSeq() => Interlocked.Increment(ref _seq);
 
-        public async Task WorkspaceReady(Budget budget = null) =>
+        public async Task WorkspaceReady(Budget budget = null)
+        {
             await _omnisharpProcess.ValueAsync()
-                                   .CancelIfExceeds(budget ?? new Budget());
+                .CancelIfExceeds(budget ?? new Budget());
+            budget?.RecordEntry();
+        }
     }
 }

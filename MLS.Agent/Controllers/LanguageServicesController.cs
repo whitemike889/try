@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.AspNetCore.Mvc;
 using Pocket;
-using Recipes;
 using WorkspaceServer;
 using WorkspaceServer.Models;
 using WorkspaceServer.Servers.Dotnet;
@@ -14,17 +13,10 @@ using Workspace = WorkspaceServer.Models.Execution.Workspace;
 
 namespace MLS.Agent.Controllers
 {
-    public class LanguageServicesController : Controller
+    public class LanguageServicesController : WorkspaceServerController
     {
-        private readonly WorkspaceServerRegistry _workspaceServerRegistry;
-        private readonly AgentOptions _options;
-
-        private readonly CompositeDisposable _disposables = new CompositeDisposable();
-
-        public LanguageServicesController(WorkspaceServerRegistry workspaceServerRegistry, AgentOptions options)
+        public LanguageServicesController(WorkspaceServerRegistry workspaceServerRegistry) : base(workspaceServerRegistry)
         {
-            _workspaceServerRegistry = workspaceServerRegistry ?? throw new ArgumentNullException(nameof(workspaceServerRegistry));
-            _options = options ?? throw new ArgumentNullException(nameof(options));
         }
 
         [HttpPost]
@@ -35,12 +27,12 @@ namespace MLS.Agent.Controllers
         {
             if (Debugger.IsAttached && !(Clock.Current is VirtualClock))
             {
-                _disposables.Add(VirtualClock.Start());
+                AddToDisposeChain(VirtualClock.Start());
             }
 
-            using (var operation = Log.OnEnterAndConfirmOnExit(
-                properties: new object[] { ("workspaceType", request.Workspace.WorkspaceType) }))
+            using (var operation = Log.OnEnterAndConfirmOnExit())
             {
+                operation.Info("Processing workspaceType {workspaceType}", request.Workspace.WorkspaceType);
                 if (!int.TryParse(timeoutInMilliseconds, out var timeoutMs))
                 {
                     return BadRequest();
@@ -66,7 +58,7 @@ namespace MLS.Agent.Controllers
         {
             if (Debugger.IsAttached && !(Clock.Current is VirtualClock))
             {
-                _disposables.Add(VirtualClock.Start());
+                AddToDisposeChain(VirtualClock.Start());
             }
 
             using (var operation = Log.OnEnterAndConfirmOnExit())
@@ -96,12 +88,12 @@ namespace MLS.Agent.Controllers
         {
             if (Debugger.IsAttached && !(Clock.Current is VirtualClock))
             {
-                _disposables.Add(VirtualClock.Start());
+                AddToDisposeChain(VirtualClock.Start());
             }
 
-            using (var operation = Log.OnEnterAndConfirmOnExit(
-                properties: new object[] { ("workspaceType", request.Workspace.WorkspaceType) }))
+            using (var operation = Log.OnEnterAndConfirmOnExit())
             {
+                operation.Info("Processing workspaceType {workspaceType}", request.Workspace.WorkspaceType);
                 if (!int.TryParse(timeoutInMilliseconds, out var timeoutMs))
                 {
                     return BadRequest();
@@ -130,7 +122,7 @@ namespace MLS.Agent.Controllers
                 }
                 else
                 {
-                    server = await _workspaceServerRegistry.GetWorkspaceServer(workspaceType);
+                    server = await GetWorkspaceServer(workspaceType);
 
                     if (server is DotnetWorkspaceServer dotnetWorkspaceServer)
                     {
@@ -143,16 +135,6 @@ namespace MLS.Agent.Controllers
             }
 
             return server;
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                _disposables.Dispose();
-            }
-
-            base.Dispose(disposing);
         }
     }
 }
