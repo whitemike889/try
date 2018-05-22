@@ -15,7 +15,7 @@ namespace MLS.Agent.Controllers
         [Route("/sensors/version")]
         public IActionResult GetVersion() => Ok(AssemblyVersionSensor.Version());
 
-        [Route("/sensors/workpaceInfo")]
+        [Route("/sensors/workspaceInfo")]
         public IActionResult GetWorkspaceInfo()
         {
             var info = _workspaceServerRegistry.GetRegisterWorkspaceInfos();
