@@ -63,16 +63,16 @@ dotnet test $REPO_ROOT/MLS.Agent.Integration.Tests/MLS.Agent.Integration.Tests.c
 
 dotnet test $REPO_ROOT/MLS.LanguageServices.Integration.Tests/MLS.LanguageServices.Integration.Tests.csproj --logger trx
 
-docker push $DOCKER_REPOSITORY_SERVER/$IMAGE_NAME:latest
+# docker push $DOCKER_REPOSITORY_SERVER/$IMAGE_NAME:latest
 
 
-restart_appservice "trydotnetagent"
+# restart_appservice "trydotnetagent"
 
-restart_appservice "trydotnetlanguageservices"
+# restart_appservice "trydotnetlanguageservices"
 
 # We're done with all the release steps for the devdiv collection
 # For now: push images built in devdiv collection to container regististry used in 
 # "try dot net orchestrator prod" subscription
-docker login -u $MSAZURE_DOCKER_USER -p $MSAZURE_DOCKER_PASSWORD $MSAZURE_DOCKER_SERVER
-docker push $MSAZURE_DOCKER_SERVER/$IMAGE_NAME:$COMMIT_HASH
-docker push $MSAZURE_DOCKER_SERVER/$IMAGE_NAME:latest
+# docker login -u $MSAZURE_DOCKER_USER -p $MSAZURE_DOCKER_PASSWORD $MSAZURE_DOCKER_SERVER
+# docker push $MSAZURE_DOCKER_SERVER/$IMAGE_NAME:$COMMIT_HASH
+# docker push $MSAZURE_DOCKER_SERVER/$IMAGE_NAME:latest

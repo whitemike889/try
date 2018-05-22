@@ -121,9 +121,12 @@ namespace MLS.Agent.Tools
                                          (_targetFramework = RuntimeConfig.GetTargetFramework(
                                               Directory.GetFiles("*.runtimeconfig.json", SearchOption.AllDirectories).First()));
 
-        public async Task EnsureCreated(Budget budget = null) =>
+        public async Task EnsureCreated(Budget budget = null)
+        {
             await _created.ValueAsync()
-                          .CancelIfExceeds(budget ?? new Budget());
+                .CancelIfExceeds(budget ?? new Budget());
+            budget?.RecordEntry();
+        }
 
         private async Task<bool> VerifyOrCreate()
         {
@@ -167,6 +170,7 @@ namespace MLS.Agent.Tools
 
             await _built.ValueAsync()
                         .CancelIfExceeds(budget ?? new Budget());
+            budget?.RecordEntry();
         }
 
         private async Task<bool> VerifyOrBuild()
