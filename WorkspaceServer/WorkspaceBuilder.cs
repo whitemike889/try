@@ -61,15 +61,16 @@ namespace WorkspaceServer
             WorkspaceInfo info = null;
             if (_workspace != null)
             {
-                info = new WorkspaceInfo
-                {
-                    Type = _workspace.Name,
-                    BuildTime = _workspace.BuildTime,
-                    ConstructionTime = _workspace.ConstructionTime,
-                    CreationTime = _workspace.CreationTime
-                };
-                
+                info = new WorkspaceInfo(
+                    _workspace.Name,
+                    _workspace.BuildTime,
+                    _workspace.ConstructionTime,
+                    _workspace.PublicationTime,
+                    _workspace.CreationTime,
+                    _workspace.InitialisedTime
+                );
             }
+
             return info;
         }
 

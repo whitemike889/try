@@ -55,6 +55,7 @@ namespace WorkspaceServer.Servers.Dotnet
             {
                 await _workspace.EnsureBuilt(_initializationBudget);
                 await _omniSharpServer.WorkspaceReady(_initializationBudget);
+                _workspace.InitialisedTime = Clock.Current.Now();
                 _initializationBudget.RecordEntry();
                 operation.Succeed();
             }
