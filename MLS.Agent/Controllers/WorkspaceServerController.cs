@@ -17,7 +17,7 @@ namespace MLS.Agent.Controllers
             _workspaceServerRegistry = workspaceServerRegistry ?? throw new ArgumentNullException(nameof(workspaceServerRegistry));
         }
 
-        protected  Task<IWorkspaceServer> GetWorkspaceServer(string workspaceType, TimeBudget budget = null)
+        protected  Task<IWorkspaceServer> GetWorkspaceServer(string workspaceType, Budget budget = null)
         {
             return _workspaceServerRegistry.GetWorkspaceServer(workspaceType, budget);
         }

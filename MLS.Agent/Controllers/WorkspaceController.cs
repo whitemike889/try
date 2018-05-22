@@ -94,7 +94,8 @@ namespace MLS.Agent.Controllers
                     }
                 }
 
-                budget.RecordEntry();
+               
+                budget?.RecordEntry();
                 operation.Succeed();
 
                 return Ok(result);

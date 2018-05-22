@@ -36,7 +36,7 @@ namespace WorkspaceServer
             _workspaceBuilders.Add(name, options);
         }
 
-        public Task<Workspace> GetWorkspace(string workspaceName, TimeBudget budget = null) =>
+        public Task<Workspace> GetWorkspace(string workspaceName, Budget budget = null) =>
             _workspaceBuilders.GetOrAdd(
                 workspaceName,
                 name =>
@@ -53,7 +53,7 @@ namespace WorkspaceServer
                     throw new ArgumentException($"Workspace named \"{name}\" not found.");
                 }).GetWorkspace(budget);
 
-        public async Task<IWorkspaceServer> GetWorkspaceServer(string name, TimeBudget budget = null)
+        public async Task<IWorkspaceServer> GetWorkspaceServer(string name, Budget budget = null)
         {
             if (string.IsNullOrWhiteSpace(name))
             {
@@ -63,9 +63,9 @@ namespace WorkspaceServer
             IWorkspaceServer server;
             using (var operation = Log.OnEnterAndConfirmOnExit())
             {
-                budget?.RecordEntry();
                 var workspace = await GetWorkspace(name, budget);
                 server = _workspaceServers.GetOrAdd(name, _ => new DotnetWorkspaceServer(workspace));
+                budget?.RecordEntry();
                 operation.Succeed();
             }
 
