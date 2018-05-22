@@ -67,7 +67,7 @@ namespace WorkspaceServer
                     _workspace.ConstructionTime,
                     _workspace.PublicationTime,
                     _workspace.CreationTime,
-                    _workspace.InitialisedTime
+                    _workspace.InitializedTime
                 );
             }
 
@@ -92,7 +92,7 @@ namespace WorkspaceServer
                     await _workspace.EnsurePublished(budget);
                 }
 
-                budget?.RecordEntry();
+                budget.RecordEntry();
                 operation.Succeed();
             }
         }

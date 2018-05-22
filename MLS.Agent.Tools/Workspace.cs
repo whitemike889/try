@@ -121,7 +121,7 @@ namespace MLS.Agent.Tools
                                          (_targetFramework = RuntimeConfig.GetTargetFramework(
                                               Directory.GetFiles("*.runtimeconfig.json", SearchOption.AllDirectories).First()));
 
-        public DateTimeOffset? InitialisedTime { get; set; }
+        public DateTimeOffset? InitializedTime { get; set; }
 
         public async Task EnsureCreated(Budget budget = null)
         {
