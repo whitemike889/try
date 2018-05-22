@@ -125,6 +125,8 @@ namespace MLS.Agent.Tools
                     }
                 };
 
+                operation.Info("launch {process} with {args}", command, args);
+
                 if (environmentVariables?.Length > 0)
                 {
                     foreach (var tuple in environmentVariables)
