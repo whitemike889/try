@@ -36,7 +36,7 @@ namespace MLS.Agent
 
         private async Task WarmUpRoutes()
         {
-            using (Log.OnEnterAndExit())
+            using (var operation = Log.OnEnterAndExit())
             {
                 await _httpClient.GetAsync("/sensors/version");
 
@@ -48,7 +48,7 @@ namespace MLS.Agent
                                        new Workspace.Buffer("Program.cs", "Console.WriteLine(42);", 0)
                                    })));
 
-                Log.Info("WarmUp response {response}", response);
+                operation.Info("WarmUp response {response}", response);
             }
         }
 

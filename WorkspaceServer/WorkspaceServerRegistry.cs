@@ -18,11 +18,7 @@ namespace WorkspaceServer
         private readonly Dictionary<string, WorkspaceBuilder> _workspaceBuilders = new Dictionary<string, WorkspaceBuilder>();
 
         private readonly ConcurrentDictionary<string, IWorkspaceServer> _workspaceServers = new ConcurrentDictionary<string, IWorkspaceServer>();
-
-        public IReadOnlyList<string> GetRegisterWorkspaces()
-        {
-            return _workspaceBuilders.Keys.ToList();
-        }
+       
         public void AddWorkspace(string name, Action<WorkspaceBuilder> configure)
         {
             if (configure == null)
