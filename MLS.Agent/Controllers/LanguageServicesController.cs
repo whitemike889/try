@@ -42,8 +42,7 @@ namespace MLS.Agent.Controllers
                 var budget = new TimeBudget(runTimeout);
                 var server = await GetServerForWorkspace(request.Workspace, budget);
                 var result = await server.GetCompletionList(request, budget);
-
-                budget.RecordEntry();
+                budget?.RecordEntry();
                 operation.Succeed();
 
                 return Ok(result);
@@ -72,8 +71,7 @@ namespace MLS.Agent.Controllers
                 var budget = new TimeBudget(runTimeout);
                 var server = await GetServerForWorkspace(request, budget);
                 var result = await server.GetDiagnostics(request, budget);
-
-                budget.RecordEntry();
+                budget?.RecordEntry();
                 operation.Succeed();
 
                 return Ok(result);
@@ -103,15 +101,16 @@ namespace MLS.Agent.Controllers
                 var budget = new TimeBudget(runTimeout);
                 var server = await GetServerForWorkspace(request.Workspace, budget);
                 var result = await server.GetSignatureHelp(request, budget);
-
-                budget.RecordEntry();
+                budget?.RecordEntry();
                 operation.Succeed();
+
                 return Ok(result);
             }
         }
 
         private async Task<IWorkspaceServer> GetServerForWorkspace(Workspace workspace, Budget budget)
         {
+            budget?.RecordEntryAndThrowIfBudgetExceeded();
             IWorkspaceServer server;
             var workspaceType = workspace.WorkspaceType;
             using (var operation = Log.OnEnterAndConfirmOnExit())
@@ -122,16 +121,16 @@ namespace MLS.Agent.Controllers
                 }
                 else
                 {
-                    server = await GetWorkspaceServer(workspaceType);
+                    server = await GetWorkspaceServer(workspaceType, budget);
 
                     if (server is DotnetWorkspaceServer dotnetWorkspaceServer)
                     {
                         await dotnetWorkspaceServer.EnsureInitializedAndNotDisposed(budget);
                     }
                 }
-                budget.RecordEntryAndThrowIfBudgetExceeded();
-                operation.Succeed();
 
+                budget?.RecordEntry();
+                operation.Succeed();
             }
 
             return server;

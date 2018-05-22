@@ -64,8 +64,6 @@ namespace WorkspaceServer.Servers.Dotnet
 
         public async Task EnsureInitializedAndNotDisposed(Budget budget = null)
         {
-            budget?.RecordEntryAndThrowIfBudgetExceeded();
-
             if (_disposed)
             {
                 throw new ObjectDisposedException(nameof(DotnetWorkspaceServer));
@@ -73,6 +71,7 @@ namespace WorkspaceServer.Servers.Dotnet
 
             await _initialized.ValueAsync()
                               .CancelIfExceeds(budget ?? new Budget());
+            budget?.RecordEntryAndThrowIfBudgetExceeded();
         }
 
         public async Task<RunResult> Run(Models.Execution.Workspace workspace, Budget budget = null)
@@ -222,10 +221,11 @@ namespace WorkspaceServer.Servers.Dotnet
                 var (file, code, line, column, absolutePosition) = await TransformWorkspaceAndPreparePositionalRequest(request, budget);
                 var wordToComplete = code.GetWordAt(absolutePosition);
                 var response = (await _omniSharpServer.GetCompletionList(file, code, wordToComplete, line, column, budget)).ToCompletionResult();
-                budget.RecordEntry();
+                budget?.RecordEntryAndThrowIfBudgetExceeded();
                 operation.Succeed();
                 return response;
             }
+
         }
 
         public async Task<SignatureHelpResponse> GetSignatureHelp(WorkspaceRequest request, Budget budget = null)
@@ -237,9 +237,8 @@ namespace WorkspaceServer.Servers.Dotnet
                 await EnsureInitializedAndNotDisposed(budget);
                 var (file,code,line,column,_) = await TransformWorkspaceAndPreparePositionalRequest(request, budget);
                 var response = await _omniSharpServer.GetSignatureHelp(file, code, line, column, budget);
-
                 response = response?.ProcessDocumentation() ?? new SignatureHelpResponse();
-                budget.RecordEntry();
+                budget?.RecordEntryAndThrowIfBudgetExceeded();
                 operation.Succeed();
                 return response;
             }
@@ -278,7 +277,7 @@ namespace WorkspaceServer.Servers.Dotnet
                     diagnostics = emitResponse.Body.Diagnostics.Select(d => new SerializableDiagnostic(d)).ToArray();
                 }
                 var result = new DiagnosticResult(diagnostics);
-                budget.RecordEntry();
+                budget?.RecordEntryAndThrowIfBudgetExceeded();
                 operation.Succeed();
                 return result;
             }
