@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Reactive.Linq;
+using System.Security.Permissions;
 using System.Threading;
 using System.Threading.Tasks;
 using Clockwise;
@@ -47,6 +48,16 @@ namespace WorkspaceServer.Servers.Dotnet
             using (var operation = Log.OnEnterAndConfirmOnExit())
             {
                 var omnisharpExe = await MLS.Agent.Tools.OmniSharp.EnsureInstalledOrAcquire(dotTryDotNetPath);
+
+                if (!string.IsNullOrWhiteSpace(_pluginPath))
+                {
+                    var fileInfo = new FileInfo(_pluginPath);
+                    if (!fileInfo.Exists)
+                    {
+                        operation.Error("Cannot lcoate {pluginPath}", args: _pluginPath);
+                        throw new FileNotFoundException($"Cannot locate {_pluginPath}");
+                    }
+                }
 
                 var process =
                     CommandLine.StartProcess(
