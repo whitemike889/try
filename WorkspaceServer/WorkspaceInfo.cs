@@ -5,14 +5,14 @@ namespace WorkspaceServer
     public class WorkspaceInfo
     {
         public WorkspaceInfo(string type, DateTimeOffset? buildTime, DateTimeOffset? constructionTime, DateTimeOffset? publicationTime, DateTimeOffset? creationTime,
-            DateTimeOffset? InitializedTime)
+            DateTimeOffset? readyTime)
         {
             Type = type;
             BuildTime = buildTime;
             ConstructionTime = constructionTime;
             PublicationTime = publicationTime;
             CreationTime = creationTime;
-            InitializedTime = InitializedTime;
+            ReadyTime = readyTime;
         }
 
         public string Type { get;  }
@@ -20,6 +20,6 @@ namespace WorkspaceServer
         public DateTimeOffset? ConstructionTime { get;  }
         public DateTimeOffset? PublicationTime { get;  }
         public DateTimeOffset? CreationTime { get;  }
-        public DateTimeOffset? InitializedTime { get; }
+        public DateTimeOffset? ReadyTime { get; }
     }
 }
