@@ -67,7 +67,7 @@ namespace WorkspaceServer
                     _workspace.ConstructionTime,
                     _workspace.PublicationTime,
                     _workspace.CreationTime,
-                    _workspace.InitializedTime
+                    _workspace.ReadyTime
                 );
             }
 
