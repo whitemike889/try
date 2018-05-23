@@ -125,7 +125,7 @@ namespace MLS.Agent.Tools
                     }
                 };
 
-                operation.Info("launch {process} with {args}", command, args);
+                operation.Info("launching {process} with {args}", command, args);
 
                 if (environmentVariables?.Length > 0)
                 {
