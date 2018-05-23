@@ -10,7 +10,7 @@ RUN apt-get --assume-yes install msbuild
 
 # set up OmniSharp
 ENV TRYDOTNET_OMNISHARP_PATH=/dependencies/omnisharp/
-ENV NUGET_PACKAGES=/root/.nuget/packages/
+ENV NUGET_PACKAGES=/dependencies/.nuget/packages
 
 RUN mkdir -p /dependencies/omnisharp/v1.29.0-beta1
 RUN curl -SL https://github.com/OmniSharp/omnisharp-roslyn/releases/download/v1.29.0-beta1/omnisharp-linux-x64.tar.gz | tar xvz -C /dependencies/omnisharp/v1.29.0-beta1

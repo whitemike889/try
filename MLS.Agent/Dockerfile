@@ -16,6 +16,7 @@ RUN chown --recursive app_user:app_group /workspaces
 
 # make sure that the root folder is available to app_user since this is where the nuget package cache is found
 RUN chmod -R 777 /root/
+RUN cp -r /root/.nuget/packages/ /dependencies/.nuget/packages
 
 USER app_user
 
