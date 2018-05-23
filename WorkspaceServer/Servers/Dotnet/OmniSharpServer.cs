@@ -33,6 +33,15 @@ namespace WorkspaceServer.Servers.Dotnet
 
             _pluginPath = pluginPath;
 
+            if (!string.IsNullOrWhiteSpace(_pluginPath))
+            {
+                var fileInfo = new FileInfo(_pluginPath);
+                if (!fileInfo.Exists)
+                {
+                    throw new FileNotFoundException($"Cannot locate plugin {_pluginPath}");
+                }
+            }
+
             if (logToPocketLogger)
             {
                 _disposables.Add(StandardOutput.Subscribe(e => Log.Info("{message}", args: e)));
@@ -40,6 +49,7 @@ namespace WorkspaceServer.Servers.Dotnet
             }
 
             var dotTdn = new FileInfo(Path.Combine(projectDirectory.FullName, ".trydotnet"));
+            
             _omnisharpProcess = new AsyncLazy<Process>(() => StartOmniSharp(dotTdn));
         }
 
@@ -48,16 +58,6 @@ namespace WorkspaceServer.Servers.Dotnet
             using (var operation = Log.OnEnterAndConfirmOnExit())
             {
                 var omnisharpExe = await MLS.Agent.Tools.OmniSharp.EnsureInstalledOrAcquire(dotTryDotNetPath);
-
-                if (!string.IsNullOrWhiteSpace(_pluginPath))
-                {
-                    var fileInfo = new FileInfo(_pluginPath);
-                    if (!fileInfo.Exists)
-                    {
-                        operation.Error("Cannot locate {pluginPath}", args: _pluginPath);
-                        throw new FileNotFoundException($"Cannot locate {_pluginPath}");
-                    }
-                }
 
                 var process =
                     CommandLine.StartProcess(

@@ -29,9 +29,14 @@ namespace MLS.Agent.Controllers
         [Route("/sensors/getNugetCache")]
         public IActionResult GetNugetCache()
         {
-            var dirs = Directory.EnumerateFileSystemEntries(Paths.NugetCache,"*.dll", SearchOption.AllDirectories ).ToArray();
-            
+            var dirs = Directory.EnumerateFileSystemEntries(Paths.NugetCache,"*.dll", SearchOption.AllDirectories ).OrderBy(path => path).ToArray();
             return Ok(dirs);
+        }
+
+        [Route("/sensors/environmentVariables")]
+        public IActionResult GetEnvironmentVariables()
+        {
+            return Ok(Environment.GetEnvironmentVariables());
         }
     }
 }
