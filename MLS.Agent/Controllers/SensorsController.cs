@@ -14,7 +14,7 @@ namespace MLS.Agent.Controllers
 
         public SensorsController(WorkspaceServerRegistry workspaceServerRegistry)
         {
-            _workspaceServerRegistry = workspaceServerRegistry;
+            _workspaceServerRegistry = workspaceServerRegistry ?? throw new ArgumentNullException(nameof(workspaceServerRegistry));
         }
         [Route("/sensors/version")]
         public IActionResult GetVersion() => Ok(AssemblyVersionSensor.Version());
