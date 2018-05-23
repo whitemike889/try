@@ -54,7 +54,7 @@ namespace WorkspaceServer.Servers.Dotnet
                     var fileInfo = new FileInfo(_pluginPath);
                     if (!fileInfo.Exists)
                     {
-                        operation.Error("Cannot lcoate {pluginPath}", args: _pluginPath);
+                        operation.Error("Cannot locate {pluginPath}", args: _pluginPath);
                         throw new FileNotFoundException($"Cannot locate {_pluginPath}");
                     }
                 }

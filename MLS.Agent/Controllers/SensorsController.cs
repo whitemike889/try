@@ -1,5 +1,8 @@
 using System;
+using System.IO;
+using System.Linq;
 using Microsoft.AspNetCore.Mvc;
+using MLS.Agent.Tools;
 using Recipes;
 using WorkspaceServer;
 
@@ -23,10 +26,12 @@ namespace MLS.Agent.Controllers
             return Ok(info);
         }
 
-        [Route("/sensors/environment")]
-        public IActionResult GetEnvirontmentInfo()
+        [Route("/sensors/getNugetCache")]
+        public IActionResult GetNugetCache()
         {
-            return Ok(Environment.GetEnvironmentVariables());
+            var dirs = Directory.EnumerateFileSystemEntries(Paths.NugetCache,"*.dll", SearchOption.AllDirectories ).ToArray();
+            
+            return Ok(dirs);
         }
     }
 }
