@@ -1,3 +1,4 @@
+using System;
 using Microsoft.AspNetCore.Mvc;
 using Recipes;
 using WorkspaceServer;
@@ -20,6 +21,12 @@ namespace MLS.Agent.Controllers
         {
             var info = _workspaceServerRegistry.GetRegisterWorkspaceInfos();
             return Ok(info);
+        }
+
+        [Route("/sensors/environment")]
+        public IActionResult GetEnvirontmentInfo()
+        {
+            return Ok(Environment.GetEnvironmentVariables());
         }
     }
 }
