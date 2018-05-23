@@ -29,7 +29,8 @@ namespace MLS.Agent.Controllers
         [Route("/sensors/getNugetCache")]
         public IActionResult GetNugetCache()
         {
-            var dirs = Directory.GetDirectories(Paths.NugetCache).ToArray();
+            var dirs = Directory.EnumerateFileSystemEntries(Paths.NugetCache,"*.dll", SearchOption.AllDirectories ).ToArray();
+            
             return Ok(dirs);
         }
     }
