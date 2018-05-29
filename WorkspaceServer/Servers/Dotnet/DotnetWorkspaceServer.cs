@@ -44,7 +44,7 @@ namespace WorkspaceServer.Servers.Dotnet
             _omniSharpServer = new OmniSharpServer(
                 _workspace.Directory,
                 Paths.EmitPlugin,
-                logToPocketLogger: true);
+                logToPocketLogger: false);
 
             _initialized = new AsyncLazy<bool>(async () => await Initialise());
         }
