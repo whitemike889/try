@@ -52,7 +52,7 @@ namespace MLS.Agent.Controllers
         [HttpPost]
         [Route("/workspace/diagnostics")]
         public async Task<IActionResult> Diagnostics(
-            [FromBody] Workspace request,
+            [FromBody] WorkspaceRequest request,
             [FromHeader(Name = "Timeout")] string timeoutInMilliseconds = "15000")
         {
             if (Debugger.IsAttached && !(Clock.Current is VirtualClock))
@@ -69,8 +69,8 @@ namespace MLS.Agent.Controllers
 
                 var runTimeout = TimeSpan.FromMilliseconds(timeoutMs);
                 var budget = new TimeBudget(runTimeout);
-                var server = await GetServerForWorkspace(request, budget);
-                var result = await server.GetDiagnostics(request, budget);
+                var server = await GetServerForWorkspace(request.Workspace, budget);
+                var result = await server.GetDiagnostics(request.Workspace, budget);
                 budget.RecordEntry();
                 operation.Succeed();
 
