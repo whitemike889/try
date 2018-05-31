@@ -2,11 +2,9 @@
 using Clockwise;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using MLS.Agent.Controllers;
 using MLS.Agent.JsonContracts;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;

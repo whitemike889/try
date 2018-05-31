@@ -27,7 +27,6 @@ namespace MLS.Agent.Controllers
         [Route("/workspace/run")]
         public async Task<IActionResult> Run(
             [FromBody] WorkspaceRequest request,
-            [FromHeader(Name = "Referer")] string referer,
             [FromHeader(Name = "Timeout")] string timeoutInMilliseconds = "15000")
         {
             if (_options.IsLanguageServiceMode)
