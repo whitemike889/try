@@ -2,7 +2,6 @@
 using System.Diagnostics;
 using System.IO;
 using System.Reactive.Linq;
-using System.Security.Permissions;
 using System.Threading;
 using System.Threading.Tasks;
 using Clockwise;
@@ -11,7 +10,6 @@ using OmniSharp.Client;
 using OmniSharp.Client.Events;
 using Pocket;
 using WorkspaceServer.WorkspaceFeatures;
-using static Pocket.Logger<WorkspaceServer.Servers.Dotnet.OmniSharpServer>;
 
 namespace WorkspaceServer.Servers.Dotnet
 {
@@ -22,6 +20,7 @@ namespace WorkspaceServer.Servers.Dotnet
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
         private int _seq;
         private readonly AsyncLazy<Process> _omnisharpProcess;
+        private readonly Logger _log;
 
         public OmniSharpServer(
             DirectoryInfo projectDirectory,
@@ -42,10 +41,12 @@ namespace WorkspaceServer.Servers.Dotnet
                 }
             }
 
+            _log = new Logger($"{nameof(OmniSharpServer)}:{projectDirectory.Name}");
+
             if (logToPocketLogger)
             {
-                _disposables.Add(StandardOutput.Subscribe(e => Log.Info("{message}", args: e)));
-                _disposables.Add(StandardError.Subscribe(e => Log.Error("{message}", args: e)));
+                _disposables.Add(StandardOutput.Subscribe(e => _log.Info("{message}", args: e)));
+                _disposables.Add(StandardError.Subscribe(e => _log.Error("{message}", args: e)));
             }
 
             var dotTdn = new FileInfo(Path.Combine(projectDirectory.FullName, ".trydotnet"));
@@ -55,7 +56,7 @@ namespace WorkspaceServer.Servers.Dotnet
 
         private async Task<Process> StartOmniSharp(FileInfo dotTryDotNetPath)
         {
-            using (var operation = Log.OnEnterAndConfirmOnExit())
+            using (var operation = _log.OnEnterAndConfirmOnExit())
             {
                 var omnisharpExe = await MLS.Agent.Tools.OmniSharp.EnsureInstalledOrAcquire(dotTryDotNetPath);
 

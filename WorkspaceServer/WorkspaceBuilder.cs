@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Clockwise;
 using MLS.Agent.Tools;
 using Pocket;
-using static Pocket.Logger<WorkspaceServer.WorkspaceBuilder>;
 
 namespace WorkspaceServer
 {
@@ -15,6 +14,8 @@ namespace WorkspaceServer
 
         private readonly List<Func<Workspace, Budget, Task>> _afterCreateActions = new List<Func<Workspace, Budget, Task>>();
 
+        private readonly Logger _log;
+
         public WorkspaceBuilder(string workspaceName)
         {
             if (string.IsNullOrWhiteSpace(workspaceName))
@@ -23,6 +24,8 @@ namespace WorkspaceServer
             }
 
             WorkspaceName = workspaceName;
+
+            _log = new Logger($"{nameof(WorkspaceBuilder)}:{workspaceName}");
         }
 
         public string WorkspaceName { get; }
@@ -77,7 +80,7 @@ namespace WorkspaceServer
         private async Task PrepareWorkspace(Budget budget = null)
         {
             budget = budget ?? new Budget();
-            using (var operation = Log.OnEnterAndConfirmOnExit())
+            using (var operation = _log.OnEnterAndConfirmOnExit())
             {
                 _workspace = new Workspace(
                     WorkspaceName,

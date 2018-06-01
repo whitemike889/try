@@ -61,7 +61,7 @@ namespace WorkspaceServer
             }
 
             IWorkspaceServer server;
-            using (var operation = Log.OnEnterAndConfirmOnExit())
+            using (var operation = Log.OnEnterAndConfirmOnExit($"{nameof(GetWorkspaceServer)}:{name}"))
             {
                 var workspace = await GetWorkspace(name, budget);
                 server = _workspaceServers.GetOrAdd(name, _ => new DotnetWorkspaceServer(workspace));
