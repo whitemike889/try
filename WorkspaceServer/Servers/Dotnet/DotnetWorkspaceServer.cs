@@ -13,7 +13,6 @@ using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Models.SingatureHelp;
 using WorkspaceServer.Transformations;
 using WorkspaceServer.WorkspaceFeatures;
-using static Pocket.Logger<WorkspaceServer.Servers.Dotnet.DotnetWorkspaceServer>;
 using static WorkspaceServer.Transformations.OmniSharpDiagnosticTransformer;
 using Workspace = MLS.Agent.Tools.Workspace;
 using OmnisharpEmitResponse = OmniSharp.Client.Commands.OmniSharpResponseMessage<OmniSharp.Client.Commands.EmitResponse>;
@@ -30,6 +29,7 @@ namespace WorkspaceServer.Servers.Dotnet
         private readonly TimeSpan _defaultTimeoutInSeconds;
         private readonly BufferInliningTransformer _transformer = new BufferInliningTransformer();
         private ImmutableHashSet<FileInfo> _bufferNameCache = ImmutableHashSet<FileInfo>.Empty;
+        private readonly Logger _log;
 
         public static string UserCodeCompletedBudgetEntryName = "UserCodeCompleted";
         
@@ -46,12 +46,15 @@ namespace WorkspaceServer.Servers.Dotnet
                 Paths.EmitPlugin,
                 logToPocketLogger: false);
 
-            _initialized = new AsyncLazy<bool>(async () => await Initialise());
+            _log = new Logger($"{nameof(DotnetWorkspaceServer)}:{_workspace.Name}");
+
+            _initialized = new AsyncLazy<bool>(async () => await Initialize());
         }
 
-        private async Task<bool> Initialise()
+
+        private async Task<bool> Initialize()
         {
-            using (var operation = Log.OnEnterAndConfirmOnExit())
+            using (var operation = _log.OnEnterAndConfirmOnExit())
             {
                 await _workspace.EnsureBuilt(_initializationBudget);
                 await _omniSharpServer.WorkspaceReady(_initializationBudget);
@@ -79,7 +82,7 @@ namespace WorkspaceServer.Servers.Dotnet
         {
             budget = budget ?? new TimeBudget(_defaultTimeoutInSeconds);
 
-            using (var operation = Log.OnEnterAndConfirmOnExit())
+            using (var operation = _log.OnEnterAndConfirmOnExit())
             {
                 await EnsureInitializedAndNotDisposed(budget);
 
@@ -216,7 +219,7 @@ namespace WorkspaceServer.Servers.Dotnet
         {
             budget = budget ?? new TimeBudget(_defaultTimeoutInSeconds);
 
-            using (var operation = Log.OnEnterAndConfirmOnExit())
+            using (var operation = _log.OnEnterAndConfirmOnExit())
             {
                 await EnsureInitializedAndNotDisposed(budget);
                 var (file, code, line, column, absolutePosition) = await TransformWorkspaceAndPreparePositionalRequest(request, budget);
@@ -233,7 +236,7 @@ namespace WorkspaceServer.Servers.Dotnet
         {
             budget = budget ?? new TimeBudget(_defaultTimeoutInSeconds);
 
-            using (var operation = Log.OnEnterAndConfirmOnExit())
+            using (var operation = _log.OnEnterAndConfirmOnExit())
             {
                 await EnsureInitializedAndNotDisposed(budget);
                 var (file,code,line,column,_) = await TransformWorkspaceAndPreparePositionalRequest(request, budget);
@@ -261,7 +264,7 @@ namespace WorkspaceServer.Servers.Dotnet
         {
             budget = budget ?? new TimeBudget(_defaultTimeoutInSeconds);
           
-            using (var operation = Log.OnEnterAndConfirmOnExit())
+            using (var operation = _log.OnEnterAndConfirmOnExit())
             {
                 await EnsureInitializedAndNotDisposed(budget);
                 request = await _transformer.TransformAsync(request, budget);

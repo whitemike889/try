@@ -11,19 +11,20 @@ namespace MLS.Agent.Tools
 {
     public class OmniSharp
     {
-        private readonly Logger Log = new Logger(nameof(OmniSharp));
-
         protected AsyncLazy<FileInfo> _omniSharp { get; }
 
         private readonly DirectoryInfo _omniSharpInstallFolder;
         private readonly string _version;
 
         private static readonly ConcurrentDictionary<string, OmniSharp> _cache = new ConcurrentDictionary<string, OmniSharp>();
+        private readonly Logger _log;
         private const string DefaultVersion = "v1.29.0-beta1";
 
         public OmniSharp(string version)
         {
             _version = version ?? throw new ArgumentNullException(nameof(version));
+
+            _log = new Logger($"{nameof(OmniSharp)}:{_version}");
 
             var environmentVariable = Environment.GetEnvironmentVariable("TRYDOTNET_OMNISHARP_PATH");
 
@@ -39,7 +40,7 @@ namespace MLS.Agent.Tools
 
             async Task<FileInfo> CheckInstallationAndAcquireIfNeeded()
             {
-                using (Log.OnEnterAndExit())
+                using (_log.OnEnterAndExit())
                 {
                     FileInfo fileInfo;
 
@@ -65,7 +66,7 @@ namespace MLS.Agent.Tools
                         throw new OmniSharpNotFoundException("Failed to locate or acquire OmniSharp.");
                     }
 
-                    Log.Info("Using OmniSharp at {path}", fileInfo);
+                    _log.Info("Using OmniSharp at {path}", fileInfo);
 
                     return fileInfo;
                 }
@@ -92,7 +93,7 @@ namespace MLS.Agent.Tools
             if (!omniSharpRunScript.Exists)
             {
 #if DEBUG
-                using (var operation = Log.OnEnterAndConfirmOnExit())
+                using (var operation = _log.OnEnterAndConfirmOnExit())
                 {
                     var downloadUri = new Uri($@"https://github.com/OmniSharp/omnisharp-roslyn/releases/download/{_version}/{file}");
 
@@ -116,8 +117,8 @@ namespace MLS.Agent.Tools
                     operation.Succeed();
                 }                
 #else
-            Log.Error($"Omnisharp not found at {omniSharpRunScript.FullName}");
-            throw new InvalidOperationException($"Omnisharp not found at {omniSharpRunScript.FullName}");
+                _log.Error($"Omnisharp not found at {omniSharpRunScript.FullName}");
+                throw new InvalidOperationException($"Omnisharp not found at {omniSharpRunScript.FullName}");
 #endif
             }
 
@@ -134,7 +135,7 @@ namespace MLS.Agent.Tools
             if (!omniSharpExe.Exists)
             {
 #if DEBUG
-                using (var operation = Log.OnEnterAndConfirmOnExit())
+                using (var operation = _log.OnEnterAndConfirmOnExit())
                 {
                     var zipFile = await Download(new Uri($@"https://github.com/OmniSharp/omnisharp-roslyn/releases/download/{_version}/{file}"));
 
@@ -154,8 +155,8 @@ namespace MLS.Agent.Tools
                     operation.Succeed();                    
                 }
 #else
-            Log.Error($"Omnisharp not found at {omniSharpExe.FullName}");
-            throw new InvalidOperationException($"Omnisharp not found at {omniSharpExe.FullName}");
+                _log.Error($"Omnisharp not found at {omniSharpExe.FullName}");
+                throw new InvalidOperationException($"Omnisharp not found at {omniSharpExe.FullName}");
 #endif
             }
 

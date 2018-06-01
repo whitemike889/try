@@ -4,7 +4,6 @@ using Clockwise;
 using System.Linq;
 using System.Threading.Tasks;
 using Pocket;
-using static Pocket.Logger<MLS.Agent.Tools.Workspace>;
 
 namespace MLS.Agent.Tools
 {
@@ -30,7 +29,7 @@ namespace MLS.Agent.Tools
                 DefaultWorkspacesDirectory.Create();
             }
 
-            Log.Info("Workspaces path is {DefaultWorkspacesDirectory}", DefaultWorkspacesDirectory);
+            Logger<Workspace>.Log.Info("Workspaces path is {DefaultWorkspacesDirectory}", DefaultWorkspacesDirectory);
         }
 
         private readonly IWorkspaceInitializer _initializer;
@@ -41,6 +40,7 @@ namespace MLS.Agent.Tools
         private bool? _isWebProject;
         private FileInfo _entryPointAssemblyPath;
         private static string _targetFramework;
+        private readonly Logger _log;
 
         public DateTimeOffset? ConstructionTime { get; }
         public DateTimeOffset? CreationTime { get; private set; }
@@ -68,6 +68,7 @@ namespace MLS.Agent.Tools
             _created = new AsyncLazy<bool>(VerifyOrCreate);
             _built = new AsyncLazy<bool>(VerifyOrBuild);
             _published = new AsyncLazy<bool>(VerifyOrPublish);
+            _log = new Logger($"{nameof(Workspace)}:{Name}");
         }
 
         private bool IsDirectoryCreated { get; set; }
@@ -132,7 +133,7 @@ namespace MLS.Agent.Tools
 
         private async Task<bool> VerifyOrCreate()
         {
-            using (var operation = Log.OnEnterAndConfirmOnExit())
+            using (var operation = _log.OnEnterAndConfirmOnExit())
             {
                 if (!IsDirectoryCreated)
                 {
@@ -177,7 +178,7 @@ namespace MLS.Agent.Tools
 
         private async Task<bool> VerifyOrBuild()
         {
-            using (var operation = Log.OnEnterAndConfirmOnExit())
+            using (var operation = _log.OnEnterAndConfirmOnExit())
             {
                 if (!IsBuilt)
                 {
@@ -186,14 +187,10 @@ namespace MLS.Agent.Tools
                     {
                         operation.Info("Building workspace using {_initializer} in {directory}", _initializer, Directory);
                         var result = await new Dotnet(Directory)
-                            .Build(
-                                args: "--no-dependencies");
+                                         .Build(args: "--no-dependencies");
                         result.ThrowOnFailure();
                     }
-                    else
-                    {
-                        operation.Warning("Building workspace without initialiser");
-                    }
+
                     IsBuilt = true;
                     BuildTime = Clock.Current.Now();
                 }
@@ -201,6 +198,7 @@ namespace MLS.Agent.Tools
                 {
                     operation.Info("Workspace already built");
                 }
+
                 operation.Succeed();
                 operation.Info("Workspace built");
             }
@@ -218,7 +216,7 @@ namespace MLS.Agent.Tools
 
         private async Task<bool> VerifyOrPublish()
         {
-            using (var operation = Log.OnEnterAndConfirmOnExit())
+            using (var operation = _log.OnEnterAndConfirmOnExit())
             {
                 if (!IsPublished)
                 {
@@ -229,10 +227,6 @@ namespace MLS.Agent.Tools
                         var result = await new Dotnet(Directory)
                             .Publish("--no-dependencies --no-restore");
                         result.ThrowOnFailure();
-                    }
-                    else
-                    {
-                        operation.Warning("publish directory not found");
                     }
 
                     IsPublished = true;
