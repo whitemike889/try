@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reactive.Linq;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using OmniSharp.Client.Commands;
 using OmniSharp.Client.Events;
@@ -28,40 +29,47 @@ namespace OmniSharp.Client
 
         public static OmniSharpMessage DeserializeOmniSharpMessage(string json)
         {
-            var envelope = json.FromJsonTo<MessageEnvelope>();
-
-            if (envelope.Type == "event")
+            try
             {
-                if (eventDeserializers.TryGetValue(envelope.Event, out var deserialize
+                var envelope = json.FromJsonTo<MessageEnvelope>();
+
+                if (envelope.Type == "event")
+                {
+                    if (eventDeserializers.TryGetValue(envelope.Event, out var deserialize
                     ))
-                {
-                    return deserialize(envelope);
+                    {
+                        return deserialize(envelope);
+                    }
+                    else
+                    {
+                        return new OmniSharpUnknownEventMessage(
+                            envelope.Body,
+                            envelope.Event,
+                            envelope.Seq);
+                    }
                 }
-                else
+
+                if (envelope.Type == "response")
                 {
-                    return new OmniSharpUnknownEventMessage(
-                        envelope.Body,
-                        envelope.Event,
-                        envelope.Seq);
+                    if (responseDeserializers.TryGetValue(envelope.Command, out var deserialize))
+                    {
+                        return deserialize(envelope);
+                    }
+                    else
+                    {
+                        return new OmniSharpUnknownResponseMessage(
+                            envelope.Body,
+                            envelope.Success,
+                            envelope.Message,
+                            envelope.Command,
+                            envelope.Seq,
+                            envelope.Request_seq);
+                    }
                 }
             }
-
-            if (envelope.Type == "response")
+            catch (JsonReaderException exception)
             {
-                if (responseDeserializers.TryGetValue(envelope.Command, out var deserialize))
-                {
-                    return deserialize(envelope);
-                }
-                else
-                {
-                    return new OmniSharpUnknownResponseMessage(
-                        envelope.Body,
-                        envelope.Success,
-                        envelope.Message,
-                        envelope.Command,
-                        envelope.Seq,
-                        envelope.Request_seq);
-                }
+                throw new OmniSharpMessageSerializationException($"Could not deserialize json:\n{json}", exception);
             }
 
             throw new OmniSharpMessageSerializationException($"Unknown message type: {json}");

@@ -65,7 +65,6 @@ dotnet test $REPO_ROOT/MLS.LanguageServices.Integration.Tests/MLS.LanguageServic
 
 docker push $DOCKER_REPOSITORY_SERVER/$IMAGE_NAME:latest
 
-
 restart_appservice "trydotnetagent"
 
 restart_appservice "trydotnetlanguageservices"

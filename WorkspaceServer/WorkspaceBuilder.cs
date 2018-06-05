@@ -4,6 +4,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Clockwise;
 using MLS.Agent.Tools;
+using Pocket;
 
 namespace WorkspaceServer
 {
@@ -13,6 +14,8 @@ namespace WorkspaceServer
 
         private readonly List<Func<Workspace, Budget, Task>> _afterCreateActions = new List<Func<Workspace, Budget, Task>>();
 
+        private readonly Logger _log;
+
         public WorkspaceBuilder(string workspaceName)
         {
             if (string.IsNullOrWhiteSpace(workspaceName))
@@ -21,6 +24,8 @@ namespace WorkspaceServer
             }
 
             WorkspaceName = workspaceName;
+
+            _log = new Logger($"{nameof(WorkspaceBuilder)}:{workspaceName}");
         }
 
         public string WorkspaceName { get; }
@@ -50,25 +55,48 @@ namespace WorkspaceServer
             {
                 await PrepareWorkspace(budget);
             }
-
+            budget?.RecordEntry();
             return _workspace;
+        }
+
+        public WorkspaceInfo GetWorkpaceInfo()
+        {
+            WorkspaceInfo info = null;
+            if (_workspace != null)
+            {
+                info = new WorkspaceInfo(
+                    _workspace.Name,
+                    _workspace.BuildTime,
+                    _workspace.ConstructionTime,
+                    _workspace.PublicationTime,
+                    _workspace.CreationTime,
+                    _workspace.ReadyTime
+                );
+            }
+
+            return info;
         }
 
         private async Task PrepareWorkspace(Budget budget = null)
         {
             budget = budget ?? new Budget();
-
-            _workspace = new Workspace(
-                WorkspaceName, 
-                WorkspaceInitializer);
-
-            await _workspace.EnsureCreated(budget);
-
-            await _workspace.EnsureBuilt(budget);
-
-            if (RequiresPublish)
+            using (var operation = _log.OnEnterAndConfirmOnExit())
             {
-                await _workspace.EnsurePublished(budget);
+                _workspace = new Workspace(
+                    WorkspaceName,
+                    WorkspaceInitializer);
+
+                await _workspace.EnsureCreated(budget);
+
+                await _workspace.EnsureBuilt(budget);
+
+                if (RequiresPublish)
+                {
+                    await _workspace.EnsurePublished(budget);
+                }
+
+                budget.RecordEntry();
+                operation.Succeed();
             }
         }
 

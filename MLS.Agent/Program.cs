@@ -7,16 +7,15 @@ using Pocket;
 using System.Threading.Tasks;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.Extensibility;
-using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using MLS.Agent.Controllers;
 using MLS.Agent.Tools;
 using Pocket.For.ApplicationInsights;
 using Recipes;
 using Serilog.Sinks.RollingFileAlternate;
 using WorkspaceServer.Servers.Dotnet;
 using SerilogLoggerConfiguration = Serilog.LoggerConfiguration;
-using WorkspaceServer;
 
 namespace MLS.Agent
 {
@@ -106,7 +105,7 @@ namespace MLS.Agent
             {
                 Log.Info("Received Key: {key}", options.Key);
             }
-
+          
             var webHost = new WebHostBuilder()
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
@@ -117,6 +116,7 @@ namespace MLS.Agent
                         c.AddApplicationInsightsTelemetry(options.ApplicationInsightsKey);
                     }
                     c.AddSingleton(options);
+                    c.AddSingleton(new AgentOptions(options.IsLanguageService));
                 })
                 .UseEnvironment(options.IsProduction
                                       ? EnvironmentName.Production

@@ -7,5 +7,9 @@ namespace OmniSharp.Client
         public OmniSharpMessageSerializationException(string message) : base(message)
         {
         }
+
+        public OmniSharpMessageSerializationException(string message, Exception innerException) : base(message, innerException)
+        {
+        }
     }
 }

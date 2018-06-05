@@ -13,7 +13,6 @@ using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Models.SingatureHelp;
 using WorkspaceServer.Transformations;
 using WorkspaceServer.WorkspaceFeatures;
-using static Pocket.Logger<WorkspaceServer.Servers.Dotnet.DotnetWorkspaceServer>;
 using static WorkspaceServer.Transformations.OmniSharpDiagnosticTransformer;
 using Workspace = MLS.Agent.Tools.Workspace;
 using OmnisharpEmitResponse = OmniSharp.Client.Commands.OmniSharpResponseMessage<OmniSharp.Client.Commands.EmitResponse>;
@@ -30,6 +29,7 @@ namespace WorkspaceServer.Servers.Dotnet
         private readonly TimeSpan _defaultTimeoutInSeconds;
         private readonly BufferInliningTransformer _transformer = new BufferInliningTransformer();
         private ImmutableHashSet<FileInfo> _bufferNameCache = ImmutableHashSet<FileInfo>.Empty;
+        private readonly Logger _log;
 
         public static string UserCodeCompletedBudgetEntryName = "UserCodeCompleted";
         
@@ -46,18 +46,28 @@ namespace WorkspaceServer.Servers.Dotnet
                 Paths.EmitPlugin,
                 logToPocketLogger: false);
 
-            _initialized = new AsyncLazy<bool>(async () =>
+            _log = new Logger($"{nameof(DotnetWorkspaceServer)}:{_workspace.Name}");
+
+            _initialized = new AsyncLazy<bool>(async () => await Initialize());
+        }
+
+
+        private async Task<bool> Initialize()
+        {
+            using (var operation = _log.OnEnterAndConfirmOnExit())
             {
                 await _workspace.EnsureBuilt(_initializationBudget);
                 await _omniSharpServer.WorkspaceReady(_initializationBudget);
-                return true;
-            });
+                _workspace.ReadyTime = Clock.Current.Now();
+                _initializationBudget.RecordEntry();
+                operation.Succeed();
+            }
+
+            return true;
         }
 
         public async Task EnsureInitializedAndNotDisposed(Budget budget = null)
         {
-            budget?.RecordEntryAndThrowIfBudgetExceeded();
-
             if (_disposed)
             {
                 throw new ObjectDisposedException(nameof(DotnetWorkspaceServer));
@@ -65,13 +75,14 @@ namespace WorkspaceServer.Servers.Dotnet
 
             await _initialized.ValueAsync()
                               .CancelIfExceeds(budget ?? new Budget());
+            budget?.RecordEntryAndThrowIfBudgetExceeded();
         }
 
         public async Task<RunResult> Run(Models.Execution.Workspace workspace, Budget budget = null)
         {
             budget = budget ?? new TimeBudget(_defaultTimeoutInSeconds);
 
-            using (var operation = Log.OnEnterAndConfirmOnExit())
+            using (var operation = _log.OnEnterAndConfirmOnExit())
             {
                 await EnsureInitializedAndNotDisposed(budget);
 
@@ -208,30 +219,30 @@ namespace WorkspaceServer.Servers.Dotnet
         {
             budget = budget ?? new TimeBudget(_defaultTimeoutInSeconds);
 
-            using (var operation = Log.OnEnterAndConfirmOnExit())
+            using (var operation = _log.OnEnterAndConfirmOnExit())
             {
                 await EnsureInitializedAndNotDisposed(budget);
                 var (file, code, line, column, absolutePosition) = await TransformWorkspaceAndPreparePositionalRequest(request, budget);
                 var wordToComplete = code.GetWordAt(absolutePosition);
                 var response = (await _omniSharpServer.GetCompletionList(file, code, wordToComplete, line, column, budget)).ToCompletionResult();
-                budget.RecordEntry();
+                budget?.RecordEntryAndThrowIfBudgetExceeded();
                 operation.Succeed();
                 return response;
             }
+
         }
 
         public async Task<SignatureHelpResponse> GetSignatureHelp(WorkspaceRequest request, Budget budget = null)
         {
             budget = budget ?? new TimeBudget(_defaultTimeoutInSeconds);
 
-            using (var operation = Log.OnEnterAndConfirmOnExit())
+            using (var operation = _log.OnEnterAndConfirmOnExit())
             {
                 await EnsureInitializedAndNotDisposed(budget);
                 var (file,code,line,column,_) = await TransformWorkspaceAndPreparePositionalRequest(request, budget);
                 var response = await _omniSharpServer.GetSignatureHelp(file, code, line, column, budget);
-
                 response = response?.ProcessDocumentation() ?? new SignatureHelpResponse();
-                budget.RecordEntry();
+                budget?.RecordEntryAndThrowIfBudgetExceeded();
                 operation.Succeed();
                 return response;
             }
@@ -253,7 +264,7 @@ namespace WorkspaceServer.Servers.Dotnet
         {
             budget = budget ?? new TimeBudget(_defaultTimeoutInSeconds);
           
-            using (var operation = Log.OnEnterAndConfirmOnExit())
+            using (var operation = _log.OnEnterAndConfirmOnExit())
             {
                 await EnsureInitializedAndNotDisposed(budget);
                 request = await _transformer.TransformAsync(request, budget);
@@ -270,7 +281,7 @@ namespace WorkspaceServer.Servers.Dotnet
                     diagnostics = emitResponse.Body.Diagnostics.Select(d => new SerializableDiagnostic(d)).ToArray();
                 }
                 var result = new DiagnosticResult(diagnostics);
-                budget.RecordEntry();
+                budget?.RecordEntryAndThrowIfBudgetExceeded();
                 operation.Succeed();
                 return result;
             }
