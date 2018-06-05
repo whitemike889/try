@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -10,35 +12,68 @@ namespace Recipes
     {
         public static async Task<T> DeserializeAs<T>(this HttpResponseMessage response)
         {
-            var json = await response.Content.ReadAsStringAsync();
-            PropertyNamesAreCamelCase(JObject.Parse(json));
+             var json = await response.Content.ReadAsStringAsync();
+            if (!string.IsNullOrWhiteSpace(json))
+            {
+                PropertyNamesAreCamelCase(JToken.Parse(json));
+            }
             return JsonConvert.DeserializeObject<T>(json);
+        }
+
+        private static void PropertyNamesAreCamelCase(JToken source)
+        {
+            switch (source)
+            {
+                case JObject o:
+                    PropertyNamesAreCamelCase(o);
+                    break;
+            }
         }
 
         private static void PropertyNamesAreCamelCase(JObject source)
         {
-            if (source == null)
+            if (source == null || !source.HasValues)
             {
                 return;
             }
 
-            foreach (var property in source.Properties())
+            var toCheck = new Queue<JObject>();
+
+            toCheck.Enqueue(source);
+
+            while (toCheck.Count > 0)
             {
-                property.Name.Should().MatchRegex(@"^[a-z].*", "property names should be camel case");
-                if (property.Value.Type == JTokenType.Object)
+                var current = toCheck.Dequeue();
+                if (current == null || !source.HasValues)
                 {
-                    PropertyNamesAreCamelCase(source);
+                   continue;
                 }
-                else if (property.Value.Type == JTokenType.Array)
+
+                var properties = current.Properties().ToList();
+                foreach (var property in properties)
                 {
-                    foreach (var element in property.Value.Value<JArray>())
+                    property.Name.Should().MatchRegex(@"^(([a-z])|(\W*))(.*)", "property names should be camel case");
+                }
+
+                foreach (var property in properties)
+                {
+                    switch (property.Value.Type)
                     {
-                        if (element.Type == JTokenType.Object)
-                        {
-                            PropertyNamesAreCamelCase(element as JObject);
-                        }
+                        case JTokenType.Object:
+                            toCheck.Enqueue(property.Value.Value<JObject>());
+                            break;
+                        case JTokenType.Array:
+                            foreach (var element in property.Value.Value<JArray>())
+                            {
+                                if (element.Type == JTokenType.Object)
+                                {
+                                    toCheck.Enqueue(element as JObject);
+                                }
+                            }
+                            break;
                     }
                 }
+
             }
         }
     }

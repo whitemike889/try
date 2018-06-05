@@ -22,11 +22,12 @@ namespace MLS.Agent.Integration.Tests
         [ClassData(typeof(AgentTestsDiscovery))]
         public async Task The_peaky_test_passes(Uri url)
         {
+             await Task.Delay(10000);
             var result = await _peakyClient.GetResultFor(url);
 
             if (!result.Passed)
             {
-                await Task.Delay(45000);
+                await Task.Delay(60000);
                 result = await _peakyClient.GetResultFor(url);
             }
 

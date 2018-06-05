@@ -22,6 +22,8 @@ ENV ASPNETCORE_URLS=http://+:4242
 EXPOSE 4242
 COPY . ./
 
+RUN mkdir -p /dependencies/.nuget/packages && cp -r /root/.nuget/packages/ /dependencies/.nuget/packages
+
 RUN chown --recursive app_user:app_group /app
 RUN chown --recursive app_user:app_group /dependencies
 RUN chown --recursive app_user:app_group /workspaces

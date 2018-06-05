@@ -18,39 +18,57 @@ namespace MLS.Agent
 
         private readonly HttpClient _httpClient = new HttpClient
         {
-            BaseAddress = new Uri("http://127.0.0.1:4242")
+            BaseAddress = new Uri("http://localhost:4242")
         };
 
         public Warmup(WorkspaceServerRegistry workspaceServerRegistry)
         {
-            this._workspaceServerRegistry = workspaceServerRegistry ??
-                                           throw new ArgumentNullException(nameof(workspaceServerRegistry));
+            _workspaceServerRegistry = workspaceServerRegistry ??
+                                       throw new ArgumentNullException(nameof(workspaceServerRegistry));
         }
 
         protected override async Task ExecuteAsync(Budget budget)
         {
-            await WarmUpRoutes();
-
             await _workspaceServerRegistry.StartAllServers(budget);
+
+            await WarmUpRoutes();
         }
 
         private async Task WarmUpRoutes()
         {
-            using (Log.OnEnterAndExit())
+            using (var operation = Log.OnEnterAndExit())
             {
                 await _httpClient.GetAsync("/sensors/version");
 
-                await Post("/workspace/run",
-                           new WorkspaceRequest(
-                               new Workspace(
-                                   buffers: new[]
-                                   {
-                                       new Workspace.Buffer("Program.cs", "Console.WriteLine(42);", 0)
-                                   })));
+                await WarmpUpRoute("/workspace/run");
+                await WarmpUpRoute("/workspace/completion");
+                await WarmpUpRoute("/workspace/diagnostics");
+                await WarmpUpRoute("/workspace/signaturehelp");
+
+                async Task WarmpUpRoute(string relativeUri)
+                {
+                    const string code = "Console.WriteLine(42);";
+
+                    var workspaceRequest = new WorkspaceRequest(
+                        activeBufferId: "Program.cs",
+                        workspace: new Workspace(
+                            bufferid: "Program.cs",
+                            position: 0,
+                            workspaceType: "console",
+                            buffers: new[]
+                            {
+                                new Workspace.Buffer("Program.cs", code, 0)
+                            }));
+
+                    var response = await Post(relativeUri,
+                                              workspaceRequest);
+
+                    operation.Info("WarmUp response from {relativeUri} {response}", relativeUri, response);
+                }
             }
         }
 
-        private async Task Post(string relativeUri, WorkspaceRequest workspaceRequest) =>
+        private async Task<HttpResponseMessage> Post(string relativeUri, WorkspaceRequest workspaceRequest) =>
             await _httpClient.PostAsync(
                 relativeUri,
                 new StringContent(

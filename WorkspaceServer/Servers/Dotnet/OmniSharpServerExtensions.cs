@@ -45,7 +45,7 @@ namespace WorkspaceServer.Servers.Dotnet
             }
 
             await omniSharp.WorkspaceReady(budget);
-
+            
             var json = commandMessage.ToJson(new JsonSerializerSettings
             {
                 NullValueHandling = NullValueHandling.Ignore
@@ -60,7 +60,7 @@ namespace WorkspaceServer.Servers.Dotnet
                                           .FirstAsync()
                                           .ToTask()
                                           .CancelIfExceeds(budget ?? new Budget());
-
+            budget?.RecordEntry();
             return received;
         }
 

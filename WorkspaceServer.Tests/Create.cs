@@ -1,6 +1,7 @@
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using MLS.Agent.Tools;
+using MLS.TestSupport;
 using Recipes;
 using Workspace = MLS.Agent.Tools.Workspace;
 
@@ -52,7 +53,7 @@ namespace WorkspaceServer.Tests
 
         public static string SimpleConsoleAppCodeWithoutNamespaces(string consoleOutput)
         {
-            return $@"
+            var code =  $@"
 using System;
 
 public static class Hello
@@ -62,6 +63,7 @@ public static class Hello
         Console.WriteLine(""{consoleOutput}"");
     }}
 }}";
+            return CodeManipulation.EnforceLF(code);
         }
     }
 }

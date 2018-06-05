@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Linq;
 using FluentAssertions;
 using System.Net;
@@ -6,6 +7,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Clockwise;
+using MLS.TestSupport;
 using Newtonsoft.Json;
 using Pocket;
 using Recipes;
@@ -23,15 +25,15 @@ namespace MLS.Agent.Tests
 {
     public class ApiViaHttpTests : IDisposable
     {
-        private readonly CompositeDisposable disposables = new CompositeDisposable();
+        private readonly CompositeDisposable _disposables = new CompositeDisposable();
 
         public ApiViaHttpTests(ITestOutputHelper output)
         {
-            disposables.Add(output.SubscribeToPocketLogger());
-            disposables.Add(VirtualClock.Start());
+            _disposables.Add(output.SubscribeToPocketLogger());
+            _disposables.Add(VirtualClock.Start());
         }
 
-        public void Dispose() => disposables.Dispose();
+        public void Dispose() => _disposables.Dispose();
 
         [Fact]
         public async Task The_workspace_snippet_endpoint_compiles_code_using_scripting_when_a_workspace_type_is_not_specified()
@@ -39,7 +41,7 @@ namespace MLS.Agent.Tests
             var output = Guid.NewGuid().ToString();
             var code = JsonConvert.SerializeObject(new
             {
-                Buffer = $@"Console.WriteLine(""{output}"");"
+                Buffer = CodeManipulation.EnforceLF($@"Console.WriteLine(""{output}"");")
             });
 
             var response = await CallRun(code);
@@ -59,7 +61,7 @@ namespace MLS.Agent.Tests
             var output = Guid.NewGuid().ToString();
             var code = JsonConvert.SerializeObject(new
             {
-                Source = $@"Console.WriteLine(""{output}"");"
+                Source = CodeManipulation.EnforceLF($@"Console.WriteLine(""{output}"");")
             });
 
             var response = await CallRun(code);
@@ -79,7 +81,7 @@ namespace MLS.Agent.Tests
             var output = Guid.NewGuid().ToString();
             var requestJson = JsonConvert.SerializeObject(new
             {
-                Buffer = $@"Console.WriteLine(""{output}"");",
+                Buffer = CodeManipulation.EnforceLF($@"Console.WriteLine(""{output}"");"),
                 WorkspaceType = "script"
             });
 
@@ -112,11 +114,23 @@ namespace MLS.Agent.Tests
         }
 
         [Fact]
+        public async Task The_workspace_endpoint_will_prevent_compiling_if_is_in_language_service_mode()
+        {
+            var output = Guid.NewGuid().ToString();
+            var requestJson = Create.SimpleWorkspaceAsJson(output, "console");
+
+            var response = await CallRun(requestJson, options: new CommandLineOptions(true, false,string.Empty,false,true,string.Empty, Array.Empty<string>()));
+
+            var result = response;
+                result.Should().BeNotFound();
+        }
+
+        [Fact]
         public async Task When_a_non_script_workspace_type_is_specified_then_code_fragments_cannot_be_compiled_successfully()
         {
             var requestJson = JsonConvert.SerializeObject(new
             {
-                Buffer = @"Console.WriteLine(""hello!"");",
+                Buffer = CodeManipulation.EnforceLF(@"Console.WriteLine(""hello!"");"),
                 WorkspaceType = "console"
             });
 
@@ -147,7 +161,7 @@ namespace MLS.Agent.Tests
                     Content = new StringContent(
                         JsonConvert.SerializeObject(new
                         {
-                            Buffer = $@"Console.WriteLine(""{output}"""
+                            Buffer = CodeManipulation.EnforceLF($@"Console.WriteLine(""{output}""")
                         }),
                         Encoding.UTF8,
                         "application/json")
@@ -189,6 +203,7 @@ namespace MLS.Agent.Tests
         [Fact]
         public async Task When_they_load_a_snippet_then_they_can_use_the_workspace_endpoint_to_get_completions()
         {
+            var (processed, position) = CodeManipulation.ProcessMarkup("Console.$$");
             using (var agent = new AgentService())
             {
                 var request = new HttpRequestMessage(
@@ -198,8 +213,14 @@ namespace MLS.Agent.Tests
                     Content = new StringContent(
                         JsonConvert.SerializeObject(new
                         {
-                            workspace = new { workspaceType = "script", buffers = new[] { new { content = "Console.", id = "default.cs" } } },
-                            position = 8,
+                            workspace = new
+                            {
+                                workspaceType = "script", buffers = new[]
+                                {
+                                    new { content = processed, id = "default.cs" }
+                                }
+                            },
+                            position = position,
                             activeBufferId = "default.cs"
                         }),
                         Encoding.UTF8,
@@ -219,17 +240,23 @@ namespace MLS.Agent.Tests
         [Fact]
         public async Task When_they_load_a_snippet_then_they_can_use_the_workspace_endpoint_to_get_signature_help()
         {
+            var log = new LogEntryList();
+            var (processed, position) = CodeManipulation.ProcessMarkup("Console.WriteLine($$)");
+            using (LogEvents.Subscribe(log.Add))
             using (var agent = new AgentService())
             {
-                var request = new HttpRequestMessage(
-                    HttpMethod.Post,
-                    @"/workspace/signaturehelp")
+                var request = new HttpRequestMessage(HttpMethod.Post, @"/workspace/signaturehelp")
                 {
                     Content = new StringContent(
                         JsonConvert.SerializeObject(new
                         {
-                            workspace = new { workspaceType = "script", buffers = new[] { new { content = "Console.WriteLine()", id = "default.cs" } } },
-                            position = 18,
+                            workspace = new
+                            {
+                                workspaceType = "script",
+                                buffers = new[] { new { content = processed,
+                                    id = "default.cs" } }
+                            },
+                            position = position,
                             activeBufferId = "default.cs"
                         }),
                         Encoding.UTF8,
@@ -244,6 +271,9 @@ namespace MLS.Agent.Tests
                 result.Signatures.Should().NotBeNullOrEmpty();
                 result.Signatures.Should().Contain(signature => signature.Label == "void Console.WriteLine(string format, params object[] arg)");
             }
+
+            log.Should()
+                .Contain(e => e.OperationName == "SignatureHelp");
         }
 
         [Fact]
@@ -280,17 +310,16 @@ namespace FibonacciTest
             {
                 yield return current;
                 next = current + (current = next);
-                Console.WriteLine();
+                Console.WriteLine($$);
             }
         }
     }
 }";
-
-            const string consoleWriteline = @"                Console.WriteLine(";
             #endregion
 
-            var position = generator.IndexOf(consoleWriteline, StringComparison.Ordinal) + consoleWriteline.Length;
-
+            var (processed, position) = CodeManipulation.ProcessMarkup(generator);
+            var log = new LogEntryList();
+            using (LogEvents.Subscribe(log.Add))
             using (var agent = new AgentService())
             {
                 var request = new HttpRequestMessage(
@@ -305,8 +334,8 @@ namespace FibonacciTest
                                 workspaceType = "console",
                                 buffers = new[]
                             {
-                                new { content = program, id = "Program.cs" },
-                                new { content = generator, id = "generators/FibonacciGenerator.cs" }
+                                new { content = CodeManipulation.EnforceLF(program), id = "Program.cs" },
+                                new { content = processed, id = "generators/FibonacciGenerator.cs" }
                             }
                             },
                             position = position,
@@ -324,6 +353,8 @@ namespace FibonacciTest
                 result.Signatures.Should().NotBeNullOrEmpty();
                 result.Signatures.Should().Contain(signature => signature.Label == "void Console.WriteLine(string format, params object[] arg)");
             }
+            log.Should()
+                .Contain(e => e.OperationName == "SignatureHelp");
         }
 
         [Fact]
@@ -360,17 +391,17 @@ namespace FibonacciTest
             {
                 yield return current;
                 next = current + (current = next);
-                Cons
+                Cons$$
             }
         }
     }
 }";
 
-            const string consoleWriteline = @"                Cons";
             #endregion
 
-            var position = generator.IndexOf(consoleWriteline, StringComparison.Ordinal) + consoleWriteline.Length;
-
+            var (processed, position) = CodeManipulation.ProcessMarkup(generator);
+            var log = new LogEntryList();
+            using (LogEvents.Subscribe(log.Add))
             using (var agent = new AgentService())
             {
                 var request = new HttpRequestMessage(
@@ -385,8 +416,8 @@ namespace FibonacciTest
                                 workspaceType = "console",
                                 buffers = new[]
                             {
-                                new { content = program, id = "Program.cs" },
-                                new { content = generator, id = "generators/FibonacciGenerator.cs" }
+                                new { content = CodeManipulation.EnforceLF(program), id = "Program.cs" },
+                                new { content = processed, id = "generators/FibonacciGenerator.cs" }
                             }
                             },
                             position = position,
@@ -403,6 +434,8 @@ namespace FibonacciTest
                     .DeserializeAs<CompletionResult>();
                 result.Items.Should().NotBeNullOrEmpty();
                 result.Items.Should().Contain(completion => completion.SortText == "Console");
+                log.Should()
+                    .Contain(e => e.OperationName == "Completion");
             }
         }
 
@@ -440,17 +473,16 @@ namespace FibonacciTest
             {
                 yield return current;
                 next = current + (current = next);
-                Console.
+                Console.$$
             }
         }
     }
 }";
-
-            const string consoleWriteline = @"                Console.";
             #endregion
 
-            var position = generator.IndexOf(consoleWriteline, StringComparison.Ordinal) + consoleWriteline.Length;
-
+            var (processed, position) = CodeManipulation.ProcessMarkup(generator);
+            var log = new LogEntryList();
+            using (LogEvents.Subscribe(log.Add))
             using (var agent = new AgentService())
             {
                 var request = new HttpRequestMessage(
@@ -465,8 +497,8 @@ namespace FibonacciTest
                                 workspaceType = "console",
                                 buffers = new[]
                             {
-                                new { content = program, id = "Program.cs" },
-                                new { content = generator, id = "generators/FibonacciGenerator.cs" }
+                                new { content = CodeManipulation.EnforceLF(program), id = "Program.cs" },
+                                new { content = processed, id = "generators/FibonacciGenerator.cs" }
                             }
                             },
                             position = position,
@@ -484,6 +516,8 @@ namespace FibonacciTest
                 result.Items.Should().NotBeNullOrEmpty();
                 result.Items.Should().Contain(completion => completion.SortText == "Beep");
             }
+            log.Should()
+                .Contain(e => e.OperationName == "Completion");
         }
 
         [Fact]
@@ -507,7 +541,7 @@ namespace FibonacciTest
         public async Task When_invoked_with_script_workspace_request_it_executes_correctly()
         {
             var output = "1";
-            var sourceCode = @"using System;
+            var sourceCode = CodeManipulation.EnforceLF( @"using System;
 using System.Linq;
 
 public class Program {
@@ -524,7 +558,7 @@ public class Program {
             next = current + (current = next);
         }
     }
-}";
+}");
             var request = new WorkspaceRequest(new Workspace(workspaceType: "script", buffers: new[] { new Workspace.Buffer(string.Empty, sourceCode, 0) }));
 
             var response = await CallRun(request);
@@ -656,10 +690,11 @@ public class Program {
 
         private static async Task<HttpResponseMessage> CallRun(
             string content,
-            int? runTimeoutMs = null)
+            int? runTimeoutMs = null, 
+            CommandLineOptions options = null)
         {
             HttpResponseMessage response;
-            using (var agent = new AgentService())
+            using (var agent = new AgentService(options))
             {
                 var request = new HttpRequestMessage(
                     HttpMethod.Post,
