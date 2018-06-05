@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
@@ -118,8 +119,10 @@ namespace WorkspaceServer.Servers.Dotnet
 
         public static Task<OmniSharpResponseMessage<EmitResponse>> Emit(
             this OmniSharpServer server,
+            IEnumerable<InstrumentationRegionMap> instrumentationRegions = null,
+            bool includeInstrumentation = false,
             Budget budget = null) =>
-            server.SendCommand<Emit, EmitResponse>(new Emit(), budget);
+            server.SendCommand<Emit, EmitResponse>(new Emit(includeInstrumentation, instrumentationRegions), budget);
 
         public static Task<OmniSharpResponseMessage<WorkspaceInformationResponse>> GetWorkspaceInformation(
             this OmniSharpServer server,

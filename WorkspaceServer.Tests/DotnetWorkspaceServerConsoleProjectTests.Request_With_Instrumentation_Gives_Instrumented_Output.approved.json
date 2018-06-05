@@ -1,0 +1,6 @@
+﻿{ stackTrace: "Program Started", output: { start: 0, end: 0 } }
+{"filePosition": {"line": 10, "character": 12, "file": "Program.cs"},"stackTrace": "    at FibonacciTest.Program.Main()
+ ","locals" : [ ],"parameters" : [ ],"fields" : [ ], "output": { "start":0, "end":0}}
+{"filePosition": {"line": 11, "character": 12, "file": "Program.cs"},"stackTrace": "    at FibonacciTest.Program.Main()
+ ","locals" : [ {"name": "a", "value": "4", "declaredAt" :{ "start" : 152, "end" : 157 }},],"parameters" : [ ],"fields" : [ ], "output": { "start":0, "end":0}}
+{ stackTrace: "Program Terminated", output: { start: 0, end: 1 } }

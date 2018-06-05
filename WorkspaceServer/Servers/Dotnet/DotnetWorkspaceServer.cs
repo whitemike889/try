@@ -16,6 +16,7 @@ using WorkspaceServer.WorkspaceFeatures;
 using static WorkspaceServer.Transformations.OmniSharpDiagnosticTransformer;
 using Workspace = MLS.Agent.Tools.Workspace;
 using OmnisharpEmitResponse = OmniSharp.Client.Commands.OmniSharpResponseMessage<OmniSharp.Client.Commands.EmitResponse>;
+using System.Collections.Generic;
 
 namespace WorkspaceServer.Servers.Dotnet
 {
@@ -32,7 +33,7 @@ namespace WorkspaceServer.Servers.Dotnet
         private readonly Logger _log;
 
         public static string UserCodeCompletedBudgetEntryName = "UserCodeCompleted";
-        
+
         public DotnetWorkspaceServer(
             Workspace workspace,
             int? defaultTimeoutInSeconds = 30)
@@ -91,12 +92,14 @@ namespace WorkspaceServer.Servers.Dotnet
                 string exceptionMessage = null;
 
                 await CleanBuffer(budget);
-                var emitResponse = await Emit(workspace, budget);
+
+                var emitResponse = await Emit(workspace, _transformer.ExtractViewPorts(workspace), budget);
 
                 var diagnostics = ReconstructDiagnosticLocations(
                     emitResponse.Body.Diagnostics,
                     _transformer.ExtractViewPorts(workspace),
-                    BufferInliningTransformer.PaddingSize).ToArray();
+                    BufferInliningTransformer.PaddingSize
+                ).ToArray();
 
                 if (emitResponse.Body.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error))
                 {
@@ -141,11 +144,13 @@ namespace WorkspaceServer.Servers.Dotnet
                         exceptionMessage = string.Join(Environment.NewLine, commandLineResult.Error);
                     }
 
+                    var outputStreams = InstrumentedOutputExtractor.ExtractOutput(commandLineResult?.Output);
                     runResult = new RunResult(
                         succeeded: true,
-                        output: commandLineResult?.Output,
+                        output: outputStreams.StdOut,
                         exception: exceptionMessage,
-                        diagnostics: diagnostics.Select(d => d.Diagnostic).ToArray());
+                        diagnostics: diagnostics.Select(d => d.Diagnostic).ToArray(),
+                        instrumentation: outputStreams.Instrumentation);
                 }
 
                 operation.Complete(runResult, budget);
@@ -179,11 +184,15 @@ namespace WorkspaceServer.Servers.Dotnet
             budget.RecordEntry();
         }
 
-        private async Task<OmnisharpEmitResponse> Emit(Models.Execution.Workspace workspace, Budget budget)
+        private async Task<OmnisharpEmitResponse> Emit(Models.Execution.Workspace request, Dictionary<string, Viewport> viewports, Budget budget)
         {
-            await UpdateOmnisharpWorkspace(workspace);
-          
-            var emitResponse = await _omniSharpServer.Emit(budget);
+            await UpdateOmnisharpWorkspace(request);
+
+            var instrumentationRegions = viewports.Values
+                .Where(v => v.Destination != null && v.Destination.Name != null)
+                .GroupBy(v => v.Destination.Name, v => v.Region, (name, regions) => new OmniSharp.Client.InstrumentationRegionMap(name, regions));
+
+            var emitResponse = await _omniSharpServer.Emit(instrumentationRegions, request.IncludeInstrumentation, budget);
 
             budget.RecordEntryAndThrowIfBudgetExceeded();
 
@@ -214,7 +223,7 @@ namespace WorkspaceServer.Servers.Dotnet
                 await _omniSharpServer.UpdateBuffer(file, text);
             }
         }
-        
+
         public async Task<CompletionResult> GetCompletionList(WorkspaceRequest request, Budget budget = null)
         {
             budget = budget ?? new TimeBudget(_defaultTimeoutInSeconds);
@@ -239,7 +248,7 @@ namespace WorkspaceServer.Servers.Dotnet
             using (var operation = _log.OnEnterAndConfirmOnExit())
             {
                 await EnsureInitializedAndNotDisposed(budget);
-                var (file,code,line,column,_) = await TransformWorkspaceAndPreparePositionalRequest(request, budget);
+                var (file, code, line, column, _) = await TransformWorkspaceAndPreparePositionalRequest(request, budget);
                 var response = await _omniSharpServer.GetSignatureHelp(file, code, line, column, budget);
                 response = response?.ProcessDocumentation() ?? new SignatureHelpResponse();
                 budget?.RecordEntryAndThrowIfBudgetExceeded();
@@ -248,7 +257,7 @@ namespace WorkspaceServer.Servers.Dotnet
             }
         }
 
-        private async Task<(FileInfo file,string code, int line, int column, int absolutePosition)> TransformWorkspaceAndPreparePositionalRequest(WorkspaceRequest request, Budget budget)
+        private async Task<(FileInfo file, string code, int line, int column, int absolutePosition)> TransformWorkspaceAndPreparePositionalRequest(WorkspaceRequest request, Budget budget)
         {
             var workspace = await _transformer.TransformAsync(request.Workspace, budget);
             await CleanBuffer(budget);
@@ -256,8 +265,8 @@ namespace WorkspaceServer.Servers.Dotnet
             var file = workspace.GetFileInfoFromBufferId(request.ActiveBufferId, _workspace.Directory.FullName);
             var code = workspace.GetFileFromBufferId(request.ActiveBufferId).Text;
             // line and colum are 0 based
-            var (line,column, absolutePosition) = workspace.GetTextLocation(request.ActiveBufferId, request.Position);
-            return (file,code, line, column, absolutePosition);
+            var (line, column, absolutePosition) = workspace.GetTextLocation(request.ActiveBufferId, request.Position);
+            return (file, code, line, column, absolutePosition);
         }
 
         public async Task<DiagnosticResult> GetDiagnostics(Models.Execution.Workspace request, Budget budget = null)
@@ -268,11 +277,11 @@ namespace WorkspaceServer.Servers.Dotnet
             {
                 await EnsureInitializedAndNotDisposed(budget);
                 request = await _transformer.TransformAsync(request, budget);
-                var emitResponse = await Emit(request, new Budget());
+                var viewPorts = _transformer.ExtractViewPorts(request);
+                var emitResponse = await Emit(request, viewPorts, new Budget());
                 SerializableDiagnostic[] diagnostics;
                 if (emitResponse.Body.Diagnostics.Any())
                 {
-                    var viewPorts = _transformer.ExtractViewPorts(request);
                     var processedDiagnostics = ReconstructDiagnosticLocations(emitResponse.Body.Diagnostics, viewPorts, BufferInliningTransformer.PaddingSize).ToArray();
                     diagnostics = processedDiagnostics?.Select(d => d.Diagnostic).ToArray();
                 }

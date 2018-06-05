@@ -28,7 +28,8 @@ namespace WorkspaceServer.Transformations
                 workspaceType: source.WorkspaceType, 
                 files: results.files,
                 buffers: results.buffers,
-                usings: source.Usings);
+                usings: source.Usings,
+                includeInstrumentation: source.IncludeInstrumentation);
         }
 
         public Dictionary<string, Viewport> ExtractViewPorts(Workspace ws)

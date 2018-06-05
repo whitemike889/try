@@ -12,14 +12,15 @@ namespace WorkspaceServer.Models.Execution
         private const string DefaultWorkspaceType = "script";
 
         public Workspace(
-            string buffer = null, // TODO: added for backward comaptibility
-            string source = null, // TODO: added for backward comaptibility
-            string bufferid = null, // TODO: added for backward comaptibility
-            int position = 0,
-            string[] usings = null,
-            File[] files = null,
-            Buffer[] buffers = null,
-            string workspaceType = DefaultWorkspaceType)
+        string buffer = null, // TODO: added for backward comaptibility
+        string source = null, // TODO: added for backward comaptibility
+        string bufferid = null, // TODO: added for backward comaptibility
+        int position = 0,
+        string[] usings = null,
+        File[] files = null,
+        Buffer[] buffers = null,
+        string workspaceType = DefaultWorkspaceType,
+        bool includeInstrumentation = false)
         {
             WorkspaceType = workspaceType ?? DefaultWorkspaceType;
             Usings = usings ?? Array.Empty<string>();
@@ -37,6 +38,7 @@ namespace WorkspaceServer.Models.Execution
                 bufferList.Add(new Buffer(id,code,position));
             }
             Buffers = bufferList;
+            IncludeInstrumentation = includeInstrumentation;
         }
         
         public IReadOnlyCollection<File> Files { get; }
@@ -44,7 +46,9 @@ namespace WorkspaceServer.Models.Execution
         public string[] Usings { get; }
 
         public string WorkspaceType { get; }
-        
+
+        public bool IncludeInstrumentation { get; set; }
+
         [Required]
         [MinLength(1)]
         public IReadOnlyCollection<Buffer> Buffers { get; }

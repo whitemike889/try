@@ -10,7 +10,8 @@ namespace WorkspaceServer.Tests
         private static readonly AsyncLazy<Workspace> _consoleWorkspace = new AsyncLazy<Workspace>(async () =>
         {
             var workspace = new Workspace(
-                "TestTemplate.Console",
+                // To avoid collision with System.Console
+                "TestTemplate.Console2",
                 new DotnetWorkspaceInitializer("console", "test",async (directory, budget) =>
                 {
                     var dotnet = new Dotnet(directory);

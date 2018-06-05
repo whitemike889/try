@@ -19,7 +19,7 @@ namespace MLS.Agent.Tools
                              ? Path.Combine(UserProfile, ".nuget", "packages")
                              : nugetPackagesEnvironmentVariable;
 
-            EmitPlugin = Path.Combine(NugetCache, "trydotnet.omnisharp.emit", "1.29.0-beta2", "lib", "net46", "OmniSharp.Emit.dll");
+            EmitPlugin = Path.Combine(NugetCache, "trydotnet.omnisharp.emit", "1.29.0-beta3", "lib", "net46", "OmniSharp.Emit.dll");
         }
 
         public static string UserProfile { get; }
