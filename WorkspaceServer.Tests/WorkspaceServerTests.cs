@@ -9,12 +9,13 @@ using Xunit;
 using Xunit.Abstractions;
 using static Pocket.Logger<WorkspaceServer.Tests.WorkspaceServerTests>;
 using Workspace = WorkspaceServer.Models.Execution.Workspace;
+using Newtonsoft.Json;
 
 namespace WorkspaceServer.Tests
 {
     public abstract class WorkspaceServerTests : WorkspaceServerTestsCore
     {
-       
+
         protected abstract Workspace CreateWorkspaceContaining(string text);
 
         [Fact]
@@ -22,7 +23,7 @@ namespace WorkspaceServer.Tests
         {
             using (LogEvents.Subscribe(e => Console.WriteLine(e.ToLogString())))
             {
-                var server = await GetWorkspaceServer();
+                var server = await GetRunner();
 
                 var result = await server.Run(CreateWorkspaceContaining("Console.WriteLine(\"hi!\");"));
 
@@ -32,7 +33,7 @@ namespace WorkspaceServer.Tests
 
         protected WorkspaceServerTests(ITestOutputHelper output) : base(output)
         {
-            
+
         }
 
         [Fact]
@@ -48,7 +49,7 @@ public static class Hello
     }
 }
 ");
-            var server = await GetWorkspaceServer();
+            var server = await GetRunner();
 
             var result = await server.Run(workspace);
 
@@ -72,7 +73,7 @@ public static class Hello
         Console.WriteLine(""{output}"");
     }}
 }}");
-            var server = await GetWorkspaceServer();
+            var server = await GetRunner();
 
             var result = await server.Run(workspace);
 
@@ -87,7 +88,7 @@ var person = new { Name = ""Jeff"", Age = 20 };
 var s = $""{person.Name} is {person.Age} year(s) old"";
 Console.Write(s);");
 
-            var server = await GetWorkspaceServer();
+            var server = await GetRunner();
 
             var result = await server.Run(request);
 
@@ -100,18 +101,18 @@ Console.Write(s);");
             var request = CreateWorkspaceContaining(@"
 Console.WriteLine(banana);");
 
-            var server = await GetWorkspaceServer();
+            var server = await GetRunner();
 
             var result = await server.Run(request);
-            
+
             result.Should().BeEquivalentTo(new
             {
                 Succeeded = false,
                 Output = new[] { "(2,19): error CS0103: The name \'banana\' does not exist in the current context" },
-                Exception = (string) null, // we already display the error in Output
+                Exception = (string)null, // we already display the error in Output
             }, config => config.ExcludingMissingMembers());
         }
-        
+
 
         [Fact]
         public async Task Multi_line_console_output_is_captured_correctly()
@@ -122,7 +123,7 @@ Console.WriteLine(2);
 Console.WriteLine(3);
 Console.WriteLine(4);");
 
-            var server = await GetWorkspaceServer();
+            var server = await GetRunner();
 
             var result = await server.Run(request);
 
@@ -139,7 +140,7 @@ throw new Exception(""oops!"");
 Console.WriteLine(3);
 Console.WriteLine(4);");
 
-            var server = await GetWorkspaceServer();
+            var server = await GetRunner();
 
             var timeBudget = new TimeBudget(30.Seconds());
 
@@ -155,7 +156,7 @@ Console.WriteLine(4);");
         {
             var request = CreateWorkspaceContaining(@"throw new Exception(""oops!"");");
 
-            var server = await GetWorkspaceServer();
+            var server = await GetRunner();
 
             var result = await server.Run(request);
 
@@ -168,10 +169,10 @@ Console.WriteLine(4);");
             var request = CreateWorkspaceContaining(@"
 throw new Exception(""oops!"");");
 
-            var server = await GetWorkspaceServer();
+            var server = await GetRunner();
 
             var result = await server.Run(request);
-            
+
             result.ShouldSucceedWithExceptionContaining("System.Exception: oops!");
         }
 
@@ -189,7 +190,7 @@ public static class Hello
     }}
 }}");
 
-            var server = await GetWorkspaceServer();
+            var server = await GetRunner();
 
             var result = await server.Run(workspace);
             result.ShouldSucceedWithOutput("Hello there!");
@@ -208,7 +209,7 @@ public static class Hello
         Console.WriteLine(""Hello there!"");
     }
 }");
-            var server = await GetWorkspaceServer();
+            var server = await GetRunner();
 
             var result = await server.Run(workspace);
 
@@ -228,7 +229,7 @@ public static class Hello
         Console.WriteLine(""Hello there!"");
     }
 }");
-            var server = await GetWorkspaceServer();
+            var server = await GetRunner();
 
             var result = await server.Run(workspace);
 
@@ -250,7 +251,7 @@ public static class Hello
         Console.WriteLine(""Hello there!"");
     }
 }");
-            var server = await GetWorkspaceServer();
+            var server = await GetRunner();
 
             var result = await server.Run(workspace);
 
@@ -274,7 +275,7 @@ public static class Hello
         Console.WriteLine(""{output}"");
     }}
 }}");
-            var server = await GetWorkspaceServer();
+            var server = await GetRunner();
 
             var result = await server.Run(workspace);
 
@@ -297,7 +298,7 @@ public static class Hello
         Console.WriteLine(""{output}"")
     }}
 }}");
-            var server = await GetWorkspaceServer();
+            var server = await GetRunner();
 
             var result = await server.Run(workspace);
 
@@ -318,7 +319,7 @@ public static class Hello
     }
 }");
 
-            var server = await GetWorkspaceServer();
+            var server = GetLanguageService();
 
             var result = await server.GetDiagnostics(request);
 

@@ -25,7 +25,7 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task Workspaces_can_be_registered_to_be_created_using_dotnet_new()
         {
-            using (var registry = new WorkspaceServerRegistry())
+            using (var registry = new DotnetWorkspaceServerRegistry())
             {
                 var workspaceId = Workspace.CreateDirectory(nameof(Workspaces_can_be_registered_to_be_created_using_dotnet_new)).Name;
 
@@ -43,7 +43,7 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task NuGet_packages_can_be_added_during_initialization()
         {
-            using (var registry = new WorkspaceServerRegistry())
+            using (var registry = new DotnetWorkspaceServerRegistry())
             {
                 var workspaceId = Workspace.CreateDirectory(nameof(NuGet_packages_can_be_added_during_initialization)).Name;
 
@@ -81,10 +81,10 @@ namespace Twilio_try.dot.net_sample
         [Fact]
         public async Task Workspace_servers_that_have_been_started_are_disposed_when_registry_is_disposed()
         {
-            IWorkspaceServer workspaceServer;
+            ICodeRunner workspaceServer;
 
-            using(Clockwise.VirtualClock.Start())
-            using (var registry = new WorkspaceServerRegistry())
+            using (Clockwise.VirtualClock.Start())
+            using (var registry = new DotnetWorkspaceServerRegistry())
             {
                 var workspaceId = (await Default.ConsoleWorkspace).Name;
 
@@ -102,7 +102,7 @@ namespace Twilio_try.dot.net_sample
         [Fact]
         public async Task All_workspace_servers_can_be_started_proactively()
         {
-            using (var registry = new WorkspaceServerRegistry())
+            using (var registry = new DotnetWorkspaceServerRegistry())
             {
                 var name = nameof(All_workspace_servers_can_be_started_proactively);
                 registry.AddWorkspace($"{name}.1",
@@ -125,7 +125,7 @@ namespace Twilio_try.dot.net_sample
         {
             var unregisteredWorkspace = await Default.ConsoleWorkspace;
 
-            using (var registry = new WorkspaceServerRegistry())
+            using (var registry = new DotnetWorkspaceServerRegistry())
             {
                 var resolvedWorkspace = await registry.GetWorkspace(unregisteredWorkspace.Name);
 
@@ -140,7 +140,7 @@ namespace Twilio_try.dot.net_sample
         {
             var unregisteredWorkspace = await Default.ConsoleWorkspace;
 
-            using (var registry = new WorkspaceServerRegistry())
+            using (var registry = new DotnetWorkspaceServerRegistry())
             {
                 var server = await registry.GetWorkspaceServer(unregisteredWorkspace.Name);
 

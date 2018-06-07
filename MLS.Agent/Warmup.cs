@@ -14,14 +14,14 @@ namespace MLS.Agent
 {
     public class Warmup : HostedService
     {
-        private readonly WorkspaceServerRegistry _workspaceServerRegistry;
+        private readonly DotnetWorkspaceServerRegistry _workspaceServerRegistry;
 
         private readonly HttpClient _httpClient = new HttpClient
         {
             BaseAddress = new Uri("http://localhost:4242")
         };
 
-        public Warmup(WorkspaceServerRegistry workspaceServerRegistry)
+        public Warmup(DotnetWorkspaceServerRegistry workspaceServerRegistry)
         {
             _workspaceServerRegistry = workspaceServerRegistry ??
                                        throw new ArgumentNullException(nameof(workspaceServerRegistry));

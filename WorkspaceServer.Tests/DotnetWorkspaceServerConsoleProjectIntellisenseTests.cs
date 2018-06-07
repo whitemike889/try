@@ -8,9 +8,11 @@ using WorkspaceServer.Models;
 using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Servers.Dotnet;
+using WorkspaceServer.Servers.InMemory;
 using Xunit;
 using Xunit.Abstractions;
 using static Pocket.Logger<WorkspaceServer.Tests.DotnetWorkspaceServerConsoleProjectIntellisenseTests>;
+using static WorkspaceServer.Models.Execution.Workspace;
 
 namespace WorkspaceServer.Tests
 {
@@ -18,7 +20,7 @@ namespace WorkspaceServer.Tests
     {
         public DotnetWorkspaceServerConsoleProjectIntellisenseTests(ITestOutputHelper output) : base(output)
         {
-           
+
         }
 
 
@@ -40,7 +42,7 @@ namespace FibonacciTest
             {
                 Console.WriteLine(i);
             }
-        }       
+        }
     }
 }";
             const string generator = @"using System.Collections.Generic;
@@ -65,14 +67,14 @@ namespace FibonacciTest
 
             var (processed, position) = CodeManipulation.ProcessMarkup(generator);
 
-            var workspace = new Workspace(workspaceType: "console", buffers: new[]
+            var workspace = new Workspace(workspaceType: "console", files: new[]
             {
-                new Workspace.Buffer("Program.cs", CodeManipulation.EnforceLF(program),0),
-                new Workspace.Buffer("generators/FibonacciGenerator.cs",processed,0)
+                new File("Program.cs", CodeManipulation.EnforceLF(program)),
+                new File("generators/FibonacciGenerator.cs",processed)
             });
 
             var request = new WorkspaceRequest(workspace, position: position, activeBufferId: "generators/FibonacciGenerator.cs");
-            var server = await GetSharedWorkspaceServer();
+            var server = GetLanguageService();
             var result = await server.GetCompletionList(request);
             result.Items.Should().NotBeNullOrEmpty();
             result.Items.Should().NotContain(signature => string.IsNullOrEmpty(signature.Kind));
@@ -99,7 +101,7 @@ namespace FibonacciTest
             {
                 Console.WriteLine(i);
             }
-        }       
+        }
     }
 }";
             const string generator = @"using System.Collections.Generic;
@@ -120,7 +122,7 @@ namespace FibonacciTest
         }
     }
 }";
-            
+
             #endregion
 
             var (processed, position) = CodeManipulation.ProcessMarkup(generator);
@@ -132,7 +134,7 @@ namespace FibonacciTest
             });
 
             var request = new WorkspaceRequest(workspace, position: position, activeBufferId: "generators/FibonacciGenerator.cs");
-            var server = await GetSharedWorkspaceServer();
+            var server = GetLanguageService();
             var result = await server.GetCompletionList(request);
 
             result.Items.Should().NotBeNullOrEmpty();
@@ -161,7 +163,7 @@ namespace FibonacciTest
             {
                 Console.WriteLine(i);
             }
-        }       
+        }
     }
 }";
             const string generator = @"using System.Collections.Generic;
@@ -199,9 +201,9 @@ namespace FibonacciTest
                     new Workspace.File("generators/FibonacciGenerator.cs", CodeManipulation.EnforceLF(generator)),
                 });
 
-          
+
             var request = new WorkspaceRequest(workspace, position: position, activeBufferId: "generators/FibonacciGenerator.cs@codeRegion");
-            var server = await GetSharedWorkspaceServer();
+            var server = GetLanguageService();
             var result = await server.GetCompletionList(request);
 
             result.Items.Should().NotBeNullOrEmpty();
@@ -229,7 +231,7 @@ namespace FibonacciTest
             {
                 Console.WriteLine(i);
             }
-        }       
+        }
     }
 }";
             const string generator = @"using System.Collections.Generic;
@@ -255,7 +257,7 @@ namespace FibonacciTest
 }";
 
             #endregion
-            
+
             var (processed, position) = CodeManipulation.ProcessMarkup("JToken.fr$$;");
 
             var workspace = new Workspace(
@@ -268,7 +270,7 @@ namespace FibonacciTest
                 });
 
             var request = new WorkspaceRequest(workspace, position: position, activeBufferId: "generators/FibonacciGenerator.cs@codeRegion");
-            var server = await GetSharedWorkspaceServer();
+            var server = GetLanguageService();
             var result = await server.GetCompletionList(request);
             result.Items.Should().NotBeNullOrEmpty();
             result.Items.Should().NotContain(signature => string.IsNullOrEmpty(signature.Kind));
@@ -303,7 +305,7 @@ namespace FibonacciTest
             {
                 Console.WriteLine(i);
             }
-        }       
+        }
     }
 }";
             const string generator = @"using System.Collections.Generic;
@@ -324,7 +326,7 @@ namespace FibonacciTest
         }
     }
 }";
-            
+
             #endregion
 
             var (processed, position) = CodeManipulation.ProcessMarkup(generator);
@@ -336,7 +338,7 @@ namespace FibonacciTest
             });
 
             var request = new WorkspaceRequest(workspace, position: position, activeBufferId: "generators/FibonacciGenerator.cs");
-            var server = await GetSharedWorkspaceServer();
+            var server = GetLanguageService();
             var result = await server.GetSignatureHelp(request);
 
             result.Signatures.Should().NotBeNullOrEmpty();
@@ -362,7 +364,7 @@ namespace FibonacciTest
             {
                 Console.WriteLine(i);
             }
-        }       
+        }
     }
 }";
             const string generator = @"using System.Collections.Generic;
@@ -392,9 +394,9 @@ namespace FibonacciTest
                 new Workspace.Buffer("Program.cs", CodeManipulation.EnforceLF(program),0),
                 new Workspace.Buffer("generators/FibonacciGenerator.cs",processed,0)
             });
-            
+
             var request = new WorkspaceRequest(workspace, position: position, activeBufferId: "generators/FibonacciGenerator.cs");
-            var server = await GetSharedWorkspaceServer();
+            var server = GetLanguageService();
             var result = await server.GetSignatureHelp(request);
             result.Should().NotBeNull();
             result.Signatures.Should().BeNullOrEmpty();
@@ -418,7 +420,7 @@ namespace FibonacciTest
             {
                 Console.WriteLine(i);
             }
-        }       
+        }
     }
 }";
             const string generator = @"using System.Collections.Generic;
@@ -456,7 +458,7 @@ namespace FibonacciTest
                 });
 
             var request = new WorkspaceRequest(workspace, position: position, activeBufferId: "generators/FibonacciGenerator.cs@codeRegion");
-            var server = await GetSharedWorkspaceServer();
+            var server = GetLanguageService();
             var result = await server.GetSignatureHelp(request);
 
             result.Signatures.Should().NotBeNullOrEmpty();
@@ -482,7 +484,7 @@ namespace FibonacciTest
             {
                 Console.WriteLine(i);
             }
-        }       
+        }
     }
 }";
             const string generator = @"using System.Collections.Generic;
@@ -521,7 +523,7 @@ namespace FibonacciTest
                 });
 
             var request = new WorkspaceRequest(workspace, position: position, activeBufferId: "generators/FibonacciGenerator.cs@codeRegion");
-            var server = await GetSharedWorkspaceServer();
+            var server = GetLanguageService();
             var result = await server.GetSignatureHelp(request);
 
             result.Signatures.Should().NotBeNullOrEmpty();
@@ -529,15 +531,37 @@ namespace FibonacciTest
 
         }
 
-
-        protected override async Task<IWorkspaceServer> GetWorkspaceServer(
+        protected override Task<ICodeRunner> GetRunner(
             [CallerMemberName] string testName = null)
         {
-            var project = await Create.ConsoleWorkspace(testName);
-            var workspaceServer = new DotnetWorkspaceServer(project, 45);
-            RegisterForDisposal(workspaceServer);
-            await workspaceServer.EnsureInitializedAndNotDisposed();
-            return workspaceServer;
+            throw new NotImplementedException();
+        }
+
+        protected override ILanguageService GetLanguageService([CallerMemberName] string testName = null)
+        {
+            return new InMemoryWorkspaceServer();
+        }
+
+        [Fact]
+        public async Task Get_diagnostics_produces_appropriate_diagnostics_for_display_to_user_2()
+        {
+            var request = new Workspace(@"
+using System;
+
+public static class Hello
+{
+    public static void Main()
+    {
+        Console.WriteLine(""Hello there!"")
+    }
+}");
+
+            var server = GetLanguageService();
+
+            var result = await server.GetDiagnostics(request);
+
+            result.Diagnostics.Should().NotContain(d => d.Id == "CS7022"); // Not "ignoring main in script"
+            result.Diagnostics.Should().Contain(d => d.Id == "CS1002"); // Yes missing semicolon
         }
     }
 }

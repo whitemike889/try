@@ -20,9 +20,13 @@ namespace WorkspaceServer.Tests
 
         protected override Workspace CreateWorkspaceContaining(string text) => new Workspace(text);
 
-        protected override Task<IWorkspaceServer> GetWorkspaceServer(
+        protected override Task<ICodeRunner> GetRunner(
             [CallerMemberName] string testName = null) =>
-            Task.FromResult<IWorkspaceServer>(new ScriptingWorkspaceServer());
+            Task.FromResult<ICodeRunner>(new ScriptingWorkspaceServer());
+
+
+        protected override ILanguageService GetLanguageService([CallerMemberName] string testName = null) =>
+            new ScriptingWorkspaceServer();
 
         [Fact]
         public async Task Response_shows_fragment_return_value()
@@ -30,7 +34,7 @@ namespace WorkspaceServer.Tests
             var workspace = new Workspace(@"
 var person = new { Name = ""Jeff"", Age = 20 };
 $""{person.Name} is {person.Age} year(s) old""");
-            var server = await GetWorkspaceServer();
+            var server = await GetRunner();
 
             var result = await server.Run(workspace);
 
@@ -40,7 +44,7 @@ $""{person.Name} is {person.Age} year(s) old""");
             {
                 Succeeded = true,
                 Output = new string[] { },
-                Exception = (string) null,
+                Exception = (string)null,
                 ReturnValue = "Jeff is 20 year(s) old",
             }, config => config.ExcludingMissingMembers());
         }
@@ -50,7 +54,7 @@ $""{person.Name} is {person.Age} year(s) old""");
         {
             var workspace = new Workspace(@"
 Console.WriteLine(banana);");
-            var server = await GetWorkspaceServer();
+            var server = await GetRunner();
 
             var result = await server.Run(workspace);
 
@@ -58,18 +62,18 @@ Console.WriteLine(banana);");
             {
                 Succeeded = false,
                 Output = new[] { "(2,19): error CS0103: The name \'banana\' does not exist in the current context" },
-                Exception = (string) null, // we already display the error in Output
+                Exception = (string)null, // we already display the error in Output
             }, config => config.ExcludingMissingMembers());
         }
 
         [Fact]
         public async Task Get_completion_for_console()
         {
-            var ws = new Workspace(workspaceType:"script", buffers:new []{new Workspace.Buffer("program.cs","Console.",0) });
+            var ws = new Workspace(workspaceType: "script", buffers: new[] { new Workspace.Buffer("program.cs", "Console.", 0) });
 
             var request = new WorkspaceRequest(ws, position: 8, activeBufferId: "program.cs");
 
-            var server = await GetWorkspaceServer();
+            var server = GetLanguageService();
 
             var result = await server.GetCompletionList(request);
 
@@ -83,7 +87,7 @@ Console.WriteLine(banana);");
 
             var request = new WorkspaceRequest(ws, position: 18, activeBufferId: "program.cs");
 
-            var server = await GetWorkspaceServer();
+            var server = GetLanguageService();
 
             var result = await server.GetSignatureHelp(request);
 
@@ -107,7 +111,7 @@ public static class Hello
 }",
                                           usings: new[] { "System.Threading" });
 
-            var server = await GetWorkspaceServer();
+            var server = await GetRunner();
 
             var result = await server.Run(workspace);
 
@@ -115,7 +119,7 @@ public static class Hello
             {
                 Succeeded = true,
                 Output = new[] { "Hello there!" },
-                Exception = (string) null,
+                Exception = (string)null,
             }, config => config.ExcludingMissingMembers());
         }
 
@@ -132,7 +136,7 @@ public static class Hello
         Console.WriteLine(""Hello there!"");
     }
 }");
-            var server = await GetWorkspaceServer();
+            var server = await GetRunner();
 
             var result = await server.Run(workspace);
 
@@ -152,7 +156,7 @@ public static class Hello
         Console.WriteLine(""Hello there!"");
     }
 }");
-            var server = await GetWorkspaceServer();
+            var server = await GetRunner();
 
             var result = await server.Run(workspace);
 
@@ -177,7 +181,7 @@ public static class Hello
                 workspaceType: "script",
                 files: new[] { new Workspace.File("Main.cs", fileCode) },
                 buffers: new[] { new Workspace.Buffer(@"Main.cs@toReplace", @"Console.WriteLine(""Hello there!"");", 0) });
-            var server = await GetWorkspaceServer();
+            var server = await GetRunner();
 
             var result = await server.Run(workspace);
 
@@ -203,14 +207,14 @@ public static class Hello
                 files: new[] { new Workspace.File("Main.cs", fileCode) },
                 buffers: new[] { new Workspace.Buffer(@"Main.cs@toReplace", @"Console.WriteLine(banana);", 0) });
 
-            var server = await GetWorkspaceServer();
+            var server = await GetRunner();
             var result = await server.Run(workspace);
 
             result.Should().BeEquivalentTo(new
             {
                 Succeeded = false,
                 Output = new[] { "(1,19): error CS0103: The name \'banana\' does not exist in the current context" },
-                Exception = (string)null, 
+                Exception = (string)null,
             }, config => config.ExcludingMissingMembers());
         }
     }

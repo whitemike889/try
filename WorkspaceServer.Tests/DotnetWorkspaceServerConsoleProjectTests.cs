@@ -9,6 +9,7 @@ using Newtonsoft.Json.Linq;
 using WorkspaceServer.Models;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Servers.Dotnet;
+using WorkspaceServer.Servers.InMemory;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -26,7 +27,7 @@ namespace WorkspaceServer.Tests
                 $@"using System; using System.Linq; using System.Collections.Generic; class Program {{ static void Main() {{ {text}
                     }}
                 }}
-");
+            ");
         }
 
         [Fact]
@@ -36,7 +37,7 @@ namespace WorkspaceServer.Tests
                 workspaceType: "console",
                 files: new[] { new Workspace.File("Program.cs", CodeSamples.SourceCodeProvider.ConsoleProgramSingleRegion) },
                 buffers: new[] { new Workspace.Buffer("Program.cs@alpha", @"Console.WriteLine(banana);", 0) });
-            var server = await GetWorkspaceServer();
+            var server = await GetRunner();
 
             var result = await server.Run(workspace);
 
@@ -55,7 +56,7 @@ namespace WorkspaceServer.Tests
                 workspaceType: "console",
                 files: new[] { new Workspace.File("Program.cs", CodeSamples.SourceCodeProvider.ConsoleProgramSingleRegion) },
                 buffers: new[] { new Workspace.Buffer("Program.cs@alpha", @"var a = 10;" + Environment.NewLine + "Console.WriteLine(banana);", 0) });
-            var server = await GetWorkspaceServer();
+            var server = await GetRunner();
 
             var result = await server.Run(workspace);
 
@@ -79,7 +80,7 @@ namespace WorkspaceServer.Tests
                 files: new[] { new Workspace.File("Program.cs", CodeSamples.SourceCodeProvider.ConsoleProgramSingleRegion) },
                 buffers: new[] { new Workspace.Buffer("Program.cs@alpha", code, 0) });
             var request = new WorkspaceRequest(workspace);
-            var server = await GetWorkspaceServer();
+            var server = GetLanguageService();
 
             var result = await server.GetDiagnostics(request.Workspace);
 
@@ -104,7 +105,7 @@ namespace FibonacciTest
             {
                 Console.WriteLine(i);
             }
-        }       
+        }
     }
 }";
             const string generator = @"using System.Collections.Generic;
@@ -132,7 +133,7 @@ namespace FibonacciTest
                 new Workspace.Buffer("Program.cs", program, 0),
                 new Workspace.Buffer("FibonacciGenerator.cs", generator, 0)
             });
-            var server = await GetWorkspaceServer();
+            var server = await GetRunner();
 
             var result = await server.Run(workspace);
 
@@ -166,7 +167,7 @@ namespace FibonacciTest
             {
                 Console.WriteLine(i);
             }
-        }       
+        }
     }
 }";
             const string generator = @"using System.Collections.Generic;
@@ -193,7 +194,7 @@ namespace FibonacciTest
                 new Workspace.Buffer("Program.cs",program,0),
                 new Workspace.Buffer("FibonacciGenerator.cs",generator,0)
             });
-            var server = await GetWorkspaceServer();
+            var server = await GetRunner();
 
             var result = await server.Run(workspace);
 
@@ -220,7 +221,7 @@ namespace FibonacciTest
             {
                 Console.WriteLine(i);
             }
-        }       
+        }
     }
 }";
             const string generator = @"using System.Collections.Generic;
@@ -248,7 +249,7 @@ namespace FibonacciTest
                 new Workspace.Buffer("generators/FibonacciGenerator.cs",generator,0)
             });
 
-            var server = await GetWorkspaceServer();
+            var server = await GetRunner();
 
             var result = await server.Run(workspace);
 
@@ -274,7 +275,7 @@ namespace FibonacciTest
         {
             int a = 4;
             Console.WriteLine(a);
-        }       
+        }
     }
 }".Replace("\r\n", "\n");
 
@@ -291,7 +292,7 @@ namespace FibonacciTest
             configuration = configuration.SetInteractive(false);
 #endif
 
-            var server = await GetWorkspaceServer();
+            var server = await GetRunner();
 
             var result = await server.Run(request);
 
@@ -318,7 +319,7 @@ namespace FibonacciTest
         {
             int a = 4;
             Console.WriteLine(a);
-        }       
+        }
     }
 }";
 
@@ -329,7 +330,7 @@ namespace FibonacciTest
                 new Workspace.Buffer("Program.cs", program, 0),
             });
 
-            var server = await GetWorkspaceServer();
+            var server = await GetRunner();
 
             var result = await server.Run(request);
 
@@ -341,8 +342,16 @@ namespace FibonacciTest
         }
 
 
-        protected override async Task<IWorkspaceServer> GetWorkspaceServer(
+        protected override async Task<ICodeRunner> GetRunner(
             [CallerMemberName] string testName = null)
+        {
+            return await NewMethod(testName);
+        }
+
+        protected override ILanguageService GetLanguageService(
+            [CallerMemberName] string testName = null) => new InMemoryWorkspaceServer();
+
+        private async Task<DotnetWorkspaceServer> NewMethod(string testName)
         {
             var project = await Create.ConsoleWorkspace(testName);
 

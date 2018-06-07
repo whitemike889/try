@@ -4,9 +4,9 @@ namespace MLS.Agent
 {
     public static class DefaultWorkspaces
     {
-        public static WorkspaceServerRegistry CreateWorkspaceServerRegistry()
+        public static DotnetWorkspaceServerRegistry CreateWorkspaceServerRegistry()
         {
-            var registry = new WorkspaceServerRegistry();
+            var registry = new DotnetWorkspaceServerRegistry();
 
             registry.AddWorkspace("console",
                                   workspace =>
@@ -14,7 +14,7 @@ namespace MLS.Agent
                                       workspace.CreateUsingDotnet("console");
                                       workspace.AddPackageReference("Newtonsoft.Json");
                                   });
-            
+
             return registry;
         }
     }

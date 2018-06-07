@@ -9,16 +9,16 @@ using MLS.Agent.Tools;
 using Pocket;
 using Recipes;
 using WorkspaceServer.Servers.Dotnet;
-using static Pocket.Logger<WorkspaceServer.WorkspaceServerRegistry>;
+using static Pocket.Logger<WorkspaceServer.DotnetWorkspaceServerRegistry>;
 
 namespace WorkspaceServer
 {
-    public class WorkspaceServerRegistry : IDisposable
+    public class DotnetWorkspaceServerRegistry : IDisposable
     {
         private readonly Dictionary<string, WorkspaceBuilder> _workspaceBuilders = new Dictionary<string, WorkspaceBuilder>();
 
-        private readonly ConcurrentDictionary<string, IWorkspaceServer> _workspaceServers = new ConcurrentDictionary<string, IWorkspaceServer>();
-       
+        private readonly ConcurrentDictionary<string, DotnetWorkspaceServer> _workspaceServers = new ConcurrentDictionary<string, DotnetWorkspaceServer>();
+
         public void AddWorkspace(string name, Action<WorkspaceBuilder> configure)
         {
             if (configure == null)
@@ -53,14 +53,14 @@ namespace WorkspaceServer
                     throw new ArgumentException($"Workspace named \"{name}\" not found.");
                 }).GetWorkspace(budget);
 
-        public async Task<IWorkspaceServer> GetWorkspaceServer(string name, Budget budget = null)
+        public async Task<DotnetWorkspaceServer> GetWorkspaceServer(string name, Budget budget = null)
         {
             if (string.IsNullOrWhiteSpace(name))
             {
                 throw new ArgumentException("Value cannot be null or whitespace.", nameof(name));
             }
 
-            IWorkspaceServer server;
+            DotnetWorkspaceServer server;
             using (var operation = Log.OnEnterAndConfirmOnExit($"{nameof(GetWorkspaceServer)}:{name}"))
             {
                 var workspace = await GetWorkspace(name, budget);

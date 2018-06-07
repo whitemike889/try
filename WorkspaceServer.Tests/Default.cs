@@ -12,12 +12,12 @@ namespace WorkspaceServer.Tests
             var workspace = new Workspace(
                 // To avoid collision with System.Console
                 "TestTemplate.Console2",
-                new DotnetWorkspaceInitializer("console", "test",async (directory, budget) =>
-                {
-                    var dotnet = new Dotnet(directory);
-                    await dotnet.AddPackage("Newtonsoft.Json", budget: budget);
-                }));
-            
+                new DotnetWorkspaceInitializer("console", "test", async (directory, budget) =>
+                 {
+                     var dotnet = new Dotnet(directory);
+                     await dotnet.AddPackage("Newtonsoft.Json", budget: budget);
+                 }));
+
             await workspace.EnsureCreated();
             await workspace.EnsureBuilt();
 
