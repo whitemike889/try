@@ -34,6 +34,10 @@ namespace WorkspaceServer.Servers.InMemory
                         new InMemoryWorkspace(
                             "script",
                             WorkspaceUtilities.DefaultReferencedAssemblies));
+            builder.Add("nodatime.api",
+                        new InMemoryWorkspace(
+                            "nodatime.api",
+                            WorkspaceUtilities.DefaultReferencedAssemblies));
             workspaces = builder.ToImmutableDictionary();
         }
 
