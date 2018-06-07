@@ -141,7 +141,11 @@ namespace WorkspaceServer.Servers.Roslyn
             "System.Xml.XmlDocument",
             "System.Xml.XmlSerializer",
             "System.Xml.XPath",
-            "System.Xml.XPath.XDocument"
+            "System.Xml.XPath.XDocument",
+
+            "Newtonsoft.Json",
+            "NodaTime",
+            "NodaTime.Testing",
         };
     }
 }

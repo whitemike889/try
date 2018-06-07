@@ -7,22 +7,17 @@ using MLS.TestSupport;
 using WorkspaceServer.Models;
 using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
-using WorkspaceServer.Servers.Dotnet;
 using WorkspaceServer.Servers.InMemory;
 using Xunit;
 using Xunit.Abstractions;
-using static Pocket.Logger<WorkspaceServer.Tests.DotnetWorkspaceServerConsoleProjectIntellisenseTests>;
-using static WorkspaceServer.Models.Execution.Workspace;
 
 namespace WorkspaceServer.Tests
 {
-    public class DotnetWorkspaceServerConsoleProjectIntellisenseTests : SharedWorkspaceServerTestsCore
+    public class DotnetWorkspaceServerConsoleProjectIntellisenseTests : WorkspaceServerTestsCore
     {
         public DotnetWorkspaceServerConsoleProjectIntellisenseTests(ITestOutputHelper output) : base(output)
         {
-
         }
-
 
         [Fact]
         public async Task Get_autocompletion_for_console_class()
@@ -67,10 +62,10 @@ namespace FibonacciTest
 
             var (processed, position) = CodeManipulation.ProcessMarkup(generator);
 
-            var workspace = new Workspace(workspaceType: "console", files: new[]
+            var workspace = new Workspace(workspaceType: "console", buffers: new[]
             {
-                new File("Program.cs", CodeManipulation.EnforceLF(program)),
-                new File("generators/FibonacciGenerator.cs",processed)
+                new Workspace.Buffer("Program.cs", CodeManipulation.EnforceLF(program),0),
+                new Workspace.Buffer("generators/FibonacciGenerator.cs",processed,0)
             });
 
             var request = new WorkspaceRequest(workspace, position: position, activeBufferId: "generators/FibonacciGenerator.cs");
@@ -201,7 +196,6 @@ namespace FibonacciTest
                     new Workspace.File("generators/FibonacciGenerator.cs", CodeManipulation.EnforceLF(generator)),
                 });
 
-
             var request = new WorkspaceRequest(workspace, position: position, activeBufferId: "generators/FibonacciGenerator.cs@codeRegion");
             var server = GetLanguageService();
             var result = await server.GetCompletionList(request);
@@ -281,10 +275,9 @@ namespace FibonacciTest
 
         private static bool HasDuplicatedCompletionItems(CompletionResult result)
         {
-            bool hasDuplicatedEntries;
             var g = result.Items.GroupBy(ci => ci.Kind + ci.InsertText).Select(cig => new { Key = cig.Key, Count = cig.Count() });
-            hasDuplicatedEntries = g.Any(cig => cig.Count > 1);
-            return hasDuplicatedEntries;
+            var duplicatedEntries = g.Where(cig => cig.Count > 1);
+            return duplicatedEntries.Any();
         }
 
         [Fact]
@@ -444,7 +437,6 @@ namespace FibonacciTest
 }";
 
             #endregion
-
 
             var (processed, position) = CodeManipulation.ProcessMarkup("Console.WriteLine($$)");
 

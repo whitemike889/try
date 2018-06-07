@@ -81,27 +81,26 @@ namespace WorkspaceServer.Servers.Scripting
 
         internal static async Task<InvocationContext> GetInvocation(Func<Task<SemanticModel>> getSemanticModel, SyntaxNode node, int position)
         {
-
             // Walk up until we find a node that we're interested in.
             while (node != null)
             {
                 switch (node)
                 {
                     case InvocationExpressionSyntax invocation when invocation.ArgumentList.Span.Contains(position):
-                        {
-                            var semanticModel = await getSemanticModel();
-                            return new InvocationContext(semanticModel, position, invocation.Expression, invocation.ArgumentList);
-                        }
+                    {
+                        var semanticModel = await getSemanticModel();
+                        return new InvocationContext(semanticModel, position, invocation.Expression, invocation.ArgumentList);
+                    }
                     case ObjectCreationExpressionSyntax objectCreation when objectCreation.ArgumentList?.Span.Contains(position) ?? false:
-                        {
-                            var semanticModel = await getSemanticModel();
-                            return new InvocationContext(semanticModel, position, objectCreation, objectCreation.ArgumentList);
-                        }
+                    {
+                        var semanticModel = await getSemanticModel();
+                        return new InvocationContext(semanticModel, position, objectCreation, objectCreation.ArgumentList);
+                    }
                     case AttributeSyntax attributeSyntax when attributeSyntax.ArgumentList.Span.Contains(position):
-                        {
-                            var semanticModel = await getSemanticModel();
-                            return new InvocationContext(semanticModel, position, attributeSyntax, attributeSyntax.ArgumentList);
-                        }
+                    {
+                        var semanticModel = await getSemanticModel();
+                        return new InvocationContext(semanticModel, position, attributeSyntax, attributeSyntax.ArgumentList);
+                    }
                 }
 
                 node = node.Parent;

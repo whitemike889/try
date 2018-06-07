@@ -3,8 +3,7 @@ using System;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using System.Collections.Generic;
-using WorkspaceServer.Servers.Roslyn;
-using static WorkspaceServer.Models.Execution.Workspace;
+using System.Threading.Tasks;
 using WorkspaceServer.Models.Execution;
 using Microsoft.CodeAnalysis.Host.Mef;
 
@@ -14,14 +13,14 @@ namespace WorkspaceServer.Servers.InMemory
     {
         private readonly string name;
         private readonly IEnumerable<MetadataReference> additionalReferences;
-
+       
         public InMemoryWorkspace(String name, IEnumerable<MetadataReference> additionalReferences)
         {
             this.name = name ?? throw new ArgumentNullException(nameof(name));
             this.additionalReferences = additionalReferences ?? throw new ArgumentNullException(nameof(additionalReferences));
         }
 
-        public (Compilation, IEnumerable<Document>) WithSources(IEnumerable<SourceFile> sources)
+        public async Task<(Compilation, IEnumerable<Document>)> WithSources(IReadOnlyCollection<SourceFile> sources)
         {
             var workspace = new AdhocWorkspace(MefHostServices.DefaultHost);
             var compilationOptions = new CSharpCompilationOptions(OutputKind.ConsoleApplication);
@@ -38,21 +37,21 @@ namespace WorkspaceServer.Servers.InMemory
 
             workspace.AddProject(projectInfo);
 
-            var compilation = CSharpCompilation.Create(name, references: additionalReferences);
+            var currentSolution = workspace.CurrentSolution;
 
-            var documents = sources.Select(source =>
+            foreach (var source in sources)
             {
                 var docId = DocumentId.CreateNewId(projectId, "ScriptDocument");
 
-                var documentInfo = DocumentInfo.Create(docId,
-                    name: source.Name,
-                    sourceCodeKind: SourceCodeKind.Regular);
+                currentSolution = currentSolution.AddDocument(docId, source.Name, source.Text);
 
-                return workspace.AddDocument(documentInfo).WithText(source.Text);
-            });
+            }
 
-            var newCompilation = compilation.AddSyntaxTrees(sources.Select(source => CSharpSyntaxTree.ParseText(source.Text, path: source.Name)));
-            return (newCompilation, documents);
+            var project = currentSolution.GetProject(projectId);
+
+            var newCompilation = await project.GetCompilationAsync(); 
+        
+            return (newCompilation, project.Documents);
         }
     }
 }

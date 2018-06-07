@@ -64,6 +64,8 @@ namespace WorkspaceServer.Models.Execution
             public string Name { get; }
 
             public string Text { get; }
+
+            public override string ToString() => $"{nameof(File)}: {Name}";
         }
 
         public class Buffer
@@ -80,6 +82,8 @@ namespace WorkspaceServer.Models.Execution
             public string Content { get; }
 
             public int Position { get; }
+
+            public override string ToString() => $"{nameof(Buffer)}: {Id}";
         }
 
         public static Workspace FromDirectory(DirectoryInfo directory, string workspaceType)

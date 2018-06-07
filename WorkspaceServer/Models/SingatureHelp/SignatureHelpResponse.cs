@@ -1,10 +1,17 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace WorkspaceServer.Models.SingatureHelp
 {
     public class SignatureHelpResponse
     {
-        public IEnumerable<SignatureHelpItem> Signatures { get; set; }
+        private IEnumerable<SignatureHelpItem> signatures ;
+
+        public IEnumerable<SignatureHelpItem> Signatures
+        {
+            get => signatures ?? (signatures = Array.Empty<SignatureHelpItem>());
+            set => signatures  = value;
+        }
 
         public int ActiveSignature { get; set; }
 

@@ -10,6 +10,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Pocket;
 using Recipes;
+using WorkspaceServer.Servers.InMemory;
 using static Pocket.Logger<MLS.Agent.Startup>;
 
 namespace MLS.Agent

@@ -520,11 +520,14 @@ namespace FibonacciTest
                 .Contain(e => e.OperationName == "Completion");
         }
 
-        [Fact]
-        public async Task When_invoked_with_workspace_it_executes_correctly()
+        [Theory]
+        [InlineData("script")]
+        [InlineData("console")]
+        public async Task When_invoked_with_workspace_it_executes_correctly(string workspaceType)
         {
             var output = "1";
-            var requestJson = @"{ ""Buffers"":[{""Id"":"""",""Content"":""using System;\nusing System.Linq;\n\npublic class Program\n{\n  public static void Main()\n  {\n    foreach (var i in Fibonacci().Take(1))\n    {\n      Console.WriteLine(i);\n    }\n  }\n\n  private static IEnumerable<int> Fibonacci()\n  {\n    int current = 1, next = 1;\n\n    while (true) \n    {\n      yield return current;\n      next = current + (current = next);\n    }\n  }\n}\n"",""Position"":0}],""Usings"":[],""WorkspaceType"":""script"",""Files"":[]}";
+            var requestJson =
+                $@"{{ ""Buffers"":[{{""Id"":"""",""Content"":""using System;\nusing System.Linq;\nusing System.Collections.Generic;\n\npublic class Program\n{{\n  public static void Main()\n  {{\n    foreach (var i in Fibonacci().Take(1))\n    {{\n      Console.WriteLine(i);\n    }}\n  }}\n\n  private static IEnumerable<int> Fibonacci()\n  {{\n    int current = 1, next = 1;\n\n    while (true) \n    {{\n      yield return current;\n      next = current + (current = next);\n    }}\n  }}\n}}\n"",""Position"":0}}],""Usings"":[],""WorkspaceType"":""{workspaceType}"",""Files"":[]}}";
 
             var response = await CallRun(requestJson);
 
@@ -646,6 +649,20 @@ public class Program {
         }
 
         [Fact]
+        public async Task Console_workspace_signature_help()
+        {
+            var workspaceJson =
+                @"{""workspace"":{""workspaceType"":""console"",""files"":[],""buffers"":[{""id"":"""",""content"":""using System;\nusing System.Collections.Generic;\nusing System.Linq;\n\npublic class Program\n{\n  public static void Main()\n  {\n    foreach (var i in Fibonacci().Take(20))\n    {\n      Console.WriteLine()\n    }\n  }\n\n  private static IEnumerable<int> Fibonacci()\n  {\n    int current = 1, next = 1;\n\n    while (true) \n    {\n      yield return current;\n      next = current + (current = next);\n    }\n  }\n}\n"",""position"":0}],""usings"":[]},""activeBufferId"":"""",""position"":197}";
+            
+            var response = await CallSignatureHelp(workspaceJson);
+
+            var result = await response.EnsureSuccess()
+                                       .DeserializeAs<SignatureHelpResponse>();
+
+            result. Signatures.Should().Contain(s => s.Label == "void Console.WriteLine()");
+        }
+
+        [Fact]
         public async Task When_Run_times_out_in_workspace_server_code_then_the_response_code_is_504()
         {
             Clock.Reset();
@@ -722,6 +739,34 @@ public class Program {
             int? runTimeoutMs = null)
         {
             return CallRun(request.ToJson(), runTimeoutMs);
+        }
+
+        private static async Task<HttpResponseMessage> CallSignatureHelp(
+            string request,
+            int? runTimeoutMs = null)
+        {
+            HttpResponseMessage response;
+            using (var agent = new AgentService(null))
+            {
+                var request1 = new HttpRequestMessage(
+                    HttpMethod.Post,
+                    @"/workspace/signaturehelp")
+                {
+                    Content = new StringContent(
+                        request,
+                        Encoding.UTF8,
+                        "application/json")
+                };
+
+                if (runTimeoutMs != null)
+                {
+                    request1.Headers.Add("Timeout", runTimeoutMs.Value.ToString("F0"));
+                }
+
+                response = await agent.SendAsync(request1);
+            }
+
+            return response;
         }
 
         private class FailedRunResult : Exception
