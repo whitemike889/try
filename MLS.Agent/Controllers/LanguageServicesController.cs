@@ -6,17 +6,31 @@ using Microsoft.AspNetCore.Mvc;
 using Pocket;
 using WorkspaceServer;
 using WorkspaceServer.Models;
-using WorkspaceServer.Servers.Dotnet;
+using WorkspaceServer.Servers.InMemory;
 using WorkspaceServer.Servers.Scripting;
 using static Pocket.Logger<MLS.Agent.Controllers.LanguageServicesController>;
 using Workspace = WorkspaceServer.Models.Execution.Workspace;
 
 namespace MLS.Agent.Controllers
 {
-    public class LanguageServicesController : WorkspaceServerController
+    public class LanguageServicesController : Controller
     {
-        public LanguageServicesController(WorkspaceServerRegistry workspaceServerRegistry) : base(workspaceServerRegistry)
+        private readonly CompositeDisposable _disposables = new CompositeDisposable();
+        private readonly InMemoryWorkspaceServer workspaceServer;
+
+        public LanguageServicesController(DotnetWorkspaceServerRegistry workspaceServerRegistry, InMemoryWorkspaceServer workspaceServer)
         {
+            this.workspaceServer = workspaceServer ?? throw new ArgumentNullException(nameof(workspaceServer));
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _disposables.Dispose();
+            }
+
+            base.Dispose(disposing);
         }
 
         [HttpPost]
@@ -27,7 +41,7 @@ namespace MLS.Agent.Controllers
         {
             if (Debugger.IsAttached && !(Clock.Current is VirtualClock))
             {
-                AddToDisposeChain(VirtualClock.Start());
+                _disposables.Add(VirtualClock.Start());
             }
 
             using (var operation = Log.OnEnterAndConfirmOnExit())
@@ -40,7 +54,7 @@ namespace MLS.Agent.Controllers
 
                 var runTimeout = TimeSpan.FromMilliseconds(timeoutMs);
                 var budget = new TimeBudget(runTimeout);
-                var server = await GetServerForWorkspace(request.Workspace, budget);
+                var server = GetServerForWorkspace(request.Workspace);
                 var result = await server.GetCompletionList(request, budget);
                 budget.RecordEntry();
                 operation.Succeed();
@@ -57,7 +71,7 @@ namespace MLS.Agent.Controllers
         {
             if (Debugger.IsAttached && !(Clock.Current is VirtualClock))
             {
-                AddToDisposeChain(VirtualClock.Start());
+                _disposables.Add(VirtualClock.Start());
             }
 
             using (var operation = Log.OnEnterAndConfirmOnExit())
@@ -69,7 +83,7 @@ namespace MLS.Agent.Controllers
 
                 var runTimeout = TimeSpan.FromMilliseconds(timeoutMs);
                 var budget = new TimeBudget(runTimeout);
-                var server = await GetServerForWorkspace(request.Workspace, budget);
+                var server = GetServerForWorkspace(request.Workspace);
                 var result = await server.GetDiagnostics(request.Workspace, budget);
                 budget.RecordEntry();
                 operation.Succeed();
@@ -86,7 +100,7 @@ namespace MLS.Agent.Controllers
         {
             if (Debugger.IsAttached && !(Clock.Current is VirtualClock))
             {
-                AddToDisposeChain(VirtualClock.Start());
+                _disposables.Add(VirtualClock.Start());
             }
 
             using (var operation = Log.OnEnterAndConfirmOnExit())
@@ -99,7 +113,7 @@ namespace MLS.Agent.Controllers
 
                 var runTimeout = TimeSpan.FromMilliseconds(timeoutMs);
                 var budget = new TimeBudget(runTimeout);
-                var server = await GetServerForWorkspace(request.Workspace, budget);
+                var server = GetServerForWorkspace(request.Workspace);
                 var result = await server.GetSignatureHelp(request, budget);
                 budget.RecordEntry();
                 operation.Succeed();
@@ -108,32 +122,16 @@ namespace MLS.Agent.Controllers
             }
         }
 
-        private async Task<IWorkspaceServer> GetServerForWorkspace(Workspace workspace, Budget budget)
+        private ILanguageService GetServerForWorkspace(Workspace workspace)
         {
-            budget?.RecordEntryAndThrowIfBudgetExceeded();
-            IWorkspaceServer server;
-            var workspaceType = workspace.WorkspaceType;
-            using (var operation = Log.OnEnterAndConfirmOnExit())
+            if (string.Equals(workspace.WorkspaceType, "script", StringComparison.OrdinalIgnoreCase))
             {
-                if (string.Equals(workspaceType, "script", StringComparison.OrdinalIgnoreCase))
-                {
-                    server = new ScriptingWorkspaceServer();
-                }
-                else
-                {
-                    server = await GetWorkspaceServer(workspaceType, budget);
-
-                    if (server is DotnetWorkspaceServer dotnetWorkspaceServer)
-                    {
-                        await dotnetWorkspaceServer.EnsureInitializedAndNotDisposed(budget);
-                    }
-                }
-
-                budget?.RecordEntry();
-                operation.Succeed();
+                return new ScriptingWorkspaceServer();
             }
-
-            return server;
+            else
+            {
+                return workspaceServer;
+            }
         }
     }
 }

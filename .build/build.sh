@@ -19,6 +19,8 @@ echo "DOCKER VERSION:"
 docker version
 echo "----------------------"
 
+docker image prune -f
+
 docker-compose -f docker-compose.ci.build.yml up --build 
 
 buildResult=$(docker-compose --f docker-compose.ci.build.yml ps -q | xargs docker inspect -f '{{ .State.ExitCode }}' | grep -v 0 | wc -l | tr -d ' ')

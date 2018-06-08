@@ -63,7 +63,31 @@ namespace WorkspaceServer.Models.Completion
                     documentation: DocumentationConverter.ConvertDocumentation(item.Description,"\n")));
 
             return new CompletionResult(transformed.ToArray());
+        }
 
+        internal static IEnumerable<CompletionItem> Deduplicate(this IEnumerable<CompletionItem> source)
+        {
+            return source.Distinct(CompletionItemEqualityComparer.Instance);
+        }
+    }
+
+    internal class CompletionItemEqualityComparer : IEqualityComparer<CompletionItem>
+    {
+        private CompletionItemEqualityComparer()
+        {
+        }
+
+        public static CompletionItemEqualityComparer Instance { get; } = new CompletionItemEqualityComparer();
+
+        public bool Equals(CompletionItem x, CompletionItem y)
+        {
+            return x.Kind.Equals(y.Kind) &&
+                   x.InsertText.Equals(y.InsertText);
+        }
+
+        public int GetHashCode(CompletionItem obj)
+        {
+            return (obj.Kind + obj.InsertText).GetHashCode();
         }
     }
 }

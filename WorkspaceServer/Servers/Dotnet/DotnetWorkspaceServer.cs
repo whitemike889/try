@@ -20,7 +20,7 @@ using System.Collections.Generic;
 
 namespace WorkspaceServer.Servers.Dotnet
 {
-    public class DotnetWorkspaceServer : IWorkspaceServer, IDisposable
+    public class DotnetWorkspaceServer : ICodeRunner, ILanguageService, IDisposable
     {
         private readonly Workspace _workspace;
         private readonly OmniSharpServer _omniSharpServer;
@@ -272,7 +272,7 @@ namespace WorkspaceServer.Servers.Dotnet
         public async Task<DiagnosticResult> GetDiagnostics(Models.Execution.Workspace request, Budget budget = null)
         {
             budget = budget ?? new TimeBudget(_defaultTimeoutInSeconds);
-          
+
             using (var operation = _log.OnEnterAndConfirmOnExit())
             {
                 await EnsureInitializedAndNotDisposed(budget);

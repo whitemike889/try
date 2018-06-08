@@ -10,6 +10,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Pocket;
 using Recipes;
+using WorkspaceServer.Servers.InMemory;
 using static Pocket.Logger<MLS.Agent.Startup>;
 
 namespace MLS.Agent
@@ -27,10 +28,10 @@ namespace MLS.Agent
 
             var configurationBuilder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath);
-            
+
             Configuration = configurationBuilder.Build();
 
-            
+
         }
 
         protected IConfigurationRoot Configuration { get; }
@@ -60,7 +61,8 @@ namespace MLS.Agent
                 services.AddSingleton(Configuration);
 
                 services.AddSingleton(_ => DefaultWorkspaces.CreateWorkspaceServerRegistry());
-               
+                services.AddSingleton(_ => new InMemoryWorkspaceServer());
+
                 services.AddSingleton<IHostedService, Warmup>();
 
                 operation.Succeed();

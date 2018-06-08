@@ -45,8 +45,8 @@ namespace WorkspaceServer.Tests
                 result.Should().Equal("value1", "value2");
             }
         }
-        
-        protected async Task<IWorkspaceServer> GetWorkspaceServer(
+
+        protected async Task<ICodeRunner> GetWorkspaceServer(
             [CallerMemberName] string testName = null)
         {
             var project = await Create.WebApiWorkspace(testName);

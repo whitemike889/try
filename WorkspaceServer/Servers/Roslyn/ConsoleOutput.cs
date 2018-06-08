@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Clockwise;
 
-namespace WorkspaceServer.Servers.Scripting
+namespace WorkspaceServer.Servers.Roslyn
 {
     public class ConsoleOutput : IDisposable
     {

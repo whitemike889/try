@@ -10,9 +10,9 @@ namespace MLS.Agent.Controllers
 {
     public class SensorsController : Controller
     {
-        private readonly WorkspaceServerRegistry _workspaceServerRegistry;
+        private readonly DotnetWorkspaceServerRegistry _workspaceServerRegistry;
 
-        public SensorsController(WorkspaceServerRegistry workspaceServerRegistry)
+        public SensorsController(DotnetWorkspaceServerRegistry workspaceServerRegistry)
         {
             _workspaceServerRegistry = workspaceServerRegistry ?? throw new ArgumentNullException(nameof(workspaceServerRegistry));
         }

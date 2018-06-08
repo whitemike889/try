@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Clockwise;
 using FluentAssertions;
 using FluentAssertions.Extensions;
+using WorkspaceServer.Servers.Roslyn;
 using WorkspaceServer.Servers.Scripting;
 using Xunit;
 

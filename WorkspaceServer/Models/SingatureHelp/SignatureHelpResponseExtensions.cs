@@ -11,7 +11,7 @@ namespace WorkspaceServer.Models.SingatureHelp
             {
                 ActiveParameter = source.ActiveParameter,
                 ActiveSignature = source.ActiveSignature,
-                Signatures = source.Signatures?.Select(s => ProcessDocumentation((SignatureHelpItem)s)) ?? Enumerable.Empty<SignatureHelpItem>()
+                Signatures = source.Signatures?.Select(ProcessDocumentation) ?? Enumerable.Empty<SignatureHelpItem>()
             };
 
             return ret;

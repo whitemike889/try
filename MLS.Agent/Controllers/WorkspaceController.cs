@@ -14,11 +14,11 @@ using static Pocket.Logger<MLS.Agent.Controllers.WorkspaceController>;
 
 namespace MLS.Agent.Controllers
 {
-    public class WorkspaceController : WorkspaceServerController
+    public class WorkspaceController : RunController
     {
         private readonly AgentOptions _options;
 
-        public WorkspaceController(WorkspaceServerRegistry workspaceServerRegistry, AgentOptions options) : base(workspaceServerRegistry)
+        public WorkspaceController(DotnetWorkspaceServerRegistry workspaceServerRegistry, AgentOptions options) : base(workspaceServerRegistry)
         {
             _options = options ?? throw new ArgumentNullException(nameof(options));
         }
@@ -93,7 +93,7 @@ namespace MLS.Agent.Controllers
                     }
                 }
 
-               
+
                 budget?.RecordEntry();
                 operation.Succeed();
 
