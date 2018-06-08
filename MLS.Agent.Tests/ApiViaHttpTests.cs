@@ -675,7 +675,7 @@ public class Program {
             response.StatusCode.Should().Be(HttpStatusCode.GatewayTimeout);
         }
 
-        [Fact]
+        [Fact(Skip = "flaky, needs investigation")]
         public async Task When_Run_times_out_in_user_code_in_a_console_workspace_type_then_the_response_code_is_417()
         {
             // TODO-JOSEQU: (When_Run_times_out_in_user_code_then_the_response_code_is_417) make this test faster
