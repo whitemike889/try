@@ -3,6 +3,9 @@ set -e
 
 echo "Starting Deployment"
 
+echo "Pruning Docker images"
+docker image prune -f
+
 SCRIPT_ROOT=`dirname "$0"`; SCRIPT_ROOT=`eval "cd \"$SCRIPT_ROOT\" && pwd"`
 REPO_ROOT=`eval "cd \"$SCRIPT_ROOT/..\" && pwd"`
 
