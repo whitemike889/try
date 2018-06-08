@@ -7,11 +7,6 @@ using WorkspaceServer.Models.SingatureHelp;
 
 namespace WorkspaceServer
 {
-    public interface ICodeRunner
-    {
-        Task<RunResult> Run(Workspace workspace, Budget budget = null);
-    }
-
     public interface ILanguageService
     {
         Task<CompletionResult> GetCompletionList(WorkspaceRequest request, Budget budget = null);

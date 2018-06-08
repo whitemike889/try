@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Reflection;
 using System.Linq;
 using System.Text;
@@ -10,12 +9,9 @@ using Clockwise;
 using Microsoft.CodeAnalysis;
 using Diagnostic = Microsoft.CodeAnalysis.Diagnostic;
 using Microsoft.CodeAnalysis.Completion;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
-using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.Recommendations;
 using Microsoft.CodeAnalysis.Scripting;
-using Microsoft.CodeAnalysis.Text;
 using Pocket;
 using WorkspaceServer.Models;
 using WorkspaceServer.Models.Completion;
@@ -29,57 +25,6 @@ using WorkspaceServer.Servers.Roslyn;
 
 namespace WorkspaceServer.Servers.Scripting
 {
-    public class WorkspaceFixture
-    {
-        private readonly AdhocWorkspace _workspace = new AdhocWorkspace(MefHostServices.DefaultHost);
-        private readonly DocumentId _documentId;
-
-        public WorkspaceFixture(
-            IEnumerable<string> defaultUsings,
-            ImmutableArray<MetadataReference> metadataReferences)
-        {
-            if (defaultUsings == null)
-            {
-                throw new ArgumentNullException(nameof(defaultUsings));
-            }
-
-            if (metadataReferences == null)
-            {
-                throw new ArgumentNullException(nameof(metadataReferences));
-            }
-
-            var projectId = ProjectId.CreateNewId("ScriptProject");
-
-            var compilationOptions = new CSharpCompilationOptions(
-                OutputKind.DynamicallyLinkedLibrary,
-                usings: defaultUsings);
-
-            var projectInfo = ProjectInfo.Create(
-                projectId,
-                version: VersionStamp.Create(),
-                name: "ScriptProject",
-                assemblyName: "ScriptProject",
-                language: LanguageNames.CSharp,
-                compilationOptions: compilationOptions,
-                metadataReferences: metadataReferences);
-
-            _workspace.AddProject(projectInfo);
-
-            _documentId = DocumentId.CreateNewId(projectId, "ScriptDocument");
-
-            var documentInfo = DocumentInfo.Create(_documentId,
-                name: "ScriptDocument",
-                sourceCodeKind: SourceCodeKind.Script);
-
-            _workspace.AddDocument(documentInfo);
-        }
-
-        public Document ForkDocument(string text)
-        {
-            var document = _workspace.CurrentSolution.GetDocument(_documentId);
-            return document.WithText(SourceText.From(text));
-        }
-    }
     public class ScriptingWorkspaceServer : ICodeRunner, ILanguageService
     {
         private readonly BufferInliningTransformer _transformer = new BufferInliningTransformer();

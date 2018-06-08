@@ -54,7 +54,7 @@ namespace MLS.Agent.Controllers
 
                 var runTimeout = TimeSpan.FromMilliseconds(timeoutMs);
                 var budget = new TimeBudget(runTimeout);
-                var server = GetServerForWorkspace(request.Workspace, budget);
+                var server = GetServerForWorkspace(request.Workspace);
                 var result = await server.GetCompletionList(request, budget);
                 budget.RecordEntry();
                 operation.Succeed();
@@ -83,7 +83,7 @@ namespace MLS.Agent.Controllers
 
                 var runTimeout = TimeSpan.FromMilliseconds(timeoutMs);
                 var budget = new TimeBudget(runTimeout);
-                var server = GetServerForWorkspace(request.Workspace, budget);
+                var server = GetServerForWorkspace(request.Workspace);
                 var result = await server.GetDiagnostics(request.Workspace, budget);
                 budget.RecordEntry();
                 operation.Succeed();
@@ -113,7 +113,7 @@ namespace MLS.Agent.Controllers
 
                 var runTimeout = TimeSpan.FromMilliseconds(timeoutMs);
                 var budget = new TimeBudget(runTimeout);
-                var server = GetServerForWorkspace(request.Workspace, budget);
+                var server = GetServerForWorkspace(request.Workspace);
                 var result = await server.GetSignatureHelp(request, budget);
                 budget.RecordEntry();
                 operation.Succeed();
@@ -122,7 +122,7 @@ namespace MLS.Agent.Controllers
             }
         }
 
-        private ILanguageService GetServerForWorkspace(Workspace workspace, Budget budget)
+        private ILanguageService GetServerForWorkspace(Workspace workspace)
         {
             if (string.Equals(workspace.WorkspaceType, "script", StringComparison.OrdinalIgnoreCase))
             {
