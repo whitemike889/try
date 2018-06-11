@@ -7,26 +7,32 @@ using WorkspaceServer.Models.Execution;
 
 namespace WorkspaceServer.Transformations
 {
-    public class DiagnosticTransformer
+    public class NewDiagnosticTransformer
     {
-        public static IEnumerable<(SerializableDiagnostic, string)> ReconstructDiagnosticLocations(IEnumerable<Diagnostic> bodyDiagnostics,
+        public static IEnumerable<SerializableDiagnostic> ReconstructDiagnosticLocations(IEnumerable<Diagnostic> bodyDiagnostics,
             Dictionary<string, Viewport> viewPortsByBufferId, int paddingSize)
         {
-            const string unmappedPath = "unmapped";
             var diagnostics = bodyDiagnostics ?? Enumerable.Empty<Diagnostic>();
             foreach (var diagnostic in diagnostics)
             {
-                var lineSpan = diagnostic.Location.GetMappedLineSpan();
-                var diagnosticPath = lineSpan.HasMappedPath ? lineSpan.Path : unmappedPath;
+                if (diagnostic.Location == Location.None)
+                {
+                    yield return new SerializableDiagnostic(
+                        1, 1, diagnostic.GetMessage(),
+                        diagnostic.Severity, diagnostic.Id);
+                    continue;
+                }
+
+                var diagnosticPath = diagnostic.Location.SourceTree.FilePath;
                 if (viewPortsByBufferId == null || viewPortsByBufferId.Count == 0)
                 {
                     var errorMessage = diagnostic.ToString();
-                    yield return (new SerializableDiagnostic(diagnostic), errorMessage);
+                    yield return new SerializableDiagnostic(diagnostic);
                 }
                 else
                 {
                     var target = viewPortsByBufferId
-                        .Where(e => e.Key.Contains("@") && (diagnosticPath == unmappedPath || diagnosticPath.EndsWith(e.Value.Destination.Name)))
+                        .Where(e => e.Key.Contains("@") && diagnosticPath.EndsWith(e.Value.Destination.Name))
                         .FirstOrDefault(e => e.Value.Region.Contains(diagnostic.Location.SourceSpan.Start));
 
                     if (target.Value != null && !target.Value.Region.IsEmpty)
@@ -37,12 +43,12 @@ namespace WorkspaceServer.Transformations
                     else
                     {
                         var errorMessage = diagnostic.ToString();
-                        yield return (new SerializableDiagnostic(diagnostic), errorMessage);
+                        yield return new SerializableDiagnostic(diagnostic);
                     }
                 }
             }
         }
-        private static (SerializableDiagnostic, string) AlignDiagnosticLocation(KeyValuePair<string, Viewport> target, Diagnostic diagnostic, int paddingSize)
+        private static SerializableDiagnostic AlignDiagnosticLocation(KeyValuePair<string, Viewport> target, Diagnostic diagnostic, int paddingSize)
         {
             // offest of the buffer int othe original source file
             var offset = target.Value.Region.Start;
@@ -74,16 +80,14 @@ namespace WorkspaceServer.Transformations
             var charOffset = bufferTextSource.Text.Lines[lineOffest].ToString().IndexOf(partToFind, StringComparison.Ordinal);
             var location = new { Line = lineOffest + 1, Char = charOffset + 1 };
 
-            var diagnosticMessage = diagnostic.GetMessage();
-            var errorMessage = $"({location.Line},{location.Char}): error {diagnostic.Id}: {diagnosticMessage}";
+            var errorMessage = $"({location.Line},{location.Char}): error {diagnostic.Id}: {diagnostic.GetMessage()}";
 
-            var processedDiagnostic = (new SerializableDiagnostic(
+            var processedDiagnostic = new SerializableDiagnostic(
                     start,
                     end,
-                    diagnosticMessage,
+                    diagnostic.GetMessage(),
                     diagnostic.Severity,
-                    diagnostic.Id),
-                errorMessage);
+                    diagnostic.Id);
             return processedDiagnostic;
         }
     }

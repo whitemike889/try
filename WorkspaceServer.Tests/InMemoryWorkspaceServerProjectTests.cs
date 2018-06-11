@@ -16,9 +16,9 @@ using Xunit.Abstractions;
 
 namespace WorkspaceServer.Tests
 {
-    public class DotnetWorkspaceServerConsoleProjectTests : WorkspaceServerTests
+    public class InMemoryWorkspaceServerConsoleProjectTests : WorkspaceServerTests
     {
-        public DotnetWorkspaceServerConsoleProjectTests(ITestOutputHelper output) : base(output)
+        public InMemoryWorkspaceServerConsoleProjectTests(ITestOutputHelper output) : base(output)
         {
         }
 
@@ -28,7 +28,7 @@ namespace WorkspaceServer.Tests
                 $@"using System; using System.Linq; using System.Collections.Generic; class Program {{ static void Main() {{ {text}
                     }}
                 }}
-            ");
+            ", workspaceType: "console");
         }
 
         [Fact]
@@ -259,112 +259,22 @@ namespace FibonacciTest
             result.Output.Should().BeEquivalentTo("1", "1", "2", "3", "5", "8", "13", "21", "34", "55", "89", "144", "233", "377", "610", "987", "1597", "2584", "4181", "6765");
         }
 
-        [Fact]
-        public async Task Request_With_Instrumentation_Gives_Instrumented_Output()
-        {
-            #region bufferSources
-
-            var program = @"
-using System;
-using System.Linq;
-
-namespace FibonacciTest
-{
-    public class Program
-    {
-        public static void Main()
-        {
-            int a = 4;
-            Console.WriteLine(a);
-        }
-    }
-}".Replace("\r\n", "\n");
-
-            #endregion
-
-            var request = new Workspace(workspaceType: "console", includeInstrumentation: true, buffers: new[]
-            {
-                new Workspace.Buffer("Program.cs", program, 0),
-            });
-
-            var configuration = new Configuration()
-                .UsingExtension("json");
-#if !DEBUG
-            configuration = configuration.SetInteractive(false);
-#endif
-
-            var server = await GetRunner();
-
-            var result = await server.Run(request);
-
-            var str = result.Instrumentation.Select(json => json.ToString())
-                .Aggregate("", (acc, next) => acc + next + Environment.NewLine);
-
-            this.Assent(str, configuration);
-        }
-
-        [Fact]
-        public async Task Request_With_Instrumentation_Should_Return_Parsable_JSON()
-        {
-            #region bufferSources
-
-            var program = @"
-using System;
-using System.Linq;
-
-namespace FibonacciTest
-{
-    public class Program
-    {
-        public static void Main()
-        {
-            int a = 4;
-            Console.WriteLine(a);
-        }
-    }
-}";
-
-            #endregion
-
-            var request = new Workspace(workspaceType: "console", includeInstrumentation: true, buffers: new[]
-            {
-                new Workspace.Buffer("Program.cs", program, 0),
-            });
-
-            var server = await GetRunner();
-
-            var result = await server.Run(request);
-
-            var instrumentation = result.Instrumentation.Select(j => (Newtonsoft.Json.Linq.JObject)JsonConvert.DeserializeObject(j.Value.ToString()));
-
-            result.Succeeded.Should().BeTrue();
-            result.Instrumentation.Count.Should().Be(4);
-            ((int)(instrumentation.ElementAt(1)["filePosition"]["line"])).Should().Be(10);
-        }
 
 
         protected override async Task<ICodeRunner> GetRunner(
             [CallerMemberName] string testName = null)
         {
-            return await NewMethod(testName);
+            var project = await Create.ConsoleWorkspace(testName);
+
+            var workspaceServer = new InMemoryWorkspaceServer(new DotnetWorkspaceServerRegistry());
+
+            return workspaceServer;
         }
 
         protected override ILanguageService GetLanguageService(
             [CallerMemberName] string testName = null) => new InMemoryWorkspaceServer(
                 DefaultWorkspaces.CreateWorkspaceServerRegistry());
 
-        private async Task<DotnetWorkspaceServer> NewMethod(string testName)
-        {
-            var project = await Create.ConsoleWorkspace(testName);
-
-            var workspaceServer = new DotnetWorkspaceServer(project, 45);
-
-            RegisterForDisposal(workspaceServer);
-
-            await workspaceServer.EnsureInitializedAndNotDisposed();
-
-            return workspaceServer;
-        }
     }
 }
 

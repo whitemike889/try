@@ -8,6 +8,7 @@ using WorkspaceServer;
 using WorkspaceServer.Models;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Servers.Dotnet;
+using WorkspaceServer.Servers.InMemory;
 using WorkspaceServer.Servers.Scripting;
 using WorkspaceServer.WorkspaceFeatures;
 using static Pocket.Logger<MLS.Agent.Controllers.WorkspaceController>;
@@ -18,7 +19,10 @@ namespace MLS.Agent.Controllers
     {
         private readonly AgentOptions _options;
 
-        public WorkspaceController(DotnetWorkspaceServerRegistry workspaceServerRegistry, AgentOptions options) : base(workspaceServerRegistry)
+        public WorkspaceController(DotnetWorkspaceServerRegistry workspaceServerRegistry,
+            InMemoryWorkspaceServer imws,
+            AgentOptions options) 
+            : base(imws)
         {
             _options = options ?? throw new ArgumentNullException(nameof(options));
         }

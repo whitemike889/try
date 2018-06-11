@@ -6,6 +6,9 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using WorkspaceServer.Models.Execution;
 using Microsoft.CodeAnalysis.Host.Mef;
+using System.IO;
+using System.Threading;
+using Clockwise;
 
 namespace WorkspaceServer.Servers.InMemory
 {
@@ -14,13 +17,16 @@ namespace WorkspaceServer.Servers.InMemory
         private readonly string name;
         private readonly IEnumerable<MetadataReference> additionalReferences;
        
-        public InMemoryWorkspace(String name, IEnumerable<MetadataReference> additionalReferences)
+        public InMemoryWorkspace(String name, MLS.Agent.Tools.Workspace workspace, IEnumerable<MetadataReference> additionalReferences)
         {
             this.name = name ?? throw new ArgumentNullException(nameof(name));
+            Workspace = workspace;
             this.additionalReferences = additionalReferences ?? throw new ArgumentNullException(nameof(additionalReferences));
         }
 
-        public async Task<(Compilation, IEnumerable<Document>)> WithSources(IReadOnlyCollection<SourceFile> sources)
+        public MLS.Agent.Tools.Workspace Workspace { get; }
+
+        public async Task<(Compilation, IEnumerable<Document>)> WithSources(IReadOnlyCollection<SourceFile> sources, Budget budget)
         {
             var workspace = new AdhocWorkspace(MefHostServices.DefaultHost);
             var compilationOptions = new CSharpCompilationOptions(OutputKind.ConsoleApplication);
@@ -49,7 +55,7 @@ namespace WorkspaceServer.Servers.InMemory
 
             var project = currentSolution.GetProject(projectId);
 
-            var newCompilation = await project.GetCompilationAsync(); 
+            var newCompilation = await project.GetCompilationAsync().CancelIfExceeds(budget); 
         
             return (newCompilation, project.Documents);
         }

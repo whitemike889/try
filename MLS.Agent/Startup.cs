@@ -10,6 +10,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Pocket;
 using Recipes;
+using WorkspaceServer;
 using WorkspaceServer.Servers.InMemory;
 using static Pocket.Logger<MLS.Agent.Startup>;
 
@@ -61,7 +62,7 @@ namespace MLS.Agent
                 services.AddSingleton(Configuration);
 
                 services.AddSingleton(_ => DefaultWorkspaces.CreateWorkspaceServerRegistry());
-                services.AddSingleton(_ => new InMemoryWorkspaceServer());
+                services.AddSingleton(c => new InMemoryWorkspaceServer(c.GetRequiredService<DotnetWorkspaceServerRegistry>()));
 
                 services.AddSingleton<IHostedService, Warmup>();
 

@@ -4,22 +4,23 @@ using Clockwise;
 using Microsoft.AspNetCore.Mvc;
 using Pocket;
 using WorkspaceServer;
+using WorkspaceServer.Servers.InMemory;
 
 namespace MLS.Agent.Controllers
 {
     public class RunController : Controller
     {
-        private readonly DotnetWorkspaceServerRegistry _workspaceServerRegistry;
+        private readonly InMemoryWorkspaceServer _workspaceServer;
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
 
-        public RunController(DotnetWorkspaceServerRegistry workspaceServerRegistry)
+        public RunController(InMemoryWorkspaceServer workspaceServer)
         {
-            _workspaceServerRegistry = workspaceServerRegistry ?? throw new ArgumentNullException(nameof(workspaceServerRegistry));
+            _workspaceServer = workspaceServer ?? throw new ArgumentNullException(nameof(workspaceServer));
         }
 
-        protected async Task<ICodeRunner> GetWorkspaceServer(string workspaceType, Budget budget = null)
+        protected  Task<ICodeRunner> GetWorkspaceServer(string workspaceType, Budget budget = null)
         {
-            return await _workspaceServerRegistry.GetWorkspaceServer(workspaceType, budget);
+            return Task.FromResult((ICodeRunner)_workspaceServer);
         }
 
         protected void AddToDisposeChain(IDisposable disposable)

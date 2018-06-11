@@ -10,6 +10,7 @@ using Xunit.Abstractions;
 using static Pocket.Logger<WorkspaceServer.Tests.WorkspaceServerTests>;
 using Workspace = WorkspaceServer.Models.Execution.Workspace;
 using Newtonsoft.Json;
+using System.Linq;
 
 namespace WorkspaceServer.Tests
 {
@@ -104,13 +105,19 @@ Console.WriteLine(banana);");
             var server = await GetRunner();
 
             var result = await server.Run(request);
+            result.Succeeded.Should().BeFalse();
+            result.Output.Should().ContainSingle();
+            result.Output.Single().Should().Contain("(2,19): error CS0103: The name \'banana\' does not exist in the current context");
+            result.Exception.Should().BeNull();
 
-            result.Should().BeEquivalentTo(new
-            {
-                Succeeded = false,
-                Output = new[] { "(2,19): error CS0103: The name \'banana\' does not exist in the current context" },
-                Exception = (string)null, // we already display the error in Output
-            }, config => config.ExcludingMissingMembers());
+            // TODO: in memory and dotnet workspace servers print slightly different output for 
+            // copmile errors
+            //result.Should().BeEquivalentTo(new
+            //{
+            //    Succeeded = false,
+            //    Output = new[] { "(2,19): error CS0103: The name \'banana\' does not exist in the current context" },
+            //    Exception = (string)null, // we already display the error in Output
+            //}, config => config.ExcludingMissingMembers());
         }
 
 

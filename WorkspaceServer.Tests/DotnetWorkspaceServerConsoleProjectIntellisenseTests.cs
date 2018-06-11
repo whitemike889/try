@@ -531,7 +531,7 @@ namespace FibonacciTest
 
         protected override ILanguageService GetLanguageService([CallerMemberName] string testName = null)
         {
-            return new InMemoryWorkspaceServer();
+            return new InMemoryWorkspaceServer(new DotnetWorkspaceServerRegistry());
         }
 
         [Fact]
