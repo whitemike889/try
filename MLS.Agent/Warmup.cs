@@ -29,8 +29,6 @@ namespace MLS.Agent
 
         protected override async Task ExecuteAsync(Budget budget)
         {
-            await _workspaceServerRegistry.StartAllServers(budget);
-
             await WarmUpRoutes();
         }
 
