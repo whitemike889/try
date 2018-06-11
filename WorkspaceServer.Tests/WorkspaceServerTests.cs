@@ -9,7 +9,6 @@ using Xunit;
 using Xunit.Abstractions;
 using static Pocket.Logger<WorkspaceServer.Tests.WorkspaceServerTests>;
 using Workspace = WorkspaceServer.Models.Execution.Workspace;
-using Newtonsoft.Json;
 using System.Linq;
 
 namespace WorkspaceServer.Tests

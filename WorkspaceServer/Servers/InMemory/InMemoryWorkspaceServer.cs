@@ -1,11 +1,11 @@
 using System;
+using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using Clockwise;
 using WorkspaceServer.Models;
 using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Models.SingatureHelp;
-using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using WorkspaceServer.Servers.Roslyn;
 using System.Linq;
@@ -14,48 +14,50 @@ using WorkspaceServer.Servers.Scripting;
 using Microsoft.CodeAnalysis.Recommendations;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis.Completion;
+using MLS.Agent.Tools;
 using Workspace = WorkspaceServer.Models.Execution.Workspace;
 using WorkspaceServer.WorkspaceFeatures;
-using System.Threading;
 
 namespace WorkspaceServer.Servers.InMemory
 {
     public class InMemoryWorkspaceServer : ILanguageService, ICodeRunner
     {
         private const int defaultTimeSpanInSeconds = 30;
-        private readonly ImmutableDictionary<string, Func<InMemoryWorkspace>> workspacesCache;
-        private readonly BufferInliningTransformer _transformer =new BufferInliningTransformer();
-        private readonly DotnetWorkspaceServerRegistry _workspaceRegistry;
+        private readonly ConcurrentDictionary<string, AsyncLazy<InMemoryWorkspace>> workspacesCache;
+        private readonly BufferInliningTransformer _transformer = new BufferInliningTransformer();
+
         private readonly string UserCodeCompleted = nameof(UserCodeCompleted);
 
         public InMemoryWorkspaceServer(DotnetWorkspaceServerRegistry registry)
         {
-            _workspaceRegistry = registry ?? throw new ArgumentNullException(nameof(registry));
+            if (registry == null)
+            {
+                throw new ArgumentNullException(nameof(registry));
+            }
 
-            var builder = ImmutableDictionary.CreateBuilder<string, Func<InMemoryWorkspace>>();
-            builder.Add("console",
-                        () => new InMemoryWorkspace(
-                            "console",
-                            _workspaceRegistry.GetWorkspace("console").Result,
-                            WorkspaceUtilities.DefaultReferencedAssemblies));
-            builder.Add("script",
-                        () => new InMemoryWorkspace(
-                            "script",
-                            _workspaceRegistry.GetWorkspace("console").Result,
-                            WorkspaceUtilities.DefaultReferencedAssemblies));
-            builder.Add("nodatime.api",
-                        () => new InMemoryWorkspace(
-                            "nodatime.api",
-                            _workspaceRegistry.GetWorkspace("nodatime.api").Result,
-                            WorkspaceUtilities.DefaultReferencedAssemblies));
+            workspacesCache = new ConcurrentDictionary<string, AsyncLazy<InMemoryWorkspace>>
+            {
+                ["console"] = new AsyncLazy<InMemoryWorkspace>(async () => new InMemoryWorkspace(
+                                                                   "console",
+                                                                   await registry.GetWorkspace("console"),
+                                                                   WorkspaceUtilities.DefaultReferencedAssemblies)),
 
-            workspacesCache = builder.ToImmutableDictionary();
+                ["script"] = new AsyncLazy<InMemoryWorkspace>(async () => new InMemoryWorkspace(
+                                                                  "script",
+                                                                  await registry.GetWorkspace("console"),
+                                                                  WorkspaceUtilities.DefaultReferencedAssemblies)),
+
+                ["nodatime.api"] = new AsyncLazy<InMemoryWorkspace>(async () => new InMemoryWorkspace(
+                                                                        "nodatime.api",
+                                                                        await registry.GetWorkspace("nodatime.api"),
+                                                                        WorkspaceUtilities.DefaultReferencedAssemblies)),
+            };
         }
 
         public async Task<CompletionResult> GetCompletionList(WorkspaceRequest request, Budget budget)
         {
             budget = budget ?? new TimeBudget(TimeSpan.FromSeconds(defaultTimeSpanInSeconds));
-            var workspace = workspacesCache[request.Workspace.WorkspaceType]();
+            var workspace = await workspacesCache[request.Workspace.WorkspaceType].ValueAsync();
 
             var processed = await _transformer.TransformAsync(request.Workspace, budget);
             var viewPorts = _transformer.ExtractViewPorts(processed);
@@ -93,7 +95,7 @@ namespace WorkspaceServer.Servers.InMemory
         public async Task<DiagnosticResult> GetDiagnostics(Workspace request, Budget budget)
         {
             budget = budget ?? new TimeBudget(TimeSpan.FromSeconds(defaultTimeSpanInSeconds));
-            var workspace = workspacesCache[request.WorkspaceType]();
+            var workspace = await workspacesCache[request.WorkspaceType].ValueAsync();
 
             var processed = await _transformer.TransformAsync(request, budget);
             var viewPorts = _transformer.ExtractViewPorts(processed);
@@ -109,7 +111,7 @@ namespace WorkspaceServer.Servers.InMemory
             budget = budget ?? new TimeBudget(TimeSpan.FromSeconds(defaultTimeSpanInSeconds));
             var (code, line, column, _) = await TransformWorkspaceAndPreparePositionalRequest(request, budget);
 
-            var workspace = workspacesCache[request.Workspace.WorkspaceType]();
+            var workspace = await workspacesCache[request.Workspace.WorkspaceType].ValueAsync();
 
             Workspace processed = await _transformer.TransformAsync(request.Workspace, budget);
 
@@ -141,7 +143,7 @@ namespace WorkspaceServer.Servers.InMemory
         {
             budget = budget ?? new TimeBudget(TimeSpan.FromSeconds(defaultTimeSpanInSeconds));
 
-            var workspace = workspacesCache[workspaceModel.WorkspaceType]();
+            var workspace = await workspacesCache[workspaceModel.WorkspaceType].ValueAsync();
             var processed = await _transformer.TransformAsync(workspaceModel, budget);
             var viewPorts = _transformer.ExtractViewPorts(processed);
             var sourceFiles = processed.GetSourceFiles();

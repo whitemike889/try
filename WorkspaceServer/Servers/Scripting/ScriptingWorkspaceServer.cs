@@ -172,16 +172,16 @@ namespace WorkspaceServer.Servers.Scripting
                 var symbolToSymbolKey = new Dictionary<(string, int), ISymbol>();
                 foreach (var symbol in symbols)
                 {
-                    var key = (symbol.Name, (int)symbol.Kind);
+                    var key = (symbol.Name, (int) symbol.Kind);
                     if (!symbolToSymbolKey.ContainsKey(key))
                     {
                         symbolToSymbolKey[key] = symbol;
                     }
                 }
 
-                var items = completionList.Items.Select(item => item.ToModel(symbolToSymbolKey, document).Result).ToArray();
+                var items = completionList.Items.Select(item => item.ToModel(symbolToSymbolKey, document));
 
-                return new CompletionResult(items: items);
+                return new CompletionResult(items: await Task.WhenAll(items));
             }
         }
 

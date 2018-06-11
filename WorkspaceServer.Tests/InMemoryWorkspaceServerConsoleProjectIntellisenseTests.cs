@@ -13,9 +13,9 @@ using Xunit.Abstractions;
 
 namespace WorkspaceServer.Tests
 {
-    public class DotnetWorkspaceServerConsoleProjectIntellisenseTests : WorkspaceServerTestsCore
+    public class InMemoryWorkspaceServerConsoleProjectIntellisenseTests : WorkspaceServerTestsCore
     {
-        public DotnetWorkspaceServerConsoleProjectIntellisenseTests(ITestOutputHelper output) : base(output)
+        public InMemoryWorkspaceServerConsoleProjectIntellisenseTests(ITestOutputHelper output) : base(output)
         {
         }
 
