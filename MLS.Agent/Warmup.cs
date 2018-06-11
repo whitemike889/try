@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Clockwise;
 using Newtonsoft.Json;
 using Pocket;
-using WorkspaceServer;
 using WorkspaceServer.Models;
 using WorkspaceServer.Models.Execution;
 using static Pocket.Logger<MLS.Agent.Warmup>;
@@ -14,18 +13,10 @@ namespace MLS.Agent
 {
     public class Warmup : HostedService
     {
-        private readonly DotnetWorkspaceServerRegistry _workspaceServerRegistry;
-
         private readonly HttpClient _httpClient = new HttpClient
         {
             BaseAddress = new Uri("http://localhost:4242")
         };
-
-        public Warmup(DotnetWorkspaceServerRegistry workspaceServerRegistry)
-        {
-            _workspaceServerRegistry = workspaceServerRegistry ??
-                                       throw new ArgumentNullException(nameof(workspaceServerRegistry));
-        }
 
         protected override async Task ExecuteAsync(Budget budget)
         {
