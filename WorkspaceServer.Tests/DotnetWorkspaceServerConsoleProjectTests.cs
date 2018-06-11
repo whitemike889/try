@@ -6,7 +6,6 @@ using Assent;
 using FluentAssertions;
 using MLS.Agent;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using WorkspaceServer.Models;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Servers.Dotnet;
@@ -31,7 +30,7 @@ namespace WorkspaceServer.Tests
             ");
         }
 
-        [Fact]
+        [Fact(Skip="to be removed")]
         public async Task When_compile_is_unsuccessful_diagnostic_are_aligned_with_buffer_span()
         {
             var workspace = new Workspace(
@@ -50,7 +49,7 @@ namespace WorkspaceServer.Tests
             }, config => config.ExcludingMissingMembers());
         }
 
-        [Fact]
+        [Fact(Skip="to be removed")]
         public async Task When_compile_is_unsuccessful_diagnostic_are_aligned_with_buffer_span_when_code_is_multi_line()
         {
             var workspace = new Workspace(
@@ -69,7 +68,7 @@ namespace WorkspaceServer.Tests
             }, config => config.ExcludingMissingMembers());
         }
 
-        [Fact]
+        [Fact(Skip="to be removed")]
         public async Task Get_diagnostics_produces_appropriate_diagnostics_for_display_to_user_when_using_buffers()
         {
             var codeLine1 = @"var a = 10;";
@@ -88,7 +87,7 @@ namespace WorkspaceServer.Tests
             result.Diagnostics.Should().Contain(d => d.Id == "CS0103" && d.Start == erroPos); // banana is not defined
         }
 
-        [Fact]
+        [Fact(Skip="to be removed")]
         public async Task When_Run_is_called_again_then_previous_file_state_is_cleaned_up()
         {
             #region bufferSources
@@ -150,7 +149,7 @@ namespace FibonacciTest
             result.Succeeded.Should().BeTrue();
         }
 
-        [Fact]
+        [Fact(Skip="to be removed")]
         public async Task Response_with_multi_buffer_workspace()
         {
             #region bufferSources
@@ -204,7 +203,7 @@ namespace FibonacciTest
             result.Output.Should().BeEquivalentTo("1", "1", "2", "3", "5", "8", "13", "21", "34", "55", "89", "144", "233", "377", "610", "987", "1597", "2584", "4181", "6765");
         }
 
-        [Fact]
+        [Fact(Skip="to be removed")]
         public async Task Response_with_multi_buffer_using_relative_paths_workspace()
         {
             #region bufferSources
@@ -259,7 +258,7 @@ namespace FibonacciTest
             result.Output.Should().BeEquivalentTo("1", "1", "2", "3", "5", "8", "13", "21", "34", "55", "89", "144", "233", "377", "610", "987", "1597", "2584", "4181", "6765");
         }
 
-        [Fact]
+        [Fact(Skip="to be removed")]
         public async Task Request_With_Instrumentation_Gives_Instrumented_Output()
         {
             #region bufferSources
@@ -303,7 +302,7 @@ namespace FibonacciTest
             this.Assent(str, configuration);
         }
 
-        [Fact]
+        [Fact(Skip="to be removed")]
         public async Task Request_With_Instrumentation_Should_Return_Parsable_JSON()
         {
             #region bufferSources
