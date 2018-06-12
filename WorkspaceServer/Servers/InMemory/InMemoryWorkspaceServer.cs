@@ -85,6 +85,7 @@ namespace WorkspaceServer.Servers.InMemory
 
             var completionItems = await Task.WhenAll(
                                       completionList.Items
+                                                    .Where(i => i != null)
                                                     .Select(item => item.ToModel(symbolToSymbolKey, selectedDocument)));
 
             return new CompletionResult(completionItems
