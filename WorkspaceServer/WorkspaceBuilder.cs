@@ -10,18 +10,22 @@ namespace WorkspaceServer
 {
     public class WorkspaceBuilder
     {
+        private readonly DotnetWorkspaceServerRegistry _registry;
+
         private Workspace _workspace;
 
         private readonly List<Func<Workspace, Budget, Task>> _afterCreateActions = new List<Func<Workspace, Budget, Task>>();
 
         private readonly Logger _log;
 
-        public WorkspaceBuilder(string workspaceName)
+        public WorkspaceBuilder(DotnetWorkspaceServerRegistry registry, string workspaceName)
         {
             if (string.IsNullOrWhiteSpace(workspaceName))
             {
                 throw new ArgumentException("Value cannot be null or whitespace.", nameof(workspaceName));
             }
+
+            _registry = registry ?? throw new ArgumentNullException(nameof(registry));
 
             WorkspaceName = workspaceName;
 
@@ -33,6 +37,11 @@ namespace WorkspaceServer
         internal IWorkspaceInitializer WorkspaceInitializer { get; private set; }
 
         public bool RequiresPublish { get; set; }
+
+        public void CreateCopyOf(string originalWorkspaceName) =>
+            WorkspaceInitializer = new WorkspaceCopyInitializer(
+               _registry,
+                originalWorkspaceName);
 
         public void CreateUsingDotnet(string template) =>
             WorkspaceInitializer = new DotnetWorkspaceInitializer(
@@ -80,24 +89,15 @@ namespace WorkspaceServer
         private async Task PrepareWorkspace(Budget budget = null)
         {
             budget = budget ?? new Budget();
-            using (var operation = _log.OnEnterAndConfirmOnExit())
-            {
-                _workspace = new Workspace(
-                    WorkspaceName,
-                    WorkspaceInitializer);
 
-                await _workspace.EnsureCreated(budget);
+            _workspace = new Workspace(
+                WorkspaceName,
+                WorkspaceInitializer,
+                requiresPublish: RequiresPublish);
 
-                await _workspace.EnsureBuilt(budget);
+            await _workspace.EnsureReady(budget);
 
-                if (RequiresPublish)
-                {
-                    await _workspace.EnsurePublished(budget);
-                }
-
-                budget.RecordEntry();
-                operation.Succeed();
-            }
+            budget.RecordEntry();
         }
 
         private async Task AfterCreate(DirectoryInfo directoryInfo, Budget budget)

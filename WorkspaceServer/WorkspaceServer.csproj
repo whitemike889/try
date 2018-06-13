@@ -33,7 +33,6 @@
     </PackageReference>
     <PackageReference Include="System.Reactive" Version="3.1.1" />
     <PackageReference Include="System.Runtime.Loader" Version="4.3.0" />
-    <PackageReference Include="TryDotNet.OmniSharp.Emit" Version="1.29.0-beta3" />
      <PackageReference Include="trydotnet-references">
       <Version>1.0.1</Version>
     </PackageReference>
@@ -45,7 +44,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\MLS.Agent.Tools\MLS.Agent.Tools.csproj" />
-    <ProjectReference Include="..\OmniSharp.Client\OmniSharp.Client.csproj" />
   </ItemGroup>
 
 </Project>

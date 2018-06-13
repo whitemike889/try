@@ -8,20 +8,7 @@ RUN apt-get update
 RUN apt-get --assume-yes install mono-devel 
 RUN apt-get --assume-yes install msbuild 
 
-# set up OmniSharp
-ENV TRYDOTNET_OMNISHARP_PATH=/dependencies/omnisharp/
 ENV NUGET_PACKAGES=/dependencies/.nuget/packages
-
-RUN mkdir -p /dependencies/omnisharp/v1.29.0-beta1
-RUN curl -SL https://github.com/OmniSharp/omnisharp-roslyn/releases/download/v1.29.0-beta1/omnisharp-linux-x64.tar.gz | tar xvz -C /dependencies/omnisharp/v1.29.0-beta1
-RUN echo "/usr/bin/mono --assembly-loader=strict /dependencies/omnisharp/v1.29.0-beta1/omnisharp/OmniSharp.exe \"\$@\"" > "${TRYDOTNET_OMNISHARP_PATH}v1.29.0-beta1/run2"
-RUN chmod -R 777 "${TRYDOTNET_OMNISHARP_PATH}v1.29.0-beta1/run2"
-
-RUN mkdir -p /dependencies/omnisharp/ca-2.9.2
-RUN curl -SL https://github.com/OmniSharp/omnisharp-roslyn/releases/download/ca-2.9.2/omnisharp-linux-x64.tar.gz | tar xvz -C /dependencies/omnisharp/ca-2.9.2
-RUN echo "/usr/bin/mono --assembly-loader=strict /dependencies/omnisharp/ca-2.9.2/omnisharp/OmniSharp.exe \"\$@\"" > "${TRYDOTNET_OMNISHARP_PATH}ca-2.9.2/run2"
-RUN chmod -R 777 "${TRYDOTNET_OMNISHARP_PATH}ca-2.9.2/run2"
-
 
 # install xmlstarlet
 RUN apt-get update
@@ -30,12 +17,6 @@ RUN apt-get --assume-yes install xmlstarlet
 # set up workspaces directory
 ENV TRYDOTNET_WORKSPACES_PATH=/workspaces
 
-# hack to get the emit plugin into the package cache
-WORKDIR /workspaces/emit
-RUN dotnet new library
-# dotnet objects to trying to add this package, so we use some coercion and return true in order to prevent the resulting error from stopping the Docker build
-RUN sed -i 's/netstandard2.0/net46/' emit.csproj
-RUN dotnet add package -v 1.29.0-beta3 trydotnet.omnisharp.emit ; true
 
 # prepare workspace types
 

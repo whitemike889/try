@@ -6,10 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Clockwise;
 using MLS.Agent.Tools;
-using Pocket;
 using Recipes;
-using WorkspaceServer.Servers.Dotnet;
-using static Pocket.Logger<WorkspaceServer.DotnetWorkspaceServerRegistry>;
 
 namespace WorkspaceServer
 {
@@ -17,7 +14,7 @@ namespace WorkspaceServer
     {
         private readonly Dictionary<string, WorkspaceBuilder> _workspaceBuilders = new Dictionary<string, WorkspaceBuilder>();
 
-        private readonly ConcurrentDictionary<string, DotnetWorkspaceServer> _workspaceServers = new ConcurrentDictionary<string, DotnetWorkspaceServer>();
+        private readonly ConcurrentDictionary<string, Workspace> _workspaceServers = new ConcurrentDictionary<string, Workspace>();
 
         public void AddWorkspace(string name, Action<WorkspaceBuilder> configure)
         {
@@ -31,45 +28,32 @@ namespace WorkspaceServer
                 throw new ArgumentException("Value cannot be null or whitespace.", nameof(name));
             }
 
-            var options = new WorkspaceBuilder(name);
+            var options = new WorkspaceBuilder(this, name);
             configure(options);
             _workspaceBuilders.Add(name, options);
         }
 
-        public Task<Workspace> GetWorkspace(string workspaceName, Budget budget = null) =>
-            _workspaceBuilders.GetOrAdd(
-                workspaceName,
-                name =>
-                {
-                    var directory = new DirectoryInfo(
-                        Path.Combine(
-                            Workspace.DefaultWorkspacesDirectory.FullName, workspaceName));
-
-                    if (directory.Exists)
-                    {
-                        return new WorkspaceBuilder(name);
-                    }
-
-                    throw new ArgumentException($"Workspace named \"{name}\" not found.");
-                }).GetWorkspace(budget);
-
-        public async Task<DotnetWorkspaceServer> GetWorkspaceServer(string name, Budget budget = null)
+        public async Task<Workspace> GetWorkspace(string workspaceName, Budget budget = null)
         {
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                throw new ArgumentException("Value cannot be null or whitespace.", nameof(name));
-            }
+            var workspace = await _workspaceBuilders.GetOrAdd(
+                                workspaceName,
+                                name =>
+                                {
+                                    var directory = new DirectoryInfo(
+                                        Path.Combine(
+                                            Workspace.DefaultWorkspacesDirectory.FullName, workspaceName));
 
-            DotnetWorkspaceServer server;
-            using (var operation = Log.OnEnterAndConfirmOnExit($"{nameof(GetWorkspaceServer)}:{name}"))
-            {
-                var workspace = await GetWorkspace(name, budget);
-                server = _workspaceServers.GetOrAdd(name, _ => new DotnetWorkspaceServer(workspace));
-                budget?.RecordEntry();
-                operation.Succeed();
-            }
+                                    if (directory.Exists)
+                                    {
+                                        return new WorkspaceBuilder(this, name);
+                                    }
 
-            return server;
+                                    throw new ArgumentException($"Workspace named \"{name}\" not found.");
+                                }).GetWorkspace(budget);
+
+            await workspace.EnsureReady(budget);
+
+            return workspace;
         }
 
         public void Dispose()
@@ -77,23 +61,6 @@ namespace WorkspaceServer
             foreach (var workspaceServer in _workspaceServers.Values.OfType<IDisposable>())
             {
                 workspaceServer.Dispose();
-            }
-        }
-
-        public async Task StartAllServers(Budget budget = null)
-        {
-            using (var operation = Log.OnEnterAndConfirmOnExit())
-            {
-                await Task.WhenAll(_workspaceBuilders.Keys.Select(async name =>
-                {
-                    var workspaceServer = await GetWorkspaceServer(name);
-                    if (workspaceServer is DotnetWorkspaceServer dotnetWorkspaceServer)
-                    {
-                        await dotnetWorkspaceServer.EnsureInitializedAndNotDisposed(budget);
-                    }
-                }));
-
-                operation.Succeed();
             }
         }
 

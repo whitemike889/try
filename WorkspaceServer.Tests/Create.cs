@@ -9,7 +9,7 @@ namespace WorkspaceServer.Tests
 {
     public static class Create
     {
-        public static async Task<Workspace> ConsoleWorkspace([CallerMemberName] string testName = null)
+        public static async Task<Workspace> ConsoleWorkspaceCopy([CallerMemberName] string testName = null)
         {
             var workspace = Workspace.Copy(
                 await Default.ConsoleWorkspace,
@@ -20,7 +20,7 @@ namespace WorkspaceServer.Tests
             return workspace;
         }
 
-        public static async Task<Workspace> WebApiWorkspace([CallerMemberName] string testName = null)
+        public static async Task<Workspace> WebApiWorkspaceCopy([CallerMemberName] string testName = null)
         {
             var workspace = Workspace.Copy(
                 await Default.WebApiWorkspace,

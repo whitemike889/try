@@ -18,13 +18,18 @@ namespace WorkspaceServer.Tests
         {
         }
 
-        protected override Workspace CreateWorkspaceContaining(string text)
+        protected override Workspace CreateWorkspaceWithMainContaining(string text)
         {
             return new Workspace(
                 $@"using System; using System.Linq; using System.Collections.Generic; class Program {{ static void Main() {{ {text}
                     }}
                 }}
-            ", workspaceType: "console");
+            ", workspaceType: GetWorkspaceType());
+        }
+
+        protected override string GetWorkspaceType()
+        {
+            return "console";
         }
 
         [Fact]
@@ -260,7 +265,7 @@ namespace FibonacciTest
         protected override async Task<ICodeRunner> GetRunner(
             [CallerMemberName] string testName = null)
         {
-            var project = await Create.ConsoleWorkspace(testName);
+            var project = await Create.ConsoleWorkspaceCopy(testName);
 
             var workspaceServer = new InMemoryWorkspaceServer(new DotnetWorkspaceServerRegistry());
 

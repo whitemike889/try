@@ -546,7 +546,7 @@ public static class Hello
     {
         Console.WriteLine(""Hello there!"")
     }
-}");
+}", workspaceType: "console");
 
             var server = GetLanguageService();
 

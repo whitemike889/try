@@ -7,7 +7,6 @@ using Pocket;
 using WorkspaceServer;
 using WorkspaceServer.Models;
 using WorkspaceServer.Models.Execution;
-using WorkspaceServer.Servers.Dotnet;
 using WorkspaceServer.Servers.InMemory;
 using WorkspaceServer.Servers.Scripting;
 using WorkspaceServer.WorkspaceFeatures;
@@ -68,11 +67,6 @@ namespace MLS.Agent.Controllers
                 else
                 {
                     var server = await GetWorkspaceServer(workspaceType);
-
-                    if (server is DotnetWorkspaceServer dotnetWorkspaceServer)
-                    {
-                        await dotnetWorkspaceServer.EnsureInitializedAndNotDisposed(budget);
-                    }
 
                     using (result = await server.Run(request.Workspace, budget))
                     {

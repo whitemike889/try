@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using Clockwise;
 using WorkspaceServer.Models;
@@ -12,10 +13,8 @@ using WorkspaceServer.Transformations;
 using WorkspaceServer.Servers.Scripting;
 using Microsoft.CodeAnalysis.Recommendations;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.IO;
 using Microsoft.CodeAnalysis.Completion;
-using MLS.Agent.Tools;
 using Pocket;
 using Recipes;
 using Workspace = WorkspaceServer.Models.Execution.Workspace;
@@ -26,45 +25,22 @@ namespace WorkspaceServer.Servers.InMemory
 {
     public class InMemoryWorkspaceServer : ILanguageService, ICodeRunner
     {
+        private readonly DotnetWorkspaceServerRegistry _registry;
         private const int defaultBudgetInSeconds = 30;
-        private readonly ImmutableDictionary<string, AsyncLock> locks;
-        private readonly ImmutableDictionary<string, AsyncLazy<InMemoryWorkspace>> workspacesCache;
+        private readonly ConcurrentDictionary<string, AsyncLock> locks = new ConcurrentDictionary<string, AsyncLock>();
         private readonly BufferInliningTransformer _transformer = new BufferInliningTransformer();
 
         private readonly string UserCodeCompleted = nameof(UserCodeCompleted);
 
         public InMemoryWorkspaceServer(DotnetWorkspaceServerRegistry registry)
         {
-            if (registry == null)
-            {
-                throw new ArgumentNullException(nameof(registry));
-            }
-
-            workspacesCache = new Dictionary<string, AsyncLazy<InMemoryWorkspace>>
-            {
-                ["console"] = new AsyncLazy<InMemoryWorkspace>(async () => new InMemoryWorkspace(
-                                                                   "console",
-                                                                   await registry.GetWorkspace("console"),
-                                                                   WorkspaceUtilities.DefaultReferencedAssemblies)),
-
-                ["script"] = new AsyncLazy<InMemoryWorkspace>(async () => new InMemoryWorkspace(
-                                                                  "script",
-                                                                  await registry.GetWorkspace("console"),
-                                                                  WorkspaceUtilities.DefaultReferencedAssemblies)),
-
-                ["nodatime.api"] = new AsyncLazy<InMemoryWorkspace>(async () => new InMemoryWorkspace(
-                                                                        "nodatime.api",
-                                                                        await registry.GetWorkspace("nodatime.api"),
-                                                                        WorkspaceUtilities.DefaultReferencedAssemblies)),
-            }.ToImmutableDictionary();
-
-            locks = workspacesCache.ToImmutableDictionary(p => p.Key, _ => new AsyncLock());
+            _registry = registry ?? throw new ArgumentNullException(nameof(registry));
         }
 
         public async Task<CompletionResult> GetCompletionList(WorkspaceRequest request, Budget budget)
         {
             budget = budget ?? new TimeBudget(TimeSpan.FromSeconds(defaultBudgetInSeconds));
-            var workspace = await workspacesCache[request.Workspace.WorkspaceType].ValueAsync();
+            var workspace = await _registry.GetWorkspace(request.Workspace.WorkspaceType);
 
             var processed = await _transformer.TransformAsync(request.Workspace, budget);
             var sourceFiles = processed.GetSourceFiles();
@@ -102,7 +78,7 @@ namespace WorkspaceServer.Servers.InMemory
         public async Task<DiagnosticResult> GetDiagnostics(Workspace request, Budget budget)
         {
             budget = budget ?? new TimeBudget(TimeSpan.FromSeconds(defaultBudgetInSeconds));
-            var workspace = await workspacesCache[request.WorkspaceType].ValueAsync();
+            var workspace = await _registry.GetWorkspace(request.WorkspaceType);
 
             var processed = await _transformer.TransformAsync(request, budget);
             var sourceFiles = processed.GetSourceFiles();
@@ -116,7 +92,7 @@ namespace WorkspaceServer.Servers.InMemory
         {
             budget = budget ?? new TimeBudget(TimeSpan.FromSeconds(defaultBudgetInSeconds));
 
-            var workspace = await workspacesCache[request.Workspace.WorkspaceType].ValueAsync();
+            var workspace = await _registry.GetWorkspace(request.Workspace.WorkspaceType);
 
             Workspace processed = await _transformer.TransformAsync(request.Workspace, budget);
 
@@ -149,9 +125,9 @@ namespace WorkspaceServer.Servers.InMemory
             RunResult runResult = null;
 
             using (var operation = Log.OnEnterAndConfirmOnExit())
-            using (await locks[workspaceModel.WorkspaceType].LockAsync())
+            using (await locks.GetOrAdd(workspaceModel.WorkspaceType, s => new AsyncLock()).LockAsync())
             {
-                var workspace = await workspacesCache[workspaceModel.WorkspaceType].ValueAsync();
+                var workspace = await _registry.GetWorkspace(workspaceModel.WorkspaceType);
                 var processed = await _transformer.TransformAsync(workspaceModel, budget);
 
                 var sourceFiles = processed.GetSourceFiles();
@@ -180,7 +156,7 @@ namespace WorkspaceServer.Servers.InMemory
                 {
                     try
                     {
-                        compilation.Emit(workspace.Workspace.EntryPointAssemblyPath.FullName);
+                        compilation.Emit(workspace.EntryPointAssemblyPath.FullName);
                         operation.Info("Emit succeeded on attempt #{attempt}", attempt);
                         break;
                     }
@@ -197,9 +173,9 @@ namespace WorkspaceServer.Servers.InMemory
 
                 string exceptionMessage = null;
 
-                if (workspace.Workspace.IsWebProject)
+                if (workspace.IsWebProject)
                 {
-                    var webServer = new WebServer(workspace.Workspace);
+                    var webServer = new WebServer(workspace);
 
                     runResult = new RunResult(
                         succeeded: true,
@@ -209,10 +185,10 @@ namespace WorkspaceServer.Servers.InMemory
                 }
                 else
                 {
-                    var dotnet = new MLS.Agent.Tools.Dotnet(workspace.Workspace.Directory);
+                    var dotnet = new MLS.Agent.Tools.Dotnet(workspace.Directory);
 
                     var commandLineResult = await dotnet.Execute(
-                                                workspace.Workspace.EntryPointAssemblyPath.FullName,
+                                                workspace.EntryPointAssemblyPath.FullName,
                                                 budget);
 
                     budget.RecordEntry(UserCodeCompleted);

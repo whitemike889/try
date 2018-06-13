@@ -1,7 +1,6 @@
 ﻿using System;
 using MLS.Agent.Tools;
-using OmniSharp.Client;
-using WorkspaceServer.Servers.Dotnet;
+using WorkspaceServer;
 using Xunit.Abstractions;
 
 namespace Pocket
@@ -15,8 +14,7 @@ namespace Pocket
                 {
                     typeof(LogEvents).Assembly,
                     typeof(CommandLine).Assembly,
-                    typeof(OmniSharpServer).Assembly,
-                    typeof(OmniSharpMessage).Assembly,
+                    typeof(ICodeRunner).Assembly,
                 });
     }
 }

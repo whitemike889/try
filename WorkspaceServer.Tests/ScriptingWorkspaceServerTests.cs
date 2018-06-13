@@ -18,7 +18,12 @@ namespace WorkspaceServer.Tests
         {
         }
 
-        protected override Workspace CreateWorkspaceContaining(string text) => new Workspace(text);
+        protected override Workspace CreateWorkspaceWithMainContaining(string text) => new Workspace(text);
+
+        protected override string GetWorkspaceType()
+        {
+            return "script";
+        }
 
         protected override Task<ICodeRunner> GetRunner(
             [CallerMemberName] string testName = null) =>
