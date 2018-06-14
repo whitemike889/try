@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using OmniSharp.Client.Commands;
 
 namespace WorkspaceServer.Models.Completion
 {

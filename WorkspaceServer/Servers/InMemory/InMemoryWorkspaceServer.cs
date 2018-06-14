@@ -13,56 +13,38 @@ using WorkspaceServer.Transformations;
 using WorkspaceServer.Servers.Scripting;
 using Microsoft.CodeAnalysis.Recommendations;
 using System.Collections.Generic;
+using System.IO;
 using Microsoft.CodeAnalysis.Completion;
-using MLS.Agent.Tools;
+using Pocket;
+using Recipes;
 using Workspace = WorkspaceServer.Models.Execution.Workspace;
 using WorkspaceServer.WorkspaceFeatures;
+using static Pocket.Logger<WorkspaceServer.Servers.InMemory.InMemoryWorkspaceServer>;
 
 namespace WorkspaceServer.Servers.InMemory
 {
     public class InMemoryWorkspaceServer : ILanguageService, ICodeRunner
     {
-        private const int defaultTimeSpanInSeconds = 30;
-        private readonly ConcurrentDictionary<string, AsyncLazy<InMemoryWorkspace>> workspacesCache;
+        private readonly DotnetWorkspaceServerRegistry _registry;
+        private const int defaultBudgetInSeconds = 30;
+        private readonly ConcurrentDictionary<string, AsyncLock> locks = new ConcurrentDictionary<string, AsyncLock>();
         private readonly BufferInliningTransformer _transformer = new BufferInliningTransformer();
 
         private readonly string UserCodeCompleted = nameof(UserCodeCompleted);
 
         public InMemoryWorkspaceServer(DotnetWorkspaceServerRegistry registry)
         {
-            if (registry == null)
-            {
-                throw new ArgumentNullException(nameof(registry));
-            }
-
-            workspacesCache = new ConcurrentDictionary<string, AsyncLazy<InMemoryWorkspace>>
-            {
-                ["console"] = new AsyncLazy<InMemoryWorkspace>(async () => new InMemoryWorkspace(
-                                                                   "console",
-                                                                   await registry.GetWorkspace("console"),
-                                                                   WorkspaceUtilities.DefaultReferencedAssemblies)),
-
-                ["script"] = new AsyncLazy<InMemoryWorkspace>(async () => new InMemoryWorkspace(
-                                                                  "script",
-                                                                  await registry.GetWorkspace("console"),
-                                                                  WorkspaceUtilities.DefaultReferencedAssemblies)),
-
-                ["nodatime.api"] = new AsyncLazy<InMemoryWorkspace>(async () => new InMemoryWorkspace(
-                                                                        "nodatime.api",
-                                                                        await registry.GetWorkspace("nodatime.api"),
-                                                                        WorkspaceUtilities.DefaultReferencedAssemblies)),
-            };
+            _registry = registry ?? throw new ArgumentNullException(nameof(registry));
         }
 
         public async Task<CompletionResult> GetCompletionList(WorkspaceRequest request, Budget budget)
         {
-            budget = budget ?? new TimeBudget(TimeSpan.FromSeconds(defaultTimeSpanInSeconds));
-            var workspace = await workspacesCache[request.Workspace.WorkspaceType].ValueAsync();
+            budget = budget ?? new TimeBudget(TimeSpan.FromSeconds(defaultBudgetInSeconds));
+            var workspace = await _registry.GetWorkspace(request.Workspace.WorkspaceType);
 
             var processed = await _transformer.TransformAsync(request.Workspace, budget);
-            var viewPorts = _transformer.ExtractViewPorts(processed);
             var sourceFiles = processed.GetSourceFiles();
-            var (compilation, documents) = await workspace.WithSources(sourceFiles, budget);
+            var documents = (await workspace.WithSources(sourceFiles, budget)).documents.ToArray();
 
             var file = processed.GetFileFromBufferId(request.ActiveBufferId);
             var (line, column, absolutePosition) = processed.GetTextLocation(request.ActiveBufferId, request.Position);
@@ -95,11 +77,10 @@ namespace WorkspaceServer.Servers.InMemory
 
         public async Task<DiagnosticResult> GetDiagnostics(Workspace request, Budget budget)
         {
-            budget = budget ?? new TimeBudget(TimeSpan.FromSeconds(defaultTimeSpanInSeconds));
-            var workspace = await workspacesCache[request.WorkspaceType].ValueAsync();
+            budget = budget ?? new TimeBudget(TimeSpan.FromSeconds(defaultBudgetInSeconds));
+            var workspace = await _registry.GetWorkspace(request.WorkspaceType);
 
             var processed = await _transformer.TransformAsync(request, budget);
-            var viewPorts = _transformer.ExtractViewPorts(processed);
             var sourceFiles = processed.GetSourceFiles();
             var (compilation, _) = await workspace.WithSources(sourceFiles, budget);
 
@@ -109,14 +90,12 @@ namespace WorkspaceServer.Servers.InMemory
 
         public async Task<SignatureHelpResponse> GetSignatureHelp(WorkspaceRequest request, Budget budget)
         {
-            budget = budget ?? new TimeBudget(TimeSpan.FromSeconds(defaultTimeSpanInSeconds));
-            var (code, line, column, _) = await TransformWorkspaceAndPreparePositionalRequest(request, budget);
+            budget = budget ?? new TimeBudget(TimeSpan.FromSeconds(defaultBudgetInSeconds));
 
-            var workspace = await workspacesCache[request.Workspace.WorkspaceType].ValueAsync();
+            var workspace = await _registry.GetWorkspace(request.Workspace.WorkspaceType);
 
             Workspace processed = await _transformer.TransformAsync(request.Workspace, budget);
 
-            var viewPorts = _transformer.ExtractViewPorts(processed);
             var sourceFiles = processed.GetSourceFiles();
             var (compilation, documents) = await workspace.WithSources(sourceFiles, budget);
 
@@ -140,95 +119,100 @@ namespace WorkspaceServer.Servers.InMemory
                        absolutePosition);
         }
 
-        public  async Task<RunResult> Run(Workspace workspaceModel, Budget budget = null)
+        public async Task<RunResult> Run(Workspace workspaceModel, Budget budget = null)
         {
-            budget = budget ?? new TimeBudget(TimeSpan.FromSeconds(defaultTimeSpanInSeconds));
+            budget = budget ?? new TimeBudget(TimeSpan.FromSeconds(defaultBudgetInSeconds));
+            RunResult runResult = null;
 
-            var workspace = await workspacesCache[workspaceModel.WorkspaceType].ValueAsync();
-            var processed = await _transformer.TransformAsync(workspaceModel, budget);
-            var viewPorts = _transformer.ExtractViewPorts(processed);
-            var sourceFiles = processed.GetSourceFiles();
-            var (compilation, documents) = await workspace.WithSources(sourceFiles, budget);
-
-            var diagnostics = compilation.GetDiagnostics()
-                                        .Select(e => new SerializableDiagnostic(e))
-                                        .ToArray();
-
-            var d3 = await ServiceHelpers.GetDiagnostics(
-                workspaceModel, compilation);
-
-            //var diagnostics2 = DiagnosticTransformer.ReconstructDiagnosticLocations(
-            //    diagnostics
-            //    _transformer.ExtractViewPorts(workspaceModel),
-            //    BufferInliningTransformer.PaddingSize
-            //).ToArray();
-
-            if (diagnostics.Any(e => e.Severity == DiagnosticSeverity.Error))
+            using (var operation = Log.OnEnterAndConfirmOnExit())
+            using (await locks.GetOrAdd(workspaceModel.WorkspaceType, s => new AsyncLock()).LockAsync())
             {
-                return new RunResult(
+                var workspace = await _registry.GetWorkspace(workspaceModel.WorkspaceType);
+                var processed = await _transformer.TransformAsync(workspaceModel, budget);
+
+                var sourceFiles = processed.GetSourceFiles();
+                var (compilation, documents) = await workspace.WithSources(sourceFiles, budget);
+
+                var diagnostics = compilation.GetDiagnostics()
+                                             .Select(e => new SerializableDiagnostic(e))
+                                             .ToArray();
+
+                var d3 = await ServiceHelpers.GetDiagnostics(
+                             workspaceModel, compilation);
+
+                if (diagnostics.Any(e => e.Severity == DiagnosticSeverity.Error))
+                {
+                    return new RunResult(
                         false,
                         d3
                             .Where(d => d.Diagnostic.Severity == DiagnosticSeverity.Error)
                             .Select(d => d.ErrorMessage)
                             .ToArray(),
                         diagnostics: d3.Select(d => d.Diagnostic).ToArray());
-            }
-
-            compilation.Emit(workspace.Workspace.EntryPointAssemblyPath.FullName);
-
-            RunResult runResult = null;
-            string exceptionMessage = null;
-            if (workspace.Workspace.IsWebProject)
-            {
-                var webServer = new WebServer(workspace.Workspace);
-
-                runResult = new RunResult(
-                    succeeded: true,
-                    diagnostics: d3.Select(d => d.Diagnostic).ToArray());
-
-                runResult.AddFeature(webServer);
-            }
-            else
-            {
-                var dotnet = new MLS.Agent.Tools.Dotnet(workspace.Workspace.Directory);
-
-                var commandLineResult = await dotnet.Execute(
-                                            workspace.Workspace.EntryPointAssemblyPath.FullName,
-                                            budget);
-
-                budget.RecordEntry(UserCodeCompleted);
-
-                if (commandLineResult.ExitCode == 124)
-                {
-                    throw new BudgetExceededException(budget);
                 }
 
-                if (commandLineResult.Error.Count > 0)
+                var numberOfAttempts = 100;
+                for (var attempt = 1; attempt < numberOfAttempts; attempt++)
                 {
-                    exceptionMessage = string.Join(Environment.NewLine, commandLineResult.Error);
+                    try
+                    {
+                        compilation.Emit(workspace.EntryPointAssemblyPath.FullName);
+                        operation.Info("Emit succeeded on attempt #{attempt}", attempt);
+                        break;
+                    }
+                    catch (IOException)
+                    {
+                        if (attempt == numberOfAttempts - 1)
+                        {
+                            throw;
+                        }
+
+                        await Task.Delay(10);
+                    }
                 }
 
-                runResult = new RunResult(
-                    succeeded: true,
-                    output: commandLineResult?.Output,
-                    exception: exceptionMessage,
-                    diagnostics: diagnostics,
-                    instrumentation: Array.Empty<string>());
+                string exceptionMessage = null;
+
+                if (workspace.IsWebProject)
+                {
+                    var webServer = new WebServer(workspace);
+
+                    runResult = new RunResult(
+                        succeeded: true,
+                        diagnostics: d3.Select(d => d.Diagnostic).ToArray());
+
+                    runResult.AddFeature(webServer);
+                }
+                else
+                {
+                    var dotnet = new MLS.Agent.Tools.Dotnet(workspace.Directory);
+
+                    var commandLineResult = await dotnet.Execute(
+                                                workspace.EntryPointAssemblyPath.FullName,
+                                                budget);
+
+                    budget.RecordEntry(UserCodeCompleted);
+
+                    if (commandLineResult.ExitCode == 124)
+                    {
+                        throw new BudgetExceededException(budget);
+                    }
+
+                    if (commandLineResult.Error.Count > 0)
+                    {
+                        exceptionMessage = string.Join(Environment.NewLine, commandLineResult.Error);
+                    }
+
+                    runResult = new RunResult(
+                        succeeded: true,
+                        output: commandLineResult?.Output,
+                        exception: exceptionMessage,
+                        diagnostics: diagnostics,
+                        instrumentation: Array.Empty<string>());
+                }
             }
 
             return runResult;
-        }
-
-        private async Task<(string code, int line, int column, int absolutePosition)> TransformWorkspaceAndPreparePositionalRequest(WorkspaceRequest request, Budget budget)
-        {
-            var workspace = await _transformer.TransformAsync(request.Workspace, budget);
-
-            var code = workspace.GetFileFromBufferId(request.ActiveBufferId).Text;
-            // line and colum are 0 based
-
-            var (line, column, absolutePosition) = workspace.GetTextLocation(request.ActiveBufferId, request.Position);
-
-            return (code, line, column, absolutePosition);
         }
     }
 }

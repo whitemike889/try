@@ -18,14 +18,10 @@ namespace MLS.Agent.Tools
             NugetCache = string.IsNullOrWhiteSpace(nugetPackagesEnvironmentVariable)
                              ? Path.Combine(UserProfile, ".nuget", "packages")
                              : nugetPackagesEnvironmentVariable;
-
-            EmitPlugin = Path.Combine(NugetCache, "trydotnet.omnisharp.emit", "1.29.0-beta3", "lib", "net46", "OmniSharp.Emit.dll");
         }
 
         public static string UserProfile { get; }
 
         public static string NugetCache { get; }
-
-        public static string EmitPlugin { get; }
     }
 }

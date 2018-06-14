@@ -1,7 +1,14 @@
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
+using Clockwise;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Host.Mef;
+using WorkspaceServer.Models.Execution;
+using Workspace = MLS.Agent.Tools.Workspace;
 
 namespace WorkspaceServer.Servers.Roslyn
 {
@@ -27,6 +34,42 @@ namespace WorkspaceServer.Servers.Roslyn
                 )
                 .Cast<MetadataReference>()
                 .ToImmutableArray();
+
+        public static async Task<(Compilation compilation, IEnumerable<Document> documents)> WithSources(
+            this Workspace thing,
+            IReadOnlyCollection<SourceFile> sources,
+            Budget budget)
+        {
+            var workspace = new AdhocWorkspace(MefHostServices.DefaultHost);
+            var compilationOptions = new CSharpCompilationOptions(OutputKind.ConsoleApplication);
+            var projectId = ProjectId.CreateNewId();
+
+            var projectInfo = ProjectInfo.Create(
+                projectId,
+                version: VersionStamp.Create(),
+                name: thing.Name,
+                assemblyName: thing.Name,
+                language: LanguageNames.CSharp,
+                compilationOptions: compilationOptions,
+                metadataReferences: DefaultReferencedAssemblies);
+
+            workspace.AddProject(projectInfo);
+
+            var currentSolution = workspace.CurrentSolution;
+
+            foreach (var source in sources)
+            {
+                var docId = DocumentId.CreateNewId(projectId, $"{thing.Name}.Document");
+
+                currentSolution = currentSolution.AddDocument(docId, source.Name, source.Text);
+            }
+
+            var project = currentSolution.GetProject(projectId);
+
+            var newCompilation = await project.GetCompilationAsync().CancelIfExceeds(budget);
+
+            return (newCompilation, project.Documents);
+        }
 
         private static string[] AssembliesNamesToReference() => new[]
         {

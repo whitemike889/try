@@ -49,22 +49,26 @@ namespace MLS.Agent.Tools
 
         public Workspace(
             string name,
-            IWorkspaceInitializer initializer = null) : this(
+            IWorkspaceInitializer initializer = null,
+            bool requiresPublish = false) : this(
             new DirectoryInfo(Path.Combine(DefaultWorkspacesDirectory.FullName, name)),
             name,
-            initializer)
+            initializer,
+            requiresPublish)
         {
         }
 
         public Workspace(
             DirectoryInfo directory,
             string name = null,
-            IWorkspaceInitializer initializer = null)
+            IWorkspaceInitializer initializer = null,
+            bool requiresPublish = false)
         {
             Name = name ?? directory.Name;
             Directory = directory ?? throw new ArgumentNullException(nameof(directory));
             _initializer = initializer ?? new DotnetWorkspaceInitializer("console", Name);
             ConstructionTime = Clock.Current.Now();
+            RequiresPublish = requiresPublish;
             _created = new AsyncLazy<bool>(VerifyOrCreate);
             _built = new AsyncLazy<bool>(VerifyOrBuild);
             _published = new AsyncLazy<bool>(VerifyOrPublish);
@@ -167,6 +171,20 @@ namespace MLS.Agent.Tools
             return true;
         }
 
+        public async Task EnsureReady(Budget budget)
+        {
+            await EnsureCreated(budget);
+
+            await EnsureBuilt(budget);
+
+            if (RequiresPublish)
+            {
+                await EnsurePublished(budget);
+            }
+        }
+
+        public bool RequiresPublish { get; }
+
         public async Task EnsureBuilt(Budget budget = null)
         {
             await EnsureCreated(budget);
@@ -259,16 +277,20 @@ namespace MLS.Agent.Tools
 
             var destination = CreateDirectory(folderNameStartsWith, parentDirectory);
 
+            return Copy(fromWorkspace, destination);
+        }
+
+        public static Workspace Copy(Workspace fromWorkspace, DirectoryInfo destination)
+        {
             fromWorkspace.Directory.CopyTo(destination);
 
-            var copy = new Workspace(destination, folderNameStartsWith, fromWorkspace._initializer)
+            var copy = new Workspace(destination, destination.Name)
             {
                 IsCreated = fromWorkspace.IsCreated,
                 IsPublished = fromWorkspace.IsPublished,
                 IsBuilt = fromWorkspace.IsBuilt,
                 IsDirectoryCreated = true
             };
-
 
             return copy;
         }

@@ -130,7 +130,7 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task When_workspace_contains_simple_console_app_then_IsAspNet_is_false()
         {
-            var workspace = await Create.ConsoleWorkspace();
+            var workspace = await Create.ConsoleWorkspaceCopy();
 
             await workspace.EnsureCreated();
 
@@ -140,7 +140,7 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task When_workspace_contains_aspnet_project_then_IsAspNet_is_true()
         {
-            var workspace = await Create.WebApiWorkspace();
+            var workspace = await Create.WebApiWorkspaceCopy();
 
             await workspace.EnsureCreated();
 
@@ -150,7 +150,7 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task When_workspace_contains_simple_console_app_then_entry_point_dll_is_in_the_build_directory()
         {
-            var workspace = await Create.ConsoleWorkspace();
+            var workspace = await Create.ConsoleWorkspaceCopy();
 
             await workspace.EnsurePublished();
 
@@ -170,7 +170,7 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task When_workspace_contains_aspnet_project_then_entry_point_dll_is_in_the_publish_directory()
         {
-            var workspace = await Create.WebApiWorkspace();
+            var workspace = await Create.WebApiWorkspaceCopy();
 
             await workspace.EnsurePublished();
 
