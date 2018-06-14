@@ -28,7 +28,7 @@ namespace WorkspaceServer.Models.Execution
         {
         }
 
-        public SerializableDiagnostic(OmniSharp.Client.Diagnostic d)
+        public SerializableDiagnostic(Diagnostic d)
             : this(d.Location.SourceSpan.Start,
                     d.Location.SourceSpan.End,
                     d.Message,

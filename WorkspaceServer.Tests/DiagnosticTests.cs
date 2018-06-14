@@ -1,6 +1,7 @@
 ﻿using System;
 using FluentAssertions;
 using OmniSharp.Client;
+using WorkspaceServer.Models;
 using Xunit;
 
 namespace WorkspaceServer.Tests

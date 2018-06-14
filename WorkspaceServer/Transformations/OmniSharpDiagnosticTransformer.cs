@@ -2,16 +2,17 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis.Text;
+using WorkspaceServer.Models;
 using WorkspaceServer.Models.Execution;
 
 namespace WorkspaceServer.Transformations
 {
     public class OmniSharpDiagnosticTransformer
     {
-        public static IEnumerable<(SerializableDiagnostic Diagnostic, string Message)> ReconstructDiagnosticLocations(IEnumerable<OmniSharp.Client.Diagnostic> bodyDiagnostics,
+        public static IEnumerable<(SerializableDiagnostic Diagnostic, string Message)> ReconstructDiagnosticLocations(IEnumerable<Diagnostic> bodyDiagnostics,
             Dictionary<string, Viewport> viewPortsByBufferId, int paddingSize)
         {
-            var diagnostics = bodyDiagnostics ?? Enumerable.Empty<OmniSharp.Client.Diagnostic>();
+            var diagnostics = bodyDiagnostics ?? Enumerable.Empty<Diagnostic>();
             foreach (var diagnostic in diagnostics)
             {
                 var diagnosticPath = diagnostic.Location.MappedLineSpan.Path;
@@ -39,7 +40,7 @@ namespace WorkspaceServer.Transformations
                 }
             }
         }
-        private static (SerializableDiagnostic, string) AlignDiagnosticLocation(KeyValuePair<string, Viewport> target, OmniSharp.Client.Diagnostic diagnostic, int paddingSize)
+        private static (SerializableDiagnostic, string) AlignDiagnosticLocation(KeyValuePair<string, Viewport> target, Diagnostic diagnostic, int paddingSize)
         {
             // offest of the buffer int othe original source file
             var offset = target.Value.Region.Start;
