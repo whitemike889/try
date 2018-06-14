@@ -15,6 +15,14 @@ namespace MLS.Agent
                                       workspace.AddPackageReference("Newtonsoft.Json");
                                   });
 
+            registry.AddWorkspace("nodatime.api",
+                                  workspace =>
+                                  {
+                                      workspace.CreateUsingDotnet("console");
+                                      workspace.AddPackageReference("NodaTime", "2.3.0");
+                                      workspace.AddPackageReference("NodaTime.Testing", "2.3.0");
+                                  });
+
             registry.AddWorkspace("aspnet.webapi",
                                   workspace =>
                                   {
