@@ -16,9 +16,9 @@ namespace MLS.Agent.Controllers
     public class LanguageServicesController : Controller
     {
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
-        private readonly InMemoryWorkspaceServer workspaceServer;
+        private readonly RoslynWorkspaceServer workspaceServer;
 
-        public LanguageServicesController(DotnetWorkspaceServerRegistry workspaceServerRegistry, InMemoryWorkspaceServer workspaceServer)
+        public LanguageServicesController(WorkspaceRegistry workspaceRegistry, RoslynWorkspaceServer workspaceServer)
         {
             this.workspaceServer = workspaceServer ?? throw new ArgumentNullException(nameof(workspaceServer));
         }

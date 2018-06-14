@@ -29,7 +29,7 @@ namespace MLS.Agent
         private static readonly Assembly[] assembliesEmittingPocketLoggerLogs = {
             typeof(Startup).Assembly,
             typeof(Dotnet).Assembly,
-            typeof(InMemoryWorkspaceServer).Assembly
+            typeof(RoslynWorkspaceServer).Assembly
         };
 
         private static void StartLogging(CompositeDisposable disposables, CommandLineOptions options)

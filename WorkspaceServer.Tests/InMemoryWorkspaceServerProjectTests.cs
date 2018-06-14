@@ -12,9 +12,9 @@ using Xunit.Abstractions;
 
 namespace WorkspaceServer.Tests
 {
-    public class InMemoryWorkspaceServerConsoleProjectTests : WorkspaceServerTests
+    public class RoslynWorkspaceServerConsoleProjectTests : WorkspaceServerTests
     {
-        public InMemoryWorkspaceServerConsoleProjectTests(ITestOutputHelper output) : base(output)
+        public RoslynWorkspaceServerConsoleProjectTests(ITestOutputHelper output) : base(output)
         {
         }
 
@@ -267,13 +267,13 @@ namespace FibonacciTest
         {
             var project = await Create.ConsoleWorkspaceCopy(testName);
 
-            var workspaceServer = new InMemoryWorkspaceServer(new DotnetWorkspaceServerRegistry());
+            var workspaceServer = new RoslynWorkspaceServer(new WorkspaceRegistry());
 
             return workspaceServer;
         }
 
         protected override ILanguageService GetLanguageService(
-            [CallerMemberName] string testName = null) => new InMemoryWorkspaceServer(
+            [CallerMemberName] string testName = null) => new RoslynWorkspaceServer(
                 DefaultWorkspaces.CreateWorkspaceServerRegistry());
 
     }

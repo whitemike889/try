@@ -5,7 +5,7 @@ using MLS.Agent.Tools;
 
 namespace WorkspaceServer.Tests
 {
-    public class InMemoryWorkspaceInitializer : IWorkspaceInitializer
+    public class FakeWorkspaceInitializer : IWorkspaceInitializer
     {
         public int InitializeCount { get; private set; }
 

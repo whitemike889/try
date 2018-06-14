@@ -26,7 +26,7 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task Workspaces_can_be_registered_to_be_created_using_dotnet_new()
         {
-            using (var registry = new DotnetWorkspaceServerRegistry())
+            using (var registry = new WorkspaceRegistry())
             {
                 var workspaceId = Workspace.CreateDirectory(nameof(Workspaces_can_be_registered_to_be_created_using_dotnet_new)).Name;
 
@@ -44,7 +44,7 @@ namespace WorkspaceServer.Tests
         [Fact(Skip = "we broke this")]
         public async Task NuGet_packages_can_be_added_during_initialization()
         {
-            using (var registry = new DotnetWorkspaceServerRegistry())
+            using (var registry = new WorkspaceRegistry())
             {
                 var workspaceId = Workspace.CreateDirectory(nameof(NuGet_packages_can_be_added_during_initialization)).Name;
 
@@ -55,7 +55,7 @@ namespace WorkspaceServer.Tests
                                           options.AddPackageReference("Twilio", "5.9.2");
                                       });
 
-                var workspaceServer = new InMemoryWorkspaceServer(registry);
+                var workspaceServer = new RoslynWorkspaceServer(registry);
 
                 var workspace = new Models.Execution.Workspace(
                     @"
@@ -88,7 +88,7 @@ namespace Twilio_try.dot.net_sample
         {
             var unregisteredWorkspace = await Default.ConsoleWorkspace;
 
-            using (var registry = new DotnetWorkspaceServerRegistry())
+            using (var registry = new WorkspaceRegistry())
             {
                 var resolvedWorkspace = await registry.GetWorkspace(unregisteredWorkspace.Name);
 
@@ -103,9 +103,9 @@ namespace Twilio_try.dot.net_sample
         {
             var unregisteredWorkspace = await Default.ConsoleWorkspace;
 
-            using (var registry = new DotnetWorkspaceServerRegistry())
+            using (var registry = new WorkspaceRegistry())
             {
-                var server = new InMemoryWorkspaceServer(registry);
+                var server = new RoslynWorkspaceServer(registry);
 
                 var workspaceRequest = WorkspaceRequest.FromDirectory(unregisteredWorkspace.Directory, unregisteredWorkspace.Name);
 

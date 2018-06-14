@@ -19,20 +19,20 @@ using Pocket;
 using Recipes;
 using Workspace = WorkspaceServer.Models.Execution.Workspace;
 using WorkspaceServer.WorkspaceFeatures;
-using static Pocket.Logger<WorkspaceServer.Servers.InMemory.InMemoryWorkspaceServer>;
+using static Pocket.Logger<WorkspaceServer.Servers.InMemory.RoslynWorkspaceServer>;
 
 namespace WorkspaceServer.Servers.InMemory
 {
-    public class InMemoryWorkspaceServer : ILanguageService, ICodeRunner
+    public class RoslynWorkspaceServer : ILanguageService, ICodeRunner
     {
-        private readonly DotnetWorkspaceServerRegistry _registry;
+        private readonly WorkspaceRegistry _registry;
         private const int defaultBudgetInSeconds = 30;
         private readonly ConcurrentDictionary<string, AsyncLock> locks = new ConcurrentDictionary<string, AsyncLock>();
         private readonly BufferInliningTransformer _transformer = new BufferInliningTransformer();
 
         private readonly string UserCodeCompleted = nameof(UserCodeCompleted);
 
-        public InMemoryWorkspaceServer(DotnetWorkspaceServerRegistry registry)
+        public RoslynWorkspaceServer(WorkspaceRegistry registry)
         {
             _registry = registry ?? throw new ArgumentNullException(nameof(registry));
         }

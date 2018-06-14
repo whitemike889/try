@@ -19,7 +19,6 @@ using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Models.SingatureHelp;
 using WorkspaceServer.Transformations;
 using static Pocket.Logger<WorkspaceServer.Servers.Scripting.ScriptingWorkspaceServer>;
-using static WorkspaceServer.Servers.WorkspaceServer;
 using Workspace = WorkspaceServer.Models.Execution.Workspace;
 using WorkspaceServer.Servers.Roslyn;
 
@@ -73,7 +72,7 @@ namespace WorkspaceServer.Servers.Scripting
                     userException = ex;
 
                     Console.WriteLine(
-                        string.Join(Environment.NewLine,
+                        String.Join(Environment.NewLine,
                                     ex.Diagnostics
                                       .Select(d => d.ToString())));
                 }
@@ -255,5 +254,7 @@ typeof({entryPointMethod.ContainingType.Name})
 
         public async Task<DiagnosticResult> GetDiagnostics(Workspace request, Budget budget = null) =>
             new DiagnosticResult((await GetDiagnostics(request, CreateOptions(request), budget)).Select(e => e.Diagnostic).ToArray());
+
+        public static string UserCodeCompletedBudgetEntryName = "UserCodeCompleted";
     }
 }

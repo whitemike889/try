@@ -66,7 +66,7 @@ namespace MLS.Agent.Tools
         {
             Name = name ?? directory.Name;
             Directory = directory ?? throw new ArgumentNullException(nameof(directory));
-            _initializer = initializer ?? new DotnetWorkspaceInitializer("console", Name);
+            _initializer = initializer ?? new WorkspaceInitializer("console", Name);
             ConstructionTime = Clock.Current.Now();
             RequiresPublish = requiresPublish;
             _created = new AsyncLazy<bool>(VerifyOrCreate);

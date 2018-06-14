@@ -4,9 +4,9 @@ namespace MLS.Agent
 {
     public static class DefaultWorkspaces
     {
-        public static DotnetWorkspaceServerRegistry CreateWorkspaceServerRegistry()
+        public static WorkspaceRegistry CreateWorkspaceServerRegistry()
         {
-            var registry = new DotnetWorkspaceServerRegistry();
+            var registry = new WorkspaceRegistry();
 
             registry.AddWorkspace("console",
                                   workspace =>

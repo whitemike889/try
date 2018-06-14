@@ -10,10 +10,10 @@ namespace MLS.Agent.Controllers
 {
     public class RunController : Controller
     {
-        private readonly InMemoryWorkspaceServer _workspaceServer;
+        private readonly RoslynWorkspaceServer _workspaceServer;
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
 
-        public RunController(InMemoryWorkspaceServer workspaceServer)
+        public RunController(RoslynWorkspaceServer workspaceServer)
         {
             _workspaceServer = workspaceServer ?? throw new ArgumentNullException(nameof(workspaceServer));
         }

@@ -7,10 +7,10 @@ namespace WorkspaceServer
 {
     public class WorkspaceCopyInitializer : IWorkspaceInitializer
     {
-        private readonly DotnetWorkspaceServerRegistry registry;
+        private readonly WorkspaceRegistry registry;
         private readonly string workspaceName;
 
-        public WorkspaceCopyInitializer(DotnetWorkspaceServerRegistry registry, string workspaceName)
+        public WorkspaceCopyInitializer(WorkspaceRegistry registry, string workspaceName)
         {
             this.registry = registry;
             this.workspaceName = workspaceName;

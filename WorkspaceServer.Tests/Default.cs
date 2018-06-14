@@ -12,7 +12,7 @@ namespace WorkspaceServer.Tests
             var workspace = new Workspace(
                 // To avoid collision with System.Console
                 "TestTemplate.Console2",
-                new DotnetWorkspaceInitializer("console", "test", async (directory, budget) =>
+                new WorkspaceInitializer("console", "test", async (directory, budget) =>
                  {
                      var dotnet = new Dotnet(directory);
                      await dotnet.AddPackage("Newtonsoft.Json", budget: budget);
@@ -28,7 +28,7 @@ namespace WorkspaceServer.Tests
         {
             var workspace = new Workspace(
                 "TestTemplate.WebApi",
-                new DotnetWorkspaceInitializer(
+                new WorkspaceInitializer(
                     "webapi",
                     "test",
                     afterCreate: async (directory, budget) =>

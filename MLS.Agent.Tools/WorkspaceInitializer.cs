@@ -5,7 +5,7 @@ using Clockwise;
 
 namespace MLS.Agent.Tools
 {
-    public class DotnetWorkspaceInitializer : IWorkspaceInitializer
+    public class WorkspaceInitializer : IWorkspaceInitializer
     {
         private readonly Func<DirectoryInfo, Budget, Task> afterCreate;
 
@@ -13,7 +13,7 @@ namespace MLS.Agent.Tools
 
         public string Name { get; }
 
-        public DotnetWorkspaceInitializer(
+        public WorkspaceInitializer(
             string template, 
             string name,
             Func<DirectoryInfo, Budget, Task> afterCreate = null)

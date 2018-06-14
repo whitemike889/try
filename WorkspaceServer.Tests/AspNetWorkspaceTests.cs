@@ -16,11 +16,11 @@ using Workspace = MLS.Agent.Tools.Workspace;
 
 namespace WorkspaceServer.Tests
 {
-    public class DotnetWorkspaceServerAspNetProjectTests : IDisposable
+    public class AspNetWorkspaceTests : IDisposable
     {
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
 
-        public DotnetWorkspaceServerAspNetProjectTests(ITestOutputHelper output)
+        public AspNetWorkspaceTests(ITestOutputHelper output)
         {
             _disposables.Add(output.SubscribeToPocketLogger());
         }
@@ -45,16 +45,16 @@ namespace WorkspaceServer.Tests
             }
         }
 
-        protected async Task<(InMemoryWorkspaceServer server, Workspace workspace )> GetWorkspaceAndServer(
+        protected async Task<(RoslynWorkspaceServer server, Workspace workspace )> GetWorkspaceAndServer(
             [CallerMemberName] string testName = null)
         {
-            var registry = new DotnetWorkspaceServerRegistry();
+            var registry = new WorkspaceRegistry();
 
             registry.AddWorkspace(testName, builder => { builder.CreateCopyOf("aspnet.webapi"); });
 
             var workspace = await registry.GetWorkspace(testName);
 
-            var server = new InMemoryWorkspaceServer(registry);
+            var server = new RoslynWorkspaceServer(registry);
 
             return (server, workspace);
         }

@@ -10,7 +10,7 @@ namespace WorkspaceServer
 {
     public class WorkspaceBuilder
     {
-        private readonly DotnetWorkspaceServerRegistry _registry;
+        private readonly WorkspaceRegistry _registry;
 
         private Workspace _workspace;
 
@@ -18,7 +18,7 @@ namespace WorkspaceServer
 
         private readonly Logger _log;
 
-        public WorkspaceBuilder(DotnetWorkspaceServerRegistry registry, string workspaceName)
+        public WorkspaceBuilder(WorkspaceRegistry registry, string workspaceName)
         {
             if (string.IsNullOrWhiteSpace(workspaceName))
             {
@@ -44,7 +44,7 @@ namespace WorkspaceServer
                 originalWorkspaceName);
 
         public void CreateUsingDotnet(string template) =>
-            WorkspaceInitializer = new DotnetWorkspaceInitializer(
+            WorkspaceInitializer = new WorkspaceInitializer(
                 template,
                 WorkspaceName,
                 AfterCreate);

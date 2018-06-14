@@ -18,8 +18,8 @@ namespace MLS.Agent.Controllers
     {
         private readonly AgentOptions _options;
 
-        public WorkspaceController(DotnetWorkspaceServerRegistry workspaceServerRegistry,
-            InMemoryWorkspaceServer imws,
+        public WorkspaceController(WorkspaceRegistry workspaceRegistry,
+            RoslynWorkspaceServer imws,
             AgentOptions options) 
             : base(imws)
         {

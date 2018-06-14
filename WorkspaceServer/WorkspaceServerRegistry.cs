@@ -10,7 +10,7 @@ using Recipes;
 
 namespace WorkspaceServer
 {
-    public class DotnetWorkspaceServerRegistry : IDisposable
+    public class WorkspaceRegistry : IDisposable
     {
         private readonly Dictionary<string, WorkspaceBuilder> _workspaceBuilders = new Dictionary<string, WorkspaceBuilder>();
 
