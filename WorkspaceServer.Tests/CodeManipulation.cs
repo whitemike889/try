@@ -11,7 +11,7 @@ namespace WorkspaceServer.Tests
             return EnforceLF(JToken.Parse(value).ToString(Formatting.Indented));
         }
 
-        public static string EnforceLF(string source)
+        public static string EnforceLF(this string source)
         {
             return source?.Replace(Environment.NewLine, "\n") ?? string.Empty;
         }

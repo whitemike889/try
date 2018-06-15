@@ -1,21 +1,18 @@
-
 using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Scripting;
-using Microsoft.CodeAnalysis.Scripting;
 using WorkspaceServer.Models;
-using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Transformations;
+using Workspace = WorkspaceServer.Models.Execution.Workspace;
 
 namespace WorkspaceServer.Servers.Roslyn
 {
     internal static class ServiceHelpers
     {
-        internal async static Task<(SerializableDiagnostic Diagnostic, string ErrorMessage)[]> GetDiagnostics(
-            Models.Execution.Workspace workspace,
+        internal static async Task<(SerializableDiagnostic Diagnostic, string ErrorMessage)[]> GetDiagnostics(
+            Workspace workspace,
             Compilation compilation,
             Budget budget = null)
         {
@@ -27,11 +24,10 @@ namespace WorkspaceServer.Servers.Roslyn
             var sourceDiagnostics = compilation.GetDiagnostics().Where(d => d.Id != "CS7022");
             budget.RecordEntry();
             return DiagnosticTransformer.ReconstructDiagnosticLocations(
-                    sourceDiagnostics,
-                    viewPorts,
-                    BufferInliningTransformer.PaddingSize)
-                .ToArray();
-
+                                            sourceDiagnostics,
+                                            viewPorts,
+                                            BufferInliningTransformer.PaddingSize)
+                                        .ToArray();
         }
     }
 }

@@ -7,7 +7,7 @@ using Pocket;
 using WorkspaceServer;
 using WorkspaceServer.Models;
 using WorkspaceServer.Models.Execution;
-using WorkspaceServer.Servers.InMemory;
+using WorkspaceServer.Servers.Roslyn;
 using WorkspaceServer.Servers.Scripting;
 using WorkspaceServer.WorkspaceFeatures;
 using static Pocket.Logger<MLS.Agent.Controllers.WorkspaceController>;

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using WorkspaceServer.Models;
 using WorkspaceServer.Models.Execution;
@@ -15,7 +16,7 @@ namespace WorkspaceServer.Transformations
             var diagnostics = bodyDiagnostics ?? Enumerable.Empty<Diagnostic>();
             foreach (var diagnostic in diagnostics)
             {
-                var diagnosticPath = diagnostic.Location.MappedLineSpan.Path;
+                var diagnosticPath = diagnostic.Location.GetMappedLineSpan().Path;
                 if (viewPortsByBufferId == null || viewPortsByBufferId.Count == 0)
                 {
                     var errorMessage = diagnostic.ToString();
@@ -40,6 +41,7 @@ namespace WorkspaceServer.Transformations
                 }
             }
         }
+
         private static (SerializableDiagnostic, string) AlignDiagnosticLocation(KeyValuePair<string, Viewport> target, Diagnostic diagnostic, int paddingSize)
         {
             // offest of the buffer int othe original source file
@@ -51,7 +53,7 @@ namespace WorkspaceServer.Transformations
             var start = diagnostic.Location.SourceSpan.Start - selectionSpan.Start;
             var end = diagnostic.Location.SourceSpan.End - selectionSpan.Start;
             // line containing the diagnostic in the original source file
-            var line = target.Value.Destination.Text.Lines[diagnostic.Location.MappedLineSpan.StartLinePosition.Line];
+            var line = target.Value.Destination.Text.Lines[diagnostic.Location.GetMappedLineSpan().StartLinePosition.Line];
 
             // first line of the region from the soruce file
             var lineOffest = 0;
@@ -68,16 +70,16 @@ namespace WorkspaceServer.Transformations
 
             var bufferTextSource = SourceFile.Create(target.Value.Destination.Text.GetSubText(selectionSpan).ToString());
             var lineText = line.ToString();
-            var partToFind = lineText.Substring(diagnostic.Location.MappedLineSpan.Span.Start.Character);
+            var partToFind = lineText.Substring(diagnostic.Location.GetMappedLineSpan().Span.Start.Character);
             var charOffset = bufferTextSource.Text.Lines[lineOffest].ToString().IndexOf(partToFind, StringComparison.Ordinal);
             var location = new { Line = lineOffest + 1, Char = charOffset + 1 };
 
-            var errorMessage = $"({location.Line},{location.Char}): error {diagnostic.Id}: {diagnostic.Message}";
+            var errorMessage = $"({location.Line},{location.Char}): error {diagnostic.Id}: {diagnostic.GetMessage()}";
 
             var processedDiagnostic = (new SerializableDiagnostic(
                     start,
                     end,
-                    diagnostic.Message,
+                    diagnostic.GetMessage(),
                     diagnostic.Severity,
                     diagnostic.Id),
                 errorMessage);

@@ -6,7 +6,7 @@ using FluentAssertions;
 using MLS.Agent;
 using WorkspaceServer.Models;
 using WorkspaceServer.Models.Execution;
-using WorkspaceServer.Servers.InMemory;
+using WorkspaceServer.Servers.Roslyn;
 using Xunit;
 using Xunit.Abstractions;
 

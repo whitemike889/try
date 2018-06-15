@@ -67,15 +67,20 @@ namespace WorkspaceServer.Models.Execution
             {
                 if (value is RunResult runResult)
                 {
+                    var diagnostics = JArray.FromObject(
+                        runResult.Diagnostics
+                                 .OrderBy(d => d.Start)
+                                 .ThenBy(d => d.End), serializer);
+
                     var o = new JObject
                     {
-                        new JProperty("diagnostics", JArray.FromObject(runResult.Diagnostics ,serializer)),
+                        new JProperty("diagnostics", diagnostics),
                         new JProperty("succeeded", runResult.Succeeded),
                         new JProperty("output", runResult.Output),
                         new JProperty("exception", runResult.Exception)
                     };
 
-                    foreach (var feature in runResult.features.Values.OfType<IAddRunResultProperties>())
+                    foreach (var feature in runResult.Features.Values.OfType<IAddRunResultProperties>())
                     {
                         feature.Augment(runResult, AddProperty);
                     }
@@ -87,6 +92,10 @@ namespace WorkspaceServer.Models.Execution
                         var jToken = JToken.FromObject(value1, serializer);
                         o.Add(new JProperty(name, jToken));
                     }
+                }
+                else
+                {
+                    throw new NotSupportedException();
                 }
             }
 

@@ -8,7 +8,7 @@ using FluentAssertions.Extensions;
 using Pocket;
 using Recipes;
 using WorkspaceServer.Models.Execution;
-using WorkspaceServer.Servers.InMemory;
+using WorkspaceServer.Servers.Roslyn;
 using WorkspaceServer.WorkspaceFeatures;
 using Xunit;
 using Xunit.Abstractions;

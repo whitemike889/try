@@ -10,7 +10,6 @@ namespace WorkspaceServer.Tests
 {
     public class Given_a_BufferInliningTransformer
     {
-
         [Fact]
         public void It_extracts_viewPorts_when_files_declare_region()
         {

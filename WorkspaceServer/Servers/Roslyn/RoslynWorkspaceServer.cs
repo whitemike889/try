@@ -1,27 +1,25 @@
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Clockwise;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Completion;
+using Microsoft.CodeAnalysis.Recommendations;
+using Pocket;
+using Recipes;
 using WorkspaceServer.Models;
 using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Models.SingatureHelp;
-using Microsoft.CodeAnalysis;
-using WorkspaceServer.Servers.Roslyn;
-using System.Linq;
-using WorkspaceServer.Transformations;
 using WorkspaceServer.Servers.Scripting;
-using Microsoft.CodeAnalysis.Recommendations;
-using System.Collections.Generic;
-using System.IO;
-using Microsoft.CodeAnalysis.Completion;
-using Pocket;
-using Recipes;
-using Workspace = WorkspaceServer.Models.Execution.Workspace;
+using WorkspaceServer.Transformations;
 using WorkspaceServer.WorkspaceFeatures;
-using static Pocket.Logger<WorkspaceServer.Servers.InMemory.RoslynWorkspaceServer>;
+using Workspace = WorkspaceServer.Models.Execution.Workspace;
 
-namespace WorkspaceServer.Servers.InMemory
+namespace WorkspaceServer.Servers.Roslyn
 {
     public class RoslynWorkspaceServer : ILanguageService, ICodeRunner
     {
@@ -124,7 +122,7 @@ namespace WorkspaceServer.Servers.InMemory
             budget = budget ?? new TimeBudget(TimeSpan.FromSeconds(defaultBudgetInSeconds));
             RunResult runResult = null;
 
-            using (var operation = Log.OnEnterAndConfirmOnExit())
+            using (var operation = Logger<RoslynWorkspaceServer>.Log.OnEnterAndConfirmOnExit())
             using (await locks.GetOrAdd(workspaceModel.WorkspaceType, s => new AsyncLock()).LockAsync())
             {
                 var workspace = await _registry.GetWorkspace(workspaceModel.WorkspaceType);
