@@ -39,10 +39,13 @@ namespace WorkspaceServer.Tests
         private const string NamedSpanEndString = "|}";
 
         private static readonly Regex s_namedSpanStartRegex = new Regex(@"\{\| ([-_.A-Za-z0-9\+]+) \:",
-            RegexOptions.Multiline | RegexOptions.IgnorePatternWhitespace);
+                                                                        RegexOptions.Multiline | RegexOptions.IgnorePatternWhitespace);
 
         private static void Parse(
-            string input, out string output, out int? position, out Dictionary<string, List<TextSpan>> spans)
+            string input,
+            out string output,
+            out int? position,
+            out Dictionary<string, List<TextSpan>> spans)
         {
             position = null;
             var tempSpans = new Dictionary<string, List<TextSpan>>();
@@ -190,11 +193,11 @@ namespace WorkspaceServer.Tests
             var spanStartTuple = spanStartStack.Pop();
 
             var span = TextSpan.FromBounds(spanStartTuple.Item1, finalIndex);
-            GetOrAdd(spans, spanStartTuple.Item2, _ => {
+            GetOrAdd(spans, spanStartTuple.Item2, _ =>
+            {
                 var list = new List<TextSpan>();
-                //list.Add(span);
                 return list;
-                }).Add(span);
+            }).Add(span);
         }
 
         private static void AddMatch(string input, string value, int currentIndex, List<Tuple<int, string>> matches)
@@ -207,7 +210,10 @@ namespace WorkspaceServer.Tests
         }
 
         private static void GetPositionAndSpans(
-            string input, out string output, out int? cursorPositionOpt, out ImmutableArray<TextSpan> spans)
+            string input,
+            out string output,
+            out int? cursorPositionOpt,
+            out ImmutableArray<TextSpan> spans)
         {
             Parse(input, out output, out cursorPositionOpt, out var dictionary);
 
@@ -216,7 +222,10 @@ namespace WorkspaceServer.Tests
         }
 
         public static void GetPositionAndNamedSpans(
-            string input, out string output, out int? cursorPositionOpt, out IDictionary<string, ImmutableArray<TextSpan>> spans)
+            string input,
+            out string output,
+            out int? cursorPositionOpt,
+            out IDictionary<string, ImmutableArray<TextSpan>> spans)
         {
             Parse(input, out output, out cursorPositionOpt, out var dictionary);
             spans = dictionary.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToImmutableArray());
@@ -231,7 +240,7 @@ namespace WorkspaceServer.Tests
         public static void GetPositionAndSpan(string input, out string output, out int? cursorPosition, out TextSpan? textSpan)
         {
             GetPositionAndSpans(input, out output, out cursorPosition, out ImmutableArray<TextSpan> spans);
-            textSpan = spans.Length == 0 ? null : (TextSpan?)spans.Single();
+            textSpan = spans.Length == 0 ? null : (TextSpan?) spans.Single();
         }
 
         public static void GetPositionAndSpan(string input, out string output, out int? cursorPosition, out TextSpan textSpan)
@@ -266,8 +275,7 @@ namespace WorkspaceServer.Tests
         public void GetPosition_Should_Return_String_Without_Dollar_Signs()
         {
             var input = "some$$string";
-            string output;
-            MarkupTestFile.GetPosition(input, out output, out var position);
+            MarkupTestFile.GetPosition(input, out var output, out var position);
             Assert.Equal("somestring", output);
         }
 
@@ -279,13 +287,13 @@ namespace WorkspaceServer.Tests
             MarkupTestFile.GetPosition(input, out output, out var position);
             Assert.Equal(4, position);
         }
-        
+
         [Fact]
         public void GetSpans_Should_Return_Correct_Spans()
         {
             var input = "[|input span|]other[|second span|]";
             MarkupTestFile.GetSpans(input, out var output, out ImmutableArray<TextSpan> spans);
-            var expected = ImmutableArray.Create<TextSpan>(
+            var expected = ImmutableArray.Create(
                 new TextSpan(0, 10),
                 new TextSpan(15, 11)
             );

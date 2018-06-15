@@ -1,6 +1,8 @@
 using System;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Assent;
+using Recipes;
 using WorkspaceServer.Models;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Tests;
@@ -39,7 +41,7 @@ namespace MLS.Agent.Tests
                 activeBufferId: viewport.Id,
                 position: viewport.Position);
 
-            var response = await CallRun(requestJson);
+            var response = await CallRun(requestJson.ToJson(), null);
 
             var result = await response.Content.ReadAsStringAsync();
 
@@ -62,7 +64,53 @@ namespace MLS.Agent.Tests
                 activeBufferId: viewport.Id,
                 position: viewport.Position);
 
-            var response = await CallRun(requestJson);
+            var response = await CallRun(requestJson.ToJson(), null);
+
+            var result = await response.Content.ReadAsStringAsync();
+
+            this.Assent(result.FormatJson(), configuration);
+        }
+
+        [Fact]
+        public async Task The_Completions_contract_has_not_been_broken()
+        {
+            var viewport = ViewportCode("Console.Ou$$");
+
+            var requestJson = new WorkspaceRequest(
+                new Workspace(
+                    workspaceType: "console",
+                    buffers: new[]
+                    {
+                        EntrypointCode(),
+                        viewport
+                    }),
+                activeBufferId: viewport.Id,
+                position: viewport.Position).ToJson();
+
+            var response = await CallCompletion(requestJson);
+
+            var result = await response.Content.ReadAsStringAsync();
+
+            this.Assent(result.FormatJson(), configuration);
+        }
+
+        [Fact]
+        public async Task The_signature_help_contract_has_not_been_broken()
+        {
+            var viewport = ViewportCode("Console.Write($$");
+
+            var requestJson = new WorkspaceRequest(
+                new Workspace(
+                    workspaceType: "console",
+                    buffers: new[]
+                    {
+                        EntrypointCode(),
+                        viewport
+                    }),
+                activeBufferId: viewport.Id,
+                position: viewport.Position).ToJson();
+
+            var response = await CallSignatureHelp(requestJson);
 
             var result = await response.Content.ReadAsStringAsync();
 
@@ -84,8 +132,8 @@ namespace Example
             {mainContent}
         }}       
     }}
-}}";
-
+}}".EnforceLF();
+                
             MarkupTestFile.GetPosition(input, out string output, out var position);
 
             return new Workspace.Buffer(
@@ -111,7 +159,7 @@ namespace Example
 #endregion
         }}
     }}
-}}";
+}}".EnforceLF();
 
             MarkupTestFile.GetPosition(input, out string output, out var position);
 

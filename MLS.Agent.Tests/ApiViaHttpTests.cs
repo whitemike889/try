@@ -556,7 +556,7 @@ public class Program {
 }");
             var request = new WorkspaceRequest(new Workspace(workspaceType: "script", buffers: new[] { new Workspace.Buffer(string.Empty, sourceCode, 0) }));
 
-            var response = await CallRun(request);
+            var response = await CallRun(request.ToJson(), null);
 
             var result = await response
                 .EnsureSuccess()
@@ -575,7 +575,7 @@ public class Program {
 
             var request = new WorkspaceRequest(workspace, new HttpRequest("/api/values", "get"));
 
-            var response = await CallRun(request);
+            var response = await CallRun(request.ToJson(), null);
 
             var result = await response
                                .EnsureSuccess()
@@ -606,7 +606,7 @@ public class Program {
 
             var request = new WorkspaceRequest(workspace, new HttpRequest("/api/values", "get"));
 
-            var response = await CallRun(request, 30000);
+            var response = await CallRun(request.ToJson(), 30000);
 
             var result = await response
                                .EnsureSuccess()
@@ -631,7 +631,7 @@ public class Program {
 
             var request = new WorkspaceRequest(workspace, new HttpRequest("/api/values", "get"));
 
-            var response = await CallRun(request);
+            var response = await CallRun(request.ToJson(), null);
 
             var result = await response
                                .EnsureSuccess()
