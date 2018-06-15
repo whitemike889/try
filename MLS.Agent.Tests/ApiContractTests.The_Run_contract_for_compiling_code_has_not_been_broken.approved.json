@@ -1,0 +1,30 @@
+{
+  "diagnostics": [
+    {
+      "start": 2,
+      "end": 35,
+      "message": "Unnecessary using directive.",
+      "severity": 0,
+      "id": "CS8019"
+    },
+    {
+      "start": 17,
+      "end": 35,
+      "message": "Unnecessary using directive.",
+      "severity": 0,
+      "id": "CS8019"
+    },
+    {
+      "start": 37,
+      "end": 50,
+      "message": "Unnecessary using directive.",
+      "severity": 0,
+      "id": "CS8019"
+    }
+  ],
+  "succeeded": true,
+  "output": [
+    "Hello world!"
+  ],
+  "exception": null
+}

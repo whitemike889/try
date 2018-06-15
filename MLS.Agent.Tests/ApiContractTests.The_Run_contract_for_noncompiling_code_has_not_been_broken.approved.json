@@ -1,0 +1,77 @@
+{
+  "diagnostics": [
+    {
+      "start": 2,
+      "end": 35,
+      "message": "Unnecessary using directive.",
+      "severity": 0,
+      "id": "CS8019"
+    },
+    {
+      "start": 13,
+      "end": 18,
+      "message": "The name 'doesn' does not exist in the current context",
+      "severity": 3,
+      "id": "CS0103"
+    },
+    {
+      "start": 17,
+      "end": 35,
+      "message": "Unnecessary using directive.",
+      "severity": 0,
+      "id": "CS8019"
+    },
+    {
+      "start": 18,
+      "end": 18,
+      "message": "Newline in constant",
+      "severity": 3,
+      "id": "CS1010"
+    },
+    {
+      "start": 18,
+      "end": 18,
+      "message": "Too many characters in character literal",
+      "severity": 3,
+      "id": "CS1012"
+    },
+    {
+      "start": 18,
+      "end": 28,
+      "message": "; expected",
+      "severity": 3,
+      "id": "CS1002"
+    },
+    {
+      "start": 28,
+      "end": 28,
+      "message": "; expected",
+      "severity": 3,
+      "id": "CS1002"
+    },
+    {
+      "start": 37,
+      "end": 50,
+      "message": "Unnecessary using directive.",
+      "severity": 0,
+      "id": "CS8019"
+    },
+    {
+      "start": 144,
+      "end": 150,
+      "message": "'Sample.Method()': not all code paths return a value",
+      "severity": 3,
+      "id": "CS0161"
+    }
+  ],
+  "succeeded": false,
+  "output": [
+    "(2,18): error CS1002: ; expected",
+    "(2,18): error CS1010: Newline in constant",
+    "(2,18): error CS1012: Too many characters in character literal",
+    "(2,1): error CS1002: ; expected",
+    "(2,13): error CS0103: The name 'doesn' does not exist in the current context",
+    "ViewportCode.cs(9,30): error CS0161: 'Sample.Method()': not all code paths return a value"
+  ],
+  "exception": null
+}
