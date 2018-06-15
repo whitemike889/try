@@ -47,7 +47,6 @@
   <ItemGroup>
     <!--<ProjectReference Include="..\MLS.Agent.Tools\MLS.Agent.Tools.csproj" />-->
     <ProjectReference Include="..\MLS.Agent\MLS.Agent.csproj" />
-    <ProjectReference Include="..\MLS.TestSupport\MLS.TestSupport.csproj" />
     <ProjectReference Include="..\WorkspaceServer\WorkspaceServer.csproj" />
   </ItemGroup>
 

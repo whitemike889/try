@@ -1,12 +1,19 @@
 ﻿using System;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
-namespace MLS.TestSupport
+namespace WorkspaceServer.Tests
 {
-    public static  class CodeManipulation
+    public static class CodeManipulation
     {
+        public static string FormatJson(this string value)
+        {
+            return EnforceLF(JToken.Parse(value).ToString(Formatting.Indented));
+        }
+
         public static string EnforceLF(string source)
         {
-            return source?.Replace(Environment.NewLine, "\n")?? string.Empty;
+            return source?.Replace(Environment.NewLine, "\n") ?? string.Empty;
         }
 
         public static (string processed, int markLocation) ProcessMarkup(string source)
