@@ -1,0 +1,255 @@
+{
+  "signatures": [
+    {
+      "name": "Write",
+      "label": "void Console.Write(bool value)",
+      "documentation": "",
+      "parameters": [
+        {
+          "name": "value",
+          "label": "bool value",
+          "documentation": ""
+        }
+      ]
+    },
+    {
+      "name": "Write",
+      "label": "void Console.Write(char value)",
+      "documentation": "",
+      "parameters": [
+        {
+          "name": "value",
+          "label": "char value",
+          "documentation": ""
+        }
+      ]
+    },
+    {
+      "name": "Write",
+      "label": "void Console.Write(char[] buffer)",
+      "documentation": "",
+      "parameters": [
+        {
+          "name": "buffer",
+          "label": "char[] buffer",
+          "documentation": ""
+        }
+      ]
+    },
+    {
+      "name": "Write",
+      "label": "void Console.Write(char[] buffer, int index, int count)",
+      "documentation": "",
+      "parameters": [
+        {
+          "name": "buffer",
+          "label": "char[] buffer",
+          "documentation": ""
+        },
+        {
+          "name": "index",
+          "label": "int index",
+          "documentation": ""
+        },
+        {
+          "name": "count",
+          "label": "int count",
+          "documentation": ""
+        }
+      ]
+    },
+    {
+      "name": "Write",
+      "label": "void Console.Write(decimal value)",
+      "documentation": "",
+      "parameters": [
+        {
+          "name": "value",
+          "label": "decimal value",
+          "documentation": ""
+        }
+      ]
+    },
+    {
+      "name": "Write",
+      "label": "void Console.Write(double value)",
+      "documentation": "",
+      "parameters": [
+        {
+          "name": "value",
+          "label": "double value",
+          "documentation": ""
+        }
+      ]
+    },
+    {
+      "name": "Write",
+      "label": "void Console.Write(int value)",
+      "documentation": "",
+      "parameters": [
+        {
+          "name": "value",
+          "label": "int value",
+          "documentation": ""
+        }
+      ]
+    },
+    {
+      "name": "Write",
+      "label": "void Console.Write(long value)",
+      "documentation": "",
+      "parameters": [
+        {
+          "name": "value",
+          "label": "long value",
+          "documentation": ""
+        }
+      ]
+    },
+    {
+      "name": "Write",
+      "label": "void Console.Write(object value)",
+      "documentation": "",
+      "parameters": [
+        {
+          "name": "value",
+          "label": "object value",
+          "documentation": ""
+        }
+      ]
+    },
+    {
+      "name": "Write",
+      "label": "void Console.Write(float value)",
+      "documentation": "",
+      "parameters": [
+        {
+          "name": "value",
+          "label": "float value",
+          "documentation": ""
+        }
+      ]
+    },
+    {
+      "name": "Write",
+      "label": "void Console.Write(string value)",
+      "documentation": "",
+      "parameters": [
+        {
+          "name": "value",
+          "label": "string value",
+          "documentation": ""
+        }
+      ]
+    },
+    {
+      "name": "Write",
+      "label": "void Console.Write(string format, object arg0)",
+      "documentation": "",
+      "parameters": [
+        {
+          "name": "format",
+          "label": "string format",
+          "documentation": ""
+        },
+        {
+          "name": "arg0",
+          "label": "object arg0",
+          "documentation": ""
+        }
+      ]
+    },
+    {
+      "name": "Write",
+      "label": "void Console.Write(string format, object arg0, object arg1)",
+      "documentation": "",
+      "parameters": [
+        {
+          "name": "format",
+          "label": "string format",
+          "documentation": ""
+        },
+        {
+          "name": "arg0",
+          "label": "object arg0",
+          "documentation": ""
+        },
+        {
+          "name": "arg1",
+          "label": "object arg1",
+          "documentation": ""
+        }
+      ]
+    },
+    {
+      "name": "Write",
+      "label": "void Console.Write(string format, object arg0, object arg1, object arg2)",
+      "documentation": "",
+      "parameters": [
+        {
+          "name": "format",
+          "label": "string format",
+          "documentation": ""
+        },
+        {
+          "name": "arg0",
+          "label": "object arg0",
+          "documentation": ""
+        },
+        {
+          "name": "arg1",
+          "label": "object arg1",
+          "documentation": ""
+        },
+        {
+          "name": "arg2",
+          "label": "object arg2",
+          "documentation": ""
+        }
+      ]
+    },
+    {
+      "name": "Write",
+      "label": "void Console.Write(string format, params object[] arg)",
+      "documentation": "",
+      "parameters": [
+        {
+          "name": "format",
+          "label": "string format",
+          "documentation": ""
+        },
+        {
+          "name": "arg",
+          "label": "params object[] arg",
+          "documentation": ""
+        }
+      ]
+    },
+    {
+      "name": "Write",
+      "label": "void Console.Write(uint value)",
+      "documentation": "",
+      "parameters": [
+        {
+          "name": "value",
+          "label": "uint value",
+          "documentation": ""
+        }
+      ]
+    },
+    {
+      "name": "Write",
+      "label": "void Console.Write(ulong value)",
+      "documentation": "",
+      "parameters": [
+        {
+          "name": "value",
+          "label": "ulong value",
+          "documentation": ""
+        }
+      ]
+    }
+  ],
+  "activeSignature": 0,
+  "activeParameter": 0
+}

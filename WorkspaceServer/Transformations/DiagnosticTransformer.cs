@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
+using WorkspaceServer.Models;
 using WorkspaceServer.Models.Execution;
 
 namespace WorkspaceServer.Transformations

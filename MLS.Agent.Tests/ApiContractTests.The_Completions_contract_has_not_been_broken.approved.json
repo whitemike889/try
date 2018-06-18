@@ -1,0 +1,396 @@
+{
+  "items": [
+    {
+      "displayText": "BackgroundColor",
+      "kind": "Property",
+      "filterText": "BackgroundColor",
+      "sortText": "BackgroundColor",
+      "insertText": "BackgroundColor",
+      "documentation": ""
+    },
+    {
+      "displayText": "Beep",
+      "kind": "Method",
+      "filterText": "Beep",
+      "sortText": "Beep",
+      "insertText": "Beep",
+      "documentation": ""
+    },
+    {
+      "displayText": "BufferHeight",
+      "kind": "Property",
+      "filterText": "BufferHeight",
+      "sortText": "BufferHeight",
+      "insertText": "BufferHeight",
+      "documentation": ""
+    },
+    {
+      "displayText": "BufferWidth",
+      "kind": "Property",
+      "filterText": "BufferWidth",
+      "sortText": "BufferWidth",
+      "insertText": "BufferWidth",
+      "documentation": ""
+    },
+    {
+      "displayText": "CancelKeyPress",
+      "kind": "Event",
+      "filterText": "CancelKeyPress",
+      "sortText": "CancelKeyPress",
+      "insertText": "CancelKeyPress",
+      "documentation": ""
+    },
+    {
+      "displayText": "CapsLock",
+      "kind": "Property",
+      "filterText": "CapsLock",
+      "sortText": "CapsLock",
+      "insertText": "CapsLock",
+      "documentation": ""
+    },
+    {
+      "displayText": "Clear",
+      "kind": "Method",
+      "filterText": "Clear",
+      "sortText": "Clear",
+      "insertText": "Clear",
+      "documentation": ""
+    },
+    {
+      "displayText": "CursorLeft",
+      "kind": "Property",
+      "filterText": "CursorLeft",
+      "sortText": "CursorLeft",
+      "insertText": "CursorLeft",
+      "documentation": ""
+    },
+    {
+      "displayText": "CursorSize",
+      "kind": "Property",
+      "filterText": "CursorSize",
+      "sortText": "CursorSize",
+      "insertText": "CursorSize",
+      "documentation": ""
+    },
+    {
+      "displayText": "CursorTop",
+      "kind": "Property",
+      "filterText": "CursorTop",
+      "sortText": "CursorTop",
+      "insertText": "CursorTop",
+      "documentation": ""
+    },
+    {
+      "displayText": "CursorVisible",
+      "kind": "Property",
+      "filterText": "CursorVisible",
+      "sortText": "CursorVisible",
+      "insertText": "CursorVisible",
+      "documentation": ""
+    },
+    {
+      "displayText": "Equals",
+      "kind": "Method",
+      "filterText": "Equals",
+      "sortText": "Equals",
+      "insertText": "Equals",
+      "documentation": ""
+    },
+    {
+      "displayText": "Error",
+      "kind": "Property",
+      "filterText": "Error",
+      "sortText": "Error",
+      "insertText": "Error",
+      "documentation": ""
+    },
+    {
+      "displayText": "ForegroundColor",
+      "kind": "Property",
+      "filterText": "ForegroundColor",
+      "sortText": "ForegroundColor",
+      "insertText": "ForegroundColor",
+      "documentation": ""
+    },
+    {
+      "displayText": "In",
+      "kind": "Property",
+      "filterText": "In",
+      "sortText": "In",
+      "insertText": "In",
+      "documentation": ""
+    },
+    {
+      "displayText": "InputEncoding",
+      "kind": "Property",
+      "filterText": "InputEncoding",
+      "sortText": "InputEncoding",
+      "insertText": "InputEncoding",
+      "documentation": ""
+    },
+    {
+      "displayText": "IsErrorRedirected",
+      "kind": "Property",
+      "filterText": "IsErrorRedirected",
+      "sortText": "IsErrorRedirected",
+      "insertText": "IsErrorRedirected",
+      "documentation": ""
+    },
+    {
+      "displayText": "IsInputRedirected",
+      "kind": "Property",
+      "filterText": "IsInputRedirected",
+      "sortText": "IsInputRedirected",
+      "insertText": "IsInputRedirected",
+      "documentation": ""
+    },
+    {
+      "displayText": "IsOutputRedirected",
+      "kind": "Property",
+      "filterText": "IsOutputRedirected",
+      "sortText": "IsOutputRedirected",
+      "insertText": "IsOutputRedirected",
+      "documentation": ""
+    },
+    {
+      "displayText": "KeyAvailable",
+      "kind": "Property",
+      "filterText": "KeyAvailable",
+      "sortText": "KeyAvailable",
+      "insertText": "KeyAvailable",
+      "documentation": ""
+    },
+    {
+      "displayText": "LargestWindowHeight",
+      "kind": "Property",
+      "filterText": "LargestWindowHeight",
+      "sortText": "LargestWindowHeight",
+      "insertText": "LargestWindowHeight",
+      "documentation": ""
+    },
+    {
+      "displayText": "LargestWindowWidth",
+      "kind": "Property",
+      "filterText": "LargestWindowWidth",
+      "sortText": "LargestWindowWidth",
+      "insertText": "LargestWindowWidth",
+      "documentation": ""
+    },
+    {
+      "displayText": "MoveBufferArea",
+      "kind": "Method",
+      "filterText": "MoveBufferArea",
+      "sortText": "MoveBufferArea",
+      "insertText": "MoveBufferArea",
+      "documentation": ""
+    },
+    {
+      "displayText": "NumberLock",
+      "kind": "Property",
+      "filterText": "NumberLock",
+      "sortText": "NumberLock",
+      "insertText": "NumberLock",
+      "documentation": ""
+    },
+    {
+      "displayText": "OpenStandardError",
+      "kind": "Method",
+      "filterText": "OpenStandardError",
+      "sortText": "OpenStandardError",
+      "insertText": "OpenStandardError",
+      "documentation": ""
+    },
+    {
+      "displayText": "OpenStandardInput",
+      "kind": "Method",
+      "filterText": "OpenStandardInput",
+      "sortText": "OpenStandardInput",
+      "insertText": "OpenStandardInput",
+      "documentation": ""
+    },
+    {
+      "displayText": "OpenStandardOutput",
+      "kind": "Method",
+      "filterText": "OpenStandardOutput",
+      "sortText": "OpenStandardOutput",
+      "insertText": "OpenStandardOutput",
+      "documentation": ""
+    },
+    {
+      "displayText": "Out",
+      "kind": "Property",
+      "filterText": "Out",
+      "sortText": "Out",
+      "insertText": "Out",
+      "documentation": ""
+    },
+    {
+      "displayText": "OutputEncoding",
+      "kind": "Property",
+      "filterText": "OutputEncoding",
+      "sortText": "OutputEncoding",
+      "insertText": "OutputEncoding",
+      "documentation": ""
+    },
+    {
+      "displayText": "Read",
+      "kind": "Method",
+      "filterText": "Read",
+      "sortText": "Read",
+      "insertText": "Read",
+      "documentation": ""
+    },
+    {
+      "displayText": "ReadKey",
+      "kind": "Method",
+      "filterText": "ReadKey",
+      "sortText": "ReadKey",
+      "insertText": "ReadKey",
+      "documentation": ""
+    },
+    {
+      "displayText": "ReadLine",
+      "kind": "Method",
+      "filterText": "ReadLine",
+      "sortText": "ReadLine",
+      "insertText": "ReadLine",
+      "documentation": ""
+    },
+    {
+      "displayText": "ReferenceEquals",
+      "kind": "Method",
+      "filterText": "ReferenceEquals",
+      "sortText": "ReferenceEquals",
+      "insertText": "ReferenceEquals",
+      "documentation": ""
+    },
+    {
+      "displayText": "ResetColor",
+      "kind": "Method",
+      "filterText": "ResetColor",
+      "sortText": "ResetColor",
+      "insertText": "ResetColor",
+      "documentation": ""
+    },
+    {
+      "displayText": "SetBufferSize",
+      "kind": "Method",
+      "filterText": "SetBufferSize",
+      "sortText": "SetBufferSize",
+      "insertText": "SetBufferSize",
+      "documentation": ""
+    },
+    {
+      "displayText": "SetCursorPosition",
+      "kind": "Method",
+      "filterText": "SetCursorPosition",
+      "sortText": "SetCursorPosition",
+      "insertText": "SetCursorPosition",
+      "documentation": ""
+    },
+    {
+      "displayText": "SetError",
+      "kind": "Method",
+      "filterText": "SetError",
+      "sortText": "SetError",
+      "insertText": "SetError",
+      "documentation": ""
+    },
+    {
+      "displayText": "SetIn",
+      "kind": "Method",
+      "filterText": "SetIn",
+      "sortText": "SetIn",
+      "insertText": "SetIn",
+      "documentation": ""
+    },
+    {
+      "displayText": "SetOut",
+      "kind": "Method",
+      "filterText": "SetOut",
+      "sortText": "SetOut",
+      "insertText": "SetOut",
+      "documentation": ""
+    },
+    {
+      "displayText": "SetWindowPosition",
+      "kind": "Method",
+      "filterText": "SetWindowPosition",
+      "sortText": "SetWindowPosition",
+      "insertText": "SetWindowPosition",
+      "documentation": ""
+    },
+    {
+      "displayText": "SetWindowSize",
+      "kind": "Method",
+      "filterText": "SetWindowSize",
+      "sortText": "SetWindowSize",
+      "insertText": "SetWindowSize",
+      "documentation": ""
+    },
+    {
+      "displayText": "Title",
+      "kind": "Property",
+      "filterText": "Title",
+      "sortText": "Title",
+      "insertText": "Title",
+      "documentation": ""
+    },
+    {
+      "displayText": "TreatControlCAsInput",
+      "kind": "Property",
+      "filterText": "TreatControlCAsInput",
+      "sortText": "TreatControlCAsInput",
+      "insertText": "TreatControlCAsInput",
+      "documentation": ""
+    },
+    {
+      "displayText": "WindowHeight",
+      "kind": "Property",
+      "filterText": "WindowHeight",
+      "sortText": "WindowHeight",
+      "insertText": "WindowHeight",
+      "documentation": ""
+    },
+    {
+      "displayText": "WindowLeft",
+      "kind": "Property",
+      "filterText": "WindowLeft",
+      "sortText": "WindowLeft",
+      "insertText": "WindowLeft",
+      "documentation": ""
+    },
+    {
+      "displayText": "WindowTop",
+      "kind": "Property",
+      "filterText": "WindowTop",
+      "sortText": "WindowTop",
+      "insertText": "WindowTop",
+      "documentation": ""
+    },
+    {
+      "displayText": "WindowWidth",
+      "kind": "Property",
+      "filterText": "WindowWidth",
+      "sortText": "WindowWidth",
+      "insertText": "WindowWidth",
+      "documentation": ""
+    },
+    {
+      "displayText": "Write",
+      "kind": "Method",
+      "filterText": "Write",
+      "sortText": "Write",
+      "insertText": "Write",
+      "documentation": ""
+    },
+    {
+      "displayText": "WriteLine",
+      "kind": "Method",
+      "filterText": "WriteLine",
+      "sortText": "WriteLine",
+      "insertText": "WriteLine",
+      "documentation": ""
+    }
+  ]
+}

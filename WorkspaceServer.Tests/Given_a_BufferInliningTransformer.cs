@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
-using MLS.TestSupport;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Transformations;
 using Xunit;
@@ -11,7 +10,6 @@ namespace WorkspaceServer.Tests
 {
     public class Given_a_BufferInliningTransformer
     {
-
         [Fact]
         public void It_extracts_viewPorts_when_files_declare_region()
         {

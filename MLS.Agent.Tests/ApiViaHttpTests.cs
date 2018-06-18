@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Concurrent;
 using System.Linq;
 using FluentAssertions;
 using System.Net;
@@ -7,7 +6,6 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Clockwise;
-using MLS.TestSupport;
 using Newtonsoft.Json;
 using Pocket;
 using Recipes;
@@ -23,17 +21,11 @@ using Workspace = WorkspaceServer.Models.Execution.Workspace;
 
 namespace MLS.Agent.Tests
 {
-    public class ApiViaHttpTests : IDisposable
+    public class ApiViaHttpTests : ApiViaHttpTestsBase
     {
-        private readonly CompositeDisposable _disposables = new CompositeDisposable();
-
-        public ApiViaHttpTests(ITestOutputHelper output)
+        public ApiViaHttpTests(ITestOutputHelper output) : base(output)
         {
-            _disposables.Add(output.SubscribeToPocketLogger());
-            _disposables.Add(VirtualClock.Start());
         }
-
-        public void Dispose() => _disposables.Dispose();
 
         [Fact]
         public async Task The_workspace_snippet_endpoint_compiles_code_using_scripting_when_a_workspace_type_is_not_specified()
@@ -564,7 +556,7 @@ public class Program {
 }");
             var request = new WorkspaceRequest(new Workspace(workspaceType: "script", buffers: new[] { new Workspace.Buffer(string.Empty, sourceCode, 0) }));
 
-            var response = await CallRun(request);
+            var response = await CallRun(request.ToJson(), null);
 
             var result = await response
                 .EnsureSuccess()
@@ -583,7 +575,7 @@ public class Program {
 
             var request = new WorkspaceRequest(workspace, new HttpRequest("/api/values", "get"));
 
-            var response = await CallRun(request);
+            var response = await CallRun(request.ToJson(), null);
 
             var result = await response
                                .EnsureSuccess()
@@ -614,7 +606,7 @@ public class Program {
 
             var request = new WorkspaceRequest(workspace, new HttpRequest("/api/values", "get"));
 
-            var response = await CallRun(request, 30000);
+            var response = await CallRun(request.ToJson(), 30000);
 
             var result = await response
                                .EnsureSuccess()
@@ -639,7 +631,7 @@ public class Program {
 
             var request = new WorkspaceRequest(workspace, new HttpRequest("/api/values", "get"));
 
-            var response = await CallRun(request);
+            var response = await CallRun(request.ToJson(), null);
 
             var result = await response
                                .EnsureSuccess()
@@ -703,70 +695,6 @@ public class Program {
             var response = await CallRun(requestJson, 15000);
 
             response.StatusCode.Should().Be(HttpStatusCode.ExpectationFailed);
-        }
-
-        private static async Task<HttpResponseMessage> CallRun(
-            string content,
-            int? runTimeoutMs = null, 
-            CommandLineOptions options = null)
-        {
-            HttpResponseMessage response;
-            using (var agent = new AgentService(options))
-            {
-                var request = new HttpRequestMessage(
-                    HttpMethod.Post,
-                    @"/workspace/run")
-                {
-                    Content = new StringContent(
-                        content,
-                        Encoding.UTF8,
-                        "application/json")
-                };
-
-                if (runTimeoutMs != null)
-                {
-                    request.Headers.Add("Timeout", runTimeoutMs.Value.ToString("F0"));
-                }
-
-                response = await agent.SendAsync(request);
-            }
-
-            return response;
-        }
-
-        private static Task<HttpResponseMessage> CallRun(
-            WorkspaceRequest request,
-            int? runTimeoutMs = null)
-        {
-            return CallRun(request.ToJson(), runTimeoutMs);
-        }
-
-        private static async Task<HttpResponseMessage> CallSignatureHelp(
-            string request,
-            int? runTimeoutMs = null)
-        {
-            HttpResponseMessage response;
-            using (var agent = new AgentService(null))
-            {
-                var request1 = new HttpRequestMessage(
-                    HttpMethod.Post,
-                    @"/workspace/signaturehelp")
-                {
-                    Content = new StringContent(
-                        request,
-                        Encoding.UTF8,
-                        "application/json")
-                };
-
-                if (runTimeoutMs != null)
-                {
-                    request1.Headers.Add("Timeout", runTimeoutMs.Value.ToString("F0"));
-                }
-
-                response = await agent.SendAsync(request1);
-            }
-
-            return response;
         }
 
         private class FailedRunResult : Exception

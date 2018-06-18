@@ -4,7 +4,7 @@ using Clockwise;
 using FluentAssertions;
 using Pocket;
 using WorkspaceServer.Models;
-using WorkspaceServer.Servers.InMemory;
+using WorkspaceServer.Servers.Roslyn;
 using Xunit;
 using Xunit.Abstractions;
 using Workspace = MLS.Agent.Tools.Workspace;

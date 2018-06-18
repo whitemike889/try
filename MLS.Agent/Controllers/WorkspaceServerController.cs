@@ -4,7 +4,7 @@ using Clockwise;
 using Microsoft.AspNetCore.Mvc;
 using Pocket;
 using WorkspaceServer;
-using WorkspaceServer.Servers.InMemory;
+using WorkspaceServer.Servers.Roslyn;
 
 namespace MLS.Agent.Controllers
 {
