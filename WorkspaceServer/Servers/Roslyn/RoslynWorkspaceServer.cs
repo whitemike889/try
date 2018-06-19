@@ -14,6 +14,7 @@ using WorkspaceServer.Models;
 using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Models.SingatureHelp;
+using WorkspaceServer.Servers.Roslyn.Instrumentation;
 using WorkspaceServer.Servers.Scripting;
 using WorkspaceServer.Transformations;
 using WorkspaceServer.WorkspaceFeatures;
@@ -211,6 +212,37 @@ namespace WorkspaceServer.Servers.Roslyn
             }
 
             return runResult;
+        }
+        private Compilation AugmentCompilation(IEnumerable<InstrumentationMap> regions, Compilation compilation, Solution solution)
+        {
+            var newCompilation = compilation;
+            foreach (var tree in newCompilation.SyntaxTrees)
+            {
+                var replacementRegions = regions?.Where(r => tree.FilePath.EndsWith(r.FileToInstrument)).FirstOrDefault()?.InstrumentationRegions;
+
+                var semanticModel = newCompilation.GetSemanticModel(tree);
+
+                var visitor = new InstrumentationSyntaxVisitor(solution.GetDocument(tree), replacementRegions);
+                var linesWithInstrumentation = visitor.Augmentations.Data.Keys;
+
+                var rewrite = new InstrumentationSyntaxRewriter(
+                    linesWithInstrumentation,
+                    new[] { visitor.VariableLocations },
+                    new[] { visitor.Augmentations });
+                var newRoot = rewrite.Visit(tree.GetRoot());
+                var newTree = tree.WithRootAndOptions(newRoot, tree.Options);
+
+                newCompilation = newCompilation.ReplaceSyntaxTree(tree, newTree);
+            }
+
+            // if it failed to compile, just return the original, unaugmented compilation
+            var augmentedDiagnostics = newCompilation.GetDiagnostics();
+            if (augmentedDiagnostics.Any(e => e.Severity == DiagnosticSeverity.Error))
+            {
+                throw new Exception("Augmented source failed to compile: " + string.Join(Environment.NewLine, augmentedDiagnostics));
+            }
+
+            return newCompilation;
         }
     }
 }
