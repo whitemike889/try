@@ -2,11 +2,11 @@ using System;
 using Peaky.Client;
 using Peaky.XUnit;
 
-namespace MLS.Agent.Integration.Tests
+namespace MLS.Integration.Tests
 {
-    public class AgentTestsDiscovery : PeakyXunitTestBase, IDisposable
+    public class LanguageServicesTestsDiscovery : PeakyXunitTestBase, IDisposable
     {
-        private static readonly Uri TestDiscoveryUri = new Uri("https://mls-monitoring.azurewebsites.net/tests/staging/agent?deployment=true");
+        private static readonly Uri TestDiscoveryUri = new Uri("https://mls-monitoring.azurewebsites.net/tests/staging/LanguageServices?deployment=true");
 
         private readonly PeakyClient _peakyClient = new PeakyClient(TestDiscoveryUri);
 
