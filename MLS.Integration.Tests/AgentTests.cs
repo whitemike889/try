@@ -6,21 +6,21 @@ using Peaky.Client;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace MLS.LanguageServices.Integration.Tests
+namespace MLS.Integration.Tests
 {
-    public class LanguageServicesTests :  IDisposable
+    public class IntegrationTests : IDisposable
     {
         private readonly ITestOutputHelper _output;
         private static readonly TimeSpan HttpClientTimeout = TimeSpan.FromMinutes(1);
         private const int RetryCount = 10;
-        private readonly PeakyClient _peakyClient = new PeakyClient(new HttpClient() { Timeout = HttpClientTimeout });
+        private readonly PeakyClient _peakyClient = new PeakyClient(new HttpClient(){Timeout = HttpClientTimeout});
 
-        public LanguageServicesTests(ITestOutputHelper output)
+        public IntegrationTests(ITestOutputHelper output)
         {
             _output = output;
         }
-
         [Theory]
+        [ClassData(typeof(AgentTestsDiscovery))]
         [ClassData(typeof(LanguageServicesTestsDiscovery))]
         public async Task The_peaky_test_passes(Uri url)
         {
@@ -57,7 +57,7 @@ namespace MLS.LanguageServices.Integration.Tests
             result.Should().NotBeNull("All attempts failed");
 
             _output.WriteLine(result?.Content);
-            
+
             result?.Passed.Should().BeTrue();
         }
 
