@@ -618,7 +618,7 @@ public class Program {
             throw new NotImplementedException();
         }
 
-        [Fact(Skip = "We broke this")]
+        [Fact]
         public async Task When_aspnet_webapi_workspace_request_fails_then_diagnostics_are_returned()
         {
             var workspaceType = Tools.Workspace.Copy(await Default.WebApiWorkspace);

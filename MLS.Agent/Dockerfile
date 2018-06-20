@@ -10,8 +10,6 @@ ENV ASPNETCORE_URLS=http://+:4242
 EXPOSE 4242
 COPY ${source:-obj/Docker/publish} .
 
-RUN cp -r /root/.nuget/packages/ /dependencies/.nuget/packages
-
 RUN chown --recursive app_user:app_group /app
 RUN chown --recursive app_user:app_group /dependencies
 RUN chown --recursive app_user:app_group /workspaces
