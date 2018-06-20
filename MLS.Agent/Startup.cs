@@ -1,7 +1,6 @@
 ﻿using System;
 using Clockwise;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -13,6 +12,8 @@ using Recipes;
 using WorkspaceServer;
 using WorkspaceServer.Servers.Roslyn;
 using static Pocket.Logger<MLS.Agent.Startup>;
+using IApplicationLifetime = Microsoft.Extensions.Hosting.IApplicationLifetime;
+using IHostingEnvironment = Microsoft.Extensions.Hosting.IHostingEnvironment;
 
 namespace MLS.Agent
 {
@@ -31,14 +32,11 @@ namespace MLS.Agent
                 .SetBasePath(env.ContentRootPath);
 
             Configuration = configurationBuilder.Build();
-
-
         }
 
         protected IConfigurationRoot Configuration { get; }
 
         protected IHostingEnvironment Environment { get; }
-
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
