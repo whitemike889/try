@@ -2,13 +2,10 @@
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using Assent;
 using FluentAssertions;
 using MLS.Agent;
-using Newtonsoft.Json;
 using WorkspaceServer.Models;
 using WorkspaceServer.Models.Execution;
-using WorkspaceServer.Models.Instrumentation;
 using WorkspaceServer.Servers.Roslyn;
 using Xunit;
 using Xunit.Abstractions;
@@ -263,133 +260,10 @@ namespace FibonacciTest
             result.Output.Should().BeEquivalentTo("1", "1", "2", "3", "5", "8", "13", "21", "34", "55", "89", "144", "233", "377", "610", "987", "1597", "2584", "4181", "6765");
         }
 
-        [Fact]
-        public async Task Request_With_Instrumentation_Contains_Variable_Values()
-        {
-            #region bufferSources
-
-            var program = @"
-using System;
-using System.Linq;
-
-
-namespace FibonacciTest
-{
-    public class Program
-    {
-        public static void Main()
-        {
-            int a = 4;
-            int b = 1;
-            Console.WriteLine(a);
-        }
-    }
-}".EnforceLF();
-
-            #endregion
-
-            var request = new Workspace(workspaceType: "console", includeInstrumentation: true, buffers: new[]
-            {
-                new Workspace.Buffer("Program.cs", program, 0),
-            });
-
-            var server = await GetRunner();
-
-            var result = await server.Run(request);
-            var variableA = result.GetFeature<ProgramStateAtPositionArray>().ProgramStates.ElementAt(3).Locals.Where(v => v.Name == "a").First();
-
-            variableA.Value.Should().Be("4");
-        }
-        [Fact]
-        public async Task Request_With_Instrumentation_Contains_All_Variables()
-        {
-            #region bufferSources
-
-            var program = @"
-using System;
-using System.Linq;
-
-
-namespace FibonacciTest
-{
-    public class Program
-    {
-        public static void Main()
-        {
-            int a = 4;
-            int b = 1;
-            Console.WriteLine(a);
-        }
-    }
-}".EnforceLF();
-
-            #endregion
-
-            var request = new Workspace(workspaceType: "console", includeInstrumentation: true, buffers: new[]
-            {
-                new Workspace.Buffer("Program.cs", program, 0),
-            });
-
-            var server = await GetRunner();
-
-            var result = await server.Run(request);
-            var variables = result.GetFeature<ProgramStateAtPositionArray>()
-                .ProgramStates
-                .ElementAt(3)
-                .Locals
-                .Select(v => v.Name);
-            variables.Should().Contain("a").And.Contain("b");
-        }
-        [Fact]
-        public async Task Request_With_Instrumentation_Contains_Variable_Locations()
-        {
-            #region bufferSources
-
-            var program = @"
-using System;
-using System.Linq;
-
-
-namespace FibonacciTest
-{
-    public class Program
-    {
-        public static void Main()
-        {
-            int a = 4;
-            int b = 1;
-            Console.WriteLine(a);
-        }
-    }
-}".EnforceLF();
-
-            #endregion
-
-            var request = new Workspace(workspaceType: "console", includeInstrumentation: true, buffers: new[]
-            {
-                new Workspace.Buffer("Program.cs", program, 0),
-            });
-
-            var server = await GetRunner();
-
-            var result = await server.Run(request);
-            var variableALines = result.GetFeature<ProgramDescriptor>().VariableLocations
-                .Where(v => v.Name == "a")
-                .First()
-                .Locations
-                .Select(loc => loc.StartLine);
-
-            variableALines.Should().Contain(11).And.Contain(13);
-        }
-
         protected override async Task<ICodeRunner> GetRunner(
             [CallerMemberName] string testName = null)
         {
-            var project = await Create.ConsoleWorkspaceCopy(testName);
-
-            var workspaceServer = new RoslynWorkspaceServer(new WorkspaceRegistry());
-
-            return workspaceServer;
+            return new RoslynWorkspaceServer(new WorkspaceRegistry());
         }
 
         protected override ILanguageService GetLanguageService(
@@ -398,5 +272,4 @@ namespace FibonacciTest
 
     }
 }
-
 
