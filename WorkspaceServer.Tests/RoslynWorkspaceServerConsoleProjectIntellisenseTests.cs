@@ -530,7 +530,7 @@ namespace FibonacciTest
 
         protected override ILanguageService GetLanguageService([CallerMemberName] string testName = null)
         {
-            return new RoslynWorkspaceServer(new WorkspaceRegistry());
+            return new RoslynWorkspaceServer(WorkspaceRegistry.CreateDefault());
         }
 
         [Fact]
