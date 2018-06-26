@@ -101,7 +101,7 @@ namespace MLS.Agent.Tools
                 {
                     var depsFile = Directory.GetFiles("*.deps.json", SearchOption.AllDirectories).First();
 
-                    var entryPointAssemblyName = DepsFile.GetEntryPointAssemblyName(depsFile);
+                    var entryPointAssemblyName = DepsFileParser.GetEntryPointAssemblyName(depsFile);
 
                     var path =
                         Path.Combine(
