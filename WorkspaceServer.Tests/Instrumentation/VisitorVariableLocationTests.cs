@@ -6,8 +6,9 @@ using Microsoft.CodeAnalysis.Text;
 using Xunit;
 using TextSpans = System.Collections.Generic.IDictionary<string, System.Collections.Immutable.ImmutableArray<Microsoft.CodeAnalysis.Text.TextSpan>>;
 using LinePositionSpans = System.Collections.Generic.IDictionary<string, System.Collections.Immutable.ImmutableArray<Microsoft.CodeAnalysis.Text.LinePositionSpan>>;
+using WorkspaceServer.Servers.Roslyn.Instrumentation;
 
-namespace WorkspaceServer.Servers.Roslyn.Instrumentation.Tests
+namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
 {
     public class VisitorVariableLocationTests
     {

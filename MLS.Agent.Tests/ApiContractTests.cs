@@ -117,6 +117,47 @@ namespace MLS.Agent.Tests
             this.Assent(result.FormatJson(), configuration);
         }
 
+        [Fact]
+        public async Task The_instrumentation_contract_has_not_been_broken()
+        {
+
+            var requestJson = new WorkspaceRequest(
+                new Workspace(
+                    workspaceType: "console",
+                    buffers: new[]
+                    {
+                        EntrypointCode("int a = 1; int b = 2; a = 3; b = a;")
+                    },
+                    includeInstrumentation: true)
+                ).ToJson();
+
+            var response = await CallRun(requestJson);
+
+            var result = await response.Content.ReadAsStringAsync();
+
+            this.Assent(result.FormatJson(), configuration);
+        }
+
+        [Fact]
+        public async Task The_run_contract_with_no_instrumentation_has_not_been_broken()
+        {
+
+            var requestJson = new WorkspaceRequest(
+                new Workspace(
+                    workspaceType: "console",
+                    buffers: new[]
+                    {
+                        EntrypointCode("int a = 1; int b = 2; a = 3; b = a;")
+                    },
+                    includeInstrumentation: false)
+                ).ToJson();
+
+            var response = await CallRun(requestJson);
+
+            var result = await response.Content.ReadAsStringAsync();
+
+            this.Assent(result.FormatJson(), configuration);
+        }
         private static Workspace.Buffer EntrypointCode(string mainContent = @"Console.WriteLine(Sample.Method());$$")
         {
             var input = $@"

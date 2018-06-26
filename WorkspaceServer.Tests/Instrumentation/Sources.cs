@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 
-namespace WorkspaceServer.Servers.Roslyn.Instrumentation.Tests
+namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
 {
 
     internal class Sources

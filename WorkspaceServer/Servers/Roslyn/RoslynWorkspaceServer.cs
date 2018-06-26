@@ -8,11 +8,13 @@ using Clockwise;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Completion;
 using Microsoft.CodeAnalysis.Recommendations;
+using MLS.Agent.Tools;
 using Pocket;
 using Recipes;
 using WorkspaceServer.Models;
 using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
+using WorkspaceServer.Models.Instrumentation;
 using WorkspaceServer.Models.SingatureHelp;
 using WorkspaceServer.Servers.Roslyn.Instrumentation;
 using WorkspaceServer.Servers.Scripting;
@@ -150,6 +152,16 @@ namespace WorkspaceServer.Servers.Roslyn
                         diagnostics: d3.Select(d => d.Diagnostic).ToArray());
                 }
 
+                var viewports = _transformer.ExtractViewPorts(workspaceModel);
+                var instrumentationRegions = viewports.Values
+                    .Where(v => v.Destination != null && v.Destination.Name != null)
+                    .GroupBy(v => v.Destination.Name, v => v.Region, (name, regions) => new InstrumentationMap(name, regions));
+
+                if (workspaceModel.IncludeInstrumentation)
+                {
+                    compilation = AugmentCompilation(instrumentationRegions, compilation, documents.First().Project.Solution);
+                }
+
                 var numberOfAttempts = 100;
                 for (var attempt = 1; attempt < numberOfAttempts; attempt++)
                 {
@@ -190,6 +202,8 @@ namespace WorkspaceServer.Servers.Roslyn
                                                 workspace.EntryPointAssemblyPath.FullName,
                                                 budget);
 
+                    var output = InstrumentedOutputExtractor.ExtractOutput(commandLineResult.Output);
+
                     budget.RecordEntry(UserCodeCompleted);
 
                     if (commandLineResult.ExitCode == 124)
@@ -201,13 +215,17 @@ namespace WorkspaceServer.Servers.Roslyn
                     {
                         exceptionMessage = string.Join(Environment.NewLine, commandLineResult.Error);
                     }
-
                     runResult = new RunResult(
-                        succeeded: true,
-                        output: commandLineResult?.Output,
-                        exception: exceptionMessage,
-                        diagnostics: diagnostics,
-                        instrumentation: Array.Empty<string>());
+                           succeeded: true,
+                           output: output.StdOut,
+                           exception: exceptionMessage,
+                           diagnostics: diagnostics);
+
+                    if (workspaceModel.IncludeInstrumentation)
+                    {
+                        runResult.AddFeature(output.ProgramStatesArray);
+                        runResult.AddFeature(output.ProgramDescriptor);
+                    }
                 }
             }
 

@@ -18,15 +18,15 @@ namespace WorkspaceServer.Models.Execution
             bool succeeded,
             IReadOnlyCollection<string> output = null,
             string exception = null,
-            IReadOnlyCollection<SerializableDiagnostic> diagnostics = null,
-            IReadOnlyCollection<string> instrumentation = null)
+            IReadOnlyCollection<SerializableDiagnostic> diagnostics = null
+            )
         {
             Output = output ?? Array.Empty<string>();
             Succeeded = succeeded;
             Exception = exception;
             AddFeature(diagnostics ??
                        Array.Empty<SerializableDiagnostic>());
-            Instrumentation = instrumentation?.Select(d => new JRaw(d)).ToArray() ?? Array.Empty<JRaw>();
+          
         }
 
         public void AddFeature<T>(T feature)
@@ -47,8 +47,6 @@ namespace WorkspaceServer.Models.Execution
         public IReadOnlyCollection<string> Output { get; }
 
         public string Exception { get; }
-
-        public IReadOnlyCollection<JRaw> Instrumentation { get; }
 
         public IReadOnlyDictionary<Type, object> Features => features;
 

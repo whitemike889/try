@@ -2,9 +2,10 @@
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
 using System.Linq;
+using WorkspaceServer.Servers.Roslyn.Instrumentation;
 using Xunit;
 
-namespace WorkspaceServer.Servers.Roslyn.Instrumentation.Tests
+namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
 {
     public class InstrumentationSyntaxRewriterTests
     {

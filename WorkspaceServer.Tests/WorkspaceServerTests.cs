@@ -1,7 +1,8 @@
 ﻿using System;
-using FluentAssertions;
+using System.Linq;
 using System.Threading.Tasks;
 using Clockwise;
+using FluentAssertions;
 using FluentAssertions.Extensions;
 using Microsoft.CodeAnalysis;
 using Pocket;
@@ -9,7 +10,6 @@ using Xunit;
 using Xunit.Abstractions;
 using static Pocket.Logger<WorkspaceServer.Tests.WorkspaceServerTests>;
 using Workspace = WorkspaceServer.Models.Execution.Workspace;
-using System.Linq;
 
 namespace WorkspaceServer.Tests
 {

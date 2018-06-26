@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace WorkspaceServer.Servers.Roslyn.Instrumentation
+namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
 {
     public static class TestUtils
     {

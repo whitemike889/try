@@ -3,10 +3,10 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
-using WorkspaceServer.Tests;
+using WorkspaceServer.Servers.Roslyn.Instrumentation;
 using Xunit;
 
-namespace WorkspaceServer.Servers.Roslyn.Instrumentation.Tests
+namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
 {
     public class RewriterVariableLocationTests
     {
