@@ -33,6 +33,11 @@ namespace WorkspaceServer
 
         public bool RequiresPublish { get; set; }
 
+        public void AfterCreate(Func<Workspace, Budget, Task> action)
+        {
+            _afterCreateActions.Add(action);
+        }
+
         public void CreateCopyOf(string originalWorkspaceName) =>
             WorkspaceInitializer = new WorkspaceCopyInitializer(
                 _registry,

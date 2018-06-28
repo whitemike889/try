@@ -263,7 +263,7 @@ namespace FibonacciTest
         protected override async Task<ICodeRunner> GetRunner(
             [CallerMemberName] string testName = null)
         {
-            return new RoslynWorkspaceServer(new WorkspaceRegistry());
+            return new RoslynWorkspaceServer(WorkspaceRegistry.CreateDefault());
         }
 
         protected override ILanguageService GetLanguageService(

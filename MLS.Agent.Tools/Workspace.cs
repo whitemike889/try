@@ -206,7 +206,7 @@ namespace MLS.Agent.Tools
                     {
                         operation.Info("Building workspace using {_initializer} in {directory}", _initializer, Directory);
                         var result = await new Dotnet(Directory)
-                                         .Build(args: "--no-dependencies");
+                                         .Build(args: "/fl /p:ProvideCommandLineArgs=true");
                         result.ThrowOnFailure();
                     }
 

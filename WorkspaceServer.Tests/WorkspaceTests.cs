@@ -1,14 +1,18 @@
 using System;
 using System.IO;
+using FluentAssertions;
+using FluentAssertions.Extensions;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using FluentAssertions;
-using FluentAssertions.Extensions;
+using Clockwise;
 using MLS.Agent.Tools;
 using Pocket;
+using WorkspaceServer.Servers.Roslyn;
 using Xunit;
 using Xunit.Abstractions;
+using static Pocket.Logger;
+using Workspace = MLS.Agent.Tools.Workspace;
 
 namespace WorkspaceServer.Tests
 {
@@ -19,6 +23,7 @@ namespace WorkspaceServer.Tests
         public WorkspaceTests(ITestOutputHelper output)
         {
             disposables.Add(output.SubscribeToPocketLogger());
+            disposables.Add(VirtualClock.Start());
         }
 
         public void Dispose() => disposables.Dispose();
@@ -164,7 +169,7 @@ namespace WorkspaceServer.Tests
                              "bin",
                              "Debug",
                              workspace.TargetFramework,
-                             "test.dll"));
+                             "console.dll"));
         }
 
         [Fact]
@@ -185,7 +190,7 @@ namespace WorkspaceServer.Tests
                              "Debug",
                              workspace.TargetFramework,
                              "publish",
-                             "test.dll"));
+                             "aspnet.webapi.dll"));
         }
     }
 }

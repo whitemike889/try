@@ -567,7 +567,7 @@ public class Program {
             result.ShouldSucceedWithOutput(output);
         }
 
-        [Fact(Skip = "We broke this")]
+        [Fact]
         public async Task When_aspnet_webapi_workspace_request_succeeds_then_output_shows_web_response()
         {
             var workspaceType = Tools.Workspace.Copy(await Default.WebApiWorkspace);
@@ -646,7 +646,7 @@ public class Program {
         public async Task Console_workspace_signature_help()
         {
             var workspaceJson =
-                @"{""workspace"":{""workspaceType"":""console"",""files"":[],""buffers"":[{""id"":"""",""content"":""using System;\nusing System.Collections.Generic;\nusing System.Linq;\n\npublic class Program\n{\n  public static void Main()\n  {\n    foreach (var i in Fibonacci().Take(20))\n    {\n      Console.WriteLine()\n    }\n  }\n\n  private static IEnumerable<int> Fibonacci()\n  {\n    int current = 1, next = 1;\n\n    while (true) \n    {\n      yield return current;\n      next = current + (current = next);\n    }\n  }\n}\n"",""position"":0}],""usings"":[]},""activeBufferId"":"""",""position"":197}";
+                @"{""workspace"":{""workspaceType"":""console"",""files"":[],""buffers"":[{""id"":""Program.cs"",""content"":""using System;\nusing System.Collections.Generic;\nusing System.Linq;\n\npublic class Program\n{\n  public static void Main()\n  {\n    foreach (var i in Fibonacci().Take(20))\n    {\n      Console.WriteLine()\n    }\n  }\n\n  private static IEnumerable<int> Fibonacci()\n  {\n    int current = 1, next = 1;\n\n    while (true) \n    {\n      yield return current;\n      next = current + (current = next);\n    }\n  }\n}\n"",""position"":0}],""usings"":[]},""activeBufferId"":""Program.cs"",""position"":197}";
             
             var response = await CallSignatureHelp(workspaceJson);
 

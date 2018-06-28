@@ -41,7 +41,7 @@ namespace WorkspaceServer.Tests
             }
         }
 
-        [Fact(Skip = "we broke this")]
+        [Fact]
         public async Task NuGet_packages_can_be_added_during_initialization()
         {
             using (var registry = new WorkspaceRegistry())
