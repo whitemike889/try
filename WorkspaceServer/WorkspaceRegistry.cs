@@ -97,6 +97,13 @@ namespace WorkspaceServer
                                       workspace.RequiresPublish = true;
                                   });
 
+            registry.AddWorkspace("instrumented",
+                                  workspace =>
+                                  {
+                                      workspace.CreateUsingDotnet("console");
+                                      workspace.RequiresPublish = true;
+                                  });
+
             return registry;
         }
     }

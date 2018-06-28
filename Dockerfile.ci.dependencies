@@ -40,4 +40,11 @@ WORKDIR /workspaces/aspnet.webapi
 RUN dotnet new webapi
 RUN xmlstarlet ed --inplace --insert "/Project/PropertyGroup/OutputType" --type elem -n "LangVersion" --value "7.2" aspnet.webapi.csproj
 RUN dotnet build /fl /p:ProvideCommandLineArgs=true
+
+WORKDIR /workspaces/instrumented
+RUN dotnet new console
+RUN xmlstarlet ed --inplace --insert "/Project/PropertyGroup/OutputType" --type elem -n "LangVersion" --value "7.2" instrumented.csproj
+RUN dotnet add package Newtonsoft.Json
+RUN dotnet build /fl /p:ProvideCommandLineArgs=true
+
 RUN dotnet publish
