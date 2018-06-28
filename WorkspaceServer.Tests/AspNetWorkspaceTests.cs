@@ -23,11 +23,12 @@ namespace WorkspaceServer.Tests
         public AspNetWorkspaceTests(ITestOutputHelper output)
         {
             _disposables.Add(output.SubscribeToPocketLogger());
+            _disposables.Add(VirtualClock.Start());
         }
 
         public void Dispose() => _disposables.Dispose();
 
-        [Fact(Skip = "we broke this")]
+        [Fact]
         public async Task Run_starts_the_kestrel_server_and_provides_a_WebServer_feature_that_can_receive_requests()
         {
             var (server, workspace) = await GetWorkspaceAndServer();
@@ -48,13 +49,9 @@ namespace WorkspaceServer.Tests
         protected async Task<(RoslynWorkspaceServer server, Workspace workspace )> GetWorkspaceAndServer(
             [CallerMemberName] string testName = null)
         {
-            var registry = new WorkspaceRegistry();
+            var workspace = await Create.WebApiWorkspaceCopy(testName);
 
-            registry.AddWorkspace(testName, builder => { builder.CreateCopyOf("aspnet.webapi"); });
-
-            var workspace = await registry.GetWorkspace(testName);
-
-            var server = new RoslynWorkspaceServer(registry);
+            var server = new RoslynWorkspaceServer(workspace);
 
             return (server, workspace);
         }

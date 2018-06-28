@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
@@ -10,25 +12,31 @@ namespace WorkspaceServer.Transformations
 {
     public class DiagnosticTransformer
     {
-        public static IEnumerable<(SerializableDiagnostic, string)> ReconstructDiagnosticLocations(IEnumerable<Diagnostic> bodyDiagnostics,
-            Dictionary<string, Viewport> viewPortsByBufferId, int paddingSize)
+        public static IEnumerable<(SerializableDiagnostic, string)> ReconstructDiagnosticLocations(
+            IEnumerable<Diagnostic> bodyDiagnostics,
+            Dictionary<string, Viewport> viewPortsByBufferId,
+            int paddingSize)
         {
             const string unmappedPath = "unmapped";
             var diagnostics = bodyDiagnostics ?? Enumerable.Empty<Diagnostic>();
+
             foreach (var diagnostic in diagnostics)
             {
                 var lineSpan = diagnostic.Location.GetMappedLineSpan();
+
                 var diagnosticPath = lineSpan.HasMappedPath ? lineSpan.Path : unmappedPath;
+
                 if (viewPortsByBufferId == null || viewPortsByBufferId.Count == 0)
                 {
-                    var errorMessage = diagnostic.ToString();
+                    var errorMessage = RelativizeFilePath();
+
                     yield return (new SerializableDiagnostic(diagnostic), errorMessage);
                 }
                 else
                 {
                     var target = viewPortsByBufferId
-                        .Where(e => e.Key.Contains("@") && (diagnosticPath == unmappedPath || diagnosticPath.EndsWith(e.Value.Destination.Name)))
-                        .FirstOrDefault(e => e.Value.Region.Contains(diagnostic.Location.SourceSpan.Start));
+                                 .Where(e => e.Key.Contains("@") && (diagnosticPath == unmappedPath || diagnosticPath.EndsWith(e.Value.Destination.Name)))
+                                 .FirstOrDefault(e => e.Value.Region.Contains(diagnostic.Location.SourceSpan.Start));
 
                     if (target.Value != null && !target.Value.Region.IsEmpty)
                     {
@@ -37,13 +45,46 @@ namespace WorkspaceServer.Transformations
                     }
                     else
                     {
-                        var errorMessage = diagnostic.ToString();
+                        var errorMessage = RelativizeFilePath();
+
                         yield return (new SerializableDiagnostic(diagnostic), errorMessage);
+                    }
+                }
+
+                string RelativizeFilePath()
+                {
+                    var message = diagnostic.ToString();
+
+                    if (!string.IsNullOrWhiteSpace(lineSpan.Path))
+                    {
+                        var directoryPath = new FileInfo(lineSpan.Path).Directory.FullName;
+
+                        if (!directoryPath.EndsWith(Path.DirectorySeparatorChar))
+                        {
+                            directoryPath += Path.DirectorySeparatorChar;
+                        }
+
+                        if (message.StartsWith(directoryPath))
+                        {
+                            return message.Substring(directoryPath.Length);
+                        }
+                        else
+                        {
+                            return message;
+                        }
+                    }
+                    else
+                    {
+                        return message;
                     }
                 }
             }
         }
-        private static (SerializableDiagnostic, string) AlignDiagnosticLocation(KeyValuePair<string, Viewport> target, Diagnostic diagnostic, int paddingSize)
+
+        private static (SerializableDiagnostic, string) AlignDiagnosticLocation(
+            KeyValuePair<string, Viewport> target, 
+            Diagnostic diagnostic, 
+            int paddingSize)
         {
             // offest of the buffer int othe original source file
             var offset = target.Value.Region.Start;
@@ -76,7 +117,19 @@ namespace WorkspaceServer.Transformations
             var location = new { Line = lineOffest + 1, Char = charOffset + 1 };
 
             var diagnosticMessage = diagnostic.GetMessage();
+
+            if (diagnosticMessage.Contains(@"c:\", StringComparison.OrdinalIgnoreCase))
+            {
+                Debug.WriteLine(diagnosticMessage);
+            }
+
             var errorMessage = $"({location.Line},{location.Char}): error {diagnostic.Id}: {diagnosticMessage}";
+
+
+            if (errorMessage.Contains(@"c:\", StringComparison.OrdinalIgnoreCase))
+            {
+                Debug.WriteLine(errorMessage);
+            }
 
             var processedDiagnostic = (new SerializableDiagnostic(
                     start,

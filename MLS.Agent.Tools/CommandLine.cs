@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Clockwise;
 using Pocket;
@@ -164,6 +166,42 @@ namespace MLS.Agent.Tools
                 process.BeginErrorReadLine();
 
                 return process;
+            }
+        }
+
+        private static readonly Regex _tokenizer = new Regex(
+            @"((?<opt>[^""\s]+)""(?<arg>[^""]+)"") # token + quoted argument with non-space argument delimiter, ex: --opt:""c:\path with\spaces""
+              |                                
+              (""(?<token>[^""]*)"")               # tokens surrounded by spaces, ex: ""c:\path with\spaces""
+              |
+              (?<token>\S+)                        # tokens containing no quotes or spaces
+              ",
+            RegexOptions.ExplicitCapture |
+            RegexOptions.Compiled |
+            RegexOptions.IgnorePatternWhitespace
+        );
+
+        // TODO: (CommandLine.Tokenize) remove and replace with new System.CommandLine when packages are available
+        // borrowed from: https://github.com/dotnet/System.CommandLine
+        public static IEnumerable<string> Tokenize(this string commandLine)
+        {
+            var matches = _tokenizer.Matches(commandLine);
+
+            foreach (Match match in matches)
+            {
+                if (match.Groups["arg"].Captures.Count > 0)
+                {
+                    var opt = match.Groups["opt"];
+                    var arg = match.Groups["arg"];
+                    yield return $"{opt}{arg}";
+                }
+                else
+                {
+                    foreach (var capture in match.Groups["token"].Captures)
+                    {
+                        yield return capture.ToString();
+                    }
+                }
             }
         }
 

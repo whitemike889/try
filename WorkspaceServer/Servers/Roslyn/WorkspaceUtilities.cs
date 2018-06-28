@@ -1,12 +1,10 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
+using Clockwise;
 using System.Linq;
 using System.Threading.Tasks;
-using Clockwise;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Host.Mef;
 using WorkspaceServer.Models.Execution;
 using Workspace = MLS.Agent.Tools.Workspace;
 
@@ -35,40 +33,57 @@ namespace WorkspaceServer.Servers.Roslyn
                 .Cast<MetadataReference>()
                 .ToImmutableArray();
 
-        public static async Task<(Compilation compilation, IEnumerable<Document> documents)> WithSources(
-            this Workspace thing,
+        public static IEnumerable<MetadataReference> GetMetadadataReferences(this IEnumerable<string> filePaths)
+        {
+            foreach (var filePath in filePaths)
+            {
+                var fileInfo = new FileInfo(filePath);
+
+                yield return MetadataReference.CreateFromFile(
+                    fileInfo.FullName,
+                    documentation: XmlDocumentationProvider.CreateFromFile(
+                        Path.Combine(_baseDir,
+                                     "completion",
+                                     "references",
+                                     $"{fileInfo.Name}.xml")));
+            }
+        }
+
+        public static async Task<(Compilation compilation, IReadOnlyCollection<Document> documents)> GetCompilation(
+            this Workspace build,
             IReadOnlyCollection<SourceFile> sources,
             Budget budget)
         {
-            var workspace = new AdhocWorkspace(MefHostServices.DefaultHost);
-            var compilationOptions = new CSharpCompilationOptions(OutputKind.ConsoleApplication);
             var projectId = ProjectId.CreateNewId();
 
-            var projectInfo = ProjectInfo.Create(
-                projectId,
-                version: VersionStamp.Create(),
-                name: thing.Name,
-                assemblyName: thing.Name,
-                language: LanguageNames.CSharp,
-                compilationOptions: compilationOptions,
-                metadataReferences: DefaultReferencedAssemblies);
-
-            workspace.AddProject(projectInfo);
+            var workspace = await build.GetRoslynWorkspace(projectId);
 
             var currentSolution = workspace.CurrentSolution;
 
             foreach (var source in sources)
             {
-                var docId = DocumentId.CreateNewId(projectId, $"{thing.Name}.Document");
+                if (currentSolution.Projects
+                                   .SelectMany(p => p.Documents)
+                                   .FirstOrDefault(d => d.Name == source.Name) is Document document)
+                {
+                    // there's a pre-existing document, so overwrite it's contents
+                    document = document.WithText(source.Text);
+                    currentSolution = document.Project.Solution;
+                }
+                else
+                {
+                    var docId = DocumentId.CreateNewId(projectId, $"{build.Name}.Document");
 
-                currentSolution = currentSolution.AddDocument(docId, source.Name, source.Text);
+                    currentSolution = currentSolution.AddDocument(docId, source.Name, source.Text);
+                }
+
             }
 
             var project = currentSolution.GetProject(projectId);
 
-            var newCompilation = await project.GetCompilationAsync().CancelIfExceeds(budget);
+            var compilation = await project.GetCompilationAsync().CancelIfExceeds(budget);
 
-            return (newCompilation, project.Documents);
+            return (compilation, project.Documents.ToArray());
         }
 
         private static string[] AssembliesNamesToReference() => new[]

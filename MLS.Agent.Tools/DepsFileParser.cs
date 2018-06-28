@@ -5,7 +5,7 @@ using Newtonsoft.Json.Linq;
 
 namespace MLS.Agent.Tools
 {
-    public static class DepsFile
+    public static class DepsFileParser
     {
         public static string GetEntryPointAssemblyName(FileInfo depsFile)
         {

@@ -26,26 +26,43 @@ namespace WorkspaceServer.Servers.Roslyn
 {
     public class RoslynWorkspaceServer : ILanguageService, ICodeRunner
     {
-        private readonly WorkspaceRegistry _registry;
+        private readonly GetWorkspaceByName _getWorkspaceByName;
         private const int defaultBudgetInSeconds = 30;
         private readonly ConcurrentDictionary<string, AsyncLock> locks = new ConcurrentDictionary<string, AsyncLock>();
         private readonly BufferInliningTransformer _transformer = new BufferInliningTransformer();
 
         private readonly string UserCodeCompleted = nameof(UserCodeCompleted);
 
+        private delegate Task<MLS.Agent.Tools.Workspace> GetWorkspaceByName(string name);
+
+        public RoslynWorkspaceServer(MLS.Agent.Tools.Workspace workspace)
+        {
+            if (workspace == null)
+            {
+                throw new ArgumentNullException(nameof(workspace));
+            }
+
+            _getWorkspaceByName = s => Task.FromResult(workspace);
+        }
+
         public RoslynWorkspaceServer(WorkspaceRegistry registry)
         {
-            _registry = registry ?? throw new ArgumentNullException(nameof(registry));
+            if (registry == null)
+            {
+                throw new ArgumentNullException(nameof(registry));
+            }
+
+            _getWorkspaceByName = s => registry.GetWorkspace(s);
         }
 
         public async Task<CompletionResult> GetCompletionList(WorkspaceRequest request, Budget budget)
         {
             budget = budget ?? new TimeBudget(TimeSpan.FromSeconds(defaultBudgetInSeconds));
-            var workspace = await _registry.GetWorkspace(request.Workspace.WorkspaceType);
+            var workspace = await _getWorkspaceByName(request.Workspace.WorkspaceType);
 
             var processed = await _transformer.TransformAsync(request.Workspace, budget);
             var sourceFiles = processed.GetSourceFiles();
-            var documents = (await workspace.WithSources(sourceFiles, budget)).documents.ToArray();
+            var documents = (await workspace.GetCompilation(sourceFiles, budget)).documents;
 
             var file = processed.GetFileFromBufferId(request.ActiveBufferId);
             var (line, column, absolutePosition) = processed.GetTextLocation(request.ActiveBufferId, request.Position);
@@ -79,11 +96,11 @@ namespace WorkspaceServer.Servers.Roslyn
         public async Task<DiagnosticResult> GetDiagnostics(Workspace request, Budget budget)
         {
             budget = budget ?? new TimeBudget(TimeSpan.FromSeconds(defaultBudgetInSeconds));
-            var workspace = await _registry.GetWorkspace(request.WorkspaceType);
+            var workspace = await _getWorkspaceByName(request.WorkspaceType);
 
             var processed = await _transformer.TransformAsync(request, budget);
             var sourceFiles = processed.GetSourceFiles();
-            var (compilation, _) = await workspace.WithSources(sourceFiles, budget);
+            var (compilation, _) = await workspace.GetCompilation(sourceFiles, budget);
 
             var diagnostics = await ServiceHelpers.GetDiagnostics(request, compilation);
             return new DiagnosticResult(diagnostics.Select(e => e.Diagnostic).ToArray());
@@ -93,23 +110,28 @@ namespace WorkspaceServer.Servers.Roslyn
         {
             budget = budget ?? new TimeBudget(TimeSpan.FromSeconds(defaultBudgetInSeconds));
 
-            var workspace = await _registry.GetWorkspace(request.Workspace.WorkspaceType);
+            var workspace = await _getWorkspaceByName(request.Workspace.WorkspaceType);
 
             Workspace processed = await _transformer.TransformAsync(request.Workspace, budget);
 
             var sourceFiles = processed.GetSourceFiles();
-            var (compilation, documents) = await workspace.WithSources(sourceFiles, budget);
+            var (compilation, documents) = await workspace.GetCompilation(sourceFiles, budget);
 
             var requestActiveBufferId = request.ActiveBufferId.Split("@").First();
 
-            var document = documents.FirstOrDefault(doc => doc.Name == requestActiveBufferId) 
+            var document = documents.FirstOrDefault(doc => doc.Name == requestActiveBufferId)
                            ??
-                           (documents.Count() == 1 ? documents.Single() : null);
+                           (documents.Count == 1 ? documents.Single() : null);
+
+            if (document == null)
+            {
+                return new SignatureHelpResponse();
+            }
 
             var tree = await document.GetSyntaxTreeAsync();
 
             var absolutePosition = processed.GetAbsolutePosition(
-                request.ActiveBufferId, 
+                request.ActiveBufferId,
                 request.Position);
 
             var syntaxNode = tree.GetRoot().FindToken(absolutePosition).Parent;
@@ -128,11 +150,11 @@ namespace WorkspaceServer.Servers.Roslyn
             using (var operation = Logger<RoslynWorkspaceServer>.Log.OnEnterAndConfirmOnExit())
             using (await locks.GetOrAdd(workspaceModel.WorkspaceType, s => new AsyncLock()).LockAsync())
             {
-                var workspace = await _registry.GetWorkspace(workspaceModel.WorkspaceType);
+                var workspace = await _getWorkspaceByName(workspaceModel.WorkspaceType);
                 var processed = await _transformer.TransformAsync(workspaceModel, budget);
 
                 var sourceFiles = processed.GetSourceFiles();
-                var (compilation, documents) = await workspace.WithSources(sourceFiles, budget);
+                var (compilation, documents) = await workspace.GetCompilation(sourceFiles, budget);
 
                 var diagnostics = compilation.GetDiagnostics()
                                              .Select(e => new SerializableDiagnostic(e))
@@ -231,6 +253,7 @@ namespace WorkspaceServer.Servers.Roslyn
 
             return runResult;
         }
+
         private Compilation AugmentCompilation(IEnumerable<InstrumentationMap> regions, Compilation compilation, Solution solution)
         {
             var newCompilation = compilation;

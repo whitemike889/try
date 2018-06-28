@@ -4,7 +4,6 @@ using System.IO;
 using System.Threading.Tasks;
 using Clockwise;
 using MLS.Agent.Tools;
-using Pocket;
 
 namespace WorkspaceServer
 {
@@ -16,8 +15,6 @@ namespace WorkspaceServer
 
         private readonly List<Func<Workspace, Budget, Task>> _afterCreateActions = new List<Func<Workspace, Budget, Task>>();
 
-        private readonly Logger _log;
-
         public WorkspaceBuilder(WorkspaceRegistry registry, string workspaceName)
         {
             if (string.IsNullOrWhiteSpace(workspaceName))
@@ -28,8 +25,6 @@ namespace WorkspaceServer
             _registry = registry ?? throw new ArgumentNullException(nameof(registry));
 
             WorkspaceName = workspaceName;
-
-            _log = new Logger($"{nameof(WorkspaceBuilder)}:{workspaceName}");
         }
 
         public string WorkspaceName { get; }
@@ -38,9 +33,14 @@ namespace WorkspaceServer
 
         public bool RequiresPublish { get; set; }
 
+        public void AfterCreate(Func<Workspace, Budget, Task> action)
+        {
+            _afterCreateActions.Add(action);
+        }
+
         public void CreateCopyOf(string originalWorkspaceName) =>
             WorkspaceInitializer = new WorkspaceCopyInitializer(
-               _registry,
+                _registry,
                 originalWorkspaceName);
 
         public void CreateUsingDotnet(string template) =>
@@ -64,6 +64,7 @@ namespace WorkspaceServer
             {
                 await PrepareWorkspace(budget);
             }
+
             budget?.RecordEntry();
             return _workspace;
         }

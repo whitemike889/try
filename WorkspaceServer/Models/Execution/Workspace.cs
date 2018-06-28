@@ -88,7 +88,7 @@ namespace WorkspaceServer.Models.Execution
 
         public static Workspace FromDirectory(DirectoryInfo directory, string workspaceType)
         {
-            var filesOnDisk = directory.GetFiles("*.cs");
+            var filesOnDisk = directory.GetFiles("*.cs", SearchOption.AllDirectories);
 
             if (!filesOnDisk.Any())
             {

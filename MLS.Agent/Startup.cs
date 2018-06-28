@@ -59,7 +59,7 @@ namespace MLS.Agent
 
                 services.AddSingleton(Configuration);
 
-                services.AddSingleton(_ => DefaultWorkspaces.CreateWorkspaceServerRegistry());
+                services.AddSingleton(_ => WorkspaceRegistry.CreateDefault());
                 services.AddSingleton(c => new RoslynWorkspaceServer(c.GetRequiredService<WorkspaceRegistry>()));
 
                 services.AddSingleton<IHostedService, Warmup>();

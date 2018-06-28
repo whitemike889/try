@@ -101,7 +101,7 @@ namespace MLS.Agent.Tools
                 {
                     var depsFile = Directory.GetFiles("*.deps.json", SearchOption.AllDirectories).First();
 
-                    var entryPointAssemblyName = DepsFile.GetEntryPointAssemblyName(depsFile);
+                    var entryPointAssemblyName = DepsFileParser.GetEntryPointAssemblyName(depsFile);
 
                     var path =
                         Path.Combine(
@@ -130,11 +130,12 @@ namespace MLS.Agent.Tools
 
         public async Task EnsureCreated(Budget budget = null)
         {
-            await _created.ValueAsync()
+            await _created
+                .ValueAsync()
                 .CancelIfExceeds(budget ?? new Budget());
             budget?.RecordEntry();
         }
-
+     
         private async Task<bool> VerifyOrCreate()
         {
             using (var operation = _log.OnEnterAndConfirmOnExit())
@@ -205,7 +206,7 @@ namespace MLS.Agent.Tools
                     {
                         operation.Info("Building workspace using {_initializer} in {directory}", _initializer, Directory);
                         var result = await new Dotnet(Directory)
-                                         .Build(args: "--no-dependencies");
+                                         .Build(args: "/fl /p:ProvideCommandLineArgs=true");
                         result.ThrowOnFailure();
                     }
 
