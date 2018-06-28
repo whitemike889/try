@@ -1,4 +1,4 @@
-FROM microsoft/dotnet:2.1-sdk
+FROM microsoft/dotnet:2.1.301-sdk
 RUN set -x
 
 ENV NUGET_PACKAGES=/dependencies/.nuget/packages
