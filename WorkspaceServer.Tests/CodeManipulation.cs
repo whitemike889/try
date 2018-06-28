@@ -13,7 +13,7 @@ namespace WorkspaceServer.Tests
 
         public static string EnforceLF(this string source)
         {
-            return source?.Replace(Environment.NewLine, "\n") ?? string.Empty;
+            return source?.Replace("\r\n", "\n") ?? string.Empty;
         }
 
         public static (string processed, int markLocation) ProcessMarkup(string source)
