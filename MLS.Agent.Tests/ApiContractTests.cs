@@ -1,5 +1,4 @@
 using System;
-using System.Net.Http;
 using System.Threading.Tasks;
 using Assent;
 using Recipes;
@@ -41,7 +40,7 @@ namespace MLS.Agent.Tests
                 activeBufferId: viewport.Id,
                 position: viewport.Position);
 
-            var response = await CallRun(requestJson.ToJson(), null);
+            var response = await CallRun(requestJson.ToJson());
 
             var result = await response.Content.ReadAsStringAsync();
 
@@ -64,7 +63,7 @@ namespace MLS.Agent.Tests
                 activeBufferId: viewport.Id,
                 position: viewport.Position);
 
-            var response = await CallRun(requestJson.ToJson(), null);
+            var response = await CallRun(requestJson.ToJson());
 
             var result = await response.Content.ReadAsStringAsync();
 

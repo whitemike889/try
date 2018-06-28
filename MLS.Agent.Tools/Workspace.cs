@@ -130,11 +130,12 @@ namespace MLS.Agent.Tools
 
         public async Task EnsureCreated(Budget budget = null)
         {
-            await _created.ValueAsync()
+            await _created
+                .ValueAsync()
                 .CancelIfExceeds(budget ?? new Budget());
             budget?.RecordEntry();
         }
-
+     
         private async Task<bool> VerifyOrCreate()
         {
             using (var operation = _log.OnEnterAndConfirmOnExit())

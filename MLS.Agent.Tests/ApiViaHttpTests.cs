@@ -571,11 +571,13 @@ public class Program {
         public async Task When_aspnet_webapi_workspace_request_succeeds_then_output_shows_web_response()
         {
             var workspaceType = Tools.Workspace.Copy(await Default.WebApiWorkspace);
-            var workspace = Workspace.FromDirectory(workspaceType.Directory, workspaceType.Directory.Name);
+            var workspace = Workspace.FromDirectory(
+                workspaceType.Directory, 
+                workspaceType.Directory.Name);
 
             var request = new WorkspaceRequest(workspace, new HttpRequest("/api/values", "get"));
 
-            var response = await CallRun(request.ToJson(), null);
+            var response = await CallRun(request.ToJson());
 
             var result = await response
                                .EnsureSuccess()

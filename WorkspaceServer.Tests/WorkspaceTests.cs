@@ -44,7 +44,7 @@ namespace WorkspaceServer.Tests
             var initializer = new WorkspaceInitializer(
                 "console",
                 "test",
-                async ( _, __) => afterCreateCallCount++);
+                async (_, __) => afterCreateCallCount++);
 
             var workspace = Create.EmptyWorkspace(initializer: initializer);
 

@@ -36,8 +36,6 @@ namespace MLS.Agent.JsonContracts
             }
         }
 
-
-
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
             var obj = serializer.Deserialize(reader) as JObject;
