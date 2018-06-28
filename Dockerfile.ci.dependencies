@@ -1,11 +1,12 @@
-FROM microsoft/dotnet:2.1.301-sdk
+FROM microsoft/dotnet:2.1.301-sdk-alpine
 RUN set -x
 
 ENV NUGET_PACKAGES=/dependencies/.nuget/packages
 
 # install xmlstarlet
-RUN apt-get update
-RUN apt-get --assume-yes install xmlstarlet
+RUN apk update
+RUN apk add xmlstarlet
+RUN apk add shadow
 
 # set up workspaces directory
 ENV TRYDOTNET_WORKSPACES_PATH=/workspaces
