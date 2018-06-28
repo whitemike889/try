@@ -6,7 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 
-// adapted from http://source.roslyn.io/#Microsoft.CodeAnalysis/FileSystem/PathKind.cs,64eefa8549497eda
+// adapted from http://source.roslyn.io/#System.Reflection.Metadata/System/Reflection/Internal/Utilities/PathUtilities.cs,36b27d7696df4d1e
 
 namespace WorkspaceServer.Servers.Roslyn
 {
