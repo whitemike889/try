@@ -19,7 +19,7 @@ echo "DOCKER VERSION:"
 docker version
 echo "----------------------"
 
-docker image prune -f
+docker system prune -f
 
 docker-compose -f docker-compose.ci.build.yml up --build 
 
