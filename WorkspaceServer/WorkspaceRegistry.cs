@@ -101,7 +101,6 @@ namespace WorkspaceServer
                                   workspace =>
                                   {
                                       workspace.CreateUsingDotnet("console");
-                                      workspace.RequiresPublish = true;
                                   });
 
             return registry;
