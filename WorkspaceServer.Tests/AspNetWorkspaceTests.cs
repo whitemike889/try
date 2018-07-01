@@ -31,7 +31,7 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task Run_starts_the_kestrel_server_and_provides_a_WebServer_feature_that_can_receive_requests()
         {
-            var (server, workspace) = await GetWorkspaceAndServer();
+            var (server, workspace) = await GetRunnerAndWorkspace();
 
             using (var runResult = await server.Run(Models.Execution.Workspace.FromDirectory(workspace.Directory, workspace.Name)))
             {
@@ -46,7 +46,7 @@ namespace WorkspaceServer.Tests
             }
         }
 
-        protected async Task<(RoslynWorkspaceServer server, Workspace workspace )> GetWorkspaceAndServer(
+        protected async Task<(ICodeRunner server, Workspace workspace )> GetRunnerAndWorkspace(
             [CallerMemberName] string testName = null)
         {
             var workspace = await Create.WebApiWorkspaceCopy(testName);

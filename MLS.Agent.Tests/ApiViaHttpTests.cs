@@ -154,7 +154,7 @@ namespace MLS.Agent.Tests
                     Content = new StringContent(
                         JsonConvert.SerializeObject(new
                         {
-                            Buffer = CodeManipulation.EnforceLF($@"Console.WriteLine(""{output}""")
+                            Buffer = $@"Console.WriteLine(""{output}""".EnforceLF()
                         }),
                         Encoding.UTF8,
                         "application/json")

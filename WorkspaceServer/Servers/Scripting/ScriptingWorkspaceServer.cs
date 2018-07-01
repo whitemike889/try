@@ -135,7 +135,7 @@ namespace WorkspaceServer.Servers.Scripting
             var viewPorts = processor.ExtractViewPorts(processed);
             var sourceFile = processed.GetSourceFiles().Single();
             var code = sourceFile.Text.ToString();
-            return await ServiceHelpers.GetDiagnostics(workspace, CSharpScript.Create(code, options).GetCompilation());
+            return await ServiceHelpers.GetProjectedDiagnostics(workspace, CSharpScript.Create(code, options).GetCompilation());
         }
 
         private static Task<ScriptState<object>> Run(

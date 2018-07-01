@@ -14,12 +14,12 @@ using Recipes;
 using WorkspaceServer.Models;
 using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
-using WorkspaceServer.Models.Instrumentation;
 using WorkspaceServer.Models.SingatureHelp;
 using WorkspaceServer.Servers.Roslyn.Instrumentation;
 using WorkspaceServer.Servers.Scripting;
 using WorkspaceServer.Transformations;
 using WorkspaceServer.WorkspaceFeatures;
+using static Pocket.Logger<WorkspaceServer.Servers.Roslyn.RoslynWorkspaceServer>;
 using Workspace = WorkspaceServer.Models.Execution.Workspace;
 
 namespace WorkspaceServer.Servers.Roslyn
@@ -102,7 +102,7 @@ namespace WorkspaceServer.Servers.Roslyn
             var sourceFiles = processed.GetSourceFiles();
             var (compilation, _) = await workspace.GetCompilation(sourceFiles, budget);
 
-            var diagnostics = await ServiceHelpers.GetDiagnostics(request, compilation);
+            var diagnostics = await ServiceHelpers.GetProjectedDiagnostics(request, compilation);
             return new DiagnosticResult(diagnostics.Select(e => e.Diagnostic).ToArray());
         }
 
@@ -147,7 +147,7 @@ namespace WorkspaceServer.Servers.Roslyn
             budget = budget ?? new TimeBudget(TimeSpan.FromSeconds(defaultBudgetInSeconds));
             RunResult runResult = null;
 
-            using (var operation = Logger<RoslynWorkspaceServer>.Log.OnEnterAndConfirmOnExit())
+            using (var operation = Log.OnEnterAndConfirmOnExit())
             using (await locks.GetOrAdd(workspaceModel.WorkspaceType, s => new AsyncLock()).LockAsync())
             {
                 var workspace = await _getWorkspaceByName(workspaceModel.WorkspaceType);
@@ -156,12 +156,15 @@ namespace WorkspaceServer.Servers.Roslyn
                 var sourceFiles = processed.GetSourceFiles();
                 var (compilation, documents) = await workspace.GetCompilation(sourceFiles, budget);
 
-                var diagnostics = compilation.GetDiagnostics()
-                                             .Select(e => new SerializableDiagnostic(e))
-                                             .ToArray();
+                var d3 = await ServiceHelpers.GetProjectedDiagnostics(
+                             workspaceModel,
+                             compilation);
 
-                var d3 = await ServiceHelpers.GetDiagnostics(
-                             workspaceModel, compilation);
+                var diagnostics = d3.Select(d => d.Diagnostic).ToArray();
+
+                var compileErrorMessages = d3.Where(d => d.Diagnostic.Severity == DiagnosticSeverity.Error)
+                                             .Select(d => d.ErrorMessage)
+                                             .ToArray();
 
                 if (diagnostics.Any(e => e.Severity == DiagnosticSeverity.Error))
                 {
@@ -176,7 +179,7 @@ namespace WorkspaceServer.Servers.Roslyn
 
                 var viewports = _transformer.ExtractViewPorts(workspaceModel);
                 var instrumentationRegions = viewports.Values
-                    .Where(v => v.Destination != null && v.Destination.Name != null)
+                    .Where(v => v.Destination?.Name != null)
                     .GroupBy(v => v.Destination.Name, v => v.Region, (name, regions) => new InstrumentationMap(name, regions));
 
                 if (workspaceModel.IncludeInstrumentation)
@@ -210,15 +213,16 @@ namespace WorkspaceServer.Servers.Roslyn
                 {
                     var webServer = new WebServer(workspace);
 
+
                     runResult = new RunResult(
                         succeeded: true,
-                        diagnostics: d3.Select(d => d.Diagnostic).ToArray());
+                        diagnostics: diagnostics.ToArray());
 
                     runResult.AddFeature(webServer);
                 }
                 else
                 {
-                    var dotnet = new MLS.Agent.Tools.Dotnet(workspace.Directory);
+                    var dotnet = new Dotnet(workspace.Directory);
 
                     var commandLineResult = await dotnet.Execute(
                                                 workspace.EntryPointAssemblyPath.FullName,
@@ -237,6 +241,7 @@ namespace WorkspaceServer.Servers.Roslyn
                     {
                         exceptionMessage = string.Join(Environment.NewLine, commandLineResult.Error);
                     }
+
                     runResult = new RunResult(
                            succeeded: true,
                            output: output.StdOut,

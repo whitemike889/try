@@ -6,13 +6,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using Clockwise;
 using MLS.Agent.Tools;
-using Recipes;
 
 namespace WorkspaceServer
 {
     public class WorkspaceRegistry : IDisposable
     {
-        private readonly Dictionary<string, WorkspaceBuilder> _workspaceBuilders = new Dictionary<string, WorkspaceBuilder>();
+        private readonly ConcurrentDictionary<string, WorkspaceBuilder> _workspaceBuilders = new ConcurrentDictionary<string, WorkspaceBuilder>();
 
         private readonly ConcurrentDictionary<string, Workspace> _workspaceServers = new ConcurrentDictionary<string, Workspace>();
 
@@ -30,7 +29,7 @@ namespace WorkspaceServer
 
             var options = new WorkspaceBuilder(this, name);
             configure(options);
-            _workspaceBuilders.Add(name, options);
+            _workspaceBuilders.TryAdd(name, options);
         }
 
         public async Task<Workspace> GetWorkspace(string workspaceName, Budget budget = null)

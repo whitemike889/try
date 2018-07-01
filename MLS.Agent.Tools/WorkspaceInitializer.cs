@@ -11,11 +11,11 @@ namespace MLS.Agent.Tools
 
         public string Template { get; }
 
-        public string Name { get; }
+        public string ProjectName { get; }
 
         public WorkspaceInitializer(
             string template, 
-            string name,
+            string projectName,
             Func<DirectoryInfo, Budget, Task> afterCreate = null)
         {
             if (string.IsNullOrWhiteSpace(template))
@@ -23,16 +23,16 @@ namespace MLS.Agent.Tools
                 throw new ArgumentException("Value cannot be null or whitespace.", nameof(template));
             }
 
-            if (string.IsNullOrWhiteSpace(name))
+            if (string.IsNullOrWhiteSpace(projectName))
             {
-                throw new ArgumentException("Value cannot be null or whitespace.", nameof(name));
+                throw new ArgumentException("Value cannot be null or whitespace.", nameof(projectName));
             }
 
             this.afterCreate = afterCreate;
 
             Template = template;
 
-            Name = name;
+            ProjectName = projectName;
         }
 
         public async Task Initialize(
@@ -45,7 +45,7 @@ namespace MLS.Agent.Tools
 
             var result = await dotnet
                              .New(Template,
-                                  args: $"--name \"{Name}\" --output \"{directory.FullName}\"",
+                                  args: $"--name \"{ProjectName}\" --output \"{directory.FullName}\"",
                                   budget: budget);
             result.ThrowOnFailure();
 
