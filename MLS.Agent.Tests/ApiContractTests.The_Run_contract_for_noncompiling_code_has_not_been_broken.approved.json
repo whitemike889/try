@@ -1,4 +1,14 @@
 {
+  "succeeded": false,
+  "output": [
+    "(1,18): error CS1002: ; expected",
+    "(1,18): error CS1010: Newline in constant",
+    "(1,18): error CS1012: Too many characters in character literal",
+    "(1,1): error CS1002: ; expected",
+    "(1,13): error CS0103: The name 'doesn' does not exist in the current context",
+    "ViewportCode.cs(9,30): error CS0161: 'Sample.Method()': not all code paths return a value"
+  ],
+  "exception": null,
   "diagnostics": [
     {
       "start": 1,
@@ -63,15 +73,5 @@
       "severity": 3,
       "id": "CS0161"
     }
-  ],
-  "succeeded": false,
-  "output": [
-    "(1,18): error CS1002: ; expected",
-    "(1,18): error CS1010: Newline in constant",
-    "(1,18): error CS1012: Too many characters in character literal",
-    "(1,1): error CS1002: ; expected",
-    "(1,13): error CS0103: The name 'doesn' does not exist in the current context",
-    "ViewportCode.cs(9,30): error CS0161: 'Sample.Method()': not all code paths return a value"
-  ],
-  "exception": null
+  ]
 }

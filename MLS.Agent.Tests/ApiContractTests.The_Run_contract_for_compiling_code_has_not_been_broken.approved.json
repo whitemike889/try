@@ -1,4 +1,9 @@
 {
+  "succeeded": true,
+  "output": [
+    "Hello world!"
+  ],
+  "exception": null,
   "diagnostics": [
     {
       "start": 1,
@@ -21,10 +26,5 @@
       "severity": 0,
       "id": "CS8019"
     }
-  ],
-  "succeeded": true,
-  "output": [
-    "Hello world!"
-  ],
-  "exception": null
+  ]
 }

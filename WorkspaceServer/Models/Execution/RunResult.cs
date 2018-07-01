@@ -75,18 +75,18 @@ namespace WorkspaceServer.Models.Execution
             {
                 if (value is RunResult result)
                 {
+                    var o = new JObject();
+
                     foreach (var feature in result.Features.Values.OfType<IRunResultFeature>())
                     {
                         feature.Apply(result);
                     }
 
-                    var o = new JObject
-                    {
-                        new JProperty("succeeded", result.Succeeded),
-                        new JProperty("output", result.Output),
-                        new JProperty("exception", result.Exception)
-                    };
-                    foreach (var property in result.FeatureProperties)
+                    o.Add(new JProperty("succeeded", result.Succeeded));
+                    o.Add(new JProperty("output", result.Output));
+                    o.Add(new JProperty("exception", result.Exception));
+
+                    foreach (var property in result.FeatureProperties.OrderBy(p => p.Name))
                     {
                         var jToken = JToken.FromObject(property.Value, serializer);
                         o.Add(new JProperty(property.Name, jToken));
