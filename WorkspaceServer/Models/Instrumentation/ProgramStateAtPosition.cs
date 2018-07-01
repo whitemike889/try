@@ -7,19 +7,19 @@ using WorkspaceServer.Models.Execution;
 
 namespace WorkspaceServer.Models.Instrumentation
 {
-    public class ProgramStateAtPositionArray : IAddRunResultProperties
+    public class ProgramStateAtPositionArray : IRunResultFeature
     {
         [JsonProperty("instrumentation")]
         public IReadOnlyCollection<ProgramStateAtPosition> ProgramStates { get; set; }
 
         public ProgramStateAtPositionArray(IReadOnlyCollection<string> programStates)
         {
-            ProgramStates = programStates.Select(line => JsonConvert.DeserializeObject<ProgramStateAtPosition>(line)).ToArray();
+            ProgramStates = programStates.Select(JsonConvert.DeserializeObject<ProgramStateAtPosition>).ToArray();
         }
 
-        public void Augment(RunResult runResult, AddRunResultProperty addProperty)
+        public void Apply(RunResult result)
         {
-            addProperty("instrumentation", ProgramStates);
+            result.AddProperty("instrumentation", ProgramStates);
         }
 
     }

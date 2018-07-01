@@ -4,11 +4,13 @@ using System.Reactive.Linq;
 using System.Threading.Tasks;
 using MLS.Agent.Tools;
 using Pocket;
+using WorkspaceServer.Models.Execution;
 using static Pocket.Logger;
+using Workspace = MLS.Agent.Tools.Workspace;
 
 namespace WorkspaceServer.WorkspaceFeatures
 {
-    public class WebServer : IDisposable
+    public class WebServer : IRunResultFeature, IDisposable
     {
         private readonly Workspace _workspace;
         private readonly AsyncLazy<HttpClient> _getHttpClient;
@@ -85,5 +87,9 @@ namespace WorkspaceServer.WorkspaceFeatures
         }
 
         public void Dispose() => _disposables.Dispose();
+
+        public void Apply(RunResult runResult)
+        {
+        }
     }
 }
