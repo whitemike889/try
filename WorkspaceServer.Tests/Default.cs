@@ -11,5 +11,7 @@ namespace WorkspaceServer.Tests
         public static Task<Workspace> ConsoleWorkspace => _defaultWorkspaces.GetWorkspace("console");
 
         public static Task<Workspace> WebApiWorkspace => _defaultWorkspaces.GetWorkspace("aspnet.webapi");
+
+        public static Task<Workspace> XunitWorkspace => _defaultWorkspaces.GetWorkspace("xunit");
     }
 }

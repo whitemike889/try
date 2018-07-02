@@ -38,6 +38,7 @@ namespace MLS.Agent.Tools
         private readonly AsyncLazy<bool> _built;
         private readonly AsyncLazy<bool> _published;
         private bool? _isWebProject;
+        private bool? _isUnitTestProject;
         private FileInfo _entryPointAssemblyPath;
         private static string _targetFramework;
         private readonly Logger _log;
@@ -80,6 +81,10 @@ namespace MLS.Agent.Tools
         public bool IsCreated { get; private set; }
 
         public bool IsBuilt { get; private set; }
+
+        public bool IsUnitTestProject =>
+            _isUnitTestProject ??
+            (_isUnitTestProject = Directory.GetFiles("*.testadapter.dll", SearchOption.AllDirectories).Any()).Value;
 
         public bool IsWebProject =>
             _isWebProject ??

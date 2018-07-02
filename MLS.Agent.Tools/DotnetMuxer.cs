@@ -4,7 +4,6 @@
 using System;
 using System.IO;
 using System.Reflection;
-using System.Runtime.InteropServices;
 
 namespace MLS.Agent.Tools
 {
@@ -14,12 +13,7 @@ namespace MLS.Agent.Tools
 
         static DotnetMuxer()
         {
-            var muxerFileName = "dotnet";
-
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                muxerFileName += ".exe";
-            }
+            var muxerFileName = "dotnet".ExecutableName();
 
             var fxDepsFile = GetDataFromAppDomain("FX_DEPS_FILE");
 

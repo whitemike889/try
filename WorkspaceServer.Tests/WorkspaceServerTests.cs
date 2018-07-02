@@ -6,6 +6,8 @@ using FluentAssertions;
 using FluentAssertions.Extensions;
 using Microsoft.CodeAnalysis;
 using Pocket;
+using WorkspaceServer.Models.Execution;
+using WorkspaceServer.WorkspaceFeatures;
 using Xunit;
 using Xunit.Abstractions;
 using static Pocket.Logger<WorkspaceServer.Tests.WorkspaceServerTests>;
@@ -287,8 +289,9 @@ public static class Hello
 
             var result = await server.Run(workspace);
 
-            result.Diagnostics.Should().Contain(d => d.Severity == DiagnosticSeverity.Warning);
+            var diagnostics = result.GetFeature<Diagnostics>();
 
+            diagnostics.Should().Contain(d => d.Severity == DiagnosticSeverity.Warning);
         }
 
         [Fact]
@@ -310,7 +313,9 @@ public static class Hello
 
             var result = await server.Run(workspace);
 
-            result.Diagnostics.Should().Contain(d => d.Severity == DiagnosticSeverity.Warning);
+            var diagnostics = result.GetFeature<Diagnostics>();
+
+            diagnostics.Should().Contain(d => d.Severity == DiagnosticSeverity.Warning);
         }
 
         [Fact]

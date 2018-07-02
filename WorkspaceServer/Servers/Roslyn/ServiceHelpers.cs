@@ -11,7 +11,7 @@ namespace WorkspaceServer.Servers.Roslyn
 {
     internal static class ServiceHelpers
     {
-        internal static async Task<(SerializableDiagnostic Diagnostic, string ErrorMessage)[]> GetDiagnostics(
+        internal static async Task<(SerializableDiagnostic Diagnostic, string ErrorMessage)[]> GetProjectedDiagnostics(
             Workspace workspace,
             Compilation compilation,
             Budget budget = null)

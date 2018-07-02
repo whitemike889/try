@@ -43,10 +43,10 @@ namespace WorkspaceServer
                 _registry,
                 originalWorkspaceName);
 
-        public void CreateUsingDotnet(string template) =>
+        public void CreateUsingDotnet(string template, string projectName = null) =>
             WorkspaceInitializer = new WorkspaceInitializer(
                 template,
-                WorkspaceName,
+                projectName ?? WorkspaceName,
                 AfterCreate);
 
         public void AddPackageReference(string packageId, string version = null)

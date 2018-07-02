@@ -6,6 +6,7 @@ using Recipes;
 using WorkspaceServer.Models;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Servers.Scripting;
+using WorkspaceServer.WorkspaceFeatures;
 using Xunit;
 using Xunit.Abstractions;
 using static Pocket.Logger<WorkspaceServer.Tests.WorkspaceServerTests>;
@@ -165,7 +166,9 @@ public static class Hello
 
             var result = await server.Run(workspace);
 
-            result.Diagnostics.Should().NotContain(d => d.Id == "CS7022");
+            var diagnostics = result.GetFeature<Diagnostics>();
+
+            diagnostics.Should().NotContain(d => d.Id == "CS7022");
         }
 
         [Fact]

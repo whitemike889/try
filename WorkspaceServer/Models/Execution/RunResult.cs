@@ -4,13 +4,16 @@ using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Pocket;
+using WorkspaceServer.WorkspaceFeatures;
 
 namespace WorkspaceServer.Models.Execution
 {
     [JsonConverter(typeof(RunResultJsonConverter))]
     public class RunResult : IDisposable
     {
-        private readonly Dictionary<Type, object> features = new Dictionary<Type, object>();
+        private readonly Dictionary<Type, object> _features = new Dictionary<Type, object>();
+
+        private readonly List<string> _output = new List<string>(); 
 
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
 
@@ -18,39 +21,38 @@ namespace WorkspaceServer.Models.Execution
             bool succeeded,
             IReadOnlyCollection<string> output = null,
             string exception = null,
-            IReadOnlyCollection<SerializableDiagnostic> diagnostics = null
-            )
+            IReadOnlyCollection<SerializableDiagnostic> diagnostics = null)
         {
-            Output = output ?? Array.Empty<string>();
+            if (output != null)
+            {
+                _output.AddRange(output);
+            }
             Succeeded = succeeded;
             Exception = exception;
-            AddFeature(diagnostics ??
-                       Array.Empty<SerializableDiagnostic>());
-          
+            AddFeature(new Diagnostics(diagnostics?.ToList() ??
+                                       Array.Empty<SerializableDiagnostic>().ToList()));
         }
 
         public void AddFeature<T>(T feature)
+            where T : IRunResultFeature
         {
             if (feature is IDisposable disposable)
             {
                 _disposables.Add(disposable);
             }
 
-            features.Add(typeof(T), feature);
+            _features.Add(typeof(T), feature);
         }
-
-        public IReadOnlyCollection<SerializableDiagnostic> Diagnostics =>
-            this.GetFeature<IReadOnlyCollection<SerializableDiagnostic>>();
 
         public bool Succeeded { get; }
 
-        public IReadOnlyCollection<string> Output { get; }
+        public IReadOnlyCollection<string> Output => _output;
 
         public string Exception { get; }
 
-        public IReadOnlyDictionary<Type, object> Features => features;
+        public IReadOnlyDictionary<Type, object> Features => _features;
 
-        public bool HasFeature<T>() => features.ContainsKey(typeof(T));
+        public bool HasFeature<T>() => _features.ContainsKey(typeof(T));
 
         public override string ToString() =>
             $@"{nameof(Succeeded)}: {Succeeded}
@@ -59,37 +61,38 @@ namespace WorkspaceServer.Models.Execution
 
         public void Dispose() => _disposables.Dispose();
 
+        private List<(string, object )> _featureProperties;
+
+        internal List<(string Name, object Value)> FeatureProperties => _featureProperties ?? (_featureProperties = new List<(string, object )>());
+
+        public void AddProperty(string name, object value) => FeatureProperties.Add((name, value));
+
+        public void WriteToOutput(string value) => _output.Add(value);
+
         private class RunResultJsonConverter : JsonConverter
         {
             public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
             {
-                if (value is RunResult runResult)
+                if (value is RunResult result)
                 {
-                    var diagnostics = JArray.FromObject(
-                        runResult.Diagnostics
-                                 .OrderBy(d => d.Start)
-                                 .ThenBy(d => d.End), serializer);
+                    var o = new JObject();
 
-                    var o = new JObject
+                    foreach (var feature in result.Features.Values.OfType<IRunResultFeature>())
                     {
-                        new JProperty("diagnostics", diagnostics),
-                        new JProperty("succeeded", runResult.Succeeded),
-                        new JProperty("output", runResult.Output),
-                        new JProperty("exception", runResult.Exception)
-                    };
+                        feature.Apply(result);
+                    }
 
-                    foreach (var feature in runResult.Features.Values.OfType<IAddRunResultProperties>())
+                    o.Add(new JProperty("succeeded", result.Succeeded));
+                    o.Add(new JProperty("output", result.Output));
+                    o.Add(new JProperty("exception", result.Exception));
+
+                    foreach (var property in result.FeatureProperties.OrderBy(p => p.Name))
                     {
-                        feature.Augment(runResult, AddProperty);
+                        var jToken = JToken.FromObject(property.Value, serializer);
+                        o.Add(new JProperty(property.Name, jToken));
                     }
 
                     o.WriteTo(writer);
-
-                    void AddProperty(string name, object value1)
-                    {
-                        var jToken = JToken.FromObject(value1, serializer);
-                        o.Add(new JProperty(name, jToken));
-                    }
                 }
                 else
                 {

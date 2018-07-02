@@ -14,6 +14,7 @@ using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Models.SingatureHelp;
 using WorkspaceServer.Tests;
+using WorkspaceServer.WorkspaceFeatures;
 using Xunit;
 using Xunit.Abstractions;
 using static Pocket.Logger<MLS.Agent.Tests.ApiViaHttpTests>;
@@ -153,7 +154,7 @@ namespace MLS.Agent.Tests
                     Content = new StringContent(
                         JsonConvert.SerializeObject(new
                         {
-                            Buffer = CodeManipulation.EnforceLF($@"Console.WriteLine(""{output}""")
+                            Buffer = $@"Console.WriteLine(""{output}""".EnforceLF()
                         }),
                         Encoding.UTF8,
                         "application/json")
@@ -162,14 +163,16 @@ namespace MLS.Agent.Tests
                 var response = await agent.SendAsync(request);
 
                 var result = await response
-                                    .EnsureSuccess()
-                                    .DeserializeAs<RunResult>();
+                                   .EnsureSuccess()
+                                   .DeserializeAs<RunResult>();
 
-                result.Diagnostics.Should().Contain(d =>
-                                                        d.Start == 56 &&
-                                                        d.End == 56 &&
-                                                        d.Message == ") expected" &&
-                                                        d.Id == "CS1026");
+                var diagnostics = result.GetFeature<Diagnostics>();
+
+                diagnostics.Should().Contain(d =>
+                                                 d.Start == 56 &&
+                                                 d.End == 56 &&
+                                                 d.Message == ") expected" &&
+                                                 d.Id == "CS1026");
             }
         }
 

@@ -8,25 +8,20 @@ namespace WorkspaceServer.Tests
 {
     public static class Create
     {
-        public static async Task<Workspace> ConsoleWorkspaceCopy([CallerMemberName] string testName = null)
-        {
-            var workspace = Workspace.Copy(
-                await Default.ConsoleWorkspace,
-                testName);
+        public static async Task<Workspace> ConsoleWorkspaceCopy([CallerMemberName] string testName = null) => 
+            Workspace.Copy(
+            await Default.ConsoleWorkspace,
+            testName);
 
-            await workspace.EnsureBuilt();
+        public static async Task<Workspace> WebApiWorkspaceCopy([CallerMemberName] string testName = null) => 
+            Workspace.Copy(
+            await Default.WebApiWorkspace,
+            testName);
 
-            return workspace;
-        }
-
-        public static async Task<Workspace> WebApiWorkspaceCopy([CallerMemberName] string testName = null)
-        {
-            var workspace = Workspace.Copy(
-                await Default.WebApiWorkspace,
-                testName);
-
-            return workspace;
-        }
+        public static async Task<Workspace> XunitWorkspaceCopy([CallerMemberName] string testName = null) => 
+            Workspace.Copy(
+            await Default.XunitWorkspace,
+            testName);
 
         public static Workspace EmptyWorkspace([CallerMemberName] string testName = null, IWorkspaceInitializer initializer = null) =>
             new Workspace(Workspace.CreateDirectory(testName), initializer: initializer);

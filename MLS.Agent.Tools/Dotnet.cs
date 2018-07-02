@@ -46,5 +46,8 @@ namespace MLS.Agent.Tools
 
         public Task<CommandLineResult> Publish(string args, Budget budget = null) =>
             Execute("publish".AppendArgs(args), budget);
+            
+        public Task<CommandLineResult> VSTest(string args, Budget budget = null) =>
+            Execute("vstest".AppendArgs(args), budget);
     }
 }

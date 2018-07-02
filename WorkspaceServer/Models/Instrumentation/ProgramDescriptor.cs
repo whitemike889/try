@@ -1,20 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Newtonsoft.Json;
 using WorkspaceServer.Models.Execution;
 
 namespace WorkspaceServer.Models.Instrumentation
 {
-    public class ProgramDescriptor : IAddRunResultProperties
+    public class ProgramDescriptor : IRunResultFeature
     {
         [JsonProperty("variableLocations")]
         public VariableLocation[] VariableLocations { get; set; }
 
-        public void Augment(RunResult runResult, AddRunResultProperty addProperty)
+        public void Apply(RunResult result)
         {
-            addProperty("variableLocations", VariableLocations);
+            result.AddProperty("variableLocations", VariableLocations);
         }
 
     }
