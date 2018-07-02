@@ -1,5 +1,17 @@
-FROM mls-ls/dependencies
+FROM microsoft/aspnetcore-build:2.0
+
 ARG source
+
+# set up OmniSharp
+RUN mkdir -p /dependencies/omnisharp 
+COPY dependencies /dependencies/
+ENV TRYDOTNET_OMNISHARP_PATH=/dependencies/omnisharp/
+ENV NUGET_PACKAGES=/root/.nuget/packages/
+COPY packages /root/.nuget/packages/
+
+# set up workspaces directory
+ENV TRYDOTNET_WORKSPACES_PATH=/workspaces
+COPY workspaces /workspaces/
 
 # set up the working directory where the Agent ASP.NET app runs
 RUN mkdir -p /app
@@ -8,7 +20,9 @@ RUN useradd -r --gid app_group --home /app --shell /sbin/nologin --comment "app 
 WORKDIR /app
 ENV ASPNETCORE_URLS=http://+:4242
 EXPOSE 4242
-COPY ${source:-obj/Docker/publish} .
+COPY . ./
+
+RUN mkdir -p /dependencies/.nuget/packages && cp -r /root/.nuget/packages/ /dependencies/.nuget/packages
 
 RUN chown --recursive app_user:app_group /app
 RUN chown --recursive app_user:app_group /dependencies

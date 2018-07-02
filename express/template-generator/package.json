@@ -1,0 +1,19 @@
+{
+    "name": "ourtemplate",
+    "version": "1.0.0",
+    "description": "",
+    "main": "template.ts",
+    "scripts": {
+        "build": "ts-node template.ts"
+    },
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "armgen": "=1.0.1"
+    },
+    "devDependencies": {
+        "ts-node": "=4.1.0",
+        "@types/node": "=8.10.1",
+        "typescript": "=2.6.2"
+    }
+}

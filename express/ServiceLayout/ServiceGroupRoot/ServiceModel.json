@@ -1,0 +1,135 @@
+{
+    "$schema": "http://schema.express.azure.com/schemas/2015-01-01-alpha/ServiceModel.json",
+    "contentVersion": "0.0.0.1",
+    "serviceMetadata": {
+        "serviceGroup": "Try.Dot.Net",
+        "environment": "Production"
+    },
+    "serviceResourceGroupDefinitions": [
+        {
+            "name": "try.dot.net",
+            "serviceResourceDefinitions": [
+                {
+                    "name": "try.dot.net.template",
+                    "composedOf": {
+                        "arm": {
+                            "templatePath": "Templates\\template.json"
+                        },
+                        "extension": {
+                            "allowedTypes": [
+                                {
+                                    "Type": "{Microsoft.TryDotNet/PeakyTest}"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "cert-and-binding.template",
+                    "composedOf": {
+                        "arm": {
+                            "templatePath": "Templates\\cert-and-binding.json"
+                        },
+                        "extension": {
+                            "allowedTypes": [
+                                {
+                                    "Type": "{#ExtensionNamespace#/#ExtensionType#}"
+                                }
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "traffic-manager-endpoint",
+            "serviceResourceDefinitions": [
+                {
+                    "name": "traffic-manager-endpoint.template",
+                    "composedOf": {
+                        "arm": {
+                            "templatePath": "Templates\\traffic-manager-endpoint.json"
+                        },
+                        "extension": {
+                            "allowedTypes": [
+                                {
+                                    "Type": "{#ExtensionNamespace#/#ExtensionType#}"
+                                }
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "immutable",
+            "serviceResourceDefinitions": [
+                {
+                    "name": "immutable.template",
+                    "composedOf": {
+                        "arm": {
+                            "templatePath": "Templates\\immutable.template.json"
+                        },
+                        "extension": {
+                            "allowedTypes": [
+                                {
+                                    "Type": "{#ExtensionNamespace#/#ExtensionType#}"
+                                }
+                            ]
+                        }
+                    }
+                }
+            ]
+        }
+    ],
+    "serviceResourceGroups": [
+        {
+            "azureResourceGroupName": "trydotnet-westus",
+            "location": "West US",
+            "instanceOf": "try.dot.net",
+            "azureSubscriptionId": "64276bd9-d4bf-4fe3-8b77-36d696e84b26",
+            "serviceResources": [
+                {
+                    "name": "TDN",
+                    "instanceOf": "try.dot.net.template",
+                    "armParametersPath": "Parameters\\Parameters.json",
+                    "rolloutParametersPath": "RolloutParameters.json"
+                },
+                {
+                    "name": "cert-and-binding",
+                    "instanceOf": "cert-and-binding.template",
+                    "armParametersPath": "Parameters\\no-Parameters.json",
+                    "rolloutParametersPath": "RolloutParameters.json"
+                }
+            ]
+        },
+        {
+            "azureResourceGroupName": "traffic-manager-root",
+            "location": "Central US",
+            "instanceOf": "traffic-manager-endpoint",
+            "azureSubscriptionId": "64276bd9-d4bf-4fe3-8b77-36d696e84b26",
+            "serviceResources": [
+                {
+                    "name": "traffic-manager-endpoint",
+                    "instanceOf": "traffic-manager-endpoint.template",
+                    "armParametersPath": "Parameters\\no-Parameters.json",
+                    "rolloutParametersPath": "RolloutParameters.json"
+                }
+            ]
+        },      
+        {
+            "azureResourceGroupName": "immutable",
+            "location": "West US",
+            "instanceOf": "immutable",
+            "azureSubscriptionId": "64276bd9-d4bf-4fe3-8b77-36d696e84b26",
+            "serviceResources": [
+                {
+                    "name": "immutabl",
+                    "instanceOf": "immutable.template",
+                    "armParametersPath": "Parameters\\no-Parameters.json",
+                    "rolloutParametersPath": "RolloutParameters.json"
+                }
+            ]
+        }
+    ]
+}
