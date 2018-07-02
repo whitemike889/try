@@ -102,6 +102,12 @@ namespace WorkspaceServer
                                       workspace.CreateUsingDotnet("console");
                                   });
 
+            registry.AddWorkspace("xunit",
+                                  workspace =>
+                                  {
+                                      workspace.CreateUsingDotnet("xunit", "tests");
+                                  });
+
             return registry;
         }
     }

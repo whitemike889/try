@@ -1,16 +1,17 @@
 FROM microsoft/dotnet:2.1.301-sdk-alpine
 RUN set -x
 
+ENV DOTNET_TOOLS=/dependencies/.dotnet/tools
 ENV NUGET_PACKAGES=/dependencies/.nuget/packages
 
-# install xmlstarlet
+# install command line tools
 RUN apk update
 RUN apk add xmlstarlet
 RUN apk add shadow
+RUN dotnet tool install t-rex --version 1.0.0-preview1-004 --add-source https://www.myget.org/F/wultest/api/v3/index.json --tool-path $DOTNET_TOOLS
 
 # set up workspaces directory
 ENV TRYDOTNET_WORKSPACES_PATH=/workspaces
-
 
 # prepare workspace types
 
@@ -48,3 +49,7 @@ RUN xmlstarlet ed --inplace --insert "/Project/PropertyGroup/OutputType" --type 
 RUN dotnet add package Newtonsoft.Json
 RUN dotnet build /fl /p:ProvideCommandLineArgs=true
 
+WORKDIR /workspaces/xunit
+RUN dotnet new xunit --name tests --output .
+RUN xmlstarlet ed --inplace --insert "/Project/PropertyGroup/OutputType" --type elem -n "LangVersion" --value "7.3" tests.csproj
+RUN dotnet build /fl /p:ProvideCommandLineArgs=true

@@ -168,13 +168,15 @@ namespace WorkspaceServer.Servers.Roslyn
 
                 if (diagnostics.Any(e => e.Severity == DiagnosticSeverity.Error))
                 {
-                    return new RunResult(
-                        false,
-                        d3
-                            .Where(d => d.Diagnostic.Severity == DiagnosticSeverity.Error)
-                            .Select(d => d.ErrorMessage)
-                            .ToArray(),
-                        diagnostics: d3.Select(d => d.Diagnostic).ToArray());
+                    // FIX: (Run) this hack is only in place because buffer inlining currently overwrites certain files in the on-disk project which need to be preserved.
+                    if (!workspace.IsUnitTestProject || 
+                        diagnostics.Count(d => d.Severity == DiagnosticSeverity.Error && d.Id != "CS5001") > 1)
+                    {
+                        return new RunResult(
+                            false,
+                            compileErrorMessages,
+                            diagnostics: diagnostics);
+                    }
                 }
 
                 var viewports = _transformer.ExtractViewPorts(workspaceModel);
@@ -219,6 +221,48 @@ namespace WorkspaceServer.Servers.Roslyn
                         diagnostics: diagnostics.ToArray());
 
                     runResult.AddFeature(webServer);
+                }
+                else if (workspace.IsUnitTestProject)
+                {
+                    var dotnet = new Dotnet(workspace.Directory);
+
+                    var testRunResult = await dotnet.VSTest(
+                                            $"--logger:trx {workspace.EntryPointAssemblyPath}",
+                                            budget);
+
+                    if (testRunResult.Error.Count > 0)
+                    {
+                        exceptionMessage = string.Join(Environment.NewLine, testRunResult.Error);
+                    }
+
+                    var trex = new FileInfo(
+                        Path.Combine(
+                            Paths.DotnetToolsPath,
+                            "t-rex".ExecutableName()));
+
+                    CommandLineResult tRexResult = null;
+
+                    if (trex.Exists)
+                    { 
+                        tRexResult = await CommandLine.Execute(
+                                         trex,
+                                         "",
+                                         workingDir: workspace.Directory,
+                                         budget: budget);
+                    }
+
+                    var result = new RunResult(
+                        testRunResult.ExitCode == 0,
+                        tRexResult?.Output ?? testRunResult.Output,
+                        exceptionMessage,
+                        diagnostics);
+
+                    result.AddFeature(new UnitTestRun(new []
+                    {
+                        new UnitTestResult()
+                    }));
+
+                    return result;
                 }
                 else
                 {

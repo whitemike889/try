@@ -18,6 +18,10 @@ namespace WorkspaceServer.Tests
             await Default.WebApiWorkspace,
             testName);
 
+        public static async Task<Workspace> XunitWorkspaceCopy([CallerMemberName] string testName = null) => 
+            Workspace.Copy(
+            await Default.XunitWorkspace,
+            testName);
 
         public static Workspace EmptyWorkspace([CallerMemberName] string testName = null, IWorkspaceInitializer initializer = null) =>
             new Workspace(Workspace.CreateDirectory(testName), initializer: initializer);
