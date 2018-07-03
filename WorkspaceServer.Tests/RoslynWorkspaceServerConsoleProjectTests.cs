@@ -71,6 +71,25 @@ namespace WorkspaceServer.Tests
         }
 
         [Fact]
+        public async Task When_compile_is_diagnostic_are_limited_to_biewport()
+        {
+            var workspace = new Workspace(
+                workspaceType: "console",
+                files: new[] { new Workspace.File("Program.cs", CodeSamples.SourceCodeProvider.ConsoleProgramSingleRegionExtraUsing) },
+                buffers: new[] { new Workspace.Buffer("Program.cs@alpha", @"var a = 10;" + Environment.NewLine + "Console.WriteLine(a);", 0) });
+            var server = await GetRunner();
+
+            var result = await server.Run(workspace);
+
+            result.Should().BeEquivalentTo(new
+            {
+                Succeeded = true,
+                Output = new[] { "10" },
+                Exception = (string)null, // we already display the error in Output
+            }, config => config.ExcludingMissingMembers());
+        }
+
+        [Fact]
         public async Task Get_diagnostics_produces_appropriate_diagnostics_for_display_to_user_when_using_buffers()
         {
             var codeLine1 = @"var a = 10;";
