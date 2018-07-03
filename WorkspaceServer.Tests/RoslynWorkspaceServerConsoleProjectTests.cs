@@ -71,7 +71,7 @@ namespace WorkspaceServer.Tests
         }
 
         [Fact]
-        public async Task When_compile_is_diagnostic_are_limited_to_viewport()
+        public async Task When_diagnostics_are_outside_of_viewport_then_they_are_omitted()
         {
             var workspace = new Workspace(
                 workspaceType: "console",
