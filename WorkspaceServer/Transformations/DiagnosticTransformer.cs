@@ -101,7 +101,7 @@ namespace WorkspaceServer.Transformations
             var line = target.Value.Destination.Text.Lines[diagnostic.Location.GetMappedLineSpan().StartLinePosition.Line];
 
             // first line of the region from the soruce file
-            var lineOffest = 0;
+            var lineOffset = 0;
             var lines = target.Value.Destination.Text.GetSubText(selectionSpan).Lines;
             foreach (var regionLine in lines)
             {
@@ -110,10 +110,10 @@ namespace WorkspaceServer.Transformations
                     break;
                 }
 
-                lineOffest++;
+                lineOffset++;
             }
 
-            if (lineOffest >= lines.Count)
+            if (lineOffset >= lines.Count)
             {
                 return (null,string.Empty);
             }
@@ -121,8 +121,8 @@ namespace WorkspaceServer.Transformations
             var bufferTextSource = SourceFile.Create(target.Value.Destination.Text.GetSubText(selectionSpan).ToString());
             var lineText = line.ToString();
             var partToFind = lineText.Substring(diagnostic.Location.GetMappedLineSpan().Span.Start.Character);
-            var charOffset = bufferTextSource.Text.Lines[lineOffest].ToString().IndexOf(partToFind, StringComparison.Ordinal);
-            var location = new { Line = lineOffest + 1, Char = charOffset + 1 };
+            var charOffset = bufferTextSource.Text.Lines[lineOffset].ToString().IndexOf(partToFind, StringComparison.Ordinal);
+            var location = new { Line = lineOffset + 1, Char = charOffset + 1 };
 
             var diagnosticMessage = diagnostic.GetMessage();
 

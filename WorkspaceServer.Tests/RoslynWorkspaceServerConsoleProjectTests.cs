@@ -71,7 +71,7 @@ namespace WorkspaceServer.Tests
         }
 
         [Fact]
-        public async Task When_compile_is_diagnostic_are_limited_to_biewport()
+        public async Task When_compile_is_diagnostic_are_limited_to_viewport()
         {
             var workspace = new Workspace(
                 workspaceType: "console",
