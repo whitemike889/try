@@ -41,7 +41,10 @@ namespace WorkspaceServer.Transformations
                     if (target.Value != null && !target.Value.Region.IsEmpty)
                     {
                         var processedDiagnostic = AlignDiagnosticLocation(target, diagnostic, paddingSize);
-                        yield return processedDiagnostic;
+                        if (processedDiagnostic.Item1 != null)
+                        {
+                            yield return processedDiagnostic;
+                        }
                     }
                     else
                     {
@@ -98,23 +101,28 @@ namespace WorkspaceServer.Transformations
             var line = target.Value.Destination.Text.Lines[diagnostic.Location.GetMappedLineSpan().StartLinePosition.Line];
 
             // first line of the region from the soruce file
-            var lineOffest = 0;
-
-            foreach (var regionLine in target.Value.Destination.Text.GetSubText(selectionSpan).Lines)
+            var lineOffset = 0;
+            var lines = target.Value.Destination.Text.GetSubText(selectionSpan).Lines;
+            foreach (var regionLine in lines)
             {
                 if (regionLine.ToString() == line.ToString())
                 {
                     break;
                 }
 
-                lineOffest++;
+                lineOffset++;
+            }
+
+            if (lineOffset >= lines.Count)
+            {
+                return (null,string.Empty);
             }
 
             var bufferTextSource = SourceFile.Create(target.Value.Destination.Text.GetSubText(selectionSpan).ToString());
             var lineText = line.ToString();
             var partToFind = lineText.Substring(diagnostic.Location.GetMappedLineSpan().Span.Start.Character);
-            var charOffset = bufferTextSource.Text.Lines[lineOffest].ToString().IndexOf(partToFind, StringComparison.Ordinal);
-            var location = new { Line = lineOffest + 1, Char = charOffset + 1 };
+            var charOffset = bufferTextSource.Text.Lines[lineOffset].ToString().IndexOf(partToFind, StringComparison.Ordinal);
+            var location = new { Line = lineOffset + 1, Char = charOffset + 1 };
 
             var diagnosticMessage = diagnostic.GetMessage();
 
