@@ -41,7 +41,10 @@ namespace WorkspaceServer.Transformations
                     if (target.Value != null && !target.Value.Region.IsEmpty)
                     {
                         var processedDiagnostic = AlignDiagnosticLocation(target, diagnostic, paddingSize);
-                        yield return processedDiagnostic;
+                        if (processedDiagnostic.Item1 != null)
+                        {
+                            yield return processedDiagnostic;
+                        }
                     }
                     else
                     {
@@ -99,8 +102,8 @@ namespace WorkspaceServer.Transformations
 
             // first line of the region from the soruce file
             var lineOffest = 0;
-
-            foreach (var regionLine in target.Value.Destination.Text.GetSubText(selectionSpan).Lines)
+            var lines = target.Value.Destination.Text.GetSubText(selectionSpan).Lines;
+            foreach (var regionLine in lines)
             {
                 if (regionLine.ToString() == line.ToString())
                 {
@@ -108,6 +111,11 @@ namespace WorkspaceServer.Transformations
                 }
 
                 lineOffest++;
+            }
+
+            if (lineOffest >= lines.Count)
+            {
+                return (null,string.Empty);
             }
 
             var bufferTextSource = SourceFile.Create(target.Value.Destination.Text.GetSubText(selectionSpan).ToString());
