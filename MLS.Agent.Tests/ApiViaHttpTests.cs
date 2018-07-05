@@ -573,7 +573,7 @@ public class Program {
         [Fact]
         public async Task When_aspnet_webapi_workspace_request_succeeds_then_output_shows_web_response()
         {
-            var workspaceType = Tools.Workspace.Copy(await Default.WebApiWorkspace);
+            var workspaceType = Tools.WorkspaceBuild.Copy(await Default.WebApiWorkspace);
             var workspace = Workspace.FromDirectory(
                 workspaceType.Directory, 
                 workspaceType.Directory.Name);
@@ -606,7 +606,7 @@ public class Program {
         [Fact(Skip = "WIP")]
         public async Task When_aspnet_webapi_workspace_request_succeeds_then_standard_out_is_available_on_response()
         {
-            var workspaceType = Tools.Workspace.Copy(await Default.WebApiWorkspace);
+            var workspaceType = Tools.WorkspaceBuild.Copy(await Default.WebApiWorkspace);
             var workspace = Workspace.FromDirectory(workspaceType.Directory, workspaceType.Directory.Name);
 
             var request = new WorkspaceRequest(workspace, new HttpRequest("/api/values", "get"));
@@ -626,7 +626,7 @@ public class Program {
         [Fact]
         public async Task When_aspnet_webapi_workspace_request_fails_then_diagnostics_are_returned()
         {
-            var workspaceType = Tools.Workspace.Copy(await Default.WebApiWorkspace);
+            var workspaceType = Tools.WorkspaceBuild.Copy(await Default.WebApiWorkspace);
             var workspace = Workspace.FromDirectory(workspaceType.Directory, workspaceType.Directory.Name);
             var nonCompilingBuffer = new Workspace.Buffer("broken.cs", "this does not compile", 0);
             workspace = new Workspace(

@@ -24,14 +24,14 @@ namespace WorkspaceServer.Models.Execution
         {
             var file = workspace.GetFileFromBufferId(bufferId);
             var fileFullPath = string.IsNullOrWhiteSpace(root) ? file.Name : Path.Combine(root, file.Name);
-            return  new FileInfo(fileFullPath);
+            return new FileInfo(fileFullPath);
         }
 
         public static int GetAbsolutePosition(this Workspace workspace, string bufferId, int bufferPosition)
         {
             return (workspace.Buffers.FirstOrDefault(b => b.Id == bufferId)?.Position ?? 0) + bufferPosition;
         }
-        
+
         public static (int line, int column, int absolutePosition) GetTextLocation(this Workspace workspace, string bufferId, int bufferPosition)
         {
             var file = workspace.GetFileFromBufferId(bufferId);
@@ -41,6 +41,16 @@ namespace WorkspaceServer.Models.Execution
             var line = src.Lines.GetLineFromPosition(absolutePosition);
 
             return (line: line.LineNumber, column: absolutePosition - line.Start, absolutePosition);
+        }
+
+        public static Workspace ReplaceBuffer(this Workspace workspace, string id, string text)
+        {
+            return workspace;
+        }
+
+        public static Workspace ReplaceFile(this Workspace workspace, string name, string text)
+        {
+            return workspace;
         }
     }
 }

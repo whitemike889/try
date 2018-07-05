@@ -26,23 +26,23 @@ namespace WorkspaceServer.Servers.Roslyn
 {
     public class RoslynWorkspaceServer : ILanguageService, ICodeRunner
     {
-        private readonly GetWorkspaceByName _getWorkspaceByName;
+        private readonly GetWorkspaceBuildByName getWorkspaceBuildByName;
         private const int defaultBudgetInSeconds = 30;
         private readonly ConcurrentDictionary<string, AsyncLock> locks = new ConcurrentDictionary<string, AsyncLock>();
         private readonly BufferInliningTransformer _transformer = new BufferInliningTransformer();
 
         private readonly string UserCodeCompleted = nameof(UserCodeCompleted);
 
-        private delegate Task<MLS.Agent.Tools.Workspace> GetWorkspaceByName(string name);
+        private delegate Task<WorkspaceBuild> GetWorkspaceBuildByName(string name);
 
-        public RoslynWorkspaceServer(MLS.Agent.Tools.Workspace workspace)
+        public RoslynWorkspaceServer(WorkspaceBuild workspaceBuild)
         {
-            if (workspace == null)
+            if (workspaceBuild == null)
             {
-                throw new ArgumentNullException(nameof(workspace));
+                throw new ArgumentNullException(nameof(workspaceBuild));
             }
 
-            _getWorkspaceByName = s => Task.FromResult(workspace);
+            getWorkspaceBuildByName = s => Task.FromResult(workspaceBuild);
         }
 
         public RoslynWorkspaceServer(WorkspaceRegistry registry)
@@ -52,13 +52,13 @@ namespace WorkspaceServer.Servers.Roslyn
                 throw new ArgumentNullException(nameof(registry));
             }
 
-            _getWorkspaceByName = s => registry.GetWorkspace(s);
+            getWorkspaceBuildByName = s => registry.GetWorkspace(s);
         }
 
         public async Task<CompletionResult> GetCompletionList(WorkspaceRequest request, Budget budget)
         {
             budget = budget ?? new TimeBudget(TimeSpan.FromSeconds(defaultBudgetInSeconds));
-            var workspace = await _getWorkspaceByName(request.Workspace.WorkspaceType);
+            var workspace = await getWorkspaceBuildByName(request.Workspace.WorkspaceType);
 
             var processed = await _transformer.TransformAsync(request.Workspace, budget);
             var sourceFiles = processed.GetSourceFiles();
@@ -96,7 +96,7 @@ namespace WorkspaceServer.Servers.Roslyn
         public async Task<DiagnosticResult> GetDiagnostics(Workspace request, Budget budget)
         {
             budget = budget ?? new TimeBudget(TimeSpan.FromSeconds(defaultBudgetInSeconds));
-            var workspace = await _getWorkspaceByName(request.WorkspaceType);
+            var workspace = await getWorkspaceBuildByName(request.WorkspaceType);
 
             var processed = await _transformer.TransformAsync(request, budget);
             var sourceFiles = processed.GetSourceFiles();
@@ -110,7 +110,7 @@ namespace WorkspaceServer.Servers.Roslyn
         {
             budget = budget ?? new TimeBudget(TimeSpan.FromSeconds(defaultBudgetInSeconds));
 
-            var workspace = await _getWorkspaceByName(request.Workspace.WorkspaceType);
+            var workspace = await getWorkspaceBuildByName(request.Workspace.WorkspaceType);
 
             Workspace processed = await _transformer.TransformAsync(request.Workspace, budget);
 
@@ -150,7 +150,7 @@ namespace WorkspaceServer.Servers.Roslyn
             using (var operation = Log.OnEnterAndConfirmOnExit())
             using (await locks.GetOrAdd(workspaceModel.WorkspaceType, s => new AsyncLock()).LockAsync())
             {
-                var workspace = await _getWorkspaceByName(workspaceModel.WorkspaceType);
+                var workspace = await getWorkspaceBuildByName(workspaceModel.WorkspaceType);
                 var processed = await _transformer.TransformAsync(workspaceModel, budget);
 
                 var sourceFiles = processed.GetSourceFiles();

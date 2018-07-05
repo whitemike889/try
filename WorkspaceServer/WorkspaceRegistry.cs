@@ -13,7 +13,7 @@ namespace WorkspaceServer
     {
         private readonly ConcurrentDictionary<string, WorkspaceBuilder> _workspaceBuilders = new ConcurrentDictionary<string, WorkspaceBuilder>();
 
-        private readonly ConcurrentDictionary<string, Workspace> _workspaceServers = new ConcurrentDictionary<string, Workspace>();
+        private readonly ConcurrentDictionary<string, WorkspaceBuild> _workspaceServers = new ConcurrentDictionary<string, WorkspaceBuild>();
 
         public void AddWorkspace(string name, Action<WorkspaceBuilder> configure)
         {
@@ -32,7 +32,7 @@ namespace WorkspaceServer
             _workspaceBuilders.TryAdd(name, options);
         }
 
-        public async Task<Workspace> GetWorkspace(string workspaceName, Budget budget = null)
+        public async Task<WorkspaceBuild> GetWorkspace(string workspaceName, Budget budget = null)
         {
             var workspace = await _workspaceBuilders.GetOrAdd(
                                 workspaceName,
@@ -40,7 +40,7 @@ namespace WorkspaceServer
                                 {
                                     var directory = new DirectoryInfo(
                                         Path.Combine(
-                                            Workspace.DefaultWorkspacesDirectory.FullName, workspaceName));
+                                            WorkspaceBuild.DefaultWorkspacesDirectory.FullName, workspaceName));
 
                                     if (directory.Exists)
                                     {

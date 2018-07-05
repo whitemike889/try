@@ -5,8 +5,8 @@ using Clockwise;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
+using MLS.Agent.Tools;
 using WorkspaceServer.Models.Execution;
-using Workspace = MLS.Agent.Tools.Workspace;
 
 namespace WorkspaceServer.Servers.Roslyn
 {
@@ -50,7 +50,7 @@ namespace WorkspaceServer.Servers.Roslyn
         }
 
         public static async Task<(Compilation compilation, IReadOnlyCollection<Document> documents)> GetCompilation(
-            this Workspace build,
+            this WorkspaceBuild build,
             IReadOnlyCollection<SourceFile> sources,
             Budget budget)
         {

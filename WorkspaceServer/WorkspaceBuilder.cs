@@ -11,9 +11,9 @@ namespace WorkspaceServer
     {
         private readonly WorkspaceRegistry _registry;
 
-        private Workspace _workspace;
+        private WorkspaceBuild workspaceBuild;
 
-        private readonly List<Func<Workspace, Budget, Task>> _afterCreateActions = new List<Func<Workspace, Budget, Task>>();
+        private readonly List<Func<WorkspaceBuild, Budget, Task>> _afterCreateActions = new List<Func<WorkspaceBuild, Budget, Task>>();
 
         public WorkspaceBuilder(WorkspaceRegistry registry, string workspaceName)
         {
@@ -33,7 +33,7 @@ namespace WorkspaceServer
 
         public bool RequiresPublish { get; set; }
 
-        public void AfterCreate(Func<Workspace, Budget, Task> action)
+        public void AfterCreate(Func<WorkspaceBuild, Budget, Task> action)
         {
             _afterCreateActions.Add(action);
         }
@@ -58,29 +58,29 @@ namespace WorkspaceServer
             });
         }
 
-        public async Task<Workspace> GetWorkspace(Budget budget = null)
+        public async Task<WorkspaceBuild> GetWorkspace(Budget budget = null)
         {
-            if (_workspace == null)
+            if (workspaceBuild == null)
             {
                 await PrepareWorkspace(budget);
             }
 
             budget?.RecordEntry();
-            return _workspace;
+            return workspaceBuild;
         }
 
         public WorkspaceInfo GetWorkpaceInfo()
         {
             WorkspaceInfo info = null;
-            if (_workspace != null)
+            if (workspaceBuild != null)
             {
                 info = new WorkspaceInfo(
-                    _workspace.Name,
-                    _workspace.BuildTime,
-                    _workspace.ConstructionTime,
-                    _workspace.PublicationTime,
-                    _workspace.CreationTime,
-                    _workspace.ReadyTime
+                    workspaceBuild.Name,
+                    workspaceBuild.BuildTime,
+                    workspaceBuild.ConstructionTime,
+                    workspaceBuild.PublicationTime,
+                    workspaceBuild.CreationTime,
+                    workspaceBuild.ReadyTime
                 );
             }
 
@@ -91,12 +91,12 @@ namespace WorkspaceServer
         {
             budget = budget ?? new Budget();
 
-            _workspace = new Workspace(
+            workspaceBuild = new WorkspaceBuild(
                 WorkspaceName,
                 WorkspaceInitializer,
                 requiresPublish: RequiresPublish);
 
-            await _workspace.EnsureReady(budget);
+            await workspaceBuild.EnsureReady(budget);
 
             budget.RecordEntry();
         }
@@ -105,7 +105,7 @@ namespace WorkspaceServer
         {
             foreach (var action in _afterCreateActions)
             {
-                await action(_workspace, budget);
+                await action(workspaceBuild, budget);
             }
         }
     }
