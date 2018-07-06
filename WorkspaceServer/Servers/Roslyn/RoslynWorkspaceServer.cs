@@ -169,9 +169,17 @@ namespace WorkspaceServer.Servers.Roslyn
 
                 if (diagnostics.Any(e => e.Severity == DiagnosticSeverity.Error))
                 {
+                    if (!workspace.IsUnitTestProject)
+                    {
+                        return new RunResult(
+                            false,
+                            compileErrorMessages,
+                            diagnostics: diagnostics);
+                    }
+
                     // FIX: (Run) this hack is only in place because buffer inlining currently overwrites certain files in the on-disk project which need to be preserved.
-                    if (!build.IsUnitTestProject || 
-                        diagnostics.Count(d => d.Severity == DiagnosticSeverity.Error && d.Id != "CS5001") > 1)
+                    if (diagnostics.Count(d => d.Id != "CS5001") == 1 &&
+                        diagnostics.Count(d => d.Severity == DiagnosticSeverity.Error) > 1)
                     {
                         return new RunResult(
                             false,
@@ -182,8 +190,8 @@ namespace WorkspaceServer.Servers.Roslyn
 
                 var viewports = _transformer.ExtractViewPorts(workspaceModel);
                 var instrumentationRegions = viewports.Values
-                    .Where(v => v.Destination?.Name != null)
-                    .GroupBy(v => v.Destination.Name, v => v.Region, (name, regions) => new InstrumentationMap(name, regions));
+                                                      .Where(v => v.Destination?.Name != null)
+                                                      .GroupBy(v => v.Destination.Name, v => v.Region, (name, regions) => new InstrumentationMap(name, regions));
 
                 if (workspaceModel.IncludeInstrumentation)
                 {
