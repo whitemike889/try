@@ -2,52 +2,41 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using MLS.Agent.Tools;
 using Recipes;
-using Workspace = MLS.Agent.Tools.Workspace;
+using WorkspaceServer.Models.Execution;
 
 namespace WorkspaceServer.Tests
 {
     public static class Create
     {
-        public static async Task<Workspace> ConsoleWorkspaceCopy([CallerMemberName] string testName = null) => 
-            Workspace.Copy(
-            await Default.ConsoleWorkspace,
-            testName);
+        public static async Task<WorkspaceBuild> ConsoleWorkspaceCopy([CallerMemberName] string testName = null) =>
+            WorkspaceBuild.Copy(
+                await Default.ConsoleWorkspace,
+                testName);
 
-        public static async Task<Workspace> WebApiWorkspaceCopy([CallerMemberName] string testName = null) => 
-            Workspace.Copy(
-            await Default.WebApiWorkspace,
-            testName);
+        public static async Task<WorkspaceBuild> WebApiWorkspaceCopy([CallerMemberName] string testName = null) =>
+            WorkspaceBuild.Copy(
+                await Default.WebApiWorkspace,
+                testName);
 
-        public static async Task<Workspace> XunitWorkspaceCopy([CallerMemberName] string testName = null) => 
-            Workspace.Copy(
-            await Default.XunitWorkspace,
-            testName);
+        public static async Task<WorkspaceBuild> XunitWorkspaceCopy([CallerMemberName] string testName = null) =>
+            WorkspaceBuild.Copy(
+                await Default.XunitWorkspace,
+                testName);
 
-        public static Workspace EmptyWorkspace([CallerMemberName] string testName = null, IWorkspaceInitializer initializer = null) =>
-            new Workspace(Workspace.CreateDirectory(testName), initializer: initializer);
-
-        public static Models.Execution.Workspace SimpleRunRequest(
-            string consoleOutput = "Hello!",
-            string workspaceType = null) =>
-            SimpleWorkspace(consoleOutput, workspaceType);
-
-        public static Models.Execution.Workspace SimpleWorkspace(
-            string consoleOutput = "Hello!",
-            string workspaceType = null) =>
-            new Models.Execution.Workspace(SimpleConsoleAppCodeWithoutNamespaces(consoleOutput), workspaceType: workspaceType);
+        public static WorkspaceBuild EmptyWorkspace([CallerMemberName] string testName = null, IWorkspaceInitializer initializer = null) =>
+            new WorkspaceBuild(WorkspaceBuild.CreateDirectory(testName), initializer: initializer);
 
         public static string SimpleWorkspaceAsJson(
             string consoleOutput = "Hello!",
             string workspaceType = null) =>
-            new
-            {
-                buffer = SimpleConsoleAppCodeWithoutNamespaces(consoleOutput),
+            Workspace.FromSource(
+                SimpleConsoleAppCodeWithoutNamespaces(consoleOutput),
                 workspaceType
-            }.ToJson();
+            ).ToJson();
 
         public static string SimpleConsoleAppCodeWithoutNamespaces(string consoleOutput)
         {
-            var code =  $@"
+            var code = $@"
 using System;
 
 public static class Hello

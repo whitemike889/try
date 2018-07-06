@@ -39,7 +39,7 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task Response_indicates_when_compile_is_successful_and_signature_is_like_a_console_app()
         {
-            var workspace = new Workspace(@"
+            var workspace = Workspace.FromSource(@"
 using System;
 
 public static class Hello
@@ -64,7 +64,7 @@ public static class Hello
         {
             var output = nameof(Response_shows_program_output_when_compile_is_successful_and_signature_is_like_a_console_app);
 
-            var workspace = new Workspace($@"
+            var workspace = Workspace.FromSource($@"
 using System;
 
 public static class Hello
@@ -187,7 +187,7 @@ throw new Exception(""oops!"");");
         [Fact]
         public async Task When_a_public_void_Main_with_no_parameters_is_present_it_is_invoked()
         {
-            var workspace = new Workspace(@"
+            var workspace = Workspace.FromSource(@"
 using System;
 
 public static class Hello
@@ -208,7 +208,7 @@ public static class Hello
         [Fact]
         public async Task When_a_public_void_Main_with_parameters_is_present_it_is_invoked()
         {
-            var workspace = new Workspace(@"
+            var workspace = Workspace.FromSource(@"
 using System;
 
 public static class Hello
@@ -229,7 +229,7 @@ public static class Hello
         [Fact]
         public async Task When_an_internal_void_Main_with_no_parameters_is_present_it_is_invoked()
         {
-            var workspace = new Workspace(@"
+            var workspace = Workspace.FromSource(@"
 using System;
 
 public static class Hello
@@ -252,7 +252,7 @@ public static class Hello
         [Fact]
         public async Task When_an_internal_void_Main_with_parameters_is_present_it_is_invoked()
         {
-            var workspace = new Workspace(@"
+            var workspace = Workspace.FromSource(@"
 using System;
 
 public static class Hello

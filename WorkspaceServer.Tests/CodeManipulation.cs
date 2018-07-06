@@ -18,6 +18,7 @@ namespace WorkspaceServer.Tests
 
         public static (string processed, int markLocation) ProcessMarkup(string source)
         {
+            // TODO: (ProcessMarkup) remove, use MarkupTestFile instead
             var normalised = EnforceLF(source);
             var markLocation = normalised.IndexOf("$$", StringComparison.InvariantCulture);
             var processed = normalised.Replace("$$", string.Empty);

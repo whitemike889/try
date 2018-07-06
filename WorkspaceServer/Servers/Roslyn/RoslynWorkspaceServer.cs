@@ -26,23 +26,23 @@ namespace WorkspaceServer.Servers.Roslyn
 {
     public class RoslynWorkspaceServer : ILanguageService, ICodeRunner
     {
-        private readonly GetWorkspaceByName _getWorkspaceByName;
+        private readonly GetWorkspaceBuildByName getWorkspaceBuildByName;
         private const int defaultBudgetInSeconds = 30;
         private readonly ConcurrentDictionary<string, AsyncLock> locks = new ConcurrentDictionary<string, AsyncLock>();
         private readonly BufferInliningTransformer _transformer = new BufferInliningTransformer();
 
         private readonly string UserCodeCompleted = nameof(UserCodeCompleted);
 
-        private delegate Task<MLS.Agent.Tools.Workspace> GetWorkspaceByName(string name);
+        private delegate Task<WorkspaceBuild> GetWorkspaceBuildByName(string name);
 
-        public RoslynWorkspaceServer(MLS.Agent.Tools.Workspace workspace)
+        public RoslynWorkspaceServer(WorkspaceBuild workspaceBuild)
         {
-            if (workspace == null)
+            if (workspaceBuild == null)
             {
-                throw new ArgumentNullException(nameof(workspace));
+                throw new ArgumentNullException(nameof(workspaceBuild));
             }
 
-            _getWorkspaceByName = s => Task.FromResult(workspace);
+            getWorkspaceBuildByName = s => Task.FromResult(workspaceBuild);
         }
 
         public RoslynWorkspaceServer(WorkspaceRegistry registry)
@@ -52,26 +52,29 @@ namespace WorkspaceServer.Servers.Roslyn
                 throw new ArgumentNullException(nameof(registry));
             }
 
-            _getWorkspaceByName = s => registry.GetWorkspace(s);
+            getWorkspaceBuildByName = s => registry.Get(s);
         }
 
         public async Task<CompletionResult> GetCompletionList(WorkspaceRequest request, Budget budget)
         {
             budget = budget ?? new TimeBudget(TimeSpan.FromSeconds(defaultBudgetInSeconds));
-            var workspace = await _getWorkspaceByName(request.Workspace.WorkspaceType);
+            var build = await getWorkspaceBuildByName(request.Workspace.WorkspaceType);
 
             var processed = await _transformer.TransformAsync(request.Workspace, budget);
             var sourceFiles = processed.GetSourceFiles();
-            var documents = (await workspace.GetCompilation(sourceFiles, budget)).documents;
+            var documents = (await build.GetCompilation(sourceFiles, budget)).documents;
 
             var file = processed.GetFileFromBufferId(request.ActiveBufferId);
-            var (line, column, absolutePosition) = processed.GetTextLocation(request.ActiveBufferId, request.Position);
+            var (line, column, absolutePosition) = processed.GetTextLocation(request.ActiveBufferId);
             Document selectedDocument = documents.First(doc => doc.Name == file.Name);
 
             var service = CompletionService.GetService(selectedDocument);
             var completionList = await service.GetCompletionsAsync(selectedDocument, absolutePosition);
             var semanticModel = await selectedDocument.GetSemanticModelAsync();
-            var symbols = await Recommender.GetRecommendedSymbolsAtPositionAsync(semanticModel, request.Position, selectedDocument.Project.Solution.Workspace);
+            var symbols = await Recommender.GetRecommendedSymbolsAtPositionAsync(
+                              semanticModel, 
+                              absolutePosition, 
+                              selectedDocument.Project.Solution.Workspace);
 
             var symbolToSymbolKey = new Dictionary<(string, int), ISymbol>();
             foreach (var symbol in symbols)
@@ -96,11 +99,11 @@ namespace WorkspaceServer.Servers.Roslyn
         public async Task<DiagnosticResult> GetDiagnostics(Workspace request, Budget budget)
         {
             budget = budget ?? new TimeBudget(TimeSpan.FromSeconds(defaultBudgetInSeconds));
-            var workspace = await _getWorkspaceByName(request.WorkspaceType);
+            var build = await getWorkspaceBuildByName(request.WorkspaceType);
 
             var processed = await _transformer.TransformAsync(request, budget);
             var sourceFiles = processed.GetSourceFiles();
-            var (compilation, _) = await workspace.GetCompilation(sourceFiles, budget);
+            var (compilation, _) = await build.GetCompilation(sourceFiles, budget);
 
             var diagnostics = await ServiceHelpers.GetProjectedDiagnostics(request, compilation);
             return new DiagnosticResult(diagnostics.Select(e => e.Diagnostic).ToArray());
@@ -110,12 +113,12 @@ namespace WorkspaceServer.Servers.Roslyn
         {
             budget = budget ?? new TimeBudget(TimeSpan.FromSeconds(defaultBudgetInSeconds));
 
-            var workspace = await _getWorkspaceByName(request.Workspace.WorkspaceType);
+            var build = await getWorkspaceBuildByName(request.Workspace.WorkspaceType);
 
             Workspace processed = await _transformer.TransformAsync(request.Workspace, budget);
 
             var sourceFiles = processed.GetSourceFiles();
-            var (compilation, documents) = await workspace.GetCompilation(sourceFiles, budget);
+            var (compilation, documents) = await build.GetCompilation(sourceFiles, budget);
 
             var requestActiveBufferId = request.ActiveBufferId.Split("@").First();
 
@@ -130,9 +133,7 @@ namespace WorkspaceServer.Servers.Roslyn
 
             var tree = await document.GetSyntaxTreeAsync();
 
-            var absolutePosition = processed.GetAbsolutePosition(
-                request.ActiveBufferId,
-                request.Position);
+            var absolutePosition = processed.GetAbsolutePosition(request.ActiveBufferId);
 
             var syntaxNode = tree.GetRoot().FindToken(absolutePosition).Parent;
 
@@ -150,11 +151,11 @@ namespace WorkspaceServer.Servers.Roslyn
             using (var operation = Log.OnEnterAndConfirmOnExit())
             using (await locks.GetOrAdd(workspaceModel.WorkspaceType, s => new AsyncLock()).LockAsync())
             {
-                var workspace = await _getWorkspaceByName(workspaceModel.WorkspaceType);
+                var build = await getWorkspaceBuildByName(workspaceModel.WorkspaceType);
                 var processed = await _transformer.TransformAsync(workspaceModel, budget);
 
                 var sourceFiles = processed.GetSourceFiles();
-                var (compilation, documents) = await workspace.GetCompilation(sourceFiles, budget);
+                var (compilation, documents) = await build.GetCompilation(sourceFiles, budget);
 
                 var d3 = await ServiceHelpers.GetProjectedDiagnostics(
                              workspaceModel,
@@ -169,7 +170,7 @@ namespace WorkspaceServer.Servers.Roslyn
                 if (diagnostics.Any(e => e.Severity == DiagnosticSeverity.Error))
                 {
                     // FIX: (Run) this hack is only in place because buffer inlining currently overwrites certain files in the on-disk project which need to be preserved.
-                    if (!workspace.IsUnitTestProject || 
+                    if (!build.IsUnitTestProject || 
                         diagnostics.Count(d => d.Severity == DiagnosticSeverity.Error && d.Id != "CS5001") > 1)
                     {
                         return new RunResult(
@@ -194,7 +195,7 @@ namespace WorkspaceServer.Servers.Roslyn
                 {
                     try
                     {
-                        compilation.Emit(workspace.EntryPointAssemblyPath.FullName);
+                        compilation.Emit(build.EntryPointAssemblyPath.FullName);
                         operation.Info("Emit succeeded on attempt #{attempt}", attempt);
                         break;
                     }
@@ -211,9 +212,9 @@ namespace WorkspaceServer.Servers.Roslyn
 
                 string exceptionMessage = null;
 
-                if (workspace.IsWebProject)
+                if (build.IsWebProject)
                 {
-                    var webServer = new WebServer(workspace);
+                    var webServer = new WebServer(build);
 
 
                     runResult = new RunResult(
@@ -222,12 +223,12 @@ namespace WorkspaceServer.Servers.Roslyn
 
                     runResult.AddFeature(webServer);
                 }
-                else if (workspace.IsUnitTestProject)
+                else if (build.IsUnitTestProject)
                 {
-                    var dotnet = new Dotnet(workspace.Directory);
+                    var dotnet = new Dotnet(build.Directory);
 
                     var testRunResult = await dotnet.VSTest(
-                                            $"--logger:trx {workspace.EntryPointAssemblyPath}",
+                                            $"--logger:trx {build.EntryPointAssemblyPath}",
                                             budget);
 
                     if (testRunResult.Error.Count > 0)
@@ -247,7 +248,7 @@ namespace WorkspaceServer.Servers.Roslyn
                         tRexResult = await CommandLine.Execute(
                                          trex,
                                          "",
-                                         workingDir: workspace.Directory,
+                                         workingDir: build.Directory,
                                          budget: budget);
                     }
 
@@ -266,10 +267,10 @@ namespace WorkspaceServer.Servers.Roslyn
                 }
                 else
                 {
-                    var dotnet = new Dotnet(workspace.Directory);
+                    var dotnet = new Dotnet(build.Directory);
 
                     var commandLineResult = await dotnet.Execute(
-                                                workspace.EntryPointAssemblyPath.FullName,
+                                                build.EntryPointAssemblyPath.FullName,
                                                 budget);
 
                     var output = InstrumentedOutputExtractor.ExtractOutput(commandLineResult.Output);
