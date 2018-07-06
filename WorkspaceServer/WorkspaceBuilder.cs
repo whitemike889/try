@@ -58,7 +58,7 @@ namespace WorkspaceServer
             });
         }
 
-        public async Task<WorkspaceBuild> GetWorkspace(Budget budget = null)
+        public async Task<WorkspaceBuild> GetWorkspaceBuild(Budget budget = null)
         {
             if (workspaceBuild == null)
             {

@@ -31,10 +31,10 @@ namespace WorkspaceServer.Tests
             {
                 var workspaceId = WorkspaceBuild.CreateDirectory(nameof(Workspaces_can_be_registered_to_be_created_using_dotnet_new)).Name;
 
-                registry.AddWorkspace(workspaceId,
+                registry.Add(workspaceId,
                                       options => options.CreateUsingDotnet("console"));
 
-                var workspace = await registry.GetWorkspace(workspaceId);
+                var workspace = await registry.Get(workspaceId);
 
                 await workspace.EnsureCreated();
 
@@ -49,7 +49,7 @@ namespace WorkspaceServer.Tests
             {
                 var workspaceId = WorkspaceBuild.CreateDirectory(nameof(NuGet_packages_can_be_added_during_initialization)).Name;
 
-                registry.AddWorkspace(workspaceId,
+                registry.Add(workspaceId,
                                       options =>
                                       {
                                           options.CreateUsingDotnet("console");
@@ -91,7 +91,7 @@ namespace Twilio_try.dot.net_sample
 
             using (var registry = new WorkspaceRegistry())
             {
-                var resolvedWorkspace = await registry.GetWorkspace(unregisteredWorkspace.Name);
+                var resolvedWorkspace = await registry.Get(unregisteredWorkspace.Name);
 
                 resolvedWorkspace.Directory.FullName.Should().Be(unregisteredWorkspace.Directory.FullName);
                 resolvedWorkspace.IsCreated.Should().BeTrue();

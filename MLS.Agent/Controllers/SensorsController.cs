@@ -23,7 +23,7 @@ namespace MLS.Agent.Controllers
         [Route("/sensors/workspaceInfo")]
         public IActionResult GetWorkspaceInfo()
         {
-            var info = workspaceRegistry.GetRegisterWorkspaceInfos();
+            var info = workspaceRegistry.GetRegisteredWorkspaceInfos();
             return Ok(info);
         }
 

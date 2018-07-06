@@ -8,10 +8,10 @@ namespace WorkspaceServer.Tests
     {
         private static readonly WorkspaceRegistry _defaultWorkspaces = WorkspaceRegistry.CreateDefault();
 
-        public static Task<WorkspaceBuild> ConsoleWorkspace => _defaultWorkspaces.GetWorkspace("console");
+        public static Task<WorkspaceBuild> ConsoleWorkspace => _defaultWorkspaces.Get("console");
 
-        public static Task<WorkspaceBuild> WebApiWorkspace => _defaultWorkspaces.GetWorkspace("aspnet.webapi");
+        public static Task<WorkspaceBuild> WebApiWorkspace => _defaultWorkspaces.Get("aspnet.webapi");
 
-        public static Task<WorkspaceBuild> XunitWorkspace => _defaultWorkspaces.GetWorkspace("xunit");
+        public static Task<WorkspaceBuild> XunitWorkspace => _defaultWorkspaces.Get("xunit");
     }
 }
