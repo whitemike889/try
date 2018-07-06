@@ -31,7 +31,7 @@ namespace WorkspaceServer.Models.Execution
 
         public string WorkspaceType { get; }
 
-        public bool IncludeInstrumentation { get; set; }
+        public bool IncludeInstrumentation { get; }
 
         [Required]
         [MinLength(1)]
