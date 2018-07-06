@@ -44,7 +44,7 @@ namespace WorkspaceServer.Servers.Scripting
             {
                 workspace = await _transformer.TransformAsync(workspace, budget);
 
-                if (workspace.Files.Count != 1)
+                if (workspace.Files.Length != 1)
                 {
                     throw new ArgumentException($"{nameof(workspace)} should have exactly one source file.");
                 }
@@ -200,7 +200,7 @@ namespace WorkspaceServer.Servers.Scripting
             var processor = new BufferInliningTransformer();
             var workspace = await processor.TransformAsync(request.Workspace, budget);
 
-            if (workspace.Files.Count != 1)
+            if (workspace.Files.Length != 1)
             {
                 throw new ArgumentException($"{nameof(request)} should have exactly one source file.");
             }

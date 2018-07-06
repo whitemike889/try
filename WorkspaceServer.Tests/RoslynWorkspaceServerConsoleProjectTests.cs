@@ -3,7 +3,6 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using FluentAssertions;
-using MLS.Agent;
 using WorkspaceServer.Models;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Servers.Roslyn;
@@ -20,7 +19,7 @@ namespace WorkspaceServer.Tests
 
         protected override Workspace CreateWorkspaceWithMainContaining(string text)
         {
-            return new Workspace(
+            return Workspace.FromSource(
                 $@"using System; using System.Linq; using System.Collections.Generic; class Program {{ static void Main() {{ {text}
                     }}
                 }}

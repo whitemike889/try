@@ -37,8 +37,7 @@ namespace MLS.Agent.Tests
                         EntrypointCode(),
                         viewport
                     }),
-                activeBufferId: viewport.Id,
-                position: viewport.Position);
+                activeBufferId: viewport.Id);
 
             var response = await CallRun(requestJson.ToJson());
 
@@ -52,7 +51,7 @@ namespace MLS.Agent.Tests
         {
             var viewport = ViewportCode("doesn't compile");
 
-            var requestJson = new WorkspaceRequest(
+            var request = new WorkspaceRequest(
                 new Workspace(
                     workspaceType: "console",
                     buffers: new[]
@@ -60,10 +59,11 @@ namespace MLS.Agent.Tests
                         EntrypointCode(),
                         viewport
                     }),
-                activeBufferId: viewport.Id,
-                position: viewport.Position);
+                activeBufferId: viewport.Id);
 
-            var response = await CallRun(requestJson.ToJson());
+            var requestBody = request.ToJson();
+
+            var response = await CallRun(requestBody);
 
             var result = await response.Content.ReadAsStringAsync();
 
@@ -83,8 +83,7 @@ namespace MLS.Agent.Tests
                         EntrypointCode(),
                         viewport
                     }),
-                activeBufferId: viewport.Id,
-                position: viewport.Position).ToJson();
+                activeBufferId: viewport.Id).ToJson();
 
             var response = await CallCompletion(requestJson);
 
@@ -106,8 +105,7 @@ namespace MLS.Agent.Tests
                         EntrypointCode(),
                         viewport
                     }),
-                activeBufferId: viewport.Id,
-                position: viewport.Position).ToJson();
+                activeBufferId: viewport.Id).ToJson();
 
             var response = await CallSignatureHelp(requestJson);
 

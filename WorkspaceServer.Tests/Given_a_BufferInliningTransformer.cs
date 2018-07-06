@@ -86,7 +86,7 @@ namespace WorkspaceServer.Tests
             newCode.Should().NotBe(ws.Files.ElementAt(0).Text);
             newCode.Should().Contain("var newValue = 1000;");
 
-            processed.Buffers.Count.Should().Be(ws.Buffers.Count);
+            processed.Buffers.Length.Should().Be(ws.Buffers.Length);
             processed.Buffers.ElementAt(0).Position.Should().BeGreaterThan(ws.Buffers.ElementAt(0).Position);
 
         }
@@ -113,7 +113,7 @@ namespace WorkspaceServer.Tests
             newCode.Should().NotBe(ws.Files.ElementAt(0).Text);
             newCode.Should().Be("var newValue = 1000;");
 
-            processed.Buffers.Count.Should().Be(ws.Buffers.Count);
+            processed.Buffers.Length.Should().Be(ws.Buffers.Length);
             processed.Buffers.ElementAt(0).Position.Should().Be(0);
         }
 

@@ -41,8 +41,6 @@ namespace MLS.Agent
                     var workspaceRequest = new WorkspaceRequest(
                         activeBufferId: "Program.cs",
                         workspace: new Workspace(
-                            bufferid: "Program.cs",
-                            position: 0,
                             workspaceType: "console",
                             buffers: new[]
                             {

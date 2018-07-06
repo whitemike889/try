@@ -5,6 +5,7 @@ using FluentAssertions;
 using MLS.Agent.Tools;
 using Pocket;
 using WorkspaceServer.Models;
+using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Servers.Roslyn;
 using Xunit;
 using Xunit.Abstractions;
@@ -57,7 +58,7 @@ namespace WorkspaceServer.Tests
 
                 var workspaceServer = new RoslynWorkspaceServer(registry);
 
-                var workspace = new Models.Execution.Workspace(
+                var workspace = Workspace.FromSource(
                     @"
 using System;
 using Twilio.Clients;

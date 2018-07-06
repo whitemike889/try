@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
@@ -12,36 +11,21 @@ namespace WorkspaceServer.Models.Execution
         private const string DefaultWorkspaceType = "script";
 
         public Workspace(
-        string buffer = null, // TODO: added for backward comaptibility
-        string source = null, // TODO: added for backward comaptibility
-        string bufferid = null, // TODO: added for backward comaptibility
-        int position = 0,
-        string[] usings = null,
-        File[] files = null,
-        Buffer[] buffers = null,
-        string workspaceType = DefaultWorkspaceType,
-        bool includeInstrumentation = false)
+            string[] usings = null,
+            File[] files = null,
+            Buffer[] buffers = null,
+            string workspaceType = DefaultWorkspaceType,
+            bool includeInstrumentation = false)
         {
             WorkspaceType = workspaceType ?? DefaultWorkspaceType;
             Usings = usings ?? Array.Empty<string>();
-            var code = buffer ?? source ?? string.Empty;
-            var id = bufferid ?? string.Empty;
-
             Usings = usings ?? Array.Empty<string>();
-
-            Files = files?? Array.Empty<File>();
-            
-            var bufferList = buffers?.ToList() ?? new List<Buffer>();
-
-            if (!string.IsNullOrWhiteSpace(code))
-            {
-                bufferList.Add(new Buffer(id,code,position));
-            }
-            Buffers = bufferList;
+            Files = files ?? Array.Empty<File>();
+            Buffers = buffers ?? Array.Empty<Buffer>();
             IncludeInstrumentation = includeInstrumentation;
         }
-        
-        public IReadOnlyCollection<File> Files { get; }
+
+        public File[] Files { get; }
 
         public string[] Usings { get; }
 
@@ -51,7 +35,7 @@ namespace WorkspaceServer.Models.Execution
 
         [Required]
         [MinLength(1)]
-        public IReadOnlyCollection<Buffer> Buffers { get; }
+        public Buffer[] Buffers { get; }
 
         public class File
         {
@@ -70,7 +54,7 @@ namespace WorkspaceServer.Models.Execution
 
         public class Buffer
         {
-            public Buffer(string id, string content, int position)
+            public Buffer(string id, string content, int position = 0)
             {
                 Id = id;
                 Content = content;
@@ -85,6 +69,27 @@ namespace WorkspaceServer.Models.Execution
 
             public override string ToString() => $"{nameof(Buffer)}: {Id}";
         }
+
+        public static Workspace FromSource(
+            string source,
+            string workspaceType,
+            string[] usings = null,
+            string id = null,
+            int position = 0) =>
+            new Workspace(
+                workspaceType: workspaceType,
+                buffers: new[]
+                {
+                    new Buffer(id ?? $"file{source.GetHashCode()}.cs", source, position)
+                },
+                usings: usings);
+
+        public static Workspace FromSources(
+            string workspaceType = null,
+            params (string id, string content, int position)[] sources) =>
+            new Workspace(
+                workspaceType: workspaceType,
+                buffers: sources.Select(s => new Buffer(s.id, s.content, s.position)).ToArray());
 
         public static Workspace FromDirectory(DirectoryInfo directory, string workspaceType)
         {

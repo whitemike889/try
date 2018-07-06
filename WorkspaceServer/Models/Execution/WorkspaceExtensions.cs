@@ -45,6 +45,13 @@ namespace WorkspaceServer.Models.Execution
 
         public static Workspace ReplaceBuffer(this Workspace workspace, string id, string text)
         {
+            return new Workspace(
+                usings: workspace.Usings,
+                buffers: workspace.Buffers,
+                files: workspace.Files,
+                workspaceType: workspace.WorkspaceType
+                );
+
             return workspace;
         }
 
