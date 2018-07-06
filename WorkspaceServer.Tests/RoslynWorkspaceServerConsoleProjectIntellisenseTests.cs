@@ -23,7 +23,7 @@ namespace WorkspaceServer.Tests
         {
             #region bufferSources
 
-            const string program = @"using System;
+            var program = @"using System;
 using System.Linq;
 
 namespace FibonacciTest
@@ -38,8 +38,9 @@ namespace FibonacciTest
             }
         }
     }
-}";
-            const string generator = @"using System.Collections.Generic;
+}".EnforceLF();
+
+            var generator = @"using System.Collections.Generic;
 using System;
 namespace FibonacciTest
 {
@@ -56,14 +57,14 @@ namespace FibonacciTest
             }
         }
     }
-}";
+}".EnforceLF();
             #endregion
 
             var (processed, position) = CodeManipulation.ProcessMarkup(generator);
 
             var workspace = new Workspace(workspaceType: "console", buffers: new[]
             {
-                new Workspace.Buffer("Program.cs", CodeManipulation.EnforceLF(program)),
+                new Workspace.Buffer("Program.cs", program),
                 new Workspace.Buffer("generators/FibonacciGenerator.cs", processed, position)
             });
 
@@ -211,7 +212,7 @@ namespace FibonacciTest
         {
             #region bufferSources
 
-            const string program = @"using System;
+            var program = @"using System;
 using System.Linq;
 
 namespace FibonacciTest
@@ -226,8 +227,9 @@ namespace FibonacciTest
             }
         }
     }
-}";
-            const string generator = @"using System.Collections.Generic;
+}".EnforceLF();
+
+            var generator = @"using System.Collections.Generic;
 using System;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -247,7 +249,7 @@ namespace FibonacciTest
             }
         }
     }
-}";
+}".EnforceLF();
 
             #endregion
 
@@ -256,10 +258,10 @@ namespace FibonacciTest
             var workspace = new Workspace(
                 workspaceType: "console",
                 buffers: new[] {
-                    new Workspace.Buffer("Program.cs", CodeManipulation.EnforceLF(program)),
+                    new Workspace.Buffer("Program.cs", program),
                     new Workspace.Buffer("generators/FibonacciGenerator.cs@codeRegion", processed, position)
                 }, files: new[] {
-                    new Workspace.File("generators/FibonacciGenerator.cs", CodeManipulation.EnforceLF(generator)),
+                    new Workspace.File("generators/FibonacciGenerator.cs",generator),
                 });
 
             var request = new WorkspaceRequest(workspace, activeBufferId: "generators/FibonacciGenerator.cs@codeRegion");
@@ -284,7 +286,7 @@ namespace FibonacciTest
         {
             #region bufferSources
 
-            const string program = @"using System;
+            var program = @"using System;
 using System.Linq;
 
 namespace FibonacciTest
@@ -299,8 +301,9 @@ namespace FibonacciTest
             }
         }
     }
-}";
-            const string generator = @"using System.Collections.Generic;
+}".EnforceLF();
+
+            var generator = @"using System.Collections.Generic;
 using System;
 namespace FibonacciTest
 {
@@ -317,7 +320,7 @@ namespace FibonacciTest
             }
         }
     }
-}";
+}".EnforceLF();
 
             #endregion
 
@@ -325,7 +328,7 @@ namespace FibonacciTest
 
             var workspace = new Workspace(workspaceType: "console", buffers: new[]
             {
-                new Workspace.Buffer("Program.cs", CodeManipulation.EnforceLF(program)),
+                new Workspace.Buffer("Program.cs", program),
                 new Workspace.Buffer("generators/FibonacciGenerator.cs", processed, position)
             });
 
@@ -343,7 +346,7 @@ namespace FibonacciTest
         {
             #region bufferSources
 
-            const string program = @"using System;
+            var program = @"using System;
 using System.Linq;
 
 namespace FibonacciTest
@@ -358,8 +361,9 @@ namespace FibonacciTest
             }
         }
     }
-}";
-            const string generator = @"using System.Collections.Generic;
+}".EnforceLF();
+
+            var generator = @"using System.Collections.Generic;
 using System;
 namespace FibonacciTest
 {
@@ -376,14 +380,15 @@ namespace FibonacciTest
             }
         }
     }
-}";
+}".EnforceLF();
+
             #endregion
 
             var (processed, position) = CodeManipulation.ProcessMarkup(generator);
 
             var workspace = new Workspace(workspaceType: "console", buffers: new[]
             {
-                new Workspace.Buffer("Program.cs", CodeManipulation.EnforceLF(program)),
+                new Workspace.Buffer("Program.cs", program),
                 new Workspace.Buffer("generators/FibonacciGenerator.cs", processed, position)
             });
 
@@ -399,7 +404,7 @@ namespace FibonacciTest
         {
             #region bufferSources
 
-            const string program = @"using System;
+            var program = @"using System;
 using System.Linq;
 
 namespace FibonacciTest
@@ -414,8 +419,9 @@ namespace FibonacciTest
             }
         }
     }
-}";
-            const string generator = @"using System.Collections.Generic;
+}".EnforceLF();
+
+            var generator = @"using System.Collections.Generic;
 using System;
 namespace FibonacciTest
 {
@@ -433,7 +439,7 @@ namespace FibonacciTest
             }
         }
     }
-}";
+}".EnforceLF();
 
             #endregion
 
@@ -442,10 +448,10 @@ namespace FibonacciTest
             var workspace = new Workspace(
                 workspaceType: "console",
                 buffers: new[] {
-                    new Workspace.Buffer("Program.cs", CodeManipulation.EnforceLF(program)),
+                    new Workspace.Buffer("Program.cs", program),
                     new Workspace.Buffer("generators/FibonacciGenerator.cs@codeRegion", processed, position)
                 }, files: new[] {
-                    new Workspace.File("generators/FibonacciGenerator.cs", CodeManipulation.EnforceLF(generator)),
+                    new Workspace.File("generators/FibonacciGenerator.cs", generator),
                 });
 
             var request = new WorkspaceRequest(workspace, activeBufferId: "generators/FibonacciGenerator.cs@codeRegion");
@@ -462,7 +468,7 @@ namespace FibonacciTest
         {
             #region bufferSources
 
-            const string program = @"using System;
+            var program = @"using System;
 using System.Linq;
 
 namespace FibonacciTest
@@ -477,8 +483,9 @@ namespace FibonacciTest
             }
         }
     }
-}";
-            const string generator = @"using System.Collections.Generic;
+}".EnforceLF();
+
+            var generator = @"using System.Collections.Generic;
 using System;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -498,7 +505,7 @@ namespace FibonacciTest
             }
         }
     }
-}";
+}".EnforceLF();
 
             #endregion
 
@@ -507,10 +514,10 @@ namespace FibonacciTest
             var workspace = new Workspace(
                 workspaceType: "console",
                 buffers: new[] {
-                    new Workspace.Buffer("Program.cs",CodeManipulation.EnforceLF(program)),
+                    new Workspace.Buffer("Program.cs", program),
                     new Workspace.Buffer("generators/FibonacciGenerator.cs@codeRegion", processed, position)
                 }, files: new[] {
-                    new Workspace.File("generators/FibonacciGenerator.cs", CodeManipulation.EnforceLF(generator)),
+                    new Workspace.File("generators/FibonacciGenerator.cs", generator),
                 });
 
             var request = new WorkspaceRequest(workspace, activeBufferId: "generators/FibonacciGenerator.cs@codeRegion");

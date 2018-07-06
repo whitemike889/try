@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using Newtonsoft.Json;
 using WorkspaceServer.Models.Execution;
 
 namespace WorkspaceServer.Models
@@ -13,9 +12,6 @@ namespace WorkspaceServer.Models
         public HttpRequest HttpRequest { get; }
 
         public string ActiveBufferId { get; }
-
-        [JsonIgnore]
-        public int Position => Workspace.Buffers.SingleOrDefault(b => b.Id == ActiveBufferId)?.Position ?? 0;
 
         public WorkspaceRequest(Workspace workspace, HttpRequest httpRequest = null, string activeBufferId = null)
 

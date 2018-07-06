@@ -65,13 +65,16 @@ namespace WorkspaceServer.Servers.Roslyn
             var documents = (await workspace.GetCompilation(sourceFiles, budget)).documents;
 
             var file = processed.GetFileFromBufferId(request.ActiveBufferId);
-            var (line, column, absolutePosition) = processed.GetTextLocation(request.ActiveBufferId, request.Position);
+            var (line, column, absolutePosition) = processed.GetTextLocation(request.ActiveBufferId);
             Document selectedDocument = documents.First(doc => doc.Name == file.Name);
 
             var service = CompletionService.GetService(selectedDocument);
             var completionList = await service.GetCompletionsAsync(selectedDocument, absolutePosition);
             var semanticModel = await selectedDocument.GetSemanticModelAsync();
-            var symbols = await Recommender.GetRecommendedSymbolsAtPositionAsync(semanticModel, request.Position, selectedDocument.Project.Solution.Workspace);
+            var symbols = await Recommender.GetRecommendedSymbolsAtPositionAsync(
+                              semanticModel, 
+                              absolutePosition, 
+                              selectedDocument.Project.Solution.Workspace);
 
             var symbolToSymbolKey = new Dictionary<(string, int), ISymbol>();
             foreach (var symbol in symbols)
@@ -130,9 +133,7 @@ namespace WorkspaceServer.Servers.Roslyn
 
             var tree = await document.GetSyntaxTreeAsync();
 
-            var absolutePosition = processed.GetAbsolutePosition(
-                request.ActiveBufferId,
-                request.Position);
+            var absolutePosition = processed.GetAbsolutePosition(request.ActiveBufferId);
 
             var syntaxNode = tree.GetRoot().FindToken(absolutePosition).Parent;
 

@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using MLS.Agent.Tools;
+using Newtonsoft.Json;
 
 namespace WorkspaceServer.Models.Execution
 {
@@ -54,8 +55,11 @@ namespace WorkspaceServer.Models.Execution
 
         public class Buffer
         {
-            public Buffer(string id, string content, int position = 0)
+            private readonly int offSetFromParentBuffer;
+
+            public Buffer(string id, string content, int position = 0, int offSetFromParentBuffer = 0)
             {
+                this.offSetFromParentBuffer = offSetFromParentBuffer;
                 Id = id;
                 Content = content;
                 Position = position;
@@ -66,6 +70,9 @@ namespace WorkspaceServer.Models.Execution
             public string Content { get; }
 
             public int Position { get; }
+
+            [JsonIgnore]
+            public int AbsolutePosition => Position + offSetFromParentBuffer;
 
             public override string ToString() => $"{nameof(Buffer)}: {Id}";
         }

@@ -161,12 +161,12 @@ namespace WorkspaceServer.Servers.Scripting
             budget = budget ?? new Budget();
             using (Log.OnExit())
             {
-                var (document, position) = await GenerateDocumentAndPosition(request, budget);
+                var (document, absolutePosition) = await GenerateDocumentAndPosition(request, budget);
                 var service = CompletionService.GetService(document);
 
-                var completionList = await service.GetCompletionsAsync(document, position);
+                var completionList = await service.GetCompletionsAsync(document, absolutePosition);
                 var semanticModel = await document.GetSemanticModelAsync();
-                var symbols = await Recommender.GetRecommendedSymbolsAtPositionAsync(semanticModel, request.Position, document.Project.Solution.Workspace);
+                var symbols = await Recommender.GetRecommendedSymbolsAtPositionAsync(semanticModel, absolutePosition, document.Project.Solution.Workspace);
 
                 var symbolToSymbolKey = new Dictionary<(string, int), ISymbol>();
                 foreach (var symbol in symbols)
@@ -206,10 +206,10 @@ namespace WorkspaceServer.Servers.Scripting
             }
 
             var code = workspace.Files.Single().Text;
-            var position = workspace.Buffers.First(b => b.Id == request.ActiveBufferId).Position + request.Position;
+            var absolutePosition = workspace.Buffers.Single(b => b.Id == request.ActiveBufferId).AbsolutePosition;
 
             var document = _fixture.ForkDocument(code);
-            return (document, position);
+            return (document, absolutePosition);
         }
 
         private static async Task<ScriptState<object>> EmulateConsoleMainInvocation(
