@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Clockwise;
 using MLS.Agent.Tools;
 using Pocket;
+using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Servers.Roslyn;
 using Xunit;
 using Xunit.Abstractions;
@@ -26,14 +28,14 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task Run_executes_unit_tests_and_prints_test_results_to_output()
         {
-            var (server, workspace) = await GetRunnerAndWorkspace();
+            var (runner, workspace) = await GetRunnerAndWorkspace();
 
-            var runResult = await server.Run(
-                                Models.Execution.Workspace.FromDirectory(
+            var runResult = await runner.Run(
+                                Workspace.FromDirectory(
                                     workspace.Directory,
                                     workspace.Name));
 
-            Log.Info("Output: {outupt}", runResult.Output);
+            Log.Info("Output: {output}", runResult.Output);
 
             runResult.Output.ShouldMatch(
                 "PASSED",
@@ -44,7 +46,7 @@ namespace WorkspaceServer.Tests
             );
         }
 
-        protected async Task<(ICodeRunner server, Workspace workspace )> GetRunnerAndWorkspace(
+        protected async Task<(ICodeRunner server, WorkspaceBuild workspace )> GetRunnerAndWorkspace(
             [CallerMemberName] string testName = null)
         {
             var workspace = await Create.XunitWorkspaceCopy(testName);

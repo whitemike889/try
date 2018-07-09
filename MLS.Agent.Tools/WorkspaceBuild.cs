@@ -7,9 +7,9 @@ using Pocket;
 
 namespace MLS.Agent.Tools
 {
-    public class Workspace
+    public class WorkspaceBuild
     {
-        static Workspace()
+        static WorkspaceBuild()
         {
             var workspacesPathEnvironmentVariableName = "TRYDOTNET_WORKSPACES_PATH";
 
@@ -29,7 +29,7 @@ namespace MLS.Agent.Tools
                 DefaultWorkspacesDirectory.Create();
             }
 
-            Logger<Workspace>.Log.Info("Workspaces path is {DefaultWorkspacesDirectory}", DefaultWorkspacesDirectory);
+            Logger<WorkspaceBuild>.Log.Info("Workspaces path is {DefaultWorkspacesDirectory}", DefaultWorkspacesDirectory);
         }
 
         private readonly IWorkspaceInitializer _initializer;
@@ -48,7 +48,7 @@ namespace MLS.Agent.Tools
         public DateTimeOffset? BuildTime { get; private set; }
         public DateTimeOffset? PublicationTime { get; private set; }
 
-        public Workspace(
+        public WorkspaceBuild(
             string name,
             IWorkspaceInitializer initializer = null,
             bool requiresPublish = false) : this(
@@ -59,7 +59,7 @@ namespace MLS.Agent.Tools
         {
         }
 
-        public Workspace(
+        public WorkspaceBuild(
             DirectoryInfo directory,
             string name = null,
             IWorkspaceInitializer initializer = null,
@@ -73,7 +73,7 @@ namespace MLS.Agent.Tools
             _created = new AsyncLazy<bool>(VerifyOrCreate);
             _built = new AsyncLazy<bool>(VerifyOrBuild);
             _published = new AsyncLazy<bool>(VerifyOrPublish);
-            _log = new Logger($"{nameof(Workspace)}:{Name}");
+            _log = new Logger($"{nameof(WorkspaceBuild)}:{Name}");
         }
 
         private bool IsDirectoryCreated { get; set; }
@@ -269,32 +269,32 @@ namespace MLS.Agent.Tools
             return true;
         }
 
-        public static Workspace Copy(
-            Workspace fromWorkspace,
+        public static WorkspaceBuild Copy(
+            WorkspaceBuild fromWorkspaceBuild,
             string folderNameStartsWith = null)
         {
-            if (fromWorkspace == null)
+            if (fromWorkspaceBuild == null)
             {
-                throw new ArgumentNullException(nameof(fromWorkspace));
+                throw new ArgumentNullException(nameof(fromWorkspaceBuild));
             }
 
-            folderNameStartsWith = folderNameStartsWith ?? fromWorkspace.Name;
-            var parentDirectory = fromWorkspace.Directory.Parent;
+            folderNameStartsWith = folderNameStartsWith ?? fromWorkspaceBuild.Name;
+            var parentDirectory = fromWorkspaceBuild.Directory.Parent;
 
             var destination = CreateDirectory(folderNameStartsWith, parentDirectory);
 
-            return Copy(fromWorkspace, destination);
+            return Copy(fromWorkspaceBuild, destination);
         }
 
-        public static Workspace Copy(Workspace fromWorkspace, DirectoryInfo destination)
+        public static WorkspaceBuild Copy(WorkspaceBuild fromWorkspaceBuild, DirectoryInfo destination)
         {
-            fromWorkspace.Directory.CopyTo(destination);
+            fromWorkspaceBuild.Directory.CopyTo(destination);
 
-            var copy = new Workspace(destination, destination.Name)
+            var copy = new WorkspaceBuild(destination, destination.Name)
             {
-                IsCreated = fromWorkspace.IsCreated,
-                IsPublished = fromWorkspace.IsPublished,
-                IsBuilt = fromWorkspace.IsBuilt,
+                IsCreated = fromWorkspaceBuild.IsCreated,
+                IsPublished = fromWorkspaceBuild.IsPublished,
+                IsBuilt = fromWorkspaceBuild.IsBuilt,
                 IsDirectoryCreated = true
             };
 

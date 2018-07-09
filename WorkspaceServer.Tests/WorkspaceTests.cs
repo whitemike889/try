@@ -12,7 +12,6 @@ using WorkspaceServer.Servers.Roslyn;
 using Xunit;
 using Xunit.Abstractions;
 using static Pocket.Logger;
-using Workspace = MLS.Agent.Tools.Workspace;
 
 namespace WorkspaceServer.Tests
 {
@@ -68,7 +67,7 @@ namespace WorkspaceServer.Tests
 
             await original.EnsureCreated();
 
-            var copy = Workspace.Copy(original);
+            var copy = WorkspaceBuild.Copy(original);
 
             await copy.EnsureCreated();
 

@@ -13,9 +13,9 @@ namespace WorkspaceServer
     {
         private readonly ConcurrentDictionary<string, WorkspaceBuilder> _workspaceBuilders = new ConcurrentDictionary<string, WorkspaceBuilder>();
 
-        private readonly ConcurrentDictionary<string, Workspace> _workspaceServers = new ConcurrentDictionary<string, Workspace>();
+        private readonly ConcurrentDictionary<string, WorkspaceBuild> _workspaceServers = new ConcurrentDictionary<string, WorkspaceBuild>();
 
-        public void AddWorkspace(string name, Action<WorkspaceBuilder> configure)
+        public void Add(string name, Action<WorkspaceBuilder> configure)
         {
             if (configure == null)
             {
@@ -32,15 +32,15 @@ namespace WorkspaceServer
             _workspaceBuilders.TryAdd(name, options);
         }
 
-        public async Task<Workspace> GetWorkspace(string workspaceName, Budget budget = null)
+        public async Task<WorkspaceBuild> Get(string workspaceName, Budget budget = null)
         {
-            var workspace = await _workspaceBuilders.GetOrAdd(
+            var build = await _workspaceBuilders.GetOrAdd(
                                 workspaceName,
                                 name =>
                                 {
                                     var directory = new DirectoryInfo(
                                         Path.Combine(
-                                            Workspace.DefaultWorkspacesDirectory.FullName, workspaceName));
+                                            WorkspaceBuild.DefaultWorkspacesDirectory.FullName, workspaceName));
 
                                     if (directory.Exists)
                                     {
@@ -48,11 +48,11 @@ namespace WorkspaceServer
                                     }
 
                                     throw new ArgumentException($"Workspace named \"{name}\" not found.");
-                                }).GetWorkspace(budget);
+                                }).GetWorkspaceBuild(budget);
 
-            await workspace.EnsureReady(budget);
+            await build.EnsureReady(budget);
 
-            return workspace;
+            return build;
         }
 
         public void Dispose()
@@ -63,7 +63,7 @@ namespace WorkspaceServer
             }
         }
 
-        public IEnumerable<WorkspaceInfo> GetRegisterWorkspaceInfos()
+        public IEnumerable<WorkspaceInfo> GetRegisteredWorkspaceInfos()
         {
             var workspaceInfos = _workspaceBuilders?.Values.Select(wb => wb.GetWorkpaceInfo()).Where(info => info != null).ToArray() ?? Array.Empty<WorkspaceInfo>();
 
@@ -74,14 +74,14 @@ namespace WorkspaceServer
         {
             var registry = new WorkspaceRegistry();
 
-            registry.AddWorkspace("console",
+            registry.Add("console",
                                   workspace =>
                                   {
                                       workspace.CreateUsingDotnet("console");
                                       workspace.AddPackageReference("Newtonsoft.Json");
                                   });
 
-            registry.AddWorkspace("nodatime.api",
+            registry.Add("nodatime.api",
                                   workspace =>
                                   {
                                       workspace.CreateUsingDotnet("console");
@@ -89,20 +89,20 @@ namespace WorkspaceServer
                                       workspace.AddPackageReference("NodaTime.Testing", "2.3.0");
                                   });
 
-            registry.AddWorkspace("aspnet.webapi",
+            registry.Add("aspnet.webapi",
                                   workspace =>
                                   {
                                       workspace.CreateUsingDotnet("webapi");
                                       workspace.RequiresPublish = true;
                                   });
 
-            registry.AddWorkspace("instrumented",
+            registry.Add("instrumented",
                                   workspace =>
                                   {
                                       workspace.CreateUsingDotnet("console");
                                   });
 
-            registry.AddWorkspace("xunit",
+            registry.Add("xunit",
                                   workspace =>
                                   {
                                       workspace.CreateUsingDotnet("xunit", "tests");

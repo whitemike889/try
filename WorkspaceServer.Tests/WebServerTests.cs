@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 using FluentAssertions;
+using MLS.Agent.Tools;
 using Pocket;
 using Recipes;
 using WorkspaceServer.WorkspaceFeatures;
 using Xunit;
 using Xunit.Abstractions;
-using Workspace = MLS.Agent.Tools.Workspace;
 
 namespace WorkspaceServer.Tests
 {
@@ -26,7 +26,7 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task Multiple_WebServer_instances_can_be_run_concurrently_in_the_same_folder()
         {
-            var workspace = Workspace.Copy(await Default.WebApiWorkspace);
+            var workspace = WorkspaceBuild.Copy(await Default.WebApiWorkspace);
 
             using (var webServer1 = new WebServer(workspace))
             using (var webServer2 = new WebServer(workspace))
@@ -42,7 +42,7 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task EnsureStarted_returns_the_web_server_base_uri()
         {
-            var workspace = Workspace.Copy(await Default.WebApiWorkspace);
+            var workspace = WorkspaceBuild.Copy(await Default.WebApiWorkspace);
 
             using (var webServer = new WebServer(workspace))
             {
@@ -57,7 +57,7 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task WebServer_lifecycle_events_can_be_viewed_via_StandardOutput()
         {
-            var workspace = Workspace.Copy(await Default.WebApiWorkspace);
+            var workspace = WorkspaceBuild.Copy(await Default.WebApiWorkspace);
             var log = new List<string>();
 
             using (var webServer = new WebServer(workspace))

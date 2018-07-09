@@ -3,7 +3,6 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using FluentAssertions;
-using MLS.Agent;
 using WorkspaceServer.Models;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Servers.Roslyn;
@@ -20,7 +19,7 @@ namespace WorkspaceServer.Tests
 
         protected override Workspace CreateWorkspaceWithMainContaining(string text)
         {
-            return new Workspace(
+            return Workspace.FromSource(
                 $@"using System; using System.Linq; using System.Collections.Generic; class Program {{ static void Main() {{ {text}
                     }}
                 }}
@@ -66,6 +65,25 @@ namespace WorkspaceServer.Tests
             {
                 Succeeded = false,
                 Output = new[] { "(2,19): error CS0103: The name \'banana\' does not exist in the current context" },
+                Exception = (string)null, // we already display the error in Output
+            }, config => config.ExcludingMissingMembers());
+        }
+
+        [Fact]
+        public async Task When_diagnostics_are_outside_of_viewport_then_they_are_omitted()
+        {
+            var workspace = new Workspace(
+                workspaceType: "console",
+                files: new[] { new Workspace.File("Program.cs", CodeSamples.SourceCodeProvider.ConsoleProgramSingleRegionExtraUsing) },
+                buffers: new[] { new Workspace.Buffer("Program.cs@alpha", @"var a = 10;" + Environment.NewLine + "Console.WriteLine(a);", 0) });
+            var server = await GetRunner();
+
+            var result = await server.Run(workspace);
+
+            result.Should().BeEquivalentTo(new
+            {
+                Succeeded = true,
+                Output = new[] { "10" },
                 Exception = (string)null, // we already display the error in Output
             }, config => config.ExcludingMissingMembers());
         }

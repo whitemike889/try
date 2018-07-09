@@ -19,7 +19,7 @@ namespace WorkspaceServer.Tests
         {
         }
 
-        protected override Workspace CreateWorkspaceWithMainContaining(string text) => new Workspace(text);
+        protected override Workspace CreateWorkspaceWithMainContaining(string text) => Workspace.FromSource(text, workspaceType: "script");
 
         protected override string GetWorkspaceType()
         {
@@ -30,16 +30,17 @@ namespace WorkspaceServer.Tests
             [CallerMemberName] string testName = null) =>
             Task.FromResult<ICodeRunner>(new ScriptingWorkspaceServer());
 
-
         protected override ILanguageService GetLanguageService([CallerMemberName] string testName = null) =>
             new ScriptingWorkspaceServer();
 
         [Fact]
         public async Task Response_shows_fragment_return_value()
         {
-            var workspace = new Workspace(@"
+            var workspace =
+                Workspace.FromSource(@"
 var person = new { Name = ""Jeff"", Age = 20 };
-$""{person.Name} is {person.Age} year(s) old""");
+$""{person.Name} is {person.Age} year(s) old""", "script");
+
             var server = await GetRunner();
 
             var result = await server.Run(workspace);
@@ -50,7 +51,7 @@ $""{person.Name} is {person.Age} year(s) old""");
             {
                 Succeeded = true,
                 Output = new string[] { },
-                Exception = (string)null,
+                Exception = (string) null,
                 ReturnValue = "Jeff is 20 year(s) old",
             }, config => config.ExcludingMissingMembers());
         }
@@ -58,8 +59,8 @@ $""{person.Name} is {person.Age} year(s) old""");
         [Fact]
         public async Task Response_indicates_when_compile_is_unsuccessful()
         {
-            var workspace = new Workspace(@"
-Console.WriteLine(banana);");
+            var workspace = Workspace.FromSource(@"
+Console.WriteLine(banana);", "script");
             var server = await GetRunner();
 
             var result = await server.Run(workspace);
@@ -75,9 +76,9 @@ Console.WriteLine(banana);");
         [Fact]
         public async Task Get_completion_for_console()
         {
-            var ws = new Workspace(workspaceType: "script", buffers: new[] { new Workspace.Buffer("program.cs", "Console.", 0) });
+            var ws = new Workspace(workspaceType: "script", buffers: new[] { new Workspace.Buffer("program.cs", "Console.", 8) });
 
-            var request = new WorkspaceRequest(ws, position: 8, activeBufferId: "program.cs");
+            var request = new WorkspaceRequest(ws, activeBufferId: "program.cs");
 
             var server = GetLanguageService();
 
@@ -89,9 +90,9 @@ Console.WriteLine(banana);");
         [Fact]
         public async Task Get_signature_help_for_console_writeline()
         {
-            var ws = new Workspace(workspaceType: "script", buffers: new[] { new Workspace.Buffer("program.cs", "Console.WriteLine()", 0) });
+            var ws = new Workspace(workspaceType: "script", buffers: new[] { new Workspace.Buffer("program.cs", "Console.WriteLine()", 18) });
 
-            var request = new WorkspaceRequest(ws, position: 18, activeBufferId: "program.cs");
+            var request = new WorkspaceRequest(ws, activeBufferId: "program.cs");
 
             var server = GetLanguageService();
 
@@ -104,7 +105,8 @@ Console.WriteLine(banana);");
         [Fact]
         public async Task Additional_using_statements_from_request_are_passed_to_scripting_when_running_snippet()
         {
-            var workspace = new Workspace(@"
+            var workspace = Workspace.FromSource(
+                @"
 using System;
 
 public static class Hello
@@ -115,7 +117,8 @@ public static class Hello
         Console.WriteLine(""Hello there!"");
     }
 }",
-                                          usings: new[] { "System.Threading" });
+                workspaceType: "script",
+                usings: new[] { "System.Threading" });
 
             var server = await GetRunner();
 
@@ -125,14 +128,14 @@ public static class Hello
             {
                 Succeeded = true,
                 Output = new[] { "Hello there!" },
-                Exception = (string)null,
+                Exception = (string) null,
             }, config => config.ExcludingMissingMembers());
         }
 
         [Fact]
         public async Task When_a_public_void_Main_with_non_string_parameters_is_present_it_is_not_invoked()
         {
-            var workspace = new Workspace(@"
+            var workspace = Workspace.FromSource(@"
 using System;
 
 public static class Hello
@@ -141,7 +144,7 @@ public static class Hello
     {
         Console.WriteLine(""Hello there!"");
     }
-}");
+}", workspaceType: "script");
             var server = await GetRunner();
 
             var result = await server.Run(workspace);
@@ -152,7 +155,7 @@ public static class Hello
         [Fact]
         public async Task CS7022_not_reported_for_main_in_global_script_code()
         {
-            var workspace = new Workspace(@"
+            var workspace = Workspace.FromSource(@"
 using System;
 
 public static class Hello
@@ -161,7 +164,7 @@ public static class Hello
     {
         Console.WriteLine(""Hello there!"");
     }
-}");
+}", workspaceType: "script");
             var server = await GetRunner();
 
             var result = await server.Run(workspace);

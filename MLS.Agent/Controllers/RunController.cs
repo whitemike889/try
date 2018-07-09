@@ -10,20 +10,29 @@ using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Servers.Roslyn;
 using WorkspaceServer.Servers.Scripting;
 using WorkspaceServer.WorkspaceFeatures;
-using static Pocket.Logger<MLS.Agent.Controllers.WorkspaceController>;
+using static Pocket.Logger<MLS.Agent.Controllers.RunController>;
 
 namespace MLS.Agent.Controllers
 {
-    public class WorkspaceController : RunController
+    public class RunController : Controller
     {
         private readonly AgentOptions _options;
+        private readonly RoslynWorkspaceServer _workspaceServer;
+        private readonly CompositeDisposable _disposables = new CompositeDisposable();
 
-        public WorkspaceController(WorkspaceRegistry workspaceRegistry,
+        public RunController(
+            WorkspaceRegistry workspaceRegistry,
             RoslynWorkspaceServer imws,
-            AgentOptions options) 
-            : base(imws)
+            AgentOptions options,
+            RoslynWorkspaceServer workspaceServer)
         {
             _options = options ?? throw new ArgumentNullException(nameof(options));
+            _workspaceServer = workspaceServer;
+        }
+
+        protected Task<ICodeRunner> GetWorkspaceServer(string workspaceType, Budget budget = null)
+        {
+            return Task.FromResult((ICodeRunner) _workspaceServer);
         }
 
         [HttpPost]
@@ -39,7 +48,7 @@ namespace MLS.Agent.Controllers
 
             if (Debugger.IsAttached && !(Clock.Current is VirtualClock))
             {
-                AddToDisposeChain(VirtualClock.Start());
+                _disposables.Add(VirtualClock.Start());
             }
 
             using (var operation = Log.OnEnterAndConfirmOnExit())
@@ -70,7 +79,7 @@ namespace MLS.Agent.Controllers
 
                     using (result = await server.Run(request.Workspace, budget))
                     {
-                        AddToDisposeChain(result);
+                        _disposables.Add(result);
 
                         if (result.Succeeded &&
                             request.HttpRequest != null)
@@ -80,7 +89,7 @@ namespace MLS.Agent.Controllers
                             if (webServer != null)
                             {
                                 var response = await webServer.SendAsync(
-                                    request.HttpRequest.ToHttpRequestMessage())
+                                                                  request.HttpRequest.ToHttpRequestMessage())
                                                               .CancelIfExceeds(budget);
 
                                 result = new RunResult(
@@ -91,12 +100,21 @@ namespace MLS.Agent.Controllers
                     }
                 }
 
-
                 budget?.RecordEntry();
                 operation.Succeed();
 
                 return Ok(result);
             }
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _disposables.Dispose();
+            }
+
+            base.Dispose(disposing);
         }
     }
 }

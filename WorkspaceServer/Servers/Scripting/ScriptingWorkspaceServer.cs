@@ -44,7 +44,7 @@ namespace WorkspaceServer.Servers.Scripting
             {
                 workspace = await _transformer.TransformAsync(workspace, budget);
 
-                if (workspace.Files.Count != 1)
+                if (workspace.Files.Length != 1)
                 {
                     throw new ArgumentException($"{nameof(workspace)} should have exactly one source file.");
                 }
@@ -161,12 +161,12 @@ namespace WorkspaceServer.Servers.Scripting
             budget = budget ?? new Budget();
             using (Log.OnExit())
             {
-                var (document, position) = await GenerateDocumentAndPosition(request, budget);
+                var (document, absolutePosition) = await GenerateDocumentAndPosition(request, budget);
                 var service = CompletionService.GetService(document);
 
-                var completionList = await service.GetCompletionsAsync(document, position);
+                var completionList = await service.GetCompletionsAsync(document, absolutePosition);
                 var semanticModel = await document.GetSemanticModelAsync();
-                var symbols = await Recommender.GetRecommendedSymbolsAtPositionAsync(semanticModel, request.Position, document.Project.Solution.Workspace);
+                var symbols = await Recommender.GetRecommendedSymbolsAtPositionAsync(semanticModel, absolutePosition, document.Project.Solution.Workspace);
 
                 var symbolToSymbolKey = new Dictionary<(string, int), ISymbol>();
                 foreach (var symbol in symbols)
@@ -200,16 +200,16 @@ namespace WorkspaceServer.Servers.Scripting
             var processor = new BufferInliningTransformer();
             var workspace = await processor.TransformAsync(request.Workspace, budget);
 
-            if (workspace.Files.Count != 1)
+            if (workspace.Files.Length != 1)
             {
                 throw new ArgumentException($"{nameof(request)} should have exactly one source file.");
             }
 
             var code = workspace.Files.Single().Text;
-            var position = workspace.Buffers.First(b => b.Id == request.ActiveBufferId).Position + request.Position;
+            var absolutePosition = workspace.Buffers.Single(b => b.Id == request.ActiveBufferId).AbsolutePosition;
 
             var document = _fixture.ForkDocument(code);
-            return (document, position);
+            return (document, absolutePosition);
         }
 
         private static async Task<ScriptState<object>> EmulateConsoleMainInvocation(

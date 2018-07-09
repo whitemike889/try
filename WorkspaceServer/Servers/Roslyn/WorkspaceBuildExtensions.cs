@@ -5,13 +5,12 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Host.Mef;
 using MLS.Agent.Tools;
-using Workspace = MLS.Agent.Tools.Workspace;
 
 namespace WorkspaceServer.Servers.Roslyn
 {
-    public static class WorkspaceExtensions
+    public static class WorkspaceBuildExtensions
     {
-        public static async Task<AdhocWorkspace> GetRoslynWorkspace(this Workspace build, ProjectId projectId = null)
+        public static async Task<AdhocWorkspace> GetRoslynWorkspace(this WorkspaceBuild build, ProjectId projectId = null)
         {
             await build.EnsureBuilt();
 
