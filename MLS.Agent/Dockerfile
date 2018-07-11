@@ -1,17 +1,17 @@
-FROM microsoft/aspnetcore-build:2.0
+FROM microsoft/dotnet:2.1.301-sdk-alpine
+
+# install command line tools
+RUN apk update
+RUN apk add xmlstarlet
+RUN apk add shadow
+RUN dotnet tool install t-rex --version 1.0.0-preview1-004 --add-source https://www.myget.org/F/wultest/api/v3/index.json --tool-path $DOTNET_TOOLS
+
+# configure environment
+ENV DOTNET_TOOLS=/dependencies/.dotnet/tools
+ENV NUGET_PACKAGES=/dependencies/.nuget/packages
+ENV TRYDOTNET_WORKSPACES_PATH=/workspaces
 
 ARG source
-
-# set up OmniSharp
-RUN mkdir -p /dependencies/omnisharp 
-COPY dependencies /dependencies/
-ENV TRYDOTNET_OMNISHARP_PATH=/dependencies/omnisharp/
-ENV NUGET_PACKAGES=/root/.nuget/packages/
-COPY packages /root/.nuget/packages/
-
-# set up workspaces directory
-ENV TRYDOTNET_WORKSPACES_PATH=/workspaces
-COPY workspaces /workspaces/
 
 # set up the working directory where the Agent ASP.NET app runs
 RUN mkdir -p /app
