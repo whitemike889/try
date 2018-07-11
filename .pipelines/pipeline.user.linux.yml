@@ -72,25 +72,19 @@ build:
   commands:
 
     - !!buildcommand
-
       name: '.build/cdpxrestore.sh'
-
-      command: './.build/cdpxrestore.sh'
+      command: '.build/cdpxrestore.sh'
       fail_on_stderr: false
 
     - !!buildcommand
-
       name: '.build/cdpxbuild.sh'
-
-      command: './.build/cdpxbuild.sh'
+      command: '.build/cdpxbuild.sh'
       fail_on_stderr: false
 
     - !!buildcommand                                                                                                                    
-      name: 'Build template'                                              
-                                                                        
+      name: 'Build template'                                                                        
       command: './.build/templatebuild.sh'                                  
-      fail_on_stderr: false                                                                                                   
-                                                                        
+      fail_on_stderr: false
                                                                         
       artifacts:                                         
         - from: './express/ServiceLayout'
