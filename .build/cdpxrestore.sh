@@ -6,6 +6,8 @@ REPO_ROOT=`dirname "$0"`; REPO_ROOT=`eval "cd \"$REPO_ROOT/..\" && pwd"`
 cd $REPO_ROOT
 source $REPO_ROOT/.build/conventions.sh
 
+export NUGET_PACKAGES
+
 # Add packages from APK
 apk update
 apk add xmlstarlet
@@ -16,8 +18,6 @@ dotnet tool install t-rex --version 1.0.0-preview1-004 --add-source https://www.
 
 # Restore the project
 dotnet restore $REPO_ROOT/MLS-LS.sln
-
-export NUGET_PACKAGES=$NUGET_PACKAGES
 
 # prepopulate workspaces
 

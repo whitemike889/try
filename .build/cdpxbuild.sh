@@ -9,5 +9,6 @@ source $REPO_ROOT/.build/conventions.sh
 # record commit hash
 echo $BUILD_SOURCEVERSION > $REPO_ROOT/build.artifact.commit.sha
 
-dotnet publish $REPO_ROOT/MLS-LS.sln -c Release -o $REPO_ROOT/obj/Docker/publish
+dotnet publish $REPO_ROOT/MLS.Agent/MLS.Agent.csproj -c Release -o $APP_ROOT
+
 cp $REPO_ROOT/MLS.Agent/Dockerfile $DOCKER_CONTEXT_ROOT/Dockerfile
