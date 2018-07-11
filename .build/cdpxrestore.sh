@@ -32,6 +32,7 @@ dotnet build /fl /p:ProvideCommandLineArgs=true
 ## NodaTime
 mkdir -p $WORKSPACES_ROOT/nodatime.api
 cd $WORKSPACES_ROOT/nodatime.api
+dotnet new console
 xmlstarlet ed --inplace --insert "/Project/PropertyGroup/OutputType" --type elem -n "LangVersion" --value "7.3" nodatime.api.csproj
 dotnet add package Newtonsoft.Json
 dotnet add package NodaTime -v 2.3.0
@@ -52,9 +53,8 @@ xmlstarlet ed --inplace --insert "/Project/PropertyGroup/OutputType" --type elem
 dotnet add package Newtonsoft.Json
 dotnet build /fl /p:ProvideCommandLineArgs=true
 
-mkdir -p $WORKSPACES_ROOT/instrumented
-cd $WORKSPACES_ROOT/instrumented
-/workspaces/xamarin.essentials.0.8.0-preview
+mkdir -p $WORKSPACES_ROOT/xamarin.essentials.0.8.0-preview
+cd $WORKSPACES_ROOT/xamarin.essentials.0.8.0-preview
 dotnet new console --name console --output .
 xmlstarlet ed --inplace --insert "/Project/PropertyGroup/OutputType" --type elem -n "LangVersion" --value "7.3" console.csproj
 dotnet add package Xamarin.Essentials --version 0.8.0-preview
