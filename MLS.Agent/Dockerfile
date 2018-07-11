@@ -1,15 +1,16 @@
 FROM microsoft/dotnet:2.1.301-sdk-alpine
 
+# configure environment
+ENV DOTNET_TOOLS=/dependencies/.dotnet/tools
+ENV NUGET_PACKAGES=/dependencies/.nuget/packages
+ENV TRYDOTNET_WORKSPACES_PATH=/workspaces
+
+
 # install command line tools
 RUN apk update
 RUN apk add xmlstarlet
 RUN apk add shadow
 RUN dotnet tool install t-rex --version 1.0.0-preview1-004 --add-source https://www.myget.org/F/wultest/api/v3/index.json --tool-path $DOTNET_TOOLS
-
-# configure environment
-ENV DOTNET_TOOLS=/dependencies/.dotnet/tools
-ENV NUGET_PACKAGES=/dependencies/.nuget/packages
-ENV TRYDOTNET_WORKSPACES_PATH=/workspaces
 
 ARG source
 
