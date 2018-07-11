@@ -11,5 +11,3 @@ echo $BUILD_SOURCEVERSION > $REPO_ROOT/build.artifact.commit.sha
 
 dotnet publish $REPO_ROOT/MLS-LS.sln -c Release -o $REPO_ROOT/obj/Docker/publish
 cp $REPO_ROOT/MLS.Agent/Dockerfile $DOCKER_CONTEXT_ROOT/Dockerfile
-
-export NUGET_PACKAGES=$DOCKER_CONTEXT_ROOT/packages
