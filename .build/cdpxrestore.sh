@@ -1,11 +1,18 @@
 #!/bin/bash
+
+echo "STAB"
+
 set -e
 set -x
+
+echo "STAB"
 
 # Get absolute path to source root
 REPO_ROOT=`dirname "$0"`; REPO_ROOT=`eval "cd \"$REPO_ROOT/..\" && pwd"`
 cd $REPO_ROOT
 source $REPO_ROOT/.build/conventions.sh
+
+echo "STAB"
 
 # Add packages from APK
 apk update
