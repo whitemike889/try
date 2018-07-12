@@ -133,7 +133,7 @@ namespace MLS.Agent.Tests
                 diagnostics.Should().Contain(d =>
                                                  d.Start == 56 &&
                                                  d.End == 56 &&
-                                                 d.Message == ") expected" &&
+                                                 d.Message == "(1,57): error CS1026: ) expected" &&
                                                  d.Id == "CS1026");
             }
         }

@@ -8,21 +8,21 @@
     {
       "start": 1,
       "end": 34,
-      "message": "Unnecessary using directive.",
+      "message": "ViewportCode.cs(2,1): hidden CS8019: Unnecessary using directive.",
       "severity": 0,
       "id": "CS8019"
     },
     {
       "start": 15,
       "end": 33,
-      "message": "Unnecessary using directive.",
+      "message": "EntrypointCode.cs(3,1): hidden CS8019: Unnecessary using directive.",
       "severity": 0,
       "id": "CS8019"
     },
     {
       "start": 35,
       "end": 48,
-      "message": "Unnecessary using directive.",
+      "message": "ViewportCode.cs(3,1): hidden CS8019: Unnecessary using directive.",
       "severity": 0,
       "id": "CS8019"
     }

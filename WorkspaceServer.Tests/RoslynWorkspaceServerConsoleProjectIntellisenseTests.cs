@@ -539,27 +539,5 @@ namespace FibonacciTest
         {
             return new RoslynWorkspaceServer(WorkspaceRegistry.CreateDefault());
         }
-
-        [Fact]
-        public async Task Get_diagnostics_produces_appropriate_diagnostics_for_display_to_user_2()
-        {
-            var request = Workspace.FromSource(@"
-using System;
-
-public static class Hello
-{
-    public static void Main()
-    {
-        Console.WriteLine(""Hello there!"")
-    }
-}", workspaceType: "console");
-
-            var server = GetLanguageService();
-
-            var result = await server.GetDiagnostics(request);
-
-            result.Diagnostics.Should().NotContain(d => d.Id == "CS7022"); // Not "ignoring main in script"
-            result.Diagnostics.Should().Contain(d => d.Id == "CS1002"); // Yes missing semicolon
-        }
     }
 }

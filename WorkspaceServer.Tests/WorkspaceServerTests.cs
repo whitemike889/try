@@ -318,28 +318,6 @@ public static class Hello
             diagnostics.Should().Contain(d => d.Severity == DiagnosticSeverity.Warning);
         }
 
-        [Fact]
-        public async Task Get_diagnostics_produces_appropriate_diagnostics_for_display_to_user()
-        {
-            var request = CreateWorkspaceWithMainContaining(@"
-using System;
-
-public static class Hello
-{
-    public static void Main()
-    {
-        Console.WriteLine(""Hello there!"")
-    }
-}");
-
-            var server = GetLanguageService();
-
-            var result = await server.GetDiagnostics(request);
-
-            result.Diagnostics.Should().NotContain(d => d.Id == "CS7022"); // Not "ignoring main in script"
-            result.Diagnostics.Should().Contain(d => d.Id == "CS1002"); // Yes missing semicolon
-        }
-
         protected abstract string GetWorkspaceType();
     }
 }
