@@ -18,7 +18,11 @@ namespace WorkspaceServer.Tests
         public void Dispose() => _disposables.Dispose();
 
         protected void RegisterForDisposal(IDisposable disposable) => _disposables.Add(disposable);
-        protected abstract Task<IWorkspaceServer> GetWorkspaceServer(
+
+        protected abstract Task<ICodeRunner> GetRunner(
+            [CallerMemberName] string testName = null);
+
+        protected abstract ILanguageService GetLanguageService(
             [CallerMemberName] string testName = null);
     }
 }

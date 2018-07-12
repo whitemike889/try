@@ -28,7 +28,8 @@ namespace WorkspaceServer.Transformations
                 workspaceType: source.WorkspaceType, 
                 files: results.files,
                 buffers: results.buffers,
-                usings: source.Usings);
+                usings: source.Usings,
+                includeInstrumentation: source.IncludeInstrumentation);
         }
 
         public Dictionary<string, Viewport> ExtractViewPorts(Workspace ws)
@@ -56,27 +57,28 @@ namespace WorkspaceServer.Transformations
                             viewPort.Region,
                             $"{Padding}{sourceBuffer.Content}{Padding}");
 
-
                         var txt = tree.WithChangedText(tree.GetText().WithChanges(textChange));
 
                         var offset = viewPort.Region.Start + PaddingSize;
 
                         var newCode = (await txt.GetTextAsync()).ToString();
 
-                        buffers.Add(new Workspace.Buffer(sourceBuffer.Id, sourceBuffer.Content, offset));
+                        buffers.Add(new Workspace.Buffer(
+                                        sourceBuffer.Id, 
+                                        sourceBuffer.Content, 
+                                        sourceBuffer.Position, 
+                                        offset));
                         files[viewPort.Destination.Name] = SourceFile.Create(newCode, viewPort.Destination.Name);
                     }
-
-                }
-                else if (sourceBuffer.Id == string.Empty)
-                {
-                    files["Program.cs"] = SourceFile.Create(sourceBuffer.Content, "Program.cs");
-                    buffers.Add(new Workspace.Buffer(sourceBuffer.Id, sourceBuffer.Content, 0));
+                    else
+                    {
+                        throw new ArgumentException($"Could not find specified viewport {sourceBuffer.Id}");
+                    }
                 }
                 else
                 {
                     files[sourceBuffer.Id] = SourceFile.Create(sourceBuffer.Content, sourceBuffer.Id);
-                    buffers.Add(new Workspace.Buffer(sourceBuffer.Id, sourceBuffer.Content, 0));
+                    buffers.Add(sourceBuffer);
                 }
             }
 
@@ -85,7 +87,6 @@ namespace WorkspaceServer.Transformations
             timeBudget?.RecordEntry(ProcessorName);
             return (processedFiles, processedBuffers);
         }
-
 
         private static Dictionary<string, Viewport> ExtractViewPorts(
             IReadOnlyCollection<SourceFile> files)

@@ -17,7 +17,7 @@ namespace WorkspaceServer.Tests
 
             var result = new RunResult(true);
 
-            result.AddFeature(Disposable.Create(() => wasDisposed = true));
+            result.AddFeature(new DisposableFeature(  Disposable.Create(() => wasDisposed = true)));
 
             result.Dispose();
 
@@ -93,7 +93,7 @@ namespace WorkspaceServer.Tests
             public int IntProperty { get; }
         }
 
-        private class TestFeature<T> : IAddRunResultProperties
+        private class TestFeature<T> : IRunResultFeature
         {
             private readonly string name;
             private readonly T value;
@@ -104,7 +104,26 @@ namespace WorkspaceServer.Tests
                 this.value = value;
             }
 
-            public void Augment(RunResult runResult, AddRunResultProperty add) => add(name, value);
+            public void Apply(RunResult result) => result.AddProperty(name, value);
+        }
+
+        public class DisposableFeature : IRunResultFeature, IDisposable
+        {
+            private readonly IDisposable disposable;
+
+            public DisposableFeature(IDisposable disposable)
+            {
+                this.disposable = disposable;
+            }
+
+            public void Dispose()
+            {
+                disposable?.Dispose();
+            }
+
+            public void Apply(RunResult result)
+            {
+            }
         }
     }
 }

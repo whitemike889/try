@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Concurrent;
 using System.Linq;
 using FluentAssertions;
 using System.Net;
@@ -7,7 +6,6 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Clockwise;
-using MLS.TestSupport;
 using Newtonsoft.Json;
 using Pocket;
 using Recipes;
@@ -16,6 +14,7 @@ using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Models.SingatureHelp;
 using WorkspaceServer.Tests;
+using WorkspaceServer.WorkspaceFeatures;
 using Xunit;
 using Xunit.Abstractions;
 using static Pocket.Logger<MLS.Agent.Tests.ApiViaHttpTests>;
@@ -23,67 +22,21 @@ using Workspace = WorkspaceServer.Models.Execution.Workspace;
 
 namespace MLS.Agent.Tests
 {
-    public class ApiViaHttpTests : IDisposable
+    public class ApiViaHttpTests : ApiViaHttpTestsBase
     {
-        private readonly CompositeDisposable _disposables = new CompositeDisposable();
-
-        public ApiViaHttpTests(ITestOutputHelper output)
+        public ApiViaHttpTests(ITestOutputHelper output) : base(output)
         {
-            _disposables.Add(output.SubscribeToPocketLogger());
-            _disposables.Add(VirtualClock.Start());
-        }
-
-        public void Dispose() => _disposables.Dispose();
-
-        [Fact]
-        public async Task The_workspace_snippet_endpoint_compiles_code_using_scripting_when_a_workspace_type_is_not_specified()
-        {
-            var output = Guid.NewGuid().ToString();
-            var code = JsonConvert.SerializeObject(new
-            {
-                Buffer = CodeManipulation.EnforceLF($@"Console.WriteLine(""{output}"");")
-            });
-
-            var response = await CallRun(code);
-
-            var result = await response
-                               .EnsureSuccess()
-                               .DeserializeAs<RunResult>();
-
-            VerifySucceeded(result);
-
-            result.ShouldSucceedWithOutput(output);
-        }
-
-        [Fact]
-        public async Task The_workspace_snippet_endpoint_compiles_code_using_scripting_when_source_is_specified()
-        {
-            var output = Guid.NewGuid().ToString();
-            var code = JsonConvert.SerializeObject(new
-            {
-                Source = CodeManipulation.EnforceLF($@"Console.WriteLine(""{output}"");")
-            });
-
-            var response = await CallRun(code);
-
-            var result = await response
-                .EnsureSuccess()
-                .DeserializeAs<RunResult>();
-
-            VerifySucceeded(result);
-
-            result.ShouldSucceedWithOutput(output);
         }
 
         [Fact]
         public async Task The_workspace_snippet_endpoint_compiles_code_using_scripting_when_a_workspace_type_is_specified_as_script()
         {
             var output = Guid.NewGuid().ToString();
-            var requestJson = JsonConvert.SerializeObject(new
-            {
-                Buffer = CodeManipulation.EnforceLF($@"Console.WriteLine(""{output}"");"),
-                WorkspaceType = "script"
-            });
+
+            var requestJson = Workspace.FromSource(
+                source: $@"Console.WriteLine(""{output}"");".EnforceLF(),
+                workspaceType: "script"
+            ).ToJson();
 
             var response = await CallRun(requestJson);
 
@@ -119,7 +72,7 @@ namespace MLS.Agent.Tests
             var output = Guid.NewGuid().ToString();
             var requestJson = Create.SimpleWorkspaceAsJson(output, "console");
 
-            var response = await CallRun(requestJson, options: new CommandLineOptions(true, false,string.Empty,false,true,string.Empty, Array.Empty<string>()));
+            var response = await CallRun(requestJson, options: new CommandLineOptions(true, false,string.Empty,false,true,string.Empty));
 
             var result = response;
                 result.Should().BeNotFound();
@@ -128,22 +81,22 @@ namespace MLS.Agent.Tests
         [Fact]
         public async Task When_a_non_script_workspace_type_is_specified_then_code_fragments_cannot_be_compiled_successfully()
         {
-            var requestJson = JsonConvert.SerializeObject(new
-            {
-                Buffer = CodeManipulation.EnforceLF(@"Console.WriteLine(""hello!"");"),
-                WorkspaceType = "console"
-            });
+            var requestJson = Workspace.FromSource(
+                @"Console.WriteLine(""hello!"");",
+                id: "Program.cs",
+                workspaceType: "console"
+            ).ToJson();
 
             var response = await CallRun(requestJson);
 
             var result = await response
-                                .EnsureSuccess()
-                                .DeserializeAs<RunResult>();
+                               .EnsureSuccess()
+                               .DeserializeAs<RunResult>();
 
             result.ShouldFailWithOutput(
-                "(1,19): error CS1022: Type or namespace definition, or end-of-file expected",
-                "(1,19): error CS1026: ) expected",
-                "(1,1): error CS5001: Program does not contain a static 'Main' method suitable for an entry point"
+                "Program.cs(1,19): error CS1022: Type or namespace definition, or end-of-file expected",
+                "Program.cs(1,19): error CS1026: ) expected",
+                "error CS5001: Program does not contain a static 'Main' method suitable for an entry point"
             );
         }
 
@@ -154,15 +107,17 @@ namespace MLS.Agent.Tests
 
             using (var agent = new AgentService())
             {
+                var json = Workspace.FromSource(
+                                        $@"Console.WriteLine(""{output}""".EnforceLF(),
+                                        workspaceType: "script")
+                                    .ToJson();
+
                 var request = new HttpRequestMessage(
                     HttpMethod.Post,
                     @"/workspace/run")
                 {
                     Content = new StringContent(
-                        JsonConvert.SerializeObject(new
-                        {
-                            Buffer = CodeManipulation.EnforceLF($@"Console.WriteLine(""{output}""")
-                        }),
+                        json,
                         Encoding.UTF8,
                         "application/json")
                 };
@@ -170,14 +125,16 @@ namespace MLS.Agent.Tests
                 var response = await agent.SendAsync(request);
 
                 var result = await response
-                                    .EnsureSuccess()
-                                    .DeserializeAs<RunResult>();
+                                   .EnsureSuccess()
+                                   .DeserializeAs<RunResult>();
 
-                result.Diagnostics.Should().Contain(d =>
-                                                        d.Start == 56 &&
-                                                        d.End == 56 &&
-                                                        d.Message == ") expected" &&
-                                                        d.Id == "CS1026");
+                var diagnostics = result.GetFeature<Diagnostics>();
+
+                diagnostics.Should().Contain(d =>
+                                                 d.Start == 56 &&
+                                                 d.End == 56 &&
+                                                 d.Message == ") expected" &&
+                                                 d.Id == "CS1026");
             }
         }
 
@@ -206,23 +163,21 @@ namespace MLS.Agent.Tests
             var (processed, position) = CodeManipulation.ProcessMarkup("Console.$$");
             using (var agent = new AgentService())
             {
+                var json = new WorkspaceRequest(
+                        activeBufferId: "default.cs",
+                        workspace: Workspace.FromSource(
+                            processed,
+                            "script",
+                            id: "default.cs",
+                            position: position))
+                    .ToJson();
+
                 var request = new HttpRequestMessage(
                     HttpMethod.Post,
                     @"/workspace/completion")
                 {
                     Content = new StringContent(
-                        JsonConvert.SerializeObject(new
-                        {
-                            workspace = new
-                            {
-                                workspaceType = "script", buffers = new[]
-                                {
-                                    new { content = processed, id = "default.cs" }
-                                }
-                            },
-                            position = position,
-                            activeBufferId = "default.cs"
-                        }),
+                        json,
                         Encoding.UTF8,
                         "application/json")
                 };
@@ -245,20 +200,19 @@ namespace MLS.Agent.Tests
             using (LogEvents.Subscribe(log.Add))
             using (var agent = new AgentService())
             {
+                var json = new WorkspaceRequest(
+                        activeBufferId: "default.cs",
+                        workspace: Workspace.FromSource(
+                            processed,
+                            "script",
+                            id: "default.cs",
+                            position: position))
+                    .ToJson();
+
                 var request = new HttpRequestMessage(HttpMethod.Post, @"/workspace/signaturehelp")
                 {
                     Content = new StringContent(
-                        JsonConvert.SerializeObject(new
-                        {
-                            workspace = new
-                            {
-                                workspaceType = "script",
-                                buffers = new[] { new { content = processed,
-                                    id = "default.cs" } }
-                            },
-                            position = position,
-                            activeBufferId = "default.cs"
-                        }),
+                        json,
                         Encoding.UTF8,
                         "application/json")
                 };
@@ -266,14 +220,14 @@ namespace MLS.Agent.Tests
                 var response = await agent.SendAsync(request);
 
                 var result = await response
-                    .EnsureSuccess()
-                    .DeserializeAs<SignatureHelpResponse>();
+                                   .EnsureSuccess()
+                                   .DeserializeAs<SignatureHelpResponse>();
                 result.Signatures.Should().NotBeNullOrEmpty();
                 result.Signatures.Should().Contain(signature => signature.Label == "void Console.WriteLine(string format, params object[] arg)");
             }
 
             log.Should()
-                .Contain(e => e.OperationName == "SignatureHelp");
+               .Contain(e => e.OperationName == "SignatureHelp");
         }
 
         [Fact]
@@ -281,7 +235,7 @@ namespace MLS.Agent.Tests
         {
             #region bufferSources
 
-            const string program = @"using System;
+            var program = @"using System;
 using System.Linq;
 
 namespace FibonacciTest
@@ -296,8 +250,8 @@ namespace FibonacciTest
             }
         }       
     }
-}";
-            const string generator = @"using System.Collections.Generic;
+}".EnforceLF();
+            var generator = @"using System.Collections.Generic;
 using System;
 namespace FibonacciTest
 {
@@ -314,7 +268,7 @@ namespace FibonacciTest
             }
         }
     }
-}";
+}".EnforceLF();
             #endregion
 
             var (processed, position) = CodeManipulation.ProcessMarkup(generator);
@@ -322,25 +276,20 @@ namespace FibonacciTest
             using (LogEvents.Subscribe(log.Add))
             using (var agent = new AgentService())
             {
+                var json =
+                    new WorkspaceRequest(activeBufferId: "generators/FibonacciGenerator.cs",
+                                         workspace: Workspace.FromSources(
+                                             "console",
+                                             ("Program.cs", program, 0),
+                                             ("generators/FibonacciGenerator.cs", processed, position)
+                                         )).ToJson();
+
                 var request = new HttpRequestMessage(
                     HttpMethod.Post,
                     @"/workspace/signaturehelp")
                 {
                     Content = new StringContent(
-                        JsonConvert.SerializeObject(new
-                        {
-                            workspace = new
-                            {
-                                workspaceType = "console",
-                                buffers = new[]
-                            {
-                                new { content = CodeManipulation.EnforceLF(program), id = "Program.cs" },
-                                new { content = processed, id = "generators/FibonacciGenerator.cs" }
-                            }
-                            },
-                            position = position,
-                            activeBufferId = "generators/FibonacciGenerator.cs"
-                        }),
+                        json,
                         Encoding.UTF8,
                         "application/json")
                 };
@@ -348,13 +297,14 @@ namespace FibonacciTest
                 var response = await agent.SendAsync(request);
 
                 var result = await response
-                    .EnsureSuccess()
-                    .DeserializeAs<SignatureHelpResponse>();
+                                   .EnsureSuccess()
+                                   .DeserializeAs<SignatureHelpResponse>();
                 result.Signatures.Should().NotBeNullOrEmpty();
                 result.Signatures.Should().Contain(signature => signature.Label == "void Console.WriteLine(string format, params object[] arg)");
             }
+
             log.Should()
-                .Contain(e => e.OperationName == "SignatureHelp");
+               .Contain(e => e.OperationName == "SignatureHelp");
         }
 
         [Fact]
@@ -362,7 +312,7 @@ namespace FibonacciTest
         {
             #region bufferSources
 
-            const string program = @"using System;
+            var program = @"using System;
 using System.Linq;
 
 namespace FibonacciTest
@@ -377,8 +327,9 @@ namespace FibonacciTest
             }
         }       
     }
-}";
-            const string generator = @"using System.Collections.Generic;
+}".EnforceLF();
+
+            var generator = @"using System.Collections.Generic;
 using System;
 namespace FibonacciTest
 {
@@ -395,7 +346,7 @@ namespace FibonacciTest
             }
         }
     }
-}";
+}".EnforceLF();
 
             #endregion
 
@@ -404,25 +355,20 @@ namespace FibonacciTest
             using (LogEvents.Subscribe(log.Add))
             using (var agent = new AgentService())
             {
+                var json =
+                    new WorkspaceRequest(activeBufferId: "generators/FibonacciGenerator.cs",
+                                         workspace: Workspace.FromSources(
+                                             "console",
+                                             ("Program.cs", program, 0),
+                                             ("generators/FibonacciGenerator.cs", processed, position)
+                                         )).ToJson();
+
                 var request = new HttpRequestMessage(
                     HttpMethod.Post,
                     @"/workspace/completion")
                 {
                     Content = new StringContent(
-                        JsonConvert.SerializeObject(new
-                        {
-                            workspace = new
-                            {
-                                workspaceType = "console",
-                                buffers = new[]
-                            {
-                                new { content = CodeManipulation.EnforceLF(program), id = "Program.cs" },
-                                new { content = processed, id = "generators/FibonacciGenerator.cs" }
-                            }
-                            },
-                            position = position,
-                            activeBufferId = "generators/FibonacciGenerator.cs"
-                        }),
+                        json,
                         Encoding.UTF8,
                         "application/json")
                 };
@@ -444,7 +390,7 @@ namespace FibonacciTest
         {
             #region bufferSources
 
-            const string program = @"using System;
+            var program = @"using System;
 using System.Linq;
 
 namespace FibonacciTest
@@ -459,8 +405,8 @@ namespace FibonacciTest
             }
         }       
     }
-}";
-            const string generator = @"using System.Collections.Generic;
+}".EnforceLF();
+            var generator = @"using System.Collections.Generic;
 using System;
 namespace FibonacciTest
 {
@@ -477,7 +423,8 @@ namespace FibonacciTest
             }
         }
     }
-}";
+}".EnforceLF();
+
             #endregion
 
             var (processed, position) = CodeManipulation.ProcessMarkup(generator);
@@ -485,25 +432,20 @@ namespace FibonacciTest
             using (LogEvents.Subscribe(log.Add))
             using (var agent = new AgentService())
             {
+                var json =
+                    new WorkspaceRequest(activeBufferId: "generators/FibonacciGenerator.cs",
+                                         workspace: Workspace.FromSources(
+                                             "console",
+                                             ("Program.cs", program, 0),
+                                             ("generators/FibonacciGenerator.cs", processed, position)
+                                         )).ToJson();
+
                 var request = new HttpRequestMessage(
                     HttpMethod.Post,
                     @"/workspace/completion")
                 {
                     Content = new StringContent(
-                        JsonConvert.SerializeObject(new
-                        {
-                            workspace = new
-                            {
-                                workspaceType = "console",
-                                buffers = new[]
-                            {
-                                new { content = CodeManipulation.EnforceLF(program), id = "Program.cs" },
-                                new { content = processed, id = "generators/FibonacciGenerator.cs" }
-                            }
-                            },
-                            position = position,
-                            activeBufferId = "generators/FibonacciGenerator.cs"
-                        }),
+                        json,
                         Encoding.UTF8,
                         "application/json")
                 };
@@ -511,20 +453,24 @@ namespace FibonacciTest
                 var response = await agent.SendAsync(request);
 
                 var result = await response
-                    .EnsureSuccess()
-                    .DeserializeAs<CompletionResult>();
+                                   .EnsureSuccess()
+                                   .DeserializeAs<CompletionResult>();
                 result.Items.Should().NotBeNullOrEmpty();
                 result.Items.Should().Contain(completion => completion.SortText == "Beep");
             }
+
             log.Should()
-                .Contain(e => e.OperationName == "Completion");
+               .Contain(e => e.OperationName == "Completion");
         }
 
-        [Fact]
-        public async Task When_invoked_with_workspace_it_executes_correctly()
+        [Theory]
+        [InlineData("script")]
+        [InlineData("console")]
+        public async Task When_invoked_with_workspace_it_executes_correctly(string workspaceType)
         {
             var output = "1";
-            var requestJson = @"{ ""Buffers"":[{""Id"":"""",""Content"":""using System;\nusing System.Linq;\n\npublic class Program\n{\n  public static void Main()\n  {\n    foreach (var i in Fibonacci().Take(1))\n    {\n      Console.WriteLine(i);\n    }\n  }\n\n  private static IEnumerable<int> Fibonacci()\n  {\n    int current = 1, next = 1;\n\n    while (true) \n    {\n      yield return current;\n      next = current + (current = next);\n    }\n  }\n}\n"",""Position"":0}],""Usings"":[],""WorkspaceType"":""script"",""Files"":[]}";
+            var requestJson =
+                $@"{{ ""Buffers"":[{{""Id"":"""",""Content"":""using System;\nusing System.Linq;\nusing System.Collections.Generic;\n\npublic class Program\n{{\n  public static void Main()\n  {{\n    foreach (var i in Fibonacci().Take(1))\n    {{\n      Console.WriteLine(i);\n    }}\n  }}\n\n  private static IEnumerable<int> Fibonacci()\n  {{\n    int current = 1, next = 1;\n\n    while (true) \n    {{\n      yield return current;\n      next = current + (current = next);\n    }}\n  }}\n}}\n"",""Position"":0}}],""Usings"":[],""WorkspaceType"":""{workspaceType}"",""Files"":[]}}";
 
             var response = await CallRun(requestJson);
 
@@ -541,7 +487,7 @@ namespace FibonacciTest
         public async Task When_invoked_with_script_workspace_request_it_executes_correctly()
         {
             var output = "1";
-            var sourceCode = CodeManipulation.EnforceLF( @"using System;
+            var sourceCode = @"using System;
 using System.Linq;
 
 public class Program {
@@ -558,10 +504,10 @@ public class Program {
             next = current + (current = next);
         }
     }
-}");
+}".EnforceLF();
             var request = new WorkspaceRequest(new Workspace(workspaceType: "script", buffers: new[] { new Workspace.Buffer(string.Empty, sourceCode, 0) }));
 
-            var response = await CallRun(request);
+            var response = await CallRun(request.ToJson(), null);
 
             var result = await response
                 .EnsureSuccess()
@@ -575,12 +521,14 @@ public class Program {
         [Fact]
         public async Task When_aspnet_webapi_workspace_request_succeeds_then_output_shows_web_response()
         {
-            var workspaceType = Tools.Workspace.Copy(await Default.WebApiWorkspace);
-            var workspace = Workspace.FromDirectory(workspaceType.Directory, workspaceType.Directory.Name);
+            var workspaceType = Tools.WorkspaceBuild.Copy(await Default.WebApiWorkspace);
+            var workspace = Workspace.FromDirectory(
+                workspaceType.Directory, 
+                workspaceType.Directory.Name);
 
             var request = new WorkspaceRequest(workspace, new HttpRequest("/api/values", "get"));
 
-            var response = await CallRun(request);
+            var response = await CallRun(request.ToJson());
 
             var result = await response
                                .EnsureSuccess()
@@ -606,12 +554,12 @@ public class Program {
         [Fact(Skip = "WIP")]
         public async Task When_aspnet_webapi_workspace_request_succeeds_then_standard_out_is_available_on_response()
         {
-            var workspaceType = Tools.Workspace.Copy(await Default.WebApiWorkspace);
+            var workspaceType = Tools.WorkspaceBuild.Copy(await Default.WebApiWorkspace);
             var workspace = Workspace.FromDirectory(workspaceType.Directory, workspaceType.Directory.Name);
 
             var request = new WorkspaceRequest(workspace, new HttpRequest("/api/values", "get"));
 
-            var response = await CallRun(request, 30000);
+            var response = await CallRun(request.ToJson(), 30000);
 
             var result = await response
                                .EnsureSuccess()
@@ -626,7 +574,7 @@ public class Program {
         [Fact]
         public async Task When_aspnet_webapi_workspace_request_fails_then_diagnostics_are_returned()
         {
-            var workspaceType = Tools.Workspace.Copy(await Default.WebApiWorkspace);
+            var workspaceType = Tools.WorkspaceBuild.Copy(await Default.WebApiWorkspace);
             var workspace = Workspace.FromDirectory(workspaceType.Directory, workspaceType.Directory.Name);
             var nonCompilingBuffer = new Workspace.Buffer("broken.cs", "this does not compile", 0);
             workspace = new Workspace(
@@ -636,16 +584,31 @@ public class Program {
 
             var request = new WorkspaceRequest(workspace, new HttpRequest("/api/values", "get"));
 
-            var response = await CallRun(request);
+            var response = await CallRun(request.ToJson(), null);
 
             var result = await response
                                .EnsureSuccess()
                                .DeserializeAs<RunResult>();
 
-            result.ShouldFailWithOutput("(1,1): error CS1031: Type expected");
+            result.ShouldFailWithOutput("broken.cs(1,1): error CS1031: Type expected");
         }
 
         [Fact]
+        public async Task Console_workspace_signature_help()
+        {
+            var workspaceJson =
+                @"{""workspace"":{""workspaceType"":""console"",""files"":[],""buffers"":[{""id"":""Program.cs"",""content"":""using System;\nusing System.Collections.Generic;\nusing System.Linq;\n\npublic class Program\n{\n  public static void Main()\n  {\n    foreach (var i in Fibonacci().Take(20))\n    {\n      Console.WriteLine()\n    }\n  }\n\n  private static IEnumerable<int> Fibonacci()\n  {\n    int current = 1, next = 1;\n\n    while (true) \n    {\n      yield return current;\n      next = current + (current = next);\n    }\n  }\n}\n"",""position"":197}],""usings"":[]},""activeBufferId"":""Program.cs""}";
+            
+            var response = await CallSignatureHelp(workspaceJson);
+
+            var result = await response
+                               .EnsureSuccess()
+                               .DeserializeAs<SignatureHelpResponse>();
+
+            result. Signatures.Should().Contain(s => s.Label == "void Console.WriteLine()");
+        }
+
+        [Fact(Skip = "flaky, needs investigation")]
         public async Task When_Run_times_out_in_workspace_server_code_then_the_response_code_is_504()
         {
             Clock.Reset();
@@ -658,7 +621,7 @@ public class Program {
             response.StatusCode.Should().Be(HttpStatusCode.GatewayTimeout);
         }
 
-        [Fact]
+        [Fact(Skip = "flaky, needs investigation")]
         public async Task When_Run_times_out_in_user_code_in_a_console_workspace_type_then_the_response_code_is_417()
         {
             // TODO-JOSEQU: (When_Run_times_out_in_user_code_then_the_response_code_is_417) make this test faster
@@ -686,42 +649,6 @@ public class Program {
             var response = await CallRun(requestJson, 15000);
 
             response.StatusCode.Should().Be(HttpStatusCode.ExpectationFailed);
-        }
-
-        private static async Task<HttpResponseMessage> CallRun(
-            string content,
-            int? runTimeoutMs = null, 
-            CommandLineOptions options = null)
-        {
-            HttpResponseMessage response;
-            using (var agent = new AgentService(options))
-            {
-                var request = new HttpRequestMessage(
-                    HttpMethod.Post,
-                    @"/workspace/run")
-                {
-                    Content = new StringContent(
-                        content,
-                        Encoding.UTF8,
-                        "application/json")
-                };
-
-                if (runTimeoutMs != null)
-                {
-                    request.Headers.Add("Timeout", runTimeoutMs.Value.ToString("F0"));
-                }
-
-                response = await agent.SendAsync(request);
-            }
-
-            return response;
-        }
-
-        private static Task<HttpResponseMessage> CallRun(
-            WorkspaceRequest request,
-            int? runTimeoutMs = null)
-        {
-            return CallRun(request.ToJson(), runTimeoutMs);
         }
 
         private class FailedRunResult : Exception

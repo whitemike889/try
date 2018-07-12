@@ -1,0 +1,190 @@
+{
+  "succeeded": true,
+  "output": [],
+  "exception": null,
+  "diagnostics": [
+    {
+      "start": 1,
+      "end": 14,
+      "message": "Unnecessary using directive.",
+      "severity": 0,
+      "id": "CS8019"
+    },
+    {
+      "start": 15,
+      "end": 33,
+      "message": "Unnecessary using directive.",
+      "severity": 0,
+      "id": "CS8019"
+    }
+  ],
+  "instrumentation": [
+    {
+      "stackTrace": "Program Started",
+      "output": {
+        "start": 0,
+        "end": 0
+      }
+    },
+    {
+      "filePosition": {
+        "line": 10,
+        "character": 12,
+        "file": "EntrypointCode.cs"
+      },
+      "stackTrace": "    at Example.Program.Main()\n ",
+      "locals": [],
+      "parameters": [],
+      "fields": [],
+      "output": {
+        "start": 0,
+        "end": 0
+      }
+    },
+    {
+      "filePosition": {
+        "line": 10,
+        "character": 23,
+        "file": "EntrypointCode.cs"
+      },
+      "stackTrace": "    at Example.Program.Main()\n ",
+      "locals": [
+        {
+          "name": "a",
+          "value": "1",
+          "declaredAt": {
+            "start": 146,
+            "end": 147
+          }
+        }
+      ],
+      "parameters": [],
+      "fields": [],
+      "output": {
+        "start": 0,
+        "end": 0
+      }
+    },
+    {
+      "filePosition": {
+        "line": 10,
+        "character": 34,
+        "file": "EntrypointCode.cs"
+      },
+      "stackTrace": "    at Example.Program.Main()\n ",
+      "locals": [
+        {
+          "name": "b",
+          "value": "2",
+          "declaredAt": {
+            "start": 157,
+            "end": 158
+          }
+        },
+        {
+          "name": "a",
+          "value": "1",
+          "declaredAt": {
+            "start": 146,
+            "end": 147
+          }
+        }
+      ],
+      "parameters": [],
+      "fields": [],
+      "output": {
+        "start": 0,
+        "end": 0
+      }
+    },
+    {
+      "filePosition": {
+        "line": 10,
+        "character": 41,
+        "file": "EntrypointCode.cs"
+      },
+      "stackTrace": "    at Example.Program.Main()\n ",
+      "locals": [
+        {
+          "name": "b",
+          "value": "2",
+          "declaredAt": {
+            "start": 157,
+            "end": 158
+          }
+        },
+        {
+          "name": "a",
+          "value": "3",
+          "declaredAt": {
+            "start": 146,
+            "end": 147
+          }
+        }
+      ],
+      "parameters": [],
+      "fields": [],
+      "output": {
+        "start": 0,
+        "end": 0
+      }
+    },
+    {
+      "stackTrace": "Program Terminated",
+      "output": {
+        "start": 0,
+        "end": 0
+      }
+    }
+  ],
+  "variableLocations": [
+    {
+      "name": "b",
+      "locations": [
+        {
+          "startLine": 10,
+          "startColumn": 41,
+          "endLine": 10,
+          "endColumn": 42
+        },
+        {
+          "startLine": 10,
+          "startColumn": 27,
+          "endLine": 10,
+          "endColumn": 32
+        }
+      ],
+      "declaredAt": {
+        "start": 157,
+        "end": 162
+      }
+    },
+    {
+      "name": "a",
+      "locations": [
+        {
+          "startLine": 10,
+          "startColumn": 34,
+          "endLine": 10,
+          "endColumn": 35
+        },
+        {
+          "startLine": 10,
+          "startColumn": 45,
+          "endLine": 10,
+          "endColumn": 46
+        },
+        {
+          "startLine": 10,
+          "startColumn": 16,
+          "endLine": 10,
+          "endColumn": 21
+        }
+      ],
+      "declaredAt": {
+        "start": 146,
+        "end": 151
+      }
+    }
+  ]
+}

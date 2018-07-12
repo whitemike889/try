@@ -1,13 +1,14 @@
 using System;
-using System.Diagnostics;
 using System.Threading.Tasks;
+using Clockwise;
 using FluentAssertions;
+using MLS.Agent.Tools;
 using Pocket;
 using WorkspaceServer.Models;
 using WorkspaceServer.Models.Execution;
+using WorkspaceServer.Servers.Roslyn;
 using Xunit;
 using Xunit.Abstractions;
-using Workspace = MLS.Agent.Tools.Workspace;
 
 namespace WorkspaceServer.Tests
 {
@@ -18,6 +19,7 @@ namespace WorkspaceServer.Tests
         public WorkspaceServerRegistryTests(ITestOutputHelper output)
         {
             disposables.Add(output.SubscribeToPocketLogger());
+            disposables.Add(VirtualClock.Start());
         }
 
         public void Dispose() => disposables.Dispose();
@@ -25,14 +27,14 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task Workspaces_can_be_registered_to_be_created_using_dotnet_new()
         {
-            using (var registry = new WorkspaceServerRegistry())
+            using (var registry = new WorkspaceRegistry())
             {
-                var workspaceId = Workspace.CreateDirectory(nameof(Workspaces_can_be_registered_to_be_created_using_dotnet_new)).Name;
+                var workspaceId = WorkspaceBuild.CreateDirectory(nameof(Workspaces_can_be_registered_to_be_created_using_dotnet_new)).Name;
 
-                registry.AddWorkspace(workspaceId,
+                registry.Add(workspaceId,
                                       options => options.CreateUsingDotnet("console"));
 
-                var workspace = await registry.GetWorkspace(workspaceId);
+                var workspace = await registry.Get(workspaceId);
 
                 await workspace.EnsureCreated();
 
@@ -43,19 +45,21 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task NuGet_packages_can_be_added_during_initialization()
         {
-            using (var registry = new WorkspaceServerRegistry())
+            using (var registry = new WorkspaceRegistry())
             {
-                var workspaceId = Workspace.CreateDirectory(nameof(NuGet_packages_can_be_added_during_initialization)).Name;
+                var workspaceId = WorkspaceBuild.CreateDirectory(nameof(NuGet_packages_can_be_added_during_initialization)).Name;
 
-                registry.AddWorkspace(workspaceId,
+                registry.Add(workspaceId,
                                       options =>
                                       {
                                           options.CreateUsingDotnet("console");
                                           options.AddPackageReference("Twilio", "5.9.2");
                                       });
 
-                var workspaceServer = await registry.GetWorkspaceServer(workspaceId);
-                var workspace = new WorkspaceServer.Models.Execution.Workspace(@"
+                var workspaceServer = new RoslynWorkspaceServer(registry);
+
+                var workspace = Workspace.FromSource(
+                    @"
 using System;
 using Twilio.Clients;
 using Twilio.Rest.Api.V2010.Account;
@@ -71,52 +75,12 @@ namespace Twilio_try.dot.net_sample
             var sendToPhoneNumber = new PhoneNumber(""RECIPIENT_PHONE_NUMBER"");
         }
     }
-}");
+}",
+                    workspaceType: workspaceId);
+
                 var result = await workspaceServer.Run(workspace);
 
                 result.Succeeded.Should().BeTrue(because: "compilation can't succeed unless the NuGet package has been restored.");
-            }
-        }
-
-        [Fact]
-        public async Task Workspace_servers_that_have_been_started_are_disposed_when_registry_is_disposed()
-        {
-            IWorkspaceServer workspaceServer;
-
-            using(Clockwise.VirtualClock.Start())
-            using (var registry = new WorkspaceServerRegistry())
-            {
-                var workspaceId = (await Default.ConsoleWorkspace).Name;
-
-                registry.AddWorkspace(workspaceId,
-                                      options => options.CreateUsingDotnet("console"));
-
-                workspaceServer = await registry.GetWorkspaceServer(workspaceId);
-            }
-
-            Func<Task> dispose = async () => await workspaceServer.Run(Create.SimpleRunRequest());
-
-            dispose.Should().Throw<ObjectDisposedException>();
-        }
-
-        [Fact]
-        public async Task All_workspace_servers_can_be_started_proactively()
-        {
-            using (var registry = new WorkspaceServerRegistry())
-            {
-                var name = nameof(All_workspace_servers_can_be_started_proactively);
-                registry.AddWorkspace($"{name}.1",
-                                      options => options.CreateUsingDotnet("console"));
-                registry.AddWorkspace($"{name}.2",
-                                      options => options.CreateUsingDotnet("console"));
-
-                await registry.StartAllServers();
-
-                var stopwatch = Stopwatch.StartNew();
-
-                await registry.GetWorkspaceServer($"{name}.1");
-
-                stopwatch.ElapsedMilliseconds.Should().BeLessThan(5);
             }
         }
 
@@ -125,9 +89,9 @@ namespace Twilio_try.dot.net_sample
         {
             var unregisteredWorkspace = await Default.ConsoleWorkspace;
 
-            using (var registry = new WorkspaceServerRegistry())
+            using (var registry = new WorkspaceRegistry())
             {
-                var resolvedWorkspace = await registry.GetWorkspace(unregisteredWorkspace.Name);
+                var resolvedWorkspace = await registry.Get(unregisteredWorkspace.Name);
 
                 resolvedWorkspace.Directory.FullName.Should().Be(unregisteredWorkspace.Directory.FullName);
                 resolvedWorkspace.IsCreated.Should().BeTrue();
@@ -140,11 +104,11 @@ namespace Twilio_try.dot.net_sample
         {
             var unregisteredWorkspace = await Default.ConsoleWorkspace;
 
-            using (var registry = new WorkspaceServerRegistry())
+            using (var registry = new WorkspaceRegistry())
             {
-                var server = await registry.GetWorkspaceServer(unregisteredWorkspace.Name);
+                var server = new RoslynWorkspaceServer(registry);
 
-                var workspaceRequest = WorkspaceRequest.FromDirectory(unregisteredWorkspace.Directory, "console");
+                var workspaceRequest = WorkspaceRequest.FromDirectory(unregisteredWorkspace.Directory, unregisteredWorkspace.Name);
 
                 var result = await server.Run(workspaceRequest.Workspace);
 

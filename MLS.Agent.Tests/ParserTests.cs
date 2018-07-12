@@ -75,18 +75,6 @@ namespace MLS.Agent.Tests
         }
 
         [Fact]
-        public void Multiple_workspaces_can_be_specified_to_be_loaded()
-        {
-            var options = CommandLineOptions.Parse(new[] { "--load-workspace", "console", "--load-workspace", "something-else" });
-
-            options.LoadWorkspaces
-                   .Should()
-                   .BeEquivalentTo(
-                       "console",
-                       "something-else");
-        }
-
-        [Fact]
         public void AiKey_defaults_to_null()
         {
             var options = CommandLineOptions.Parse(new string[] { });

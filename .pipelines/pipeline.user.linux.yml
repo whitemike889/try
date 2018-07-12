@@ -11,7 +11,7 @@ environment:
   runtime:
     provider: 'appcontainer'                                            # Currently only appcontainer is supported future will bring
                                                                         # oscontainer and virtualmachine
-    image: 'microsoft/aspnetcore-build:2.0'                             # This is the image that your pipeline will run in.
+    image: 'microsoft/dotnet:2.1.301-sdk-alpine'                                   # This is the image that your pipeline will run in.
                                                                         # For (appcontainer), Docker Hub public Microsoft repository images
                                                                         # can be used.
                                                                         # Example microsoft/dotnet:1.1.1-sdk-nanoserver. Or the CDP team
@@ -72,18 +72,14 @@ build:
   commands:
 
     - !!buildcommand
-
-      name: '.build/cdpxbuild.sh'
-
-      command: './.build/cdpxbuild.sh'
+      name: '.build/cdpxrestore.sh'
+      command: '.build/cdpxrestore.sh'
       fail_on_stderr: false
 
-    - !!buildcommand                                                                                                                    
-      name: 'Build template'                                              
-                                                                        
-      command: './.build/templatebuild.sh'                                  
-      fail_on_stderr: false                                                                                                   
-                                                                        
+    - !!buildcommand
+      name: '.build/cdpxbuild.sh'
+      command: '.build/cdpxbuild.sh'
+      fail_on_stderr: false
                                                                         
       artifacts:                                         
         - from: './express/ServiceLayout'
@@ -112,7 +108,7 @@ package:
   commands:
     - !!dockerbuildcommand
       name: 'Build container'
-      context_folder: './MLS.Agent/obj/Docker/publish/'
+      context_folder: './docker/'
       dockerfile_name: 'Dockerfile'
       repository_name: 'mls.agent'
       tag: '1.0.0alpha'                                                 # This is a sequence of script files to be executed one after another

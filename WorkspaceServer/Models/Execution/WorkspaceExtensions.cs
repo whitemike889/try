@@ -24,23 +24,40 @@ namespace WorkspaceServer.Models.Execution
         {
             var file = workspace.GetFileFromBufferId(bufferId);
             var fileFullPath = string.IsNullOrWhiteSpace(root) ? file.Name : Path.Combine(root, file.Name);
-            return  new FileInfo(fileFullPath);
+            return new FileInfo(fileFullPath);
         }
 
-        public static int GetAbsolutePosition(this Workspace workspace, string bufferId, int bufferPosition)
+        public static int GetAbsolutePosition(this Workspace workspace, string bufferId)
         {
-            return (workspace.Buffers.FirstOrDefault(b => b.Id == bufferId)?.Position ?? 0) + bufferPosition;
+            return workspace.Buffers.Single(b => b.Id == bufferId).AbsolutePosition;
         }
-        
-        public static (int line, int column, int absolutePosition) GetTextLocation(this Workspace workspace, string bufferId, int bufferPosition)
+
+        public static (int line, int column, int absolutePosition) GetTextLocation(this Workspace workspace, string bufferId)
         {
             var file = workspace.GetFileFromBufferId(bufferId);
-            var absolutePosition = GetAbsolutePosition(workspace, bufferId, bufferPosition);
+            var absolutePosition = GetAbsolutePosition(workspace, bufferId);
 
             var src = SourceText.From(file.Text);
             var line = src.Lines.GetLineFromPosition(absolutePosition);
 
             return (line: line.LineNumber, column: absolutePosition - line.Start, absolutePosition);
+        }
+
+        public static Workspace ReplaceBuffer(this Workspace workspace, string id, string text)
+        {
+            return new Workspace(
+                usings: workspace.Usings,
+                buffers: workspace.Buffers,
+                files: workspace.Files,
+                workspaceType: workspace.WorkspaceType
+                );
+
+            return workspace;
+        }
+
+        public static Workspace ReplaceFile(this Workspace workspace, string name, string text)
+        {
+            return workspace;
         }
     }
 }

@@ -1,7 +1,6 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
-using MLS.TestSupport;
 using WorkspaceServer.Models;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Servers.Scripting;
@@ -16,9 +15,12 @@ namespace WorkspaceServer.Tests
         {
         }
 
-        protected override Task<IWorkspaceServer> GetWorkspaceServer(string testName = null)
+        protected override ILanguageService GetLanguageService(string testName = null) =>
+            new ScriptingWorkspaceServer();
+
+        protected override Task<ICodeRunner> GetRunner(string testName = null)
         {
-            return Task.FromResult<IWorkspaceServer>(new ScriptingWorkspaceServer());
+            return Task.FromResult<ICodeRunner>(new ScriptingWorkspaceServer());
         }
 
         [Fact]
@@ -42,7 +44,7 @@ public class Program
   {
     int current = 1, next = 1;
 
-    while (true) 
+    while (true)
     {
       yield return current;
       next = current + (current = next);
@@ -50,10 +52,10 @@ public class Program
   }
 }";
             var (processed, markLocation) = CodeManipulation.ProcessMarkup(code);
-          
-            var ws = new Workspace(buffers: new[] { new Workspace.Buffer("", processed, 0) });
-            var request = new WorkspaceRequest(ws, activeBufferId: "", position: markLocation);
-            var server = await GetWorkspaceServer();
+
+            var ws = new Workspace(buffers: new[] { new Workspace.Buffer("", processed, markLocation) });
+            var request = new WorkspaceRequest(ws, activeBufferId: "");
+            var server = GetLanguageService();
             var result = await server.GetSignatureHelp(request);
             result.Should().NotBeNull();
             result.Signatures.Should().BeNullOrEmpty();
@@ -80,7 +82,7 @@ public class Program
   {
     int current = 1, next = 1;
 
-    while (true) 
+    while (true)
     {
       yield return current;
       next = current + (current = next);
@@ -88,10 +90,10 @@ public class Program
   }
 }";
             var (processed, markLocation) = CodeManipulation.ProcessMarkup(code);
-           
-            var ws = new Workspace(buffers: new[] { new Workspace.Buffer("", processed, 0) });
-            var request = new WorkspaceRequest(ws, activeBufferId: "", position: markLocation);
-            var server = await GetWorkspaceServer();
+
+            var ws = new Workspace(buffers: new[] { new Workspace.Buffer("", processed, markLocation) });
+            var request = new WorkspaceRequest(ws, activeBufferId: "");
+            var server = GetLanguageService();
             var result = await server.GetSignatureHelp(request);
             result.Signatures.Should().NotBeEmpty();
             result.Signatures.First().Label.Should().Be("IEnumerable<TSource> Enumerable.Take<TSource>(IEnumerable<TSource> source, int count)");
@@ -102,9 +104,9 @@ public class Program
         {
             var (processed, markLocation) = CodeManipulation.ProcessMarkup("System.Collections.Generic.$$");
 
-            var ws = new Workspace(buffers: new[] { new Workspace.Buffer("default.cs", processed, 0) });
-            var request = new WorkspaceRequest(ws, activeBufferId: "default.cs", position: markLocation);
-            var server = await GetWorkspaceServer();
+            var ws = new Workspace(buffers: new[] { new Workspace.Buffer("default.cs", processed, markLocation) });
+            var request = new WorkspaceRequest(ws, activeBufferId: "default.cs");
+            var server = GetLanguageService();
             var result = await server.GetCompletionList(request);
 
             result.Items.Should().NotBeNullOrEmpty();
@@ -115,9 +117,9 @@ public class Program
         public async Task Can_show_completions()
         {
             var (processed, markLocation) = CodeManipulation.ProcessMarkup("var xa = 3;\n$$a");
-            var ws = new Workspace(buffers: new[] { new Workspace.Buffer("default.cs", processed, 0) });
-            var request = new WorkspaceRequest(ws, activeBufferId: "default.cs", position: markLocation);
-            var server = await GetWorkspaceServer();
+            var ws = new Workspace(buffers: new[] { new Workspace.Buffer("default.cs", processed, markLocation) });
+            var request = new WorkspaceRequest(ws, activeBufferId: "default.cs");
+            var server = GetLanguageService();
             var result = await server.GetCompletionList(request);
 
             result.Items.Should().NotBeNullOrEmpty();
@@ -145,11 +147,11 @@ public class Program
 
             var ws = new Workspace(
                 files: new[] { new Workspace.File("program.cs", CodeManipulation.EnforceLF(container)) },
-                buffers: new[] { new Workspace.Buffer("program.cs@nesting", processed, 0) });
-           
-          
-            var request = new WorkspaceRequest(ws, activeBufferId: "program.cs@nesting", position: markLocation);
-            var server = await GetWorkspaceServer();
+                buffers: new[] { new Workspace.Buffer("program.cs@nesting", processed, markLocation) });
+
+
+            var request = new WorkspaceRequest(ws, activeBufferId: "program.cs@nesting");
+            var server = GetLanguageService();
             var result = await server.GetSignatureHelp(request);
 
             result.Signatures.Should().NotBeEmpty();
@@ -165,10 +167,10 @@ public class Program
 }";
 
             var (processed, markLocation) = CodeManipulation.ProcessMarkup(markup);
-            var ws = new Workspace(buffers: new[] { new Workspace.Buffer("program.cs", processed, 0) });
+            var ws = new Workspace(buffers: new[] { new Workspace.Buffer("program.cs", processed, markLocation) });
 
-            var request = new WorkspaceRequest(ws, activeBufferId: "program.cs", position: markLocation);
-            var server = await GetWorkspaceServer();
+            var request = new WorkspaceRequest(ws, activeBufferId: "program.cs");
+            var server = GetLanguageService();
             var result = await server.GetSignatureHelp(request);
             result.Signatures.Should().NotBeEmpty();
             result.Signatures.First().Label.Should().Be("void C.Foo()");
@@ -177,9 +179,9 @@ public class Program
         [Fact]
         public async Task Can_show_all_completion_properties_for_Class_Task()
         {
-            var ws = new Workspace(buffers: new[] { new Workspace.Buffer("default.cs", "System.Threading.Tasks.", 0) });
-            var request = new WorkspaceRequest(ws, activeBufferId: "default.cs", position: 23);
-            var server = await GetWorkspaceServer();
+            var ws = new Workspace(buffers: new[] { new Workspace.Buffer("default.cs", "System.Threading.Tasks.", 23) });
+            var request = new WorkspaceRequest(ws, activeBufferId: "default.cs");
+            var server = GetLanguageService();
             var result = await server.GetCompletionList(request);
             var taskCompletionItem = result.Items.First(i => i.DisplayText == "Task");
 

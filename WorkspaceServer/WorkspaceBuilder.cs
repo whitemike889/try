@@ -4,28 +4,27 @@ using System.IO;
 using System.Threading.Tasks;
 using Clockwise;
 using MLS.Agent.Tools;
-using Pocket;
 
 namespace WorkspaceServer
 {
     public class WorkspaceBuilder
     {
-        private Workspace _workspace;
+        private readonly WorkspaceRegistry _registry;
 
-        private readonly List<Func<Workspace, Budget, Task>> _afterCreateActions = new List<Func<Workspace, Budget, Task>>();
+        private WorkspaceBuild workspaceBuild;
 
-        private readonly Logger _log;
+        private readonly List<Func<WorkspaceBuild, Budget, Task>> _afterCreateActions = new List<Func<WorkspaceBuild, Budget, Task>>();
 
-        public WorkspaceBuilder(string workspaceName)
+        public WorkspaceBuilder(WorkspaceRegistry registry, string workspaceName)
         {
             if (string.IsNullOrWhiteSpace(workspaceName))
             {
                 throw new ArgumentException("Value cannot be null or whitespace.", nameof(workspaceName));
             }
 
-            WorkspaceName = workspaceName;
+            _registry = registry ?? throw new ArgumentNullException(nameof(registry));
 
-            _log = new Logger($"{nameof(WorkspaceBuilder)}:{workspaceName}");
+            WorkspaceName = workspaceName;
         }
 
         public string WorkspaceName { get; }
@@ -34,10 +33,20 @@ namespace WorkspaceServer
 
         public bool RequiresPublish { get; set; }
 
-        public void CreateUsingDotnet(string template) =>
-            WorkspaceInitializer = new DotnetWorkspaceInitializer(
+        public void AfterCreate(Func<WorkspaceBuild, Budget, Task> action)
+        {
+            _afterCreateActions.Add(action);
+        }
+
+        public void CreateCopyOf(string originalWorkspaceName) =>
+            WorkspaceInitializer = new WorkspaceCopyInitializer(
+                _registry,
+                originalWorkspaceName);
+
+        public void CreateUsingDotnet(string template, string projectName = null) =>
+            WorkspaceInitializer = new WorkspaceInitializer(
                 template,
-                WorkspaceName,
+                projectName ?? WorkspaceName,
                 AfterCreate);
 
         public void AddPackageReference(string packageId, string version = null)
@@ -49,28 +58,29 @@ namespace WorkspaceServer
             });
         }
 
-        public async Task<Workspace> GetWorkspace(Budget budget = null)
+        public async Task<WorkspaceBuild> GetWorkspaceBuild(Budget budget = null)
         {
-            if (_workspace == null)
+            if (workspaceBuild == null)
             {
                 await PrepareWorkspace(budget);
             }
+
             budget?.RecordEntry();
-            return _workspace;
+            return workspaceBuild;
         }
 
         public WorkspaceInfo GetWorkpaceInfo()
         {
             WorkspaceInfo info = null;
-            if (_workspace != null)
+            if (workspaceBuild != null)
             {
                 info = new WorkspaceInfo(
-                    _workspace.Name,
-                    _workspace.BuildTime,
-                    _workspace.ConstructionTime,
-                    _workspace.PublicationTime,
-                    _workspace.CreationTime,
-                    _workspace.ReadyTime
+                    workspaceBuild.Name,
+                    workspaceBuild.BuildTime,
+                    workspaceBuild.ConstructionTime,
+                    workspaceBuild.PublicationTime,
+                    workspaceBuild.CreationTime,
+                    workspaceBuild.ReadyTime
                 );
             }
 
@@ -80,31 +90,22 @@ namespace WorkspaceServer
         private async Task PrepareWorkspace(Budget budget = null)
         {
             budget = budget ?? new Budget();
-            using (var operation = _log.OnEnterAndConfirmOnExit())
-            {
-                _workspace = new Workspace(
-                    WorkspaceName,
-                    WorkspaceInitializer);
 
-                await _workspace.EnsureCreated(budget);
+            workspaceBuild = new WorkspaceBuild(
+                WorkspaceName,
+                WorkspaceInitializer,
+                requiresPublish: RequiresPublish);
 
-                await _workspace.EnsureBuilt(budget);
+            await workspaceBuild.EnsureReady(budget);
 
-                if (RequiresPublish)
-                {
-                    await _workspace.EnsurePublished(budget);
-                }
-
-                budget.RecordEntry();
-                operation.Succeed();
-            }
+            budget.RecordEntry();
         }
 
         private async Task AfterCreate(DirectoryInfo directoryInfo, Budget budget)
         {
             foreach (var action in _afterCreateActions)
             {
-                await action(_workspace, budget);
+                await action(workspaceBuild, budget);
             }
         }
     }

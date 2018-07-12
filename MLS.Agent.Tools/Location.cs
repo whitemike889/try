@@ -6,21 +6,21 @@ namespace MLS.Agent.Tools
 {
     public class Location
     {
-        private readonly Microsoft.CodeAnalysis.Location location;
+        private readonly Microsoft.CodeAnalysis.Location _location;
 
         public Location(Microsoft.CodeAnalysis.Location location)
         {
-            this.location = location ?? throw new ArgumentNullException(nameof(location));
+            this._location = location ?? throw new ArgumentNullException(nameof(location));
         }
 
-        public LocationKind Kind => location.Kind;
+        public LocationKind Kind => _location.Kind;
 
-        public bool IsInSource => location.IsInSource;
+        public bool IsInSource => _location.IsInSource;
 
-        public bool IsInMetadata => location.IsInMetadata;
+        public bool IsInMetadata => _location.IsInMetadata;
 
-        public TextSpan SourceSpan => location.SourceSpan;
+        public TextSpan SourceSpan => _location.SourceSpan;
 
-        public FileLinePositionSpan MappedLineSpan => location.GetMappedLineSpan();
+        public FileLinePositionSpan MappedLineSpan => _location.GetMappedLineSpan();
     }
 }

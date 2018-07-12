@@ -1,36 +1,27 @@
-FROM microsoft/aspnetcore-build:2.0
+FROM microsoft/dotnet:2.1.301-sdk-alpine
 
-ARG source
-
-# set up OmniSharp
-RUN mkdir -p /dependencies/omnisharp 
-COPY dependencies /dependencies/
-ENV TRYDOTNET_OMNISHARP_PATH=/dependencies/omnisharp/
-ENV NUGET_PACKAGES=/root/.nuget/packages/
-COPY packages /root/.nuget/packages/
-
-# set up workspaces directory
+# configure environment
+ENV DOTNET_TOOLS=/dependencies/.dotnet/tools
+ENV NUGET_PACKAGES=/dependencies/.nuget/packages
 ENV TRYDOTNET_WORKSPACES_PATH=/workspaces
-COPY workspaces /workspaces/
+
+
+# install command line tools
+RUN apk update
+RUN apk add xmlstarlet
+RUN apk add shadow
+RUN dotnet tool install t-rex --version 1.0.0-preview1-004 --add-source https://www.myget.org/F/wultest/api/v3/index.json --tool-path $DOTNET_TOOLS
 
 # set up the working directory where the Agent ASP.NET app runs
 RUN mkdir -p /app
 RUN groupadd app_group 
 RUN useradd -r --gid app_group --home /app --shell /sbin/nologin --comment "app user" app_user 
-WORKDIR /app
+COPY --chown=app_user:app_group . ./
+
 ENV ASPNETCORE_URLS=http://+:4242
 EXPOSE 4242
-COPY . ./
 
-RUN mkdir -p /dependencies/.nuget/packages && cp -r /root/.nuget/packages/ /dependencies/.nuget/packages
-
-RUN chown --recursive app_user:app_group /app
-RUN chown --recursive app_user:app_group /dependencies
-RUN chown --recursive app_user:app_group /workspaces
-
-# make sure that the root folder is available to app_user since this is where the nuget package cache is found
-RUN chmod -R 777 /root/
-
+WORKDIR /app
 USER app_user
 
 ENTRYPOINT ["dotnet", "MLS.Agent.dll"]

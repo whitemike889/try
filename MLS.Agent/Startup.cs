@@ -1,7 +1,6 @@
 ﻿using System;
 using Clockwise;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -10,7 +9,11 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Pocket;
 using Recipes;
+using WorkspaceServer;
+using WorkspaceServer.Servers.Roslyn;
 using static Pocket.Logger<MLS.Agent.Startup>;
+using IApplicationLifetime = Microsoft.Extensions.Hosting.IApplicationLifetime;
+using IHostingEnvironment = Microsoft.Extensions.Hosting.IHostingEnvironment;
 
 namespace MLS.Agent
 {
@@ -27,16 +30,13 @@ namespace MLS.Agent
 
             var configurationBuilder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath);
-            
-            Configuration = configurationBuilder.Build();
 
-            
+            Configuration = configurationBuilder.Build();
         }
 
         protected IConfigurationRoot Configuration { get; }
 
         protected IHostingEnvironment Environment { get; }
-
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
@@ -59,8 +59,9 @@ namespace MLS.Agent
 
                 services.AddSingleton(Configuration);
 
-                services.AddSingleton(_ => DefaultWorkspaces.CreateWorkspaceServerRegistry());
-               
+                services.AddSingleton(_ => WorkspaceRegistry.CreateDefault());
+                services.AddSingleton(c => new RoslynWorkspaceServer(c.GetRequiredService<WorkspaceRegistry>()));
+
                 services.AddSingleton<IHostedService, Warmup>();
 
                 operation.Succeed();

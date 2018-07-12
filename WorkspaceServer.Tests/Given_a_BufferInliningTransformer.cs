@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
-using MLS.TestSupport;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Transformations;
 using Xunit;
@@ -11,7 +10,6 @@ namespace WorkspaceServer.Tests
 {
     public class Given_a_BufferInliningTransformer
     {
-
         [Fact]
         public void It_extracts_viewPorts_when_files_declare_region()
         {
@@ -69,27 +67,29 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task Processed_workspace_files_are_modified_inlining_buffers()
         {
-            var ws = new Workspace(
+            var original = new Workspace(
                 files: new[]
                 {
-                    new Workspace.File("Program.cs", CodeManipulation.EnforceLF(CodeSamples.SourceCodeProvider.ConsoleProgramSingleRegion))
+                    new Workspace.File("Program.cs", CodeSamples.SourceCodeProvider.ConsoleProgramSingleRegion.EnforceLF())
                 },
                 buffers: new[]
                 {
-                    new Workspace.Buffer("Program.cs@alpha", CodeManipulation.EnforceLF("var newValue = 1000;"), 0)
+                    new Workspace.Buffer("Program.cs@alpha", "var newValue = 1000;".EnforceLF())
                 });
             var processor = new BufferInliningTransformer();
 
-            var processed = await processor.TransformAsync(ws);
+            var processed = await processor.TransformAsync(original);
             processed.Should().NotBeNull();
             processed.Files.Should().NotBeEmpty();
             var newCode = processed.Files.ElementAt(0).Text;
 
-            newCode.Should().NotBe(ws.Files.ElementAt(0).Text);
+            newCode.Should().NotBe(original.Files.ElementAt(0).Text);
             newCode.Should().Contain("var newValue = 1000;");
 
-            processed.Buffers.Count.Should().Be(ws.Buffers.Count);
-            processed.Buffers.ElementAt(0).Position.Should().BeGreaterThan(ws.Buffers.ElementAt(0).Position);
+            original.Buffers.ElementAt(0).Position.Should().Be(0);
+            processed.Buffers.Length.Should().Be(original.Buffers.Length);
+            processed.Buffers.ElementAt(0).Position.Should().Be(original.Buffers.ElementAt(0).Position);
+            processed.Buffers.ElementAt(0).AbsolutePosition.Should().Be(168);
 
         }
 
@@ -115,7 +115,7 @@ namespace WorkspaceServer.Tests
             newCode.Should().NotBe(ws.Files.ElementAt(0).Text);
             newCode.Should().Be("var newValue = 1000;");
 
-            processed.Buffers.Count.Should().Be(ws.Buffers.Count);
+            processed.Buffers.Length.Should().Be(ws.Buffers.Length);
             processed.Buffers.ElementAt(0).Position.Should().Be(0);
         }
 

@@ -10,15 +10,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="clockwise" Version="1.0.149-beta" />
+    <PackageReference Include="clockwise" Version="1.0.244-beta" />
     <PackageReference Include="newtonsoft.json" Version="11.0.2" />
-    <PackageReference Include="pocketlogger" Version="0.2.13">
+    <PackageReference Include="pocketlogger" Version="0.3.0">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>    
     <PackageReference Include="System.Diagnostics.Process" Version="4.3.0" />
     <PackageReference Include="System.Runtime.Extensions" Version="4.3.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="2.8.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="2.8.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="2.8.2" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="2.8.2" />
   </ItemGroup>
 
   <ItemGroup>

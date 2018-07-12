@@ -1,14 +1,17 @@
 using System;
 using System.IO;
+using FluentAssertions;
+using FluentAssertions.Extensions;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using FluentAssertions;
-using FluentAssertions.Extensions;
+using Clockwise;
 using MLS.Agent.Tools;
 using Pocket;
+using WorkspaceServer.Servers.Roslyn;
 using Xunit;
 using Xunit.Abstractions;
+using static Pocket.Logger;
 
 namespace WorkspaceServer.Tests
 {
@@ -19,6 +22,7 @@ namespace WorkspaceServer.Tests
         public WorkspaceTests(ITestOutputHelper output)
         {
             disposables.Add(output.SubscribeToPocketLogger());
+            disposables.Add(VirtualClock.Start());
         }
 
         public void Dispose() => disposables.Dispose();
@@ -26,7 +30,7 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task A_workspace_is_not_initialized_more_than_once()
         {
-            var initializer = new InMemoryWorkspaceInitializer();
+            var initializer = new FakeWorkspaceInitializer();
 
             var workspace = Create.EmptyWorkspace(initializer: initializer);
 
@@ -41,10 +45,10 @@ namespace WorkspaceServer.Tests
         {
             var afterCreateCallCount = 0;
 
-            var initializer = new DotnetWorkspaceInitializer(
+            var initializer = new WorkspaceInitializer(
                 "console",
                 "test",
-                async ( _, __) => afterCreateCallCount++);
+                async (_, __) => afterCreateCallCount++);
 
             var workspace = Create.EmptyWorkspace(initializer: initializer);
 
@@ -57,13 +61,13 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task A_workspace_copy_is_not_reinitialized_if_the_source_was_already_built()
         {
-            var initializer = new InMemoryWorkspaceInitializer();
+            var initializer = new FakeWorkspaceInitializer();
 
             var original = Create.EmptyWorkspace(initializer: initializer);
 
             await original.EnsureCreated();
 
-            var copy = Workspace.Copy(original);
+            var copy = WorkspaceBuild.Copy(original);
 
             await copy.EnsureCreated();
 
@@ -130,7 +134,7 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task When_workspace_contains_simple_console_app_then_IsAspNet_is_false()
         {
-            var workspace = await Create.ConsoleWorkspace();
+            var workspace = await Create.ConsoleWorkspaceCopy();
 
             await workspace.EnsureCreated();
 
@@ -140,7 +144,7 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task When_workspace_contains_aspnet_project_then_IsAspNet_is_true()
         {
-            var workspace = await Create.WebApiWorkspace();
+            var workspace = await Create.WebApiWorkspaceCopy();
 
             await workspace.EnsureCreated();
 
@@ -150,7 +154,7 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task When_workspace_contains_simple_console_app_then_entry_point_dll_is_in_the_build_directory()
         {
-            var workspace = await Create.ConsoleWorkspace();
+            var workspace = await Create.ConsoleWorkspaceCopy();
 
             await workspace.EnsurePublished();
 
@@ -164,13 +168,13 @@ namespace WorkspaceServer.Tests
                              "bin",
                              "Debug",
                              workspace.TargetFramework,
-                             "test.dll"));
+                             "console.dll"));
         }
 
         [Fact]
         public async Task When_workspace_contains_aspnet_project_then_entry_point_dll_is_in_the_publish_directory()
         {
-            var workspace = await Create.WebApiWorkspace();
+            var workspace = await Create.WebApiWorkspaceCopy();
 
             await workspace.EnsurePublished();
 
@@ -185,7 +189,7 @@ namespace WorkspaceServer.Tests
                              "Debug",
                              workspace.TargetFramework,
                              "publish",
-                             "test.dll"));
+                             "aspnet.webapi.dll"));
         }
     }
 }

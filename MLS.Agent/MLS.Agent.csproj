@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
     <LangVersion>Latest</LangVersion>
     <AssetTargetFallback>$(AssetTargetFallback);dotnet5.4;portable-net45+win8</AssetTargetFallback>
   </PropertyGroup>
@@ -14,31 +14,32 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="clockwise" Version="1.0.149-beta" />
-    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.1.1" />
-    <PackageReference Include="Microsoft.AspNetCore" Version="2.0.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.0.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Formatters.Json" Version="2.0.1" />
-    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.0.1" />
+    <PackageReference Include="clockwise" Version="1.0.244-beta" />
+    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.3.0" />
+    <PackageReference Include="Microsoft.AspNetCore.App" Version="2.1.1" />
     <PackageReference Include="Microsoft.DotNet.Cli.CommandLine" Version="0.1.1-alpha-201" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="2.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="2.1.1" />
+    <PackageReference Include="nodatime" Version="2.3.0" />
+    <PackageReference Include="nodatime.testing" Version="2.3.0" />
     <PackageReference Include="Serilog.Sinks.RollingFileAlternate" Version="2.0.9" />
-    <PackageReference Include="pocket.disposable" Version="1.0.3">
+    <PackageReference Include="pocket.disposable" Version="1.0.4">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="pocket.typediscovery" Version="0.4.1">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="pocketlogger" Version="0.2.13">
+    <PackageReference Include="pocketlogger" Version="0.3.0">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="pocketlogger.for.applicationinsights" Version="0.3.2">
+    <PackageReference Include="pocketlogger.for.applicationinsights" Version="0.4.0">
       <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="pocketlogger.subscribe" Version="0.5.2">
+    <PackageReference Include="pocketlogger.subscribe" Version="0.6.1">
       <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="System.Reactive" Version="3.1.1" />
+    <PackageReference Include="System.Reactive" Version="4.0.0" />
   </ItemGroup>
   <ItemGroup>
     <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="1.0.0" />

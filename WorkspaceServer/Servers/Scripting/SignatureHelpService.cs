@@ -13,10 +13,21 @@ namespace WorkspaceServer.Servers.Scripting
 {
     public class SignatureHelpService
     {
+
         public static async Task<SignatureHelpResponse> GetSignatureHelp(Document document, int position, Budget budget = null)
         {
             var invocation = await GetInvocation(document, position);
+            return InternalGetSignatureHelp(invocation);
+        }
 
+        public static async Task<SignatureHelpResponse> GetSignatureHelp(Func<Task<SemanticModel>> getSemanticModel, SyntaxNode node, int position)
+        {
+            var invocation = await GetInvocation(getSemanticModel, node, position);
+            return InternalGetSignatureHelp(invocation);
+        }
+
+        private static SignatureHelpResponse InternalGetSignatureHelp(InvocationContext invocation)
+        {
             var response = new SignatureHelpResponse();
 
             if (invocation == null)
@@ -58,17 +69,18 @@ namespace WorkspaceServer.Servers.Scripting
             response.ActiveSignature = signaturesList.IndexOf(bestScoredItem);
 
             return response;
-
-
         }
-        
 
-        private static async Task<InvocationContext> GetInvocation(Document document, int position)
+        internal static async Task<InvocationContext> GetInvocation(Document document, int position)
         {
             var tree = await document.GetSyntaxTreeAsync();
             var root = await tree.GetRootAsync();
             var node = root.FindToken(position).Parent;
+            return await GetInvocation(() => document.GetSemanticModelAsync(), node, position);
+        }
 
+        internal static async Task<InvocationContext> GetInvocation(Func<Task<SemanticModel>> getSemanticModel, SyntaxNode node, int position)
+        {
             // Walk up until we find a node that we're interested in.
             while (node != null)
             {
@@ -76,17 +88,17 @@ namespace WorkspaceServer.Servers.Scripting
                 {
                     case InvocationExpressionSyntax invocation when invocation.ArgumentList.Span.Contains(position):
                     {
-                        var semanticModel = await document.GetSemanticModelAsync();
+                        var semanticModel = await getSemanticModel();
                         return new InvocationContext(semanticModel, position, invocation.Expression, invocation.ArgumentList);
                     }
                     case ObjectCreationExpressionSyntax objectCreation when objectCreation.ArgumentList?.Span.Contains(position) ?? false:
                     {
-                        var semanticModel = await document.GetSemanticModelAsync();
+                        var semanticModel = await getSemanticModel();
                         return new InvocationContext(semanticModel, position, objectCreation, objectCreation.ArgumentList);
                     }
                     case AttributeSyntax attributeSyntax when attributeSyntax.ArgumentList.Span.Contains(position):
                     {
-                        var semanticModel = await document.GetSemanticModelAsync();
+                        var semanticModel = await getSemanticModel();
                         return new InvocationContext(semanticModel, position, attributeSyntax, attributeSyntax.ArgumentList);
                     }
                 }
@@ -110,8 +122,8 @@ namespace WorkspaceServer.Servers.Scripting
                 symbol = symbolInfo.CandidateSymbols.First();
             }
 
-            return symbol?.ContainingType == null 
-                ? Array.Empty<IMethodSymbol>() 
+            return symbol?.ContainingType == null
+                ? Array.Empty<IMethodSymbol>()
                 : symbol.ContainingType.GetMembers(symbol.Name).OfType<IMethodSymbol>();
         }
 
@@ -139,7 +151,7 @@ namespace WorkspaceServer.Servers.Scripting
                     score += 2;
                 }
             }
-         
+
             return score;
         }
 
