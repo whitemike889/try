@@ -96,19 +96,6 @@ namespace WorkspaceServer.Servers.Roslyn
                                         .ToArray());
         }
 
-        public async Task<DiagnosticResult> GetDiagnostics(Workspace request, Budget budget)
-        {
-            budget = budget ?? new TimeBudget(TimeSpan.FromSeconds(defaultBudgetInSeconds));
-            var build = await getWorkspaceBuildByName(request.WorkspaceType);
-
-            var processed = await _transformer.TransformAsync(request, budget);
-            var sourceFiles = processed.GetSourceFiles();
-            var (compilation, _) = await build.GetCompilation(sourceFiles, budget);
-
-            var diagnostics = await ServiceHelpers.GetProjectedDiagnostics(request, compilation);
-            return new DiagnosticResult(diagnostics.Select(e => e.Diagnostic).ToArray());
-        }
-
         public async Task<SignatureHelpResponse> GetSignatureHelp(WorkspaceRequest request, Budget budget)
         {
             budget = budget ?? new TimeBudget(TimeSpan.FromSeconds(defaultBudgetInSeconds));
@@ -143,85 +130,39 @@ namespace WorkspaceServer.Servers.Roslyn
                        absolutePosition);
         }
 
-        public async Task<RunResult> Run(Workspace workspaceModel, Budget budget = null)
+        public async Task<RunResult> Run(Workspace workspace, Budget budget = null)
         {
             budget = budget ?? new TimeBudget(TimeSpan.FromSeconds(defaultBudgetInSeconds));
             RunResult runResult = null;
 
             using (var operation = Log.OnEnterAndConfirmOnExit())
-            using (await locks.GetOrAdd(workspaceModel.WorkspaceType, s => new AsyncLock()).LockAsync())
+            using (await locks.GetOrAdd(workspace.WorkspaceType, s => new AsyncLock()).LockAsync())
             {
-                var build = await getWorkspaceBuildByName(workspaceModel.WorkspaceType);
-                var processed = await _transformer.TransformAsync(workspaceModel, budget);
+                var build = await getWorkspaceBuildByName(workspace.WorkspaceType);
+                workspace = await _transformer.TransformAsync(workspace, budget);
 
-                var sourceFiles = processed.GetSourceFiles();
-                var (compilation, documents) = await build.GetCompilation(sourceFiles, budget);
+                var compilation = await Compile(workspace, budget, build);
 
-                var d3 = await ServiceHelpers.GetProjectedDiagnostics(
-                             workspaceModel,
-                             compilation);
-
-                var diagnostics = d3.Select(d => d.Diagnostic).ToArray();
-
-                var compileErrorMessages = d3.Where(d => d.Diagnostic.Severity == DiagnosticSeverity.Error)
-                                             .Select(d => d.ErrorMessage)
-                                             .ToArray();
+                var diagnostics = ServiceHelpers.GetDiagnostics(
+                    workspace,
+                    compilation);
 
                 if (diagnostics.Any(e => e.Severity == DiagnosticSeverity.Error))
                 {
-                    // FIX: (Run) this hack is only in place because buffer inlining currently overwrites certain files in the on-disk project which need to be preserved.
-                    if (!build.IsUnitTestProject || 
-                        diagnostics.Count(d => d.Severity == DiagnosticSeverity.Error && d.Id != "CS5001") > 1)
-                    {
-                        return new RunResult(
-                            false,
-                            compileErrorMessages,
-                            diagnostics: diagnostics);
-                    }
+                    var compileErrorMessages = diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error)
+                                                                   .Select(d => d.Message)
+                                                                   .ToArray();
+                    return new RunResult(
+                        false,
+                        compileErrorMessages,
+                        diagnostics: diagnostics);
                 }
 
-                var viewports = _transformer.ExtractViewPorts(workspaceModel);
-                var instrumentationRegions = viewports.Values
-                    .Where(v => v.Destination?.Name != null)
-                    .GroupBy(v => v.Destination.Name, v => v.Region, (name, regions) => new InstrumentationMap(name, regions));
-
-                if (workspaceModel.IncludeInstrumentation)
-                {
-                    compilation = AugmentCompilation(instrumentationRegions, compilation, documents.First().Project.Solution);
-                }
-
-                var numberOfAttempts = 100;
-                for (var attempt = 1; attempt < numberOfAttempts; attempt++)
-                {
-                    try
-                    {
-                        compilation.Emit(build.EntryPointAssemblyPath.FullName);
-                        operation.Info("Emit succeeded on attempt #{attempt}", attempt);
-                        break;
-                    }
-                    catch (IOException)
-                    {
-                        if (attempt == numberOfAttempts - 1)
-                        {
-                            throw;
-                        }
-
-                        await Task.Delay(10);
-                    }
-                }
-
-                string exceptionMessage = null;
+                await EmitCompilation(compilation, build, operation);
 
                 if (build.IsWebProject)
                 {
-                    var webServer = new WebServer(build);
-
-
-                    runResult = new RunResult(
-                        succeeded: true,
-                        diagnostics: diagnostics.ToArray());
-
-                    runResult.AddFeature(webServer);
+                    runResult = RunWebRequest(build);
                 }
                 else if (build.IsUnitTestProject)
                 {
@@ -230,6 +171,8 @@ namespace WorkspaceServer.Servers.Roslyn
                     var testRunResult = await dotnet.VSTest(
                                             $"--logger:trx {build.EntryPointAssemblyPath}",
                                             budget);
+
+                    string exceptionMessage = null;
 
                     if (testRunResult.Error.Count > 0)
                     {
@@ -282,6 +225,8 @@ namespace WorkspaceServer.Servers.Roslyn
                         throw new BudgetExceededException(budget);
                     }
 
+                    string exceptionMessage = null;
+
                     if (commandLineResult.Error.Count > 0)
                     {
                         exceptionMessage = string.Join(Environment.NewLine, commandLineResult.Error);
@@ -293,7 +238,7 @@ namespace WorkspaceServer.Servers.Roslyn
                            exception: exceptionMessage,
                            diagnostics: diagnostics);
 
-                    if (workspaceModel.IncludeInstrumentation)
+                    if (workspace.IncludeInstrumentation)
                     {
                         runResult.AddFeature(output.ProgramStatesArray);
                         runResult.AddFeature(output.ProgramDescriptor);
@@ -302,6 +247,54 @@ namespace WorkspaceServer.Servers.Roslyn
             }
 
             return runResult;
+        }
+
+        private async Task<Compilation> Compile(Workspace workspace, Budget budget, WorkspaceBuild build)
+        {
+            var sourceFiles = workspace.GetSourceFiles();
+
+            var (compilation, documents) = await build.GetCompilation(sourceFiles, budget);
+
+            var viewports = _transformer.ExtractViewPorts(workspace);
+            var instrumentationRegions = viewports.Where(v => v.Destination?.Name != null)
+                                                  .GroupBy(v => v.Destination.Name, v => v.Region, (name, regions) => new InstrumentationMap(name, regions));
+
+            if (workspace.IncludeInstrumentation)
+            {
+                compilation = AugmentCompilation(instrumentationRegions, compilation, documents.First().Project.Solution);
+            }
+
+            return compilation;
+        }
+
+        private static RunResult RunWebRequest(WorkspaceBuild build)
+        {
+            var runResult = new RunResult(succeeded: true);
+            runResult.AddFeature(new WebServer(build));
+            return runResult;
+        }
+
+        private static async Task EmitCompilation(Compilation compilation, WorkspaceBuild build, ConfirmationLogger operation)
+        {
+            var numberOfAttempts = 100;
+            for (var attempt = 1; attempt < numberOfAttempts; attempt++)
+            {
+                try
+                {
+                    compilation.Emit(build.EntryPointAssemblyPath.FullName);
+                    operation.Info("Emit succeeded on attempt #{attempt}", attempt);
+                    break;
+                }
+                catch (IOException)
+                {
+                    if (attempt == numberOfAttempts - 1)
+                    {
+                        throw;
+                    }
+
+                    await Task.Delay(10);
+                }
+            }
         }
 
         private Compilation AugmentCompilation(IEnumerable<InstrumentationMap> regions, Compilation compilation, Solution solution)

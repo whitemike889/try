@@ -62,36 +62,7 @@ namespace MLS.Agent.Controllers
                 return Ok(result);
             }
         }
-
-        [HttpPost]
-        [Route("/workspace/diagnostics")]
-        public async Task<IActionResult> Diagnostics(
-            [FromBody] WorkspaceRequest request,
-            [FromHeader(Name = "Timeout")] string timeoutInMilliseconds = "15000")
-        {
-            if (Debugger.IsAttached && !(Clock.Current is VirtualClock))
-            {
-                _disposables.Add(VirtualClock.Start());
-            }
-
-            using (var operation = Log.OnEnterAndConfirmOnExit())
-            {
-                if (!int.TryParse(timeoutInMilliseconds, out var timeoutMs))
-                {
-                    return BadRequest();
-                }
-
-                var runTimeout = TimeSpan.FromMilliseconds(timeoutMs);
-                var budget = new TimeBudget(runTimeout);
-                var server = GetServerForWorkspace(request.Workspace);
-                var result = await server.GetDiagnostics(request.Workspace, budget);
-                budget.RecordEntry();
-                operation.Succeed();
-
-                return Ok(result);
-            }
-        }
-
+    
         [HttpPost]
         [Route("/workspace/signaturehelp")]
         public async Task<IActionResult> SignatureHelp(

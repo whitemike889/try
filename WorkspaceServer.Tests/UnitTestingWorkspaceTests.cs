@@ -46,6 +46,49 @@ namespace WorkspaceServer.Tests
             );
         }
 
+        [Fact(Skip = "wip")]
+        public async Task Subsequent_runs_update_test_output()
+        {
+            var (runner, workspace) = await GetRunnerAndWorkspace();
+
+            var workspaceModel = Workspace.FromDirectory(
+                workspace.Directory,
+                workspace.Name);
+
+            workspaceModel = workspaceModel
+                             .ReplaceFile(
+                                 "UnitTest1.cs",
+                                 @"
+using System; 
+using Xunit;
+
+public class Tests 
+{
+#region facts
+    [Fact] public void passing() {  }
+#endregion
+
+}")
+                             .ReplaceBuffer(
+                                 "UnitTest1.cs",
+                                 "");
+
+            var runResult = await runner.Run(workspaceModel);
+
+            Log.Info("Output: {output}", runResult.Output);
+
+            runResult.Output.ShouldMatch(
+                "PASSED",
+                "*NAME*RESULT*SECONDS",
+                "*tests.UnitTest1.Test1*s*Run_executes_unit_tests_and_prints_test_results_to_output*",
+                "SUMMARY:",
+                "*Passed: 1, Failed: 0, Not run: 0"
+            );
+
+            // TODO (Subsequent_runs_update_test_output) write test
+            throw new NotImplementedException("Test Subsequent_runs_update_test_output is not written yet.");
+        }
+
         protected async Task<(ICodeRunner server, WorkspaceBuild workspace )> GetRunnerAndWorkspace(
             [CallerMemberName] string testName = null)
         {
