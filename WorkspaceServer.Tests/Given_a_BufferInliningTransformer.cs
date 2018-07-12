@@ -20,7 +20,7 @@ namespace WorkspaceServer.Tests
             var processor = new BufferInliningTransformer();
             var viewPorts = processor.ExtractViewPorts(ws);
             viewPorts.Should().NotBeEmpty();
-            viewPorts.Keys.Should().BeEquivalentTo("Program.cs@alpha");
+            viewPorts.Select(p => p.Name).Should().BeEquivalentTo("Program.cs@alpha");
         }
 
         [Fact]

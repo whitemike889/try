@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.CodeAnalysis;
 using WorkspaceServer.Models;
@@ -11,7 +10,7 @@ namespace WorkspaceServer.Servers.Roslyn
 {
     internal static class ServiceHelpers
     {
-        internal static async Task<(SerializableDiagnostic Diagnostic, string ErrorMessage)[]> GetProjectedDiagnostics(
+        internal static SerializableDiagnostic[] GetDiagnostics(
             Workspace workspace,
             Compilation compilation,
             Budget budget = null)
@@ -19,8 +18,7 @@ namespace WorkspaceServer.Servers.Roslyn
             budget = budget ?? new Budget();
 
             var processor = new BufferInliningTransformer();
-            var processed = await processor.TransformAsync(workspace, budget);
-            var viewPorts = processor.ExtractViewPorts(processed);
+            var viewPorts = processor.ExtractViewPorts(workspace);
             var sourceDiagnostics = compilation.GetDiagnostics().Where(d => d.Id != "CS7022");
             budget.RecordEntry();
             return DiagnosticTransformer.ReconstructDiagnosticLocations(

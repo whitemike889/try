@@ -16,12 +16,12 @@ namespace WorkspaceServer.Models
             Id = id;
         }
 
-        public SerializableDiagnostic(Diagnostic d)
+        public SerializableDiagnostic(Diagnostic d, string message = null)
             : this(d.Location?.SourceSpan.Start ?? throw new ArgumentException(nameof(d.Location)),
-                    d.Location.SourceSpan.End,
-                    d.GetMessage(),
-                    d.Severity,
-                    d.Descriptor.Id)
+                   d.Location.SourceSpan.End,
+                   message ?? d.GetMessage(),
+                   d.Severity,
+                   d.Descriptor.Id)
         {
         }
 

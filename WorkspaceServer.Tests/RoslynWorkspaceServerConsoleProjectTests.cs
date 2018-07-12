@@ -89,25 +89,6 @@ namespace WorkspaceServer.Tests
         }
 
         [Fact]
-        public async Task Get_diagnostics_produces_appropriate_diagnostics_for_display_to_user_when_using_buffers()
-        {
-            var codeLine1 = @"var a = 10;";
-            var codeLine2 = @"Console.WriteLine(banana);";
-            var code = $"{codeLine1}{Environment.NewLine}{codeLine2}";
-            var erroPos = code.IndexOf("banana);");
-            var workspace = new Workspace(
-                workspaceType: "console",
-                files: new[] { new Workspace.File("Program.cs", CodeSamples.SourceCodeProvider.ConsoleProgramSingleRegion) },
-                buffers: new[] { new Workspace.Buffer("Program.cs@alpha", code, 0) });
-            var request = new WorkspaceRequest(workspace);
-            var server = GetLanguageService();
-
-            var result = await server.GetDiagnostics(request.Workspace);
-
-            result.Diagnostics.Should().Contain(d => d.Id == "CS0103" && d.Start == erroPos); // banana is not defined
-        }
-
-        [Fact]
         public async Task When_Run_is_called_again_then_previous_file_state_is_cleaned_up()
         {
             #region bufferSources

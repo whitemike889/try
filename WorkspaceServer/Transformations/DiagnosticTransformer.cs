@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Microsoft.CodeAnalysis;
@@ -12,9 +11,9 @@ namespace WorkspaceServer.Transformations
 {
     public class DiagnosticTransformer
     {
-        public static IEnumerable<(SerializableDiagnostic, string)> ReconstructDiagnosticLocations(
+        public static IEnumerable<SerializableDiagnostic> ReconstructDiagnosticLocations(
             IEnumerable<Diagnostic> bodyDiagnostics,
-            Dictionary<string, Viewport> viewPortsByBufferId,
+            IReadOnlyCollection<Viewport> viewPortsByBufferId,
             int paddingSize)
         {
             const string unmappedPath = "unmapped";
@@ -23,25 +22,25 @@ namespace WorkspaceServer.Transformations
             foreach (var diagnostic in diagnostics)
             {
                 var lineSpan = diagnostic.Location.GetMappedLineSpan();
-
-                var diagnosticPath = lineSpan.HasMappedPath ? lineSpan.Path : unmappedPath;
+                var lineSpanPath = lineSpan.Path;
+                var diagnosticPath = lineSpan.HasMappedPath ? lineSpanPath : unmappedPath;
 
                 if (viewPortsByBufferId == null || viewPortsByBufferId.Count == 0)
                 {
                     var errorMessage = RelativizeFilePath();
 
-                    yield return (new SerializableDiagnostic(diagnostic), errorMessage);
+                    yield return new SerializableDiagnostic(diagnostic, errorMessage);
                 }
                 else
                 {
                     var target = viewPortsByBufferId
-                                 .Where(e => e.Key.Contains("@") && (diagnosticPath == unmappedPath || diagnosticPath.EndsWith(e.Value.Destination.Name)))
-                                 .FirstOrDefault(e => e.Value.Region.Contains(diagnostic.Location.SourceSpan.Start));
+                                 .Where(e => e.Name.Contains("@") && (diagnosticPath == unmappedPath || diagnosticPath.EndsWith(e.Destination.Name)))
+                                 .FirstOrDefault(e => e.Region.Contains(diagnostic.Location.SourceSpan.Start));
 
-                    if (target.Value != null && !target.Value.Region.IsEmpty)
+                    if (target != null && !target.Region.IsEmpty)
                     {
                         var processedDiagnostic = AlignDiagnosticLocation(target, diagnostic, paddingSize);
-                        if (processedDiagnostic.Item1 != null)
+                        if (processedDiagnostic != null)
                         {
                             yield return processedDiagnostic;
                         }
@@ -50,7 +49,7 @@ namespace WorkspaceServer.Transformations
                     {
                         var errorMessage = RelativizeFilePath();
 
-                        yield return (new SerializableDiagnostic(diagnostic), errorMessage);
+                        yield return new SerializableDiagnostic(diagnostic, errorMessage);
                     }
                 }
 
@@ -58,9 +57,9 @@ namespace WorkspaceServer.Transformations
                 {
                     var message = diagnostic.ToString();
 
-                    if (!string.IsNullOrWhiteSpace(lineSpan.Path))
+                    if (!string.IsNullOrWhiteSpace(lineSpanPath))
                     {
-                        var directoryPath = new FileInfo(lineSpan.Path).Directory.FullName;
+                        var directoryPath = new FileInfo(lineSpanPath).Directory?.FullName ?? "";
 
                         if (!directoryPath.EndsWith(Path.DirectorySeparatorChar))
                         {
@@ -84,25 +83,25 @@ namespace WorkspaceServer.Transformations
             }
         }
 
-        private static (SerializableDiagnostic, string) AlignDiagnosticLocation(
-            KeyValuePair<string, Viewport> target, 
+        private static SerializableDiagnostic AlignDiagnosticLocation(
+            Viewport viewport, 
             Diagnostic diagnostic, 
             int paddingSize)
         {
             // offest of the buffer int othe original source file
-            var offset = target.Value.Region.Start;
+            var offset = viewport.Region.Start;
             // span of content injected in the buffer viewport
-            var selectionSpan = new TextSpan(offset + paddingSize, target.Value.Region.Length - (2 * paddingSize));
+            var selectionSpan = new TextSpan(offset + paddingSize, viewport.Region.Length - (2 * paddingSize));
 
             // aligned offset of the diagnostic entry
             var start = diagnostic.Location.SourceSpan.Start - selectionSpan.Start;
             var end = diagnostic.Location.SourceSpan.End - selectionSpan.Start;
             // line containing the diagnostic in the original source file
-            var line = target.Value.Destination.Text.Lines[diagnostic.Location.GetMappedLineSpan().StartLinePosition.Line];
+            var line = viewport.Destination.Text.Lines[diagnostic.Location.GetMappedLineSpan().StartLinePosition.Line];
 
             // first line of the region from the soruce file
             var lineOffset = 0;
-            var lines = target.Value.Destination.Text.GetSubText(selectionSpan).Lines;
+            var lines = viewport.Destination.Text.GetSubText(selectionSpan).Lines;
             foreach (var regionLine in lines)
             {
                 if (regionLine.ToString() == line.ToString())
@@ -115,38 +114,22 @@ namespace WorkspaceServer.Transformations
 
             if (lineOffset >= lines.Count)
             {
-                return (null,string.Empty);
+                return null;
             }
 
-            var bufferTextSource = SourceFile.Create(target.Value.Destination.Text.GetSubText(selectionSpan).ToString());
+            var bufferTextSource = SourceFile.Create(viewport.Destination.Text.GetSubText(selectionSpan).ToString());
             var lineText = line.ToString();
             var partToFind = lineText.Substring(diagnostic.Location.GetMappedLineSpan().Span.Start.Character);
             var charOffset = bufferTextSource.Text.Lines[lineOffset].ToString().IndexOf(partToFind, StringComparison.Ordinal);
-            var location = new { Line = lineOffset + 1, Char = charOffset + 1 };
 
-            var diagnosticMessage = diagnostic.GetMessage();
+            var errorMessage = $"({lineOffset + 1},{charOffset + 1}): error {diagnostic.Id}: {diagnostic.GetMessage()}";
 
-            if (diagnosticMessage.Contains(@"c:\", StringComparison.OrdinalIgnoreCase))
-            {
-                Debug.WriteLine(diagnosticMessage);
-            }
-
-            var errorMessage = $"({location.Line},{location.Char}): error {diagnostic.Id}: {diagnosticMessage}";
-
-
-            if (errorMessage.Contains(@"c:\", StringComparison.OrdinalIgnoreCase))
-            {
-                Debug.WriteLine(errorMessage);
-            }
-
-            var processedDiagnostic = (new SerializableDiagnostic(
-                    start,
-                    end,
-                    diagnosticMessage,
-                    diagnostic.Severity,
-                    diagnostic.Id),
-                errorMessage);
-            return processedDiagnostic;
+            return new SerializableDiagnostic(
+                start,
+                end,
+                errorMessage,
+                diagnostic.Severity,
+                diagnostic.Id);
         }
     }
 }
