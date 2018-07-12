@@ -32,7 +32,7 @@ namespace WorkspaceServer.Transformations
                 includeInstrumentation: source.IncludeInstrumentation);
         }
 
-        public Dictionary<string, Viewport> ExtractViewPorts(Workspace ws)
+        public IReadOnlyCollection<Viewport> ExtractViewPorts(Workspace ws)
         {
             if (ws == null) throw new ArgumentNullException(nameof(ws));
 
@@ -50,7 +50,7 @@ namespace WorkspaceServer.Transformations
                 if (sourceBuffer.Id.Contains("@"))
                 {
                     var viewPorts = ExtractViewPorts(files.Values);
-                    if (viewPorts.TryGetValue(sourceBuffer.Id, out var viewPort))
+                    if (viewPorts.SingleOrDefault(p => p.Name == sourceBuffer.Id) is Viewport viewPort)
                     {
                         var tree = CSharpSyntaxTree.ParseText(viewPort.Destination.Text.ToString());
                         var textChange = new TextChange(
@@ -64,9 +64,9 @@ namespace WorkspaceServer.Transformations
                         var newCode = (await txt.GetTextAsync()).ToString();
 
                         buffers.Add(new Workspace.Buffer(
-                                        sourceBuffer.Id, 
-                                        sourceBuffer.Content, 
-                                        sourceBuffer.Position, 
+                                        sourceBuffer.Id,
+                                        sourceBuffer.Content,
+                                        sourceBuffer.Position,
                                         offset));
                         files[viewPort.Destination.Name] = SourceFile.Create(newCode, viewPort.Destination.Name);
                     }
@@ -88,15 +88,10 @@ namespace WorkspaceServer.Transformations
             return (processedFiles, processedBuffers);
         }
 
-        private static Dictionary<string, Viewport> ExtractViewPorts(
+        private static IReadOnlyCollection<Viewport> ExtractViewPorts(
             IReadOnlyCollection<SourceFile> files)
         {
             var viewPorts = new Dictionary<string, Viewport>();
-
-            if (files.Count == 0)
-            {
-                return viewPorts;
-            }
 
             foreach (var sourceFile in files)
             {
@@ -106,16 +101,18 @@ namespace WorkspaceServer.Transformations
 
                 foreach (var region in regions)
                 {
-                    viewPorts.Add(region.regionName, new Viewport(sourceFile, region.span));
+                    viewPorts.Add(
+                        region.regionName, 
+                        new Viewport(sourceFile, region.span, region.regionName));
                 }
             }
 
-            return viewPorts;
+            return viewPorts.Values;
         }
 
         private static IEnumerable<(string regionName, TextSpan span)> ExtractRegions(SourceText code, string fileName)
         {
-            List<(SyntaxTrivia startRegion, SyntaxTrivia endRegion, string label)> FindRegions(SyntaxNode syntaxNode)
+            IEnumerable<(SyntaxTrivia startRegion, SyntaxTrivia endRegion, string label)> FindRegions(SyntaxNode syntaxNode)
             {
                 var nodesWithRegionDirectives =
                     from node in syntaxNode.DescendantNodesAndTokens()
@@ -125,7 +122,6 @@ namespace WorkspaceServer.Transformations
                           leadingTrivia.Kind() == SyntaxKind.EndRegionDirectiveTrivia
                     select node;
 
-                var viewPorts = new List<(SyntaxTrivia startRegion, SyntaxTrivia endRegion, string label)>();
                 var stack = new Stack<SyntaxTrivia>();
                 var processedSpans = new HashSet<TextSpan>();
                 foreach (var nodeWithRegionDirective in nodesWithRegionDirectives)
@@ -134,29 +130,26 @@ namespace WorkspaceServer.Transformations
 
                     foreach (var currentTrivia in triviaList)
                     {
-                        if (!processedSpans.Add(currentTrivia.FullSpan)) continue;
-
-                        if (currentTrivia.Kind() == SyntaxKind.RegionDirectiveTrivia)
+                        if (processedSpans.Add(currentTrivia.FullSpan))
                         {
-                            stack.Push(currentTrivia);
-                        }
-                        else if (currentTrivia.Kind() == SyntaxKind.EndRegionDirectiveTrivia)
-                        {
-                            var start = stack.Pop();
-                            var regionName = start.ToFullString().Replace("#region", string.Empty).Trim();
-                            var viewPortId = $"{fileName}@{regionName}";
-                            viewPorts.Add(
-                                (start, currentTrivia, viewPortId));
+                            if (currentTrivia.Kind() == SyntaxKind.RegionDirectiveTrivia)
+                            {
+                                stack.Push(currentTrivia);
+                            }
+                            else if (currentTrivia.Kind() == SyntaxKind.EndRegionDirectiveTrivia)
+                            {
+                                var start = stack.Pop();
+                                var regionName = start.ToFullString().Replace("#region", string.Empty).Trim();
+                                var viewPortId = $"{fileName}@{regionName}";
+                                yield return (start, currentTrivia, viewPortId);
+                            }
                         }
                     }
                 }
-
-                return viewPorts;
             }
 
             var sourceCodeText = code.ToString();
             var root = CSharpSyntaxTree.ParseText(sourceCodeText).GetRoot();
-            var regions = new List<(string regionName, TextSpan span)>();
 
             foreach (var (startRegion, endRegion, label) in FindRegions(root))
             {
@@ -164,10 +157,8 @@ namespace WorkspaceServer.Transformations
                 var length = endRegion.GetLocation().SourceSpan.Start -
                              startRegion.GetLocation().SourceSpan.End;
                 var loc = new TextSpan(start, length);
-                regions.Add((label, loc));
+                yield return (label, loc);
             }
-
-            return regions;
         }
     }
 }

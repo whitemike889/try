@@ -1,15 +1,18 @@
-﻿using Microsoft.CodeAnalysis.Text;
-using System;
+﻿using System;
+using Microsoft.CodeAnalysis.Text;
 
 namespace WorkspaceServer.Models.Execution
 {
     public class Viewport
     {
-        public Viewport(SourceFile destination, TextSpan region)
+        public Viewport(SourceFile destination, TextSpan region, string name)
         {
-            this.Region = region;
-            this.Destination = destination ?? throw new ArgumentNullException(nameof(destination));
+            Region = region;
+            Name = name;
+            Destination = destination ?? throw new ArgumentNullException(nameof(destination));
         }
+
+        public string Name { get; }
 
         public TextSpan Region { get; }
 
