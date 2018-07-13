@@ -14,4 +14,4 @@ dotnet publish $REPO_ROOT/MLS.Agent/MLS.Agent.csproj -c Release -o $APP_ROOT
 cp $REPO_ROOT/MLS.Agent/Dockerfile $DOCKER_CONTEXT_ROOT/Dockerfile
 
 mkdir -p $DOCKER_NUGET_PACKAGES
-cp -r $NUGET_PACKAGES $DOCKER_NUGET_PACKAGES
+cp -r $NUGET_PACKAGES/. $DOCKER_NUGET_PACKAGES
