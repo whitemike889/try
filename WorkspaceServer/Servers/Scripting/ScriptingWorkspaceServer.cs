@@ -176,7 +176,7 @@ namespace WorkspaceServer.Servers.Scripting
             }
         }
 
-        public async Task<SignatureHelpResponse> GetSignatureHelp(WorkspaceRequest request, Budget budget = null)
+        public async Task<SignatureHelpResult> GetSignatureHelp(WorkspaceRequest request, Budget budget = null)
         {
             budget = budget ?? new Budget();
             using (Log.OnExit())

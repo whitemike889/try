@@ -57,9 +57,17 @@ namespace WorkspaceServer.Models.Execution
         {
             private readonly int offSetFromParentBuffer;
 
-            public Buffer(string id, string content, int position = 0, int offSetFromParentBuffer = 0)
+            public Buffer(string id, string content, int position, int offSetFromParentBuffer)
             {
                 this.offSetFromParentBuffer = offSetFromParentBuffer;
+                Id = id;
+                Content = content;
+                Position = position;
+            }
+
+            [JsonConstructor]
+            public Buffer(string id, string content, int position = 0)
+            {
                 Id = id;
                 Content = content;
                 Position = position;
@@ -69,7 +77,7 @@ namespace WorkspaceServer.Models.Execution
 
             public string Content { get; }
 
-            public int Position { get; }
+            public int Position { get; internal set; }
 
             [JsonIgnore]
             public int AbsolutePosition => Position + offSetFromParentBuffer;

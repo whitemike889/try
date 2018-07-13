@@ -13,13 +13,30 @@ namespace WorkspaceServer.Models
 
         public string ActiveBufferId { get; }
 
-        public WorkspaceRequest(Workspace workspace, HttpRequest httpRequest = null, string activeBufferId = null)
-
+        public WorkspaceRequest(
+            Workspace workspace,
+            HttpRequest httpRequest = null,
+            string activeBufferId = null,
+            int? position = null)
         {
             Workspace = workspace ?? throw new ArgumentNullException(nameof(workspace));
 
             HttpRequest = httpRequest;
-            ActiveBufferId = activeBufferId;
+
+            if (!string.IsNullOrWhiteSpace(activeBufferId))
+            {
+                ActiveBufferId = activeBufferId;
+            }
+            else if (workspace.Buffers.Length == 1)
+            {
+                ActiveBufferId = workspace.Buffers[0].Id;
+            }
+
+            if (position != null)
+            {
+                var buffer = Workspace.GetBufferWithSpecifiedIdOrSingleBufferIfThereIsOnlyOne(ActiveBufferId);
+                buffer.Position = position.Value;
+            }
         }
 
         public static WorkspaceRequest FromDirectory(DirectoryInfo directory, string workspaceType)

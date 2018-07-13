@@ -96,7 +96,7 @@ namespace WorkspaceServer.Servers.Roslyn
                                         .ToArray());
         }
 
-        public async Task<SignatureHelpResponse> GetSignatureHelp(WorkspaceRequest request, Budget budget)
+        public async Task<SignatureHelpResult> GetSignatureHelp(WorkspaceRequest request, Budget budget)
         {
             budget = budget ?? new TimeBudget(TimeSpan.FromSeconds(defaultBudgetInSeconds));
 
@@ -115,12 +115,12 @@ namespace WorkspaceServer.Servers.Roslyn
 
             if (document == null)
             {
-                return new SignatureHelpResponse();
+                return new SignatureHelpResult();
             }
 
             var tree = await document.GetSyntaxTreeAsync();
 
-            var absolutePosition = processed.GetAbsolutePosition(request.ActiveBufferId);
+            var absolutePosition = processed.GetAbsolutePositionForGetBufferWithSpecifiedIdOrSingleBufferIfThereIsOnlyOne(request.ActiveBufferId);
 
             var syntaxNode = tree.GetRoot().FindToken(absolutePosition).Parent;
 

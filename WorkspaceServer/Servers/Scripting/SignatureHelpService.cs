@@ -14,21 +14,21 @@ namespace WorkspaceServer.Servers.Scripting
     public class SignatureHelpService
     {
 
-        public static async Task<SignatureHelpResponse> GetSignatureHelp(Document document, int position, Budget budget = null)
+        public static async Task<SignatureHelpResult> GetSignatureHelp(Document document, int position, Budget budget = null)
         {
             var invocation = await GetInvocation(document, position);
             return InternalGetSignatureHelp(invocation);
         }
 
-        public static async Task<SignatureHelpResponse> GetSignatureHelp(Func<Task<SemanticModel>> getSemanticModel, SyntaxNode node, int position)
+        public static async Task<SignatureHelpResult> GetSignatureHelp(Func<Task<SemanticModel>> getSemanticModel, SyntaxNode node, int position)
         {
             var invocation = await GetInvocation(getSemanticModel, node, position);
             return InternalGetSignatureHelp(invocation);
         }
 
-        private static SignatureHelpResponse InternalGetSignatureHelp(InvocationContext invocation)
+        private static SignatureHelpResult InternalGetSignatureHelp(InvocationContext invocation)
         {
-            var response = new SignatureHelpResponse();
+            var response = new SignatureHelpResult();
 
             if (invocation == null)
             {

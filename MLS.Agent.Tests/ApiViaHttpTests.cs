@@ -6,7 +6,6 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Clockwise;
-using Newtonsoft.Json;
 using Pocket;
 using Recipes;
 using WorkspaceServer.Models;
@@ -75,7 +74,7 @@ namespace MLS.Agent.Tests
             var response = await CallRun(requestJson, options: new CommandLineOptions(true, false,string.Empty,false,true,string.Empty));
 
             var result = response;
-                result.Should().BeNotFound();
+            result.Should().BeNotFound();
         }
 
         [Fact]
@@ -101,7 +100,7 @@ namespace MLS.Agent.Tests
         }
 
         [Fact]
-        public async Task When_they_load_a_snippet_then_they_get_diagnostics_for_the_first_line()
+        public async Task When_they_run_a_snippet_then_they_get_diagnostics_for_the_first_line()
         {
             var output = Guid.NewGuid().ToString();
 
@@ -138,10 +137,18 @@ namespace MLS.Agent.Tests
             }
         }
 
-        [Fact]
-        public async Task Sending_payloads_that_dont_include_source_strings_results_in_BadRequest()
+        [Theory]
+        [InlineData("{}")]
+        [InlineData("{ \"workspace\" : { } }")]
+        [InlineData( /* has top-level position property */
+            "{\r\n  \"workspace\": {\r\n    \"workspaceType\": \"console\",\r\n    \"files\": [],\r\n    \"buffers\": [\r\n      {\r\n        \"id\": \"\",\r\n        \"content\": \"\",\r\n        \"position\": 0\r\n      }\r\n    ],\r\n    \"usings\": []\r\n  },\r\n  \"activeBufferId\": \"\",\r\n  \"position\": 187\r\n}", Skip = "This is still supported")]
+        [InlineData( /* buffers array is empty */
+            "{\r\n  \"workspace\": {\r\n    \"workspaceType\": \"console\",\r\n    \"files\": [],\r\n    \"buffers\": [],\r\n    \"usings\": []\r\n  },\r\n  \"activeBufferId\": \"\"\r\n}")]
+        [InlineData( /* no buffers property */
+            "{\r\n  \"workspace\": {\r\n    \"workspaceType\": \"console\",\r\n    \"files\": [],\r\n    \"usings\": []\r\n  },\r\n  \"activeBufferId\": \"\"\r\n}")]
+        public async Task Sending_payload_that_deserialize_to_invalid_workspace_objects_results_in_BadRequest(string workspaceRequestBody)
         {
-            var response = await CallRun("{}");
+            var response = await CallRun(workspaceRequestBody);
 
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
@@ -158,7 +165,7 @@ namespace MLS.Agent.Tests
         }
 
         [Fact]
-        public async Task When_they_load_a_snippet_then_they_can_use_the_workspace_endpoint_to_get_completions()
+        public async Task A_script_snippet_workspace_can_be_used_to_get_completions()
         {
             var (processed, position) = CodeManipulation.ProcessMarkup("Console.$$");
             using (var agent = new AgentService())
@@ -193,7 +200,7 @@ namespace MLS.Agent.Tests
         }
 
         [Fact]
-        public async Task When_they_load_a_snippet_then_they_can_use_the_workspace_endpoint_to_get_signature_help()
+        public async Task A_script_snippet_workspace_can_be_used_to_get_signature_help()
         {
             var log = new LogEntryList();
             var (processed, position) = CodeManipulation.ProcessMarkup("Console.WriteLine($$)");
@@ -221,17 +228,14 @@ namespace MLS.Agent.Tests
 
                 var result = await response
                                    .EnsureSuccess()
-                                   .DeserializeAs<SignatureHelpResponse>();
+                                   .DeserializeAs<SignatureHelpResult>();
                 result.Signatures.Should().NotBeNullOrEmpty();
                 result.Signatures.Should().Contain(signature => signature.Label == "void Console.WriteLine(string format, params object[] arg)");
             }
-
-            log.Should()
-               .Contain(e => e.OperationName == "SignatureHelp");
         }
 
         [Fact]
-        public async Task When_they_load_a_project_then_they_can_use_the_workspace_endpoint_to_get_signature_help()
+        public async Task A_console_workspace_can_be_used_to_get_signature_help()
         {
             #region bufferSources
 
@@ -298,17 +302,14 @@ namespace FibonacciTest
 
                 var result = await response
                                    .EnsureSuccess()
-                                   .DeserializeAs<SignatureHelpResponse>();
+                                   .DeserializeAs<SignatureHelpResult>();
                 result.Signatures.Should().NotBeNullOrEmpty();
                 result.Signatures.Should().Contain(signature => signature.Label == "void Console.WriteLine(string format, params object[] arg)");
             }
-
-            log.Should()
-               .Contain(e => e.OperationName == "SignatureHelp");
         }
 
         [Fact]
-        public async Task When_they_load_a_project_then_they_can_use_the_workspace_endpoint_to_get_type_completion()
+        public async Task A_console_project_can_be_used_to_get_type_completion()
         {
             #region bufferSources
 
@@ -380,134 +381,19 @@ namespace FibonacciTest
                     .DeserializeAs<CompletionResult>();
                 result.Items.Should().NotBeNullOrEmpty();
                 result.Items.Should().Contain(completion => completion.SortText == "Console");
-                log.Should()
-                    .Contain(e => e.OperationName == "Completion");
             }
-        }
-
-        [Fact]
-        public async Task When_they_load_a_project_then_they_can_use_the_workspace_endpoint_to_get_method_completion()
-        {
-            #region bufferSources
-
-            var program = @"using System;
-using System.Linq;
-
-namespace FibonacciTest
-{
-    public class Program
-    {
-        public static void Main()
-        {
-            foreach (var i in FibonacciGenerator.Fibonacci().Take(20))
-            {
-                Console.WriteLine(i);
-            }
-        }       
-    }
-}".EnforceLF();
-            var generator = @"using System.Collections.Generic;
-using System;
-namespace FibonacciTest
-{
-    public static class FibonacciGenerator
-    {
-        public static IEnumerable<int> Fibonacci()
-        {
-            int current = 1, next = 1;
-            while (true)
-            {
-                yield return current;
-                next = current + (current = next);
-                Console.$$
-            }
-        }
-    }
-}".EnforceLF();
-
-            #endregion
-
-            var (processed, position) = CodeManipulation.ProcessMarkup(generator);
-            var log = new LogEntryList();
-            using (LogEvents.Subscribe(log.Add))
-            using (var agent = new AgentService())
-            {
-                var json =
-                    new WorkspaceRequest(activeBufferId: "generators/FibonacciGenerator.cs",
-                                         workspace: Workspace.FromSources(
-                                             "console",
-                                             ("Program.cs", program, 0),
-                                             ("generators/FibonacciGenerator.cs", processed, position)
-                                         )).ToJson();
-
-                var request = new HttpRequestMessage(
-                    HttpMethod.Post,
-                    @"/workspace/completion")
-                {
-                    Content = new StringContent(
-                        json,
-                        Encoding.UTF8,
-                        "application/json")
-                };
-
-                var response = await agent.SendAsync(request);
-
-                var result = await response
-                                   .EnsureSuccess()
-                                   .DeserializeAs<CompletionResult>();
-                result.Items.Should().NotBeNullOrEmpty();
-                result.Items.Should().Contain(completion => completion.SortText == "Beep");
-            }
-
-            log.Should()
-               .Contain(e => e.OperationName == "Completion");
         }
 
         [Theory]
         [InlineData("script")]
         [InlineData("console")]
-        public async Task When_invoked_with_workspace_it_executes_correctly(string workspaceType)
+        public async Task When_run_is_invoked_with_workspace_it_executes_correctly(string workspaceType)
         {
             var output = "1";
             var requestJson =
                 $@"{{ ""Buffers"":[{{""Id"":"""",""Content"":""using System;\nusing System.Linq;\nusing System.Collections.Generic;\n\npublic class Program\n{{\n  public static void Main()\n  {{\n    foreach (var i in Fibonacci().Take(1))\n    {{\n      Console.WriteLine(i);\n    }}\n  }}\n\n  private static IEnumerable<int> Fibonacci()\n  {{\n    int current = 1, next = 1;\n\n    while (true) \n    {{\n      yield return current;\n      next = current + (current = next);\n    }}\n  }}\n}}\n"",""Position"":0}}],""Usings"":[],""WorkspaceType"":""{workspaceType}"",""Files"":[]}}";
 
             var response = await CallRun(requestJson);
-
-            var result = await response
-                .EnsureSuccess()
-                .DeserializeAs<RunResult>();
-
-            VerifySucceeded(result);
-
-            result.ShouldSucceedWithOutput(output);
-        }
-
-        [Fact]
-        public async Task When_invoked_with_script_workspace_request_it_executes_correctly()
-        {
-            var output = "1";
-            var sourceCode = @"using System;
-using System.Linq;
-
-public class Program {
-    public static void Main() {
-        foreach (var i in Fibonacci().Take(1)) {
-            Console.WriteLine(i);
-        }
-    }
-
-    private static IEnumerable<int> Fibonacci() {
-        int current = 1, next = 1;
-        while (true) {
-            yield return current;
-            next = current + (current = next);
-        }
-    }
-}".EnforceLF();
-            var request = new WorkspaceRequest(new Workspace(workspaceType: "script", buffers: new[] { new Workspace.Buffer(string.Empty, sourceCode, 0) }));
-
-            var response = await CallRun(request.ToJson(), null);
 
             var result = await response
                 .EnsureSuccess()
@@ -593,21 +479,6 @@ public class Program {
             result.ShouldFailWithOutput("broken.cs(1,1): error CS1031: Type expected");
         }
 
-        [Fact]
-        public async Task Console_workspace_signature_help()
-        {
-            var workspaceJson =
-                @"{""workspace"":{""workspaceType"":""console"",""files"":[],""buffers"":[{""id"":""Program.cs"",""content"":""using System;\nusing System.Collections.Generic;\nusing System.Linq;\n\npublic class Program\n{\n  public static void Main()\n  {\n    foreach (var i in Fibonacci().Take(20))\n    {\n      Console.WriteLine()\n    }\n  }\n\n  private static IEnumerable<int> Fibonacci()\n  {\n    int current = 1, next = 1;\n\n    while (true) \n    {\n      yield return current;\n      next = current + (current = next);\n    }\n  }\n}\n"",""position"":197}],""usings"":[]},""activeBufferId"":""Program.cs""}";
-            
-            var response = await CallSignatureHelp(workspaceJson);
-
-            var result = await response
-                               .EnsureSuccess()
-                               .DeserializeAs<SignatureHelpResponse>();
-
-            result. Signatures.Should().Contain(s => s.Label == "void Console.WriteLine()");
-        }
-
         [Fact(Skip = "flaky, needs investigation")]
         public async Task When_Run_times_out_in_workspace_server_code_then_the_response_code_is_504()
         {
@@ -621,35 +492,24 @@ public class Program {
             response.StatusCode.Should().Be(HttpStatusCode.GatewayTimeout);
         }
 
-        [Fact(Skip = "flaky, needs investigation")]
-        public async Task When_Run_times_out_in_user_code_in_a_console_workspace_type_then_the_response_code_is_417()
+        [Theory]
+        [InlineData("script")]
+        [InlineData("console", Skip = "flaky, needs investigation")]
+        public async Task When_Run_times_out_in_user_code_then_the_response_code_is_417(string workspaceType)
         {
             // TODO-JOSEQU: (When_Run_times_out_in_user_code_then_the_response_code_is_417) make this test faster
 
             Clock.Reset();
 
             var requestJson =
-                @"{ ""Buffers"":[{""Id"":"""",""Content"":""public class Program { public static void Main()\n  {\n  System.Threading.Thread.Sleep(System.TimeSpan.FromSeconds(30));  }  }""}],""WorkspaceType"":""console""}";
+                $@"{{ ""Buffers"":[{{""Id"":"""",""Content"":""public class Program {{ public static void Main()\n  {{\n  System.Threading.Thread.Sleep(System.TimeSpan.FromSeconds(30));  }}  }}""}}],""WorkspaceType"":""{workspaceType}""}}";
 
             var response = await CallRun(requestJson, 15000);
 
             response.StatusCode.Should().Be(HttpStatusCode.ExpectationFailed);
         }
+        
 
-        [Fact]
-        public async Task When_Run_times_out_in_user_code_in_a_script_workspace_type_then_the_response_code_is_417()
-        {
-            // TODO: (When_Run_times_out_in_user_code_in_a_script_workspace_type_then_the_response_code_is_417) make this test faster
-
-            Clock.Reset();
-
-            var requestJson =
-                @"{ ""Buffers"":[{""Id"":"""",""Content"":""public class Program { public static void Main()\n  {\n  System.Threading.Thread.Sleep(System.TimeSpan.FromSeconds(30));  }  }""}],""WorkspaceType"":""script""}";
-
-            var response = await CallRun(requestJson, 15000);
-
-            response.StatusCode.Should().Be(HttpStatusCode.ExpectationFailed);
-        }
 
         private class FailedRunResult : Exception
         {

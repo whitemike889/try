@@ -53,5 +53,18 @@ namespace MLS.Agent.Tests
             });
             action.Should().Throw<ArgumentException>();
         }
+
+        [Fact]
+        public void When_ActiveBufferId_is_not_specified_and_there_is_only_one_buffer_then_it_returns_that_buffers_id()
+        {
+            var request = new WorkspaceRequest(
+                new Workspace(
+                    buffers: new[]
+                    {
+                        new Workspace.Buffer("the.only.buffer.cs", "its content", 123)
+                    }));
+
+            request.ActiveBufferId.Should().Be("the.only.buffer.cs");
+        }
     }
 }
