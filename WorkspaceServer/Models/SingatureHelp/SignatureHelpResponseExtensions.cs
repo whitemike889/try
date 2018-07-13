@@ -5,9 +5,9 @@ namespace WorkspaceServer.Models.SingatureHelp
 {
     public static class SignatureHelpResponseExtensions
     {
-        public static SignatureHelpResponse ProcessDocumentation(this SignatureHelpResponse source)
+        public static SignatureHelpResult ProcessDocumentation(this SignatureHelpResult source)
         {
-            var ret = new SignatureHelpResponse
+            var ret = new SignatureHelpResult
             {
                 ActiveParameter = source.ActiveParameter,
                 ActiveSignature = source.ActiveSignature,

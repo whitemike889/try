@@ -9,6 +9,6 @@ namespace WorkspaceServer
     public interface ILanguageService
     {
         Task<CompletionResult> GetCompletionList(WorkspaceRequest request, Budget budget = null);
-        Task<SignatureHelpResponse> GetSignatureHelp(WorkspaceRequest request, Budget budget = null);
+        Task<SignatureHelpResult> GetSignatureHelp(WorkspaceRequest request, Budget budget = null);
     }
 }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace WorkspaceServer.Models.SingatureHelp
 {
-    public class SignatureHelpResponse
+    public class SignatureHelpResult
     {
         private IEnumerable<SignatureHelpItem> signatures ;
 

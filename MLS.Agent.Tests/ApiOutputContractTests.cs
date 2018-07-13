@@ -1,4 +1,3 @@
-using System;
 using System.Threading.Tasks;
 using Assent;
 using Recipes;
@@ -10,14 +9,14 @@ using Xunit.Abstractions;
 
 namespace MLS.Agent.Tests
 {
-    public class ApiContractTests : ApiViaHttpTestsBase
+    public class ApiOutputContractTests : ApiViaHttpTestsBase
     {
         private readonly Configuration configuration;
 
-        public ApiContractTests(ITestOutputHelper output) : base(output)
+        public ApiOutputContractTests(ITestOutputHelper output) : base(output)
         {
             configuration = new Configuration()
-                            .UsingExtension("json");
+                .UsingExtension("json");
 
 #if !DEBUG
             configuration = configuration.SetInteractive(false);
@@ -126,7 +125,7 @@ namespace MLS.Agent.Tests
                         EntrypointCode("int a = 1; int b = 2; a = 3; b = a;")
                     },
                     includeInstrumentation: true)
-                ).ToJson();
+            ).ToJson();
 
             var response = await CallRun(requestJson);
 
@@ -147,7 +146,7 @@ namespace MLS.Agent.Tests
                         EntrypointCode("int a = 1; int b = 2; a = 3; b = a;")
                     },
                     includeInstrumentation: false)
-                ).ToJson();
+            ).ToJson();
 
             var response = await CallRun(requestJson);
 
@@ -155,6 +154,7 @@ namespace MLS.Agent.Tests
 
             this.Assent(result.FormatJson(), configuration);
         }
+
         private static Workspace.Buffer EntrypointCode(string mainContent = @"Console.WriteLine(Sample.Method());$$")
         {
             var input = $@"
@@ -207,5 +207,4 @@ namespace Example
                 position ?? 0);
         }
     }
-
 }

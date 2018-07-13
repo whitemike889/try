@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using Microsoft.CodeAnalysis.Text;
 
@@ -16,26 +15,50 @@ namespace WorkspaceServer.Models.Execution
         public static Workspace.File GetFileFromBufferId(this Workspace workspace, string bufferId)
         {
             var parsed = bufferId?.Split("@")[0].Trim();
-            var fileName = string.IsNullOrWhiteSpace(parsed) ? "Program.cs" : parsed;
-            return workspace.Files.FirstOrDefault(f => f.Name == fileName);
+            return workspace.Files.FirstOrDefault(f => f.Name == parsed);
         }
 
-        public static FileInfo GetFileInfoFromBufferId(this Workspace workspace, string bufferId, string root = null)
+        public static int GetAbsolutePositionForGetBufferWithSpecifiedIdOrSingleBufferIfThereIsOnlyOne(
+            this Workspace workspace, 
+            string bufferId = null)
+        {
+            // TODO: (GetAbsolutePositionForGetBufferWithSpecifiedIdOrSingleBufferIfThereIsOnlyOne) this concept should go away
+
+            var buffer = GetBufferWithSpecifiedIdOrSingleBufferIfThereIsOnlyOne(workspace, bufferId);
+
+            return buffer.AbsolutePosition;
+        }
+
+        public static Workspace.Buffer GetBufferWithSpecifiedIdOrSingleBufferIfThereIsOnlyOne(
+            this Workspace workspace, 
+            string bufferId = null)
+        {
+
+            // TODO: (GetBufferWithSpecifiedIdOrSingleBufferIfThereIsOnlyOne) this concept should go away
+
+            var buffer = workspace.Buffers.SingleOrDefault(b => b.Id == bufferId);
+
+            if (buffer == null)
+            {
+                if (workspace.Buffers.Length == 1)
+                {
+                    buffer = workspace.Buffers.Single();
+                }
+                else
+                {
+                    throw new ArgumentException("Ambiguous buffer");
+                }
+            }
+
+            return buffer;
+        }
+
+        public static (int line, int column, int absolutePosition) GetTextLocation(
+            this Workspace workspace,
+            string bufferId)
         {
             var file = workspace.GetFileFromBufferId(bufferId);
-            var fileFullPath = string.IsNullOrWhiteSpace(root) ? file.Name : Path.Combine(root, file.Name);
-            return new FileInfo(fileFullPath);
-        }
-
-        public static int GetAbsolutePosition(this Workspace workspace, string bufferId)
-        {
-            return workspace.Buffers.Single(b => b.Id == bufferId).AbsolutePosition;
-        }
-
-        public static (int line, int column, int absolutePosition) GetTextLocation(this Workspace workspace, string bufferId)
-        {
-            var file = workspace.GetFileFromBufferId(bufferId);
-            var absolutePosition = GetAbsolutePosition(workspace, bufferId);
+            var absolutePosition = GetAbsolutePositionForGetBufferWithSpecifiedIdOrSingleBufferIfThereIsOnlyOne(workspace, bufferId);
 
             var src = SourceText.From(file.Text);
             var line = src.Lines.GetLineFromPosition(absolutePosition);
@@ -49,10 +72,7 @@ namespace WorkspaceServer.Models.Execution
                 usings: workspace.Usings,
                 buffers: workspace.Buffers,
                 files: workspace.Files,
-                workspaceType: workspace.WorkspaceType
-                );
-
-            return workspace;
+                workspaceType: workspace.WorkspaceType);
         }
 
         public static Workspace ReplaceFile(this Workspace workspace, string name, string text)
