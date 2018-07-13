@@ -12,4 +12,4 @@ echo $BUILD_SOURCEVERSION > $REPO_ROOT/build.artifact.commit.sha
 dotnet publish $REPO_ROOT/MLS.Agent/MLS.Agent.csproj -c Release -o $APP_ROOT
 
 cp $REPO_ROOT/MLS.Agent/Dockerfile $DOCKER_CONTEXT_ROOT/Dockerfile
-cp $NUGET_PACKAGES $DOCKER_NUGET_PACKAGES
+cp -r $NUGET_PACKAGES $DOCKER_NUGET_PACKAGES
