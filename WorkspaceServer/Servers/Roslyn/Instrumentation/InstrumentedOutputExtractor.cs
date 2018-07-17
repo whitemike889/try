@@ -40,7 +40,7 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
                         {
                             // Why do we need these indices? To figure out how much stdout to expose for
                             // every piece of instrumentation.
-                            var (outputStart, outputEnd) = GetCorrespondingStdOutSpan(currentState);
+                            var (outputStart, outputEnd) = GetSpanOfStdOutCreatedAtCurrentStep(currentState);
 
                             var modifiedInstrumentation = (JObject)JsonConvert.DeserializeObject(nextString.Trim());
                             var output = ImmutableSortedDictionary.Create<string, int>()
@@ -70,14 +70,16 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
             return new ProgramOutputStreams(withStartEnd.StdOut, withStartEnd.Instrumentation, withStartEnd.ProgramDescriptor);
         }
 
-        static (int outputStart, int outputEnd) GetCorrespondingStdOutSpan(ExtractorState currentState)
+        static (int outputStart, int outputEnd) GetSpanOfStdOutCreatedAtCurrentStep(ExtractorState currentState)
         {
             if (currentState.StdOut.IsEmpty) return (0, 0);
             else
             {
-                var correspondingOutput = currentState.StdOut.Last();
-                var endLocation = String.Join("", currentState.StdOut).Length;
-                return (endLocation - correspondingOutput.Length, endLocation);
+                var newOutput = currentState.StdOut.Last();
+                var entireOutput = String.Join("\n", currentState.StdOut);
+                var endLocation = entireOutput.Length;
+
+                return (endLocation - newOutput.Length, endLocation);
             }
         }
 
@@ -85,7 +87,7 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
 
         static ExtractorState AddProgramStartEnd(ExtractorState input)
         {
-            var (outputStart, outputEnd) = GetCorrespondingStdOutSpan(input);
+            var (outputStart, outputEnd) = GetSpanOfStdOutCreatedAtCurrentStep(input);
 
             var programStarted = "{ \"stackTrace\": \"Program Started\", \"output\": { \"start\": 0, \"end\": 0 } }";
             var programEnded = "{ \"stackTrace\": \"Program Terminated\", \"output\": { \"start\": " + outputStart + ", \"end\": " + outputEnd + " } }";

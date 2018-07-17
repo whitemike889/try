@@ -166,6 +166,13 @@ namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
                 splitOutput.ProgramStatesArray.ProgramStates.First().Locals.Should().BeNull();
             }
 
+            [Fact]
+            public void Last_Program_State_Has_Correct_Output()
+            {
+                var output = splitOutput.ProgramStatesArray.ProgramStates.Last().Output;
+                output.Start.Should().Be(15);
+                output.End.Should().Be(31);
+            }
         }
 
     }
