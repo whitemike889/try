@@ -1,12 +1,14 @@
-﻿namespace WorkspaceServer.Models.Completion
+﻿using System;
+
+namespace WorkspaceServer.Models.Completion
 {
     public class CompletionResult
     {
         public CompletionItem[] Items { get; }
 
-        public CompletionResult(CompletionItem[] items)
+        public CompletionResult(CompletionItem[] items = null)
         {
-            Items = items;
+            Items = items ?? Array.Empty<CompletionItem>();
         }
     }
 }
