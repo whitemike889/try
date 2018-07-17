@@ -86,6 +86,11 @@ namespace WorkspaceServer.Servers.Roslyn
                 }
             }
 
+            if (completionList == null)
+            {
+                return new CompletionResult(null);
+            }
+
             var completionItems = await Task.WhenAll(
                                       completionList.Items
                                                     .Where(i => i != null)

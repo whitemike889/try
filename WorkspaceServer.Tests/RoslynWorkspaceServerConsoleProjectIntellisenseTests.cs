@@ -274,6 +274,52 @@ namespace FibonacciTest
             hasDuplicatedEntries.Should().BeFalse();
         }
 
+        [Fact]
+        public async Task Get_autocompletion_can_be_empty()
+        {
+            #region bufferSources
+
+            var program = @"using System;
+using System.Linq;
+
+namespace FibonacciTest
+{
+    public class Program
+    {
+        public static void Main()
+        {
+            foreach (var i in FibonacciGenerator.Fibonacci().Take(20))
+            {
+                Console.WriteLine(i);
+            }
+        }
+    }
+}".EnforceLF();
+
+            var generator = @"
+#region codeRegion
+#endregion
+".EnforceLF();
+
+            #endregion
+
+            var (processed, position) = CodeManipulation.ProcessMarkup("class $$");
+
+            var workspace = new Workspace(
+                workspaceType: "console",
+                buffers: new[] {
+                    new Workspace.Buffer("Program.cs", program),
+                    new Workspace.Buffer("generators/FibonacciGenerator.cs@codeRegion", processed, position)
+                }, files: new[] {
+                    new Workspace.File("generators/FibonacciGenerator.cs",generator),
+                });
+
+            var request = new WorkspaceRequest(workspace, activeBufferId: "generators/FibonacciGenerator.cs@codeRegion");
+            var server = GetLanguageService();
+            var result = await server.GetCompletionList(request);
+            result.Items.Should().BeEmpty();
+        }
+
         private static bool HasDuplicatedCompletionItems(CompletionResult result)
         {
             var g = result.Items.GroupBy(ci => ci.Kind + ci.InsertText).Select(cig => new { Key = cig.Key, Count = cig.Count() });

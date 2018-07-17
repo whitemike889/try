@@ -1,4 +1,6 @@
-﻿namespace WorkspaceServer.Models.Completion
+﻿using System;
+
+namespace WorkspaceServer.Models.Completion
 {
     public class CompletionResult
     {
@@ -6,7 +8,7 @@
 
         public CompletionResult(CompletionItem[] items)
         {
-            Items = items;
+            Items = items ?? Array.Empty<CompletionItem>();
         }
     }
 }
