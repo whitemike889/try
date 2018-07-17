@@ -88,7 +88,7 @@ namespace WorkspaceServer.Servers.Roslyn
 
             if (completionList == null)
             {
-                return new CompletionResult(null);
+                return new CompletionResult();
             }
 
             var completionItems = await Task.WhenAll(
