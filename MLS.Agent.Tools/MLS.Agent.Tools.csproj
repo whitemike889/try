@@ -19,6 +19,7 @@
     <PackageReference Include="System.Runtime.Extensions" Version="4.3.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="2.8.2" />
     <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="2.8.2" />
+    <PackageReference Include="TaskExtensions" Version="0.1.5650001" />
   </ItemGroup>
 
   <ItemGroup>
