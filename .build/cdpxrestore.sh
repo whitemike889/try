@@ -70,5 +70,5 @@ mkdir -p $WORKSPACES_ROOT/microsoftml
 cd $WORKSPACES_ROOT/microsoftml
 dotnet new console 
 dotnet add package Microsoft.ML --version 0.3.0
-xmlstarlet ed --inplace --insert "/Project/PropertyGroup/OutputType" --type elem -n "LangVersion" --value "7.3" tests.csproj
+xmlstarlet ed --inplace --insert "/Project/PropertyGroup/OutputType" --type elem -n "LangVersion" --value "7.3" microsoftml.csproj
 dotnet build /fl /p:ProvideCommandLineArgs=true
