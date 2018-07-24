@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using FluentAssertions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -58,7 +59,7 @@ namespace WorkspaceServer.Tests.Instrumentation
             return JsonConvert.DeserializeObject<ProgramStateAtPosition>(programStateString);
         }
         [Fact]
-        public async System.Threading.Tasks.Task It_Emits_Right_Format_With_Sentinels_Around_JSONAsync()
+        public async Task It_Emits_Right_Format_With_Sentinels_Around_JSONAsync()
         {
             using (var output = await ConsoleOutput.Capture())
             {
