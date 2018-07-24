@@ -70,7 +70,7 @@ namespace RoslynRecorder
         static void Main({|args:string[] args|})
         {
             Console.WriteLine(""Entry Point"");
-            object {|o:o = new object()|};
+            object {|o:o|} = new object();
             if ({|o:o|} is string {|z:z|}){
                 {|z:z|} = """";
                 Console.WriteLine(""test"");
@@ -92,7 +92,7 @@ namespace RoslynRecorder
     {
         static void Main({|args:string[] args|})
         {
-            dynamic {|a:a = 0|};
+            dynamic {|a:a|} = 0;
             Console.WriteLine(""Entry Point"");
         }
     }
@@ -111,10 +111,10 @@ namespace ConsoleApp1
     {
         static void Main({|args:string[] args|})
         {
-            Point {|p:p = new Point()|};
+            Point {|p:p|} = new Point();
             {|p:p|}.x = 1;
             {|p:p|}.y = 2;
-            Point {|p2:p2 = {|p:p|}|};
+            Point {|p2:p2|} = {|p:p|};
             Console.WriteLine({|p2:p2|}.x);
         }
 
@@ -139,10 +139,10 @@ namespace ConsoleApp1
     {
         static void Main({|args:string[] args|})
         {
-            Point {|p:p = new Point()|};
+            Point {|p:p|} = new Point();
             {|p:p|}.x = 1;
             {|p:p|}.y = 2;
-            Point {|p2:p2 = {|p:p|}|};
+            Point {|p2:p2|} = {|p:p|};
             Console.WriteLine({|p2:p2|}.x);
         }
 
@@ -167,7 +167,7 @@ namespace ConsoleApp1
     {
         static void Main({|args:string[] args|})
         {
-            int {|i:i = 0|};
+            int {|i:i|} = 0;
             addOne({|i:i|}, out int {|j:j|});
             Console.WriteLine({|j:j|});
 
@@ -195,8 +195,8 @@ namespace ConsoleApp1
     {
         static void Main({|args:string[] args|})
         {
-            var {|a:a = new[] { 1, 2 }|};
-            var {|b:b = {|a:a|}.Select({|i:i|} => {|i:i|} + 1)|};
+            var {|a:a|} = new[] { 1, 2 };
+            var {|b:b|} = {|a:a|}.Select({|i:i|} => {|i:i|} + 1);
             Console.WriteLine({|b:b|});
         }
 
@@ -218,10 +218,10 @@ namespace ConsoleApp1
     {
         static void Main({|args:string[] args|})
         {
-            var {|a:a = new[] { 1, 2 }|};
-            var {|b:b = {|a:a|}.Select(({|i:i|}) => {
+            var {|a:a|} = new[] { 1, 2 };
+            var {|b:b|} = {|a:a|}.Select(({|i:i|}) => {
                 return {|i:i|} + 1
-            })|};
+            });
             Console.WriteLine({|b:b|});
         }
 
@@ -243,7 +243,7 @@ namespace ConsoleApp1
     {
         static void Main({|args:string[] args|})
         {
-            for(int {|i:i = 0|}; {|i:i|} != 10; ++{|i:i|}){
+            for(int {|i:i|} = 0; {|i:i|} != 10; ++{|i:i|}){
                 Console.WriteLine({|i:i|});
             }
         }
@@ -251,6 +251,32 @@ namespace ConsoleApp1
     }
 }
 ");
+
+        }
+
+        [Fact]
+        public void ForEach_Loop_Variables_Should_Be_Recorded()
+        {
+            FindAndValidateVariables(@"
+using System;
+using System.Linq;
+
+namespace ConsoleApp1
+{
+    class Program
+    {
+        static void Main({|args:string[] args|})
+        {
+            var {|a:a|} = new [] { 1, 2 };
+            foreach(var {|i:i|} in {|a:a|}){
+                Console.WriteLine({|i:i|});
+            }
+        }
+
+    }
+}
+");
+
 
         }
     }

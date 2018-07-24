@@ -56,10 +56,22 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
         private LinePositionSpan GetDeclaringSpan(ISymbol variable)
         {
             var declaringReference = variable.DeclaringSyntaxReferences.First();
-            var declSpan = declaringReference.Span;
+            var declaringReferenceSyntax = declaringReference.GetSyntax();
+            var location = declaringReferenceSyntax.Span;
+
+            if (declaringReferenceSyntax is VariableDeclaratorSyntax vds)
+            {
+                location = vds.Identifier.Span;
+            }
+            else if (declaringReferenceSyntax is ForEachStatementSyntax fes)
+            {
+                location = fes.Identifier.Span;
+            }
+
             var tree = declaringReference.SyntaxTree;
-            var betterSpan = tree.GetLineSpan(declSpan);
-            return betterSpan.Span;
+            var linePositionSpan = tree.GetLineSpan(location);
+
+            return linePositionSpan.Span;
         }
 
         private IEnumerable<ISymbol> GetDistinctLocalVariables(IEnumerable<CSharpSyntaxNode> statements)
@@ -69,7 +81,7 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
                             .Distinct();
         }
 
-        private bool IsVariable(ISymbol symbol) => symbol.Kind == SymbolKind.Local 
+        private bool IsVariable(ISymbol symbol) => symbol.Kind == SymbolKind.Local
             || symbol.Kind == SymbolKind.Field
             || symbol.Kind == SymbolKind.Parameter;
 
@@ -120,7 +132,7 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
                 var statement = filteredStatements[i];
                 var prevAssigned = i > 0 ? _semanticModel.AnalyzeDataFlow(filteredStatements[0], filteredStatements[i - 1]).AlwaysAssigned : Enumerable.Empty<ISymbol>();
                 var assigned = prevAssigned.Union(parentAssigned).Union(dataFlowIn);
-                
+
                 // if the node has children, figure out what variables are valid inside, so the child nodes will be aware of them later on
                 var validForChildren = Enumerable.Empty<ISymbol>();
                 if (statement.ChildNodes().Any(n => n is BlockSyntax))
@@ -128,12 +140,12 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
                     var dataFlow = _semanticModel.AnalyzeDataFlow(statement);
                     validForChildren = dataFlow.AlwaysAssigned.Union(dataFlow.DataFlowsIn);
                 }
-           
+
                 var symbols = _semanticModel.LookupSymbols(statement.FullSpan.Start);
                 var locals = symbols.Where(s => s.Kind == SymbolKind.Local && assigned.Contains(s));
                 var fields = symbols.Where(s => s.Kind == SymbolKind.Field && (s.IsStatic || !isInStaticMethod));
                 var param = symbols.Where(s => s.Kind == SymbolKind.Parameter);
-                
+
                 var augmentation = new Augmentation(statement, locals, fields, param, validForChildren);
 
                 this.Augmentations.Data[statement] = (augmentation);
