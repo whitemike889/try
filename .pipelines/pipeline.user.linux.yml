@@ -72,13 +72,13 @@ build:
   commands:
 
     - !!buildcommand
-      name: '.build/cdpxrestore.sh'
-      command: '.build/cdpxrestore.sh'
+      name: '.cdpx/restore.sh'
+      command: '.cdpx/restore.sh'
       fail_on_stderr: false
 
     - !!buildcommand
-      name: '.build/cdpxbuild.sh'
-      command: '.build/cdpxbuild.sh'
+      name: '.cdpx/build.sh'
+      command: '.cdpx/build.sh'
       fail_on_stderr: false
                                                                         
       artifacts:                                         
@@ -90,8 +90,8 @@ build:
           to: '.'
           include:
             - 'build.artifact.commit.sha'                                                  
-        - from: './.build'
-          to: '.build'
+        - from: './.cdpx'
+          to: '.cdpx'
           include:
             - '**/*' 
                                                                         # We always preserve the root relative path for every matched file.
@@ -125,7 +125,7 @@ test:
   commands:
     - !!testcommand
       name: 'Test'
-      command: './.build/cdpxtest.sh'
+      command: '.cdpx/test.sh'
       fail_on_stderr: false 
       testresults:
         - title: 'Unit Tests'
