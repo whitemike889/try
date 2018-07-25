@@ -10,24 +10,6 @@ namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
     public class InstrumentationSyntaxRewriterTests
     {
         [Fact]
-        public void Rewritten_Code_With_Augmentations_Has_Calls_To_EmitProgramState()
-        {
-
-        }
-
-        [Fact]
-        public void Rewritten_Code_Has_Calls_To_GetProgramState()
-        {
-
-        }
-        
-        [Fact]
-        public void Rewritten_Code_Is_Not_Modified_If_No_Augmentations()
-        {
-
-        }
-
-        [Fact]
         public void Syntax_Tree_Is_Unchanged_When_Given_No_Augmentations()
         {
             // arrange
