@@ -4,7 +4,7 @@ set -e
 # Get absolute path to source root
 REPO_ROOT=`dirname "$0"`; REPO_ROOT=`eval "cd \"$REPO_ROOT/..\" && pwd"`
 cd $REPO_ROOT
-source $REPO_ROOT/.build/conventions.sh
+source $REPO_ROOT/.cdpx/conventions.sh
 
 export NUGET_PACKAGES
 
