@@ -2,12 +2,13 @@
 set -e
 
 # Get absolute path to source root
-REPO_ROOT=`dirname "$0"`; REPO_ROOT=`eval "cd \"$REPO_ROOT/..\" && pwd"`
+source conventions.sh
 cd $REPO_ROOT
-source $REPO_ROOT/.cdpx/conventions.sh
 
-# record commit hash
-echo $BUILD_SOURCEVERSION > $REPO_ROOT/build.artifact.commit.sha
+# prepare artifacts for release stage
+mkdir $RELEASE_ROOT
+echo $BUILD_SOURCEVERSION > $RELEASE_ROOT/build.artifact.commit.sha
+cp $REPO_ROOT/.cdpx/release.sh $RELEASE_ROOT/release.sh
 
 dotnet publish $REPO_ROOT/MLS.Agent/MLS.Agent.csproj -c Release -o $APP_ROOT
 
