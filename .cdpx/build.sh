@@ -1,8 +1,9 @@
 #!/bin/sh
 set -e
-
 # Get absolute path to source root
-source ./conventions.sh
+REPO_ROOT=`dirname "$0"`; REPO_ROOT=`eval "cd \"$REPO_ROOT/..\" && pwd"`
+
+source $REPO_ROOT/.cdpx/conventions.sh
 cd $REPO_ROOT
 
 # prepare artifacts for release stage
