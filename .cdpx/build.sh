@@ -2,7 +2,7 @@
 set -e
 
 # Get absolute path to source root
-source conventions.sh
+source ./conventions.sh
 cd $REPO_ROOT
 
 # prepare artifacts for release stage
