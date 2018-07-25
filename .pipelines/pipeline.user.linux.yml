@@ -86,12 +86,8 @@ build:
           to: 'ServiceLayout'
           include:
             - '**/*'        
-        - from: '.'
+        - from: '.release'
           to: '.'
-          include:
-            - 'build.artifact.commit.sha'                                                  
-        - from: './.cdpx'
-          to: '.cdpx'
           include:
             - '**/*' 
                                                                         # We always preserve the root relative path for every matched file.
