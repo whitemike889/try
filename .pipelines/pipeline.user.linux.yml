@@ -71,7 +71,7 @@ versioning:
 build:
   commands:
 
-    - !!buildcommand
+    - !!defaultcommand
       name: '.cdpx/restore.sh'
       command: '.cdpx/restore.sh'
       fail_on_stderr: false
