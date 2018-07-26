@@ -1,5 +1,6 @@
 #!/bin/sh
 set -e
+
 # Get absolute path to source root
 REPO_ROOT=`dirname "$0"`; REPO_ROOT=`eval "cd \"$REPO_ROOT/..\" && pwd"`
 
