@@ -144,7 +144,7 @@ namespace WorkspaceServer.Servers.Roslyn
             using (await locks.GetOrAdd(workspace.WorkspaceType, s => new AsyncLock()).LockAsync())
             {
                 WorkspaceBuild build;
-                using (Log.OnEnterAndConfirmOnExit("ConfigureWorkspace"))
+                using (Log.OnEnterAndExit("ConfigureWorkspace"))
                 {
                     build = await getWorkspaceBuildByName(workspace.WorkspaceType);
                     workspace = await _transformer.TransformAsync(workspace, budget);
