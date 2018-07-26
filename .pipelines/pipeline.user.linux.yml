@@ -166,3 +166,10 @@ user_cleanup:
                                                                         # in the order they appear here.
                                                                         # We are not doing anything here. In fact, we could have omitted the
                                                                         # user_cleanup stage entirely.
+
+static_analysis_options:
+  elfskim_options: 
+    files_to_scan:
+      - from: 'source'
+        exclude:
+          - '**/obj/Docker/publish/runtimes/**/*.so'
