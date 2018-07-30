@@ -37,15 +37,17 @@ namespace WorkspaceServer.Servers.Roslyn
         {
             foreach (var filePath in filePaths)
             {
-                var fileInfo = new FileInfo(filePath);
+                var expectedXmlFile =
+                    filePath.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
+                        ? filePath.Replace(".dll", ".xml", StringComparison.OrdinalIgnoreCase)
+                        : Path.Combine(_baseDir,
+                                       "completion",
+                                       "references",
+                                       $"{Path.GetFileName(filePath)}.xml");
 
                 yield return MetadataReference.CreateFromFile(
-                    fileInfo.FullName,
-                    documentation: XmlDocumentationProvider.CreateFromFile(
-                        Path.Combine(_baseDir,
-                                     "completion",
-                                     "references",
-                                     $"{fileInfo.Name}.xml")));
+                    filePath,
+                    documentation: XmlDocumentationProvider.CreateFromFile(expectedXmlFile));
             }
         }
 
