@@ -18,9 +18,9 @@ RUN groupadd app_group
 RUN useradd -r --gid app_group --home /app --shell /sbin/nologin --comment "app user" app_user 
 COPY --chown=app_user:app_group . ./
 
-RUN chmod -R a+rx /dependencies/.dotnet/tools
-RUN chmod -R a+rx /dependencies/.nuget/packages
-RUN chmod -R a+rx /workspaces
+RUN chown -R app_user:app_group /dependencies/.dotnet/tools
+RUN chown -R app_user:app_group /dependencies/.nuget/packages
+RUN chown -R app_user:app_group /workspaces
 
 ENV ASPNETCORE_URLS=http://+:4242
 EXPOSE 4242
