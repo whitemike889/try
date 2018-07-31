@@ -45,12 +45,10 @@ namespace MLS.Agent.Tools
                 output: data =>
                 {
                     stdOut.AppendLine(data);
-                    operation.Info("{data}", data);
                 },
                 error: data =>
                 {
                     stdErr.AppendLine(data);
-                    operation.Error("{data}", args: data);
                 }))
             {
                 var exitCode = await process.Complete(budget);
