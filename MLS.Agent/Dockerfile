@@ -16,11 +16,14 @@ RUN dotnet tool install t-rex --version 1.0.0-preview1-004 --add-source https://
 RUN mkdir -p /app
 RUN groupadd app_group 
 RUN useradd -r --gid app_group --home /app --shell /sbin/nologin --comment "app user" app_user 
-COPY --chown=app_user:app_group . ./
+COPY . ./
 
+RUN chown -R app_user:app_group /app
 RUN chown -R app_user:app_group /dependencies/.dotnet/tools
 RUN chown -R app_user:app_group /dependencies/.nuget/packages
 RUN chown -R app_user:app_group /workspaces
+
+RUN chmod -R 777 /root/
 
 ENV ASPNETCORE_URLS=http://+:4242
 EXPOSE 4242
