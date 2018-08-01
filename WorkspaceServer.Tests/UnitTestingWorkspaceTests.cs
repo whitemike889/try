@@ -38,17 +38,19 @@ namespace WorkspaceServer.Tests
             Log.Info("Output: {output}", runResult.Output);
 
             runResult.Output.ShouldMatch(
-                "PASSED",
-                "*NAME*RESULT*SECONDS",
-                "*tests.UnitTest1.Test1*s*Run_executes_unit_tests_and_prints_test_results_to_output*",
+                "PASSED*(*s)",
+                "  tests*(*s)",
+                "    UnitTest1*(*s)",
+                "      Test1*(*s)",
                 "SUMMARY:",
-                "*Passed: 1, Failed: 0, Not run: 0"
+                "Passed: 1, Failed: 0, Not run: 0"
             );
         }
 
         [Fact(Skip = "wip")]
         public async Task Subsequent_runs_update_test_output()
         {
+            // FIX: (Subsequent_runs_update_test_output) enable this test
             var (runner, workspace) = await GetRunnerAndWorkspace();
 
             var workspaceModel = Workspace.FromDirectory(
@@ -78,11 +80,12 @@ public class Tests
             Log.Info("Output: {output}", runResult.Output);
 
             runResult.Output.ShouldMatch(
-                "PASSED",
-                "*NAME*RESULT*SECONDS",
-                "*tests.UnitTest1.Test1*s*Run_executes_unit_tests_and_prints_test_results_to_output*",
+                "PASSED*(*s)",
+                "  tests*(*s)",
+                "    UnitTest1*(*s)",
+                "      Test1*(*s)",
                 "SUMMARY:",
-                "*Passed: 1, Failed: 0, Not run: 0"
+                "Passed: 1, Failed: 0, Not run: 0"
             );
 
             // TODO (Subsequent_runs_update_test_output) write test
