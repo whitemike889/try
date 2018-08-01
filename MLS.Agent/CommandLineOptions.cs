@@ -15,7 +15,8 @@ namespace MLS.Agent
             string key,
             string applicationInsightsKey = null,
             bool logToFile = false,
-            string id = null)
+            string id = null,
+            string ringId = null)
         {
             LogToFile = logToFile;
             WasSuccess = wasSuccess;
@@ -26,10 +27,12 @@ namespace MLS.Agent
             HelpText = helpText;
             Key = key;
             ApplicationInsightsKey = applicationInsightsKey;
+            RingId = ringId;
         }
 
         public bool WasSuccess { get; }
         public string Id { get; }
+        public string RingId { get; }
         public bool IsProduction { get; }
         public bool IsLanguageService { get; }
         public bool HelpRequested { get; }
@@ -47,6 +50,7 @@ namespace MLS.Agent
                 Create.Option("--language-service", "Specifies if the agent is being run as language service or not"),
                 Create.Option("-k|--key", "The encryption key", ExactlyOneArgument()),
                 Create.Option("--ai-key", "Application Insights key", ExactlyOneArgument()),
+                Create.Option("--ringId", "A unique id for the agent ring", ZeroOrOneArgument()),
                 Create.Option("--log-to-file", "Writes a log file", NoArguments()));
 
             var parseResult = parser.Parse(args);

@@ -42,6 +42,7 @@ namespace MLS.Agent
                 disposables.Add(
                     LogEvents.Enrich(a =>
                     {
+                        a(("ringId", options.RingId ?? "undefined"));
                         a(("applicationVersion", applicationVersion));
                         a(("websiteSiteName", websiteSiteName));
                         a(("id", options.Id));
