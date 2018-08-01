@@ -1,12 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
-using Clockwise;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
-using MLS.Agent.Tools;
-using WorkspaceServer.Models.Execution;
 
 namespace WorkspaceServer.Servers.Roslyn
 {
@@ -37,53 +34,18 @@ namespace WorkspaceServer.Servers.Roslyn
         {
             foreach (var filePath in filePaths)
             {
-                var fileInfo = new FileInfo(filePath);
+                var expectedXmlFile =
+                    filePath.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
+                        ? filePath.Replace(".dll", ".xml", StringComparison.OrdinalIgnoreCase)
+                        : Path.Combine(_baseDir,
+                                       "completion",
+                                       "references",
+                                       $"{Path.GetFileName(filePath)}.xml");
 
                 yield return MetadataReference.CreateFromFile(
-                    fileInfo.FullName,
-                    documentation: XmlDocumentationProvider.CreateFromFile(
-                        Path.Combine(_baseDir,
-                                     "completion",
-                                     "references",
-                                     $"{fileInfo.Name}.xml")));
+                    filePath,
+                    documentation: XmlDocumentationProvider.CreateFromFile(expectedXmlFile));
             }
-        }
-
-        public static async Task<(Compilation compilation, IReadOnlyCollection<Document> documents)> GetCompilation(
-            this WorkspaceBuild build,
-            IReadOnlyCollection<SourceFile> sources,
-            Budget budget)
-        {
-            var projectId = ProjectId.CreateNewId();
-
-            var workspace = await build.GetRoslynWorkspace(projectId);
-
-            var currentSolution = workspace.CurrentSolution;
-
-            foreach (var source in sources)
-            {
-                if (currentSolution.Projects
-                                   .SelectMany(p => p.Documents)
-                                   .FirstOrDefault(d => d.Name == source.Name) is Document document)
-                {
-                    // there's a pre-existing document, so overwrite it's contents
-                    document = document.WithText(source.Text);
-                    currentSolution = document.Project.Solution;
-                }
-                else
-                {
-                    var docId = DocumentId.CreateNewId(projectId, $"{build.Name}.Document");
-
-                    currentSolution = currentSolution.AddDocument(docId, source.Name, source.Text);
-                }
-
-            }
-
-            var project = currentSolution.GetProject(projectId);
-
-            var compilation = await project.GetCompilationAsync().CancelIfExceeds(budget);
-
-            return (compilation, project.Documents.ToArray());
         }
 
         private static string[] AssembliesNamesToReference() => new[]

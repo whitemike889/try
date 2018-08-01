@@ -35,6 +35,7 @@ namespace WorkspaceServer.Servers.Scripting
                 WorkspaceUtilities.DefaultUsings,
                 WorkspaceUtilities.DefaultReferencedAssemblies);
         }
+
         public async Task<RunResult> Run(Workspace workspace, Budget budget = null)
         {
             budget = budget ?? new Budget();

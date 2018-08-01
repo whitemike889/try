@@ -15,7 +15,9 @@ namespace WorkspaceServer.Models
         public static string ConvertDocumentation(string xmlDocumentation, string lineEnding)
         {
             if (string.IsNullOrEmpty(xmlDocumentation))
+            {
                 return string.Empty;
+            }
 
             var reader = new StringReader("<docroot>" + xmlDocumentation + "</docroot>");
             using (var xml = XmlReader.Create(reader))
