@@ -31,6 +31,8 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
 
             return (mappedAugmentations, mappedLocations);
 
+
+
             AugmentationMap OffsetAugmentationFilePositions()
             {
                 var augmentations = augmentationMap.Data.Values.Select(augmentation =>
