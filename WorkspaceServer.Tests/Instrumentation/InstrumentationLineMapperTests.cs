@@ -61,7 +61,7 @@ namespace WorkspaceServer.Tests.Instrumentation
             var workspace = new Workspace(files: new[] { new Workspace.File("testFile.cs", text) });
             var viewports = new BufferInliningTransformer().ExtractViewPorts(workspace);
             var activeViewport = InstrumentationLineMapper.FilterActiveViewport(viewports, "testFile.cs@test").First();
-            activeViewport.Region.Start.Should().Be(116);
+            activeViewport.Region.Start.Should().Be(128);
         }
 
         [Fact]
