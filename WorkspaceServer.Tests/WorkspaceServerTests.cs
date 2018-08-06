@@ -28,7 +28,11 @@ namespace WorkspaceServer.Tests
 
                 var result = await server.Run(CreateWorkspaceWithMainContaining("Console.WriteLine(\"hi!\");"));
 
-                result.Output.Should().BeEquivalentTo("hi!");
+                result.Output
+                      .Should()
+                      .BeEquivalentTo(
+                          new[] { "hi!", "" },
+                          options => options.WithStrictOrdering());
             }
         }
 
@@ -107,20 +111,11 @@ Console.WriteLine(banana);");
 
             var result = await server.Run(request);
             result.Succeeded.Should().BeFalse();
-            result.Output.Should().ContainSingle();
-            result.Output.Single().Should().Contain("(2,19): error CS0103: The name \'banana\' does not exist in the current context");
+            result.Output
+                  .ShouldMatch(
+                      "*(2,19): error CS0103: The name \'banana\' does not exist in the current context");
             result.Exception.Should().BeNull();
-
-            // TODO: in memory and dotnet workspace servers print slightly different output for 
-            // copmile errors
-            //result.Should().BeEquivalentTo(new
-            //{
-            //    Succeeded = false,
-            //    Output = new[] { "(2,19): error CS0103: The name \'banana\' does not exist in the current context" },
-            //    Exception = (string)null, // we already display the error in Output
-            //}, config => config.ExcludingMissingMembers());
         }
-
 
         [Fact]
         public async Task Multi_line_console_output_is_captured_correctly()
@@ -135,7 +130,24 @@ Console.WriteLine(4);");
 
             var result = await server.Run(request);
 
-            result.ShouldSucceedWithOutput("1", "2", "3", "4");
+            result.ShouldSucceedWithOutput("1", "2", "3", "4", "");
+        }
+
+        [Fact]
+        public async Task Whitespace_is_preserved_in_multi_line_output()
+        {
+            var request = CreateWorkspaceWithMainContaining(@"
+Console.WriteLine();
+Console.WriteLine(1);
+Console.WriteLine();
+Console.WriteLine();
+Console.WriteLine(2);");
+
+            var server = await GetRunner();
+
+            var result = await server.Run(request);
+
+            result.ShouldSucceedWithOutput("", "1", "", "", "2", "");
         }
 
         [Fact]

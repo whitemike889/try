@@ -42,8 +42,10 @@ namespace WorkspaceServer.Tests
                 "  tests*(*s)",
                 "    UnitTest1*(*s)",
                 "      Test1*(*s)",
+                "",
                 "SUMMARY:",
-                "Passed: 1, Failed: 0, Not run: 0"
+                "Passed: 1, Failed: 0, Not run: 0",
+                ""
             );
         }
 

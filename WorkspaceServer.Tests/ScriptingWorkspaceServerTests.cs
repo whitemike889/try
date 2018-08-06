@@ -1,4 +1,5 @@
-﻿using FluentAssertions;
+﻿using System;
+using FluentAssertions;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Pocket;
@@ -9,6 +10,7 @@ using WorkspaceServer.Servers.Scripting;
 using WorkspaceServer.WorkspaceFeatures;
 using Xunit;
 using Xunit.Abstractions;
+using static System.Environment;
 using static Pocket.Logger<WorkspaceServer.Tests.WorkspaceServerTests>;
 
 namespace WorkspaceServer.Tests
@@ -52,7 +54,7 @@ $""{person.Name} is {person.Age} year(s) old""", "script");
                 Succeeded = true,
                 Output = new string[] { },
                 Exception = (string) null,
-                ReturnValue = "Jeff is 20 year(s) old",
+                ReturnValue = $"Jeff is 20 year(s) old",
             }, config => config.ExcludingMissingMembers());
         }
 
@@ -127,7 +129,7 @@ public static class Hello
             result.Should().BeEquivalentTo(new
             {
                 Succeeded = true,
-                Output = new[] { "Hello there!" },
+                Output = new[] { "Hello there!", "" },
                 Exception = (string) null,
             }, config => config.ExcludingMissingMembers());
         }
@@ -224,7 +226,7 @@ public static class Hello
             result.Should().BeEquivalentTo(new
             {
                 Succeeded = false,
-                Output = new[] { "(1,19): error CS0103: The name \'banana\' does not exist in the current context" },
+                Output = new[] { $"(1,19): error CS0103: The name \'banana\' does not exist in the current context" },
                 Exception = (string)null,
             }, config => config.ExcludingMissingMembers());
         }

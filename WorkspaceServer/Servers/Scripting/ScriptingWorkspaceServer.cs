@@ -29,6 +29,8 @@ namespace WorkspaceServer.Servers.Scripting
         private readonly BufferInliningTransformer _transformer = new BufferInliningTransformer();
         private readonly WorkspaceFixture _fixture;
 
+        private static readonly Regex _diagnosticfilter = new Regex(@"^(?<location>\(\d+,\d+\):)\s*(?<level>\S+)\s*(?<code>[A-Z]{2}\d+:)(?<message>.+)", RegexOptions.Compiled);
+
         public ScriptingWorkspaceServer()
         {
             _fixture = new WorkspaceFixture(
@@ -80,9 +82,14 @@ namespace WorkspaceServer.Servers.Scripting
                 budget.RecordEntryAndThrowIfBudgetExceeded();
 
                 var diagnostics = await GetDiagnostics(workspace, options);
-                var output = console.StandardOutput
-                                    .Replace("\r\n", "\n")
-                                    .Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+
+                var output =
+                    console.StandardOutput == ""
+                        ? Array.Empty<string>()
+                        : console.StandardOutput
+                                 .Replace("\r\n", "\n")
+                                 .Split(new[] { '\n' });
+
                 output = ProcessOutputLines(output,
                                             diagnostics
                                                 .Where(e => e.Severity == DiagnosticSeverity.Error)
@@ -100,18 +107,19 @@ namespace WorkspaceServer.Servers.Scripting
             }
         }
 
-        private string[] ProcessOutputLines(string[] output, string[] errormessages)
+        private string[] ProcessOutputLines(string[]  output, string[]  errormessages)
         {
-            var filter = output.Where(IsNotDisagnostic);
+            output = output.Where(IsNotDiagnostic).ToArray();
 
-            return filter.Concat(errormessages).ToArray();
+            if (errormessages.All(string.IsNullOrWhiteSpace))
+            {
+                return output;
+            }
+
+            return output.Concat(errormessages).ToArray();
         }
 
-        private bool IsNotDisagnostic(string line)
-        {
-            var filter = new Regex(@"^(?<location>\(\d+,\d+\):)\s*(?<level>\S+)\s*(?<code>[A-Z]{2}\d+:)(?<message>.+)", RegexOptions.Compiled);
-            return !filter.IsMatch(line);
-        }
+        private bool IsNotDiagnostic(string line) => !_diagnosticfilter.IsMatch(line);
 
         private static ScriptOptions CreateOptions(Workspace request) =>
             ScriptOptions.Default
