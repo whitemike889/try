@@ -1,5 +1,6 @@
 ﻿using FluentAssertions;
 using System.Linq;
+using System.Threading.Tasks;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Servers.Roslyn.Instrumentation;
 using WorkspaceServer.Tests.Servers.Roslyn.Instrumentation;
@@ -21,7 +22,7 @@ namespace WorkspaceServer.Tests.Instrumentation
         }
 
         [Fact]
-        public async System.Threading.Tasks.Task MapLineLocationsRelativeToViewport_Does_Nothing_Without_ViewportAsync()
+        public async Task MapLineLocationsRelativeToViewport_Does_Nothing_Without_Viewport()
         {
             var (augmentation, locations, document, _) = Setup(Sources.simple);
             var (newAugmentation, newLocations) = await InstrumentationLineMapper.MapLineLocationsRelativeToViewportAsync(augmentation, locations, document);
@@ -31,17 +32,34 @@ namespace WorkspaceServer.Tests.Instrumentation
         }
 
         [Fact]
-        public async System.Threading.Tasks.Task MapLineLocationsRelativeToViewport_Maps_Augmentation_FilePosition_CorrectlyAsync()
+        public async Task MapLineLocationsRelativeToViewport_Maps_Augmentation_FilePosition_Correctly()
         {
-            var (augmentation, locations, document, viewport) = Setup(Sources.withLocalParamsAndRegion);
+            var markedUpCode = @"
+using System;
+namespace RoslynRecorder
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+#region test
+            {|region_start:int a = 0;|}
+            [|Console.WriteLine(""Entry Point"");|]
+#endregion
+        }
+    }
+}";
+            MarkupTestFile.GetNamedSpans(markedUpCode, out var code, out var spans);
+            var (augmentation, locations, document, viewport) = Setup(code);
             var (newAugmentation, newLocations) = await InstrumentationLineMapper.MapLineLocationsRelativeToViewportAsync(augmentation, locations, document, viewport);
 
             var linePositions = newAugmentation.Data.Values.Select(state => state.CurrentFilePosition.Line);
+            var expectedLinePositions = 
             linePositions.Should().Equal(new[] { 0, 1 });
         }
 
         [Fact]
-        public async System.Threading.Tasks.Task MapLineLocationsRelativeToViewport_Maps_Variable_Location_CorrectlyAsync()
+        public async Task MapLineLocationsRelativeToViewport_Maps_Variable_Location_Correctly()
         {
 
             var (augmentation, locations, document, viewport) = Setup(Sources.withLocalParamsAndRegion);

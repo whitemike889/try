@@ -35,27 +35,9 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
 
             AugmentationMap OffsetAugmentationFilePositions()
             {
-                var augmentations = augmentationMap.Data.Values.Select(augmentation =>
-                {
-                    var filePosition = augmentation.CurrentFilePosition;
-                    var filePositionLine = filePosition.Line;
-
-                    if (withinViewport(filePositionLine, viewportSpan))
-                    {
-                        var newLinePosition = calculateOffset(filePositionLine, viewportSpan);
-
-                        return augmentation.withPosition(
-                            new FilePosition
-                            {
-                                Line = newLinePosition,
-                                Character = filePosition.Character,
-                                File = filePosition.File
-                            }
-                        );
-                    }
-                    else return null;
-                }
-                ).Where(x => x != null);
+                var augmentations = augmentationMap.Data.Values
+                    .Where(augmentation => WithinViewport(augmentation.CurrentFilePosition.Line, viewportSpan))
+                    .Select(augmentation => MapAugmentationToViewport(augmentation, viewportSpan));
 
                 return new AugmentationMap(augmentations.ToArray());
             }
@@ -67,27 +49,9 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
                    kv =>
                    {
                        HashSet<VariableLocation> variableLocations = kv.Value;
-                       return variableLocations.Select(location =>
-                       {
-                           var startLine = location.StartLine;
-                           var endLine = location.EndLine;
-
-                           if (withinViewport(startLine, viewportSpan) && withinViewport(endLine, viewportSpan))
-                           {
-                               int newStartLine = (int)calculateOffset(startLine, viewportSpan);
-                               int newEndLine = (int)calculateOffset(endLine, viewportSpan);
-
-                               return new VariableLocation(
-                                   location.Variable,
-                                   newStartLine,
-                                   newEndLine,
-                                   location.StartColumn,
-                                   location.EndColumn
-                               );
-                           }
-                           else return null;
-                       })
-                           .Where(x => x != null)
+                       return variableLocations
+                           .Where(loc => WithinViewport(loc.StartLine, viewportSpan) && WithinViewport(loc.EndLine, viewportSpan))
+                           .Select(location => MapVariableLocationToViewport(location, viewportSpan))
                            .ToHashSet();
                    }
                 );
@@ -99,14 +63,32 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
             }
         }
 
-        private static bool withinViewport(long line, LinePositionSpan viewportSpan) =>
+        private static bool WithinViewport(long line, LinePositionSpan viewportSpan) =>
             line < viewportSpan.End.Line && line > viewportSpan.Start.Line;
 
-        private static long calculateOffset(long line, LinePositionSpan viewportSpan)
+        private static long CalculateOffset(long line, LinePositionSpan viewportSpan)
         {
             var firstLineInViewport = viewportSpan.Start.Line + 1;
             return line - firstLineInViewport;
         }
+
+        private static Augmentation MapAugmentationToViewport(Augmentation input, LinePositionSpan viewportSpan) => input.withPosition(
+            new FilePosition
+            {
+                Line = CalculateOffset(input.CurrentFilePosition.Line, viewportSpan),
+                Character = input.CurrentFilePosition.Character,
+                File = input.CurrentFilePosition.File
+            }
+        );
+
+        private static VariableLocation MapVariableLocationToViewport(VariableLocation input,
+            LinePositionSpan viewportSpan) => new VariableLocation(
+                input.Variable,
+                (int)CalculateOffset(input.StartLine, viewportSpan),
+                (int)CalculateOffset(input.EndLine, viewportSpan),
+                input.StartColumn,
+                input.EndColumn
+            );
 
         public static IEnumerable<Viewport> FilterActiveViewport(IEnumerable<Viewport> viewports, string activeBufferId)
         {
