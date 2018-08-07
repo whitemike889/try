@@ -68,9 +68,9 @@ namespace WorkspaceServer.Servers.Roslyn
             }
         }
 
-        public string StandardOutput => outputWriter.ToString().Trim();
+        public string StandardOutput => outputWriter.ToString();
 
-        public string StandardError => errorWriter.ToString().Trim();
+        public string StandardError => errorWriter.ToString();
 
         public void Clear()
         {

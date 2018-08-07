@@ -214,9 +214,9 @@ namespace WorkspaceServer.Servers.Roslyn
                                         build.EntryPointAssemblyPath.FullName,
                                         budget);
 
-            var output = InstrumentedOutputExtractor.ExtractOutput(commandLineResult.Output);
-
             budget.RecordEntry(UserCodeCompleted);
+
+            var output = InstrumentedOutputExtractor.ExtractOutput(commandLineResult.Output);
 
             if (commandLineResult.ExitCode == 124)
             {

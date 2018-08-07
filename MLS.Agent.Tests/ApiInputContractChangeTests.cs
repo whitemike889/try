@@ -186,7 +186,8 @@ namespace MLS.Agent.Tests
                 "13",
                 "21",
                 "34",
-                "55");
+                "55",
+                "");
 
             resultOfOldFormatRequest.Should().BeEquivalentTo(resultOfNewFormatRequest);
         }

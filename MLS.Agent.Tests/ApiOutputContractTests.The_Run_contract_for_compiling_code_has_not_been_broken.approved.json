@@ -1,7 +1,8 @@
 {
   "succeeded": true,
   "output": [
-    "Hello world!"
+    "Hello world!",
+    ""
   ],
   "exception": null,
   "diagnostics": [

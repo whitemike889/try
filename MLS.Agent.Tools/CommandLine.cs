@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -53,10 +54,19 @@ namespace MLS.Agent.Tools
             {
                 var exitCode = await process.Complete(budget);
 
+                var output = stdOut.Replace("\r\n", "\n").ToString().Split('\n');
+
+                var error = stdErr.Replace("\r\n", "\n").ToString().Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+
+                if (error.All(string.IsNullOrWhiteSpace))
+                {
+                    error = null;
+                }
+
                 var result = new CommandLineResult(
                     exitCode: exitCode,
-                    output: stdOut.Replace("\r\n", "\n").ToString().Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries),
-                    error: stdErr.Replace("\r\n", "\n").ToString().Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries));
+                    output: output,
+                    error: error);
 
                 if (exitCode == 0)
                 {
