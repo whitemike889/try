@@ -12,7 +12,7 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
 {
     public static class InstrumentationLineMapper
     {
-        public static async System.Threading.Tasks.Task<(AugmentationMap, VariableLocationMap)> MapLineLocationsRelativeToViewportAsync(
+        public static async Task<(AugmentationMap, VariableLocationMap)> MapLineLocationsRelativeToViewportAsync(
             AugmentationMap augmentationMap,
             VariableLocationMap locations,
             Document document,
