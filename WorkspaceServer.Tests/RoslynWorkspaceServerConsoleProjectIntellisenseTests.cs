@@ -141,7 +141,7 @@ namespace FibonacciTest
             hasDuplicatedEntries.Should().BeFalse();
         }
 
-        [Fact]
+        [Fact(Skip = "temporary to test CI tests")]
         public async Task Get_documentation_with_autocompletion_of_console_methods()
         {
             #region bufferSources

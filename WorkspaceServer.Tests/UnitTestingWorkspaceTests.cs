@@ -25,7 +25,7 @@ namespace WorkspaceServer.Tests
 
         public void Dispose() => _disposables.Dispose();
 
-        [Fact]
+        [Fact (Skip = "temporary to test CI tests")]
         public async Task Run_executes_unit_tests_and_prints_test_results_to_output()
         {
             var (runner, workspace) = await GetRunnerAndWorkspace();
