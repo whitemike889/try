@@ -15,7 +15,7 @@ namespace WorkspaceServer.Tests
             );
 
             var span = new TextSpan(0, 11);
-            var newSpan = TextSpanToLinePositionSpanTransformer.Convert(span, sourceText);
+            var newSpan = TextSpanToLinePositionSpanTransformer.ToLinePositionSpan(span, sourceText);
 
             newSpan.Start.Line.Should().Be(0);
             newSpan.Start.Character.Should().Be(0);

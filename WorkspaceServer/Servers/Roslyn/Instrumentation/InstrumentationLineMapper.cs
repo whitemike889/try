@@ -1,9 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Models.Instrumentation;
@@ -25,25 +23,25 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
             }
 
             var text = await document.GetTextAsync();
-            var viewportSpan = TextSpanToLinePositionSpanTransformer.Convert(viewport.Region, text);
+            var viewportSpan = viewport.Region.ToLinePositionSpan(text);
 
-            var mappedAugmentations = OffsetAugmentationFilePositions();
-            var mappedLocations = OffsetVariableLocations();
+            var mappedAugmentations = MapAugmentationsToViewport();
+            var mappedLocations = MapVariableLocationsToViewport();
 
             return (mappedAugmentations, mappedLocations);
 
 
 
-            AugmentationMap OffsetAugmentationFilePositions()
+            AugmentationMap MapAugmentationsToViewport()
             {
                 var augmentations = augmentationMap.Data.Values
-                    .Where(augmentation => WithinViewport(augmentation.CurrentFilePosition.Line, viewportSpan))
+                    .Where(augmentation => viewportSpan.ContainsLine((int)augmentation.CurrentFilePosition.Line))
                     .Select(augmentation => MapAugmentationToViewport(augmentation, viewportSpan));
 
                 return new AugmentationMap(augmentations.ToArray());
             }
 
-            VariableLocationMap OffsetVariableLocations()
+            VariableLocationMap MapVariableLocationsToViewport()
             {
                 var variableLocationDictionary = locations.Data.ToDictionary(
                    kv => kv.Key,
@@ -51,7 +49,7 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
                    {
                        HashSet<VariableLocation> variableLocations = kv.Value;
                        return variableLocations
-                           .Where(loc => WithinViewport(loc.StartLine, viewportSpan) && WithinViewport(loc.EndLine, viewportSpan))
+                           .Where(loc => viewportSpan.ContainsLine(loc.StartLine) && viewportSpan.ContainsLine(loc.EndLine))
                            .Select(location => MapVariableLocationToViewport(location, viewportSpan))
                            .ToHashSet();
                    }
@@ -64,7 +62,7 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
             }
         }
 
-        private static bool WithinViewport(long line, LinePositionSpan viewportSpan) =>
+        private static bool ContainsLine(this LinePositionSpan viewportSpan, int line) =>
             line < viewportSpan.End.Line && line > viewportSpan.Start.Line;
 
         private static long CalculateOffset(long line, LinePositionSpan viewportSpan)

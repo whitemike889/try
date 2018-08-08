@@ -41,7 +41,7 @@ namespace RoslynRecorder
 ";
             var linePositionSpans = textSpans.ToDictionary(
                 kv => kv.Key,
-                kv => kv.Value.Select(span => TextSpanToLinePositionSpanTransformer.Convert(span, SourceText.From(viewportCode))
+                kv => kv.Value.Select(span => TextSpanToLinePositionSpanTransformer.ToLinePositionSpan(span, SourceText.From(viewportCode))
                     )
                 );
 

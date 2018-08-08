@@ -7,7 +7,7 @@ namespace WorkspaceServer.Transformations
 {
     public static class TextSpanToLinePositionSpanTransformer
     {
-        public static LinePositionSpan Convert(this TextSpan span, SourceText text)
+        public static LinePositionSpan ToLinePositionSpan(this TextSpan span, SourceText text)
         {
             var line = text.Lines.GetLineFromPosition(span.Start);
             var col = span.Start - line.Start;
