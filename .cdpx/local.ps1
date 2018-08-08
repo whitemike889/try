@@ -13,4 +13,8 @@ Foreach ($file in $(Get-ChildItem -Path $(Get-ScriptDirectory)))
     [IO.File]::WriteAllText($file, $text)
 }
 
-docker run -it -v c:\dev\Agent:/Sources microsoft/dotnet:2.1.301-sdk-alpine /bin/sh -c 'cd /Sources/.cdpx; ./local.sh'
+Remove-Item -Path "$(Get-ScriptDirectory)\..\docker" -Recurse -ErrorAction Ignore
+Remove-Item -Path "$(Get-ScriptDirectory)\..\.release" -Recurse -ErrorAction Ignore
+
+docker run -it -v c:\dev\Agent:/Sources microsoft/dotnet:2.1.301-sdk-alpine /bin/sh -c '/Sources/.cdpx/local.sh'
+

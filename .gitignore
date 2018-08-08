@@ -18,6 +18,8 @@ x64/
 [Bb]in/
 [Oo]bj/
 node_modules/
+.release
+docker
 
 # ApprovalTests / Assent output
 *.received.json
