@@ -7,6 +7,7 @@ cd $REPO_ROOT
 source $REPO_ROOT/.cdpx/conventions.sh
 
 export NUGET_PACKAGES
+export NUGET_XMLDOC_MODE=none 
 
 # Add packages from APK
 apk update
