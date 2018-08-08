@@ -1,6 +1,6 @@
 ﻿using FluentAssertions;
 using Microsoft.CodeAnalysis.Text;
-using WorkspaceServer.Transformations;
+using WorkspaceServer.Servers.Roslyn.Instrumentation;
 using Xunit;
 
 namespace WorkspaceServer.Tests
@@ -15,7 +15,7 @@ namespace WorkspaceServer.Tests
             );
 
             var span = new TextSpan(0, 11);
-            var newSpan = TextSpanToLinePositionSpanTransformer.ToLinePositionSpan(span, sourceText);
+            var newSpan = span.ToLinePositionSpan(sourceText);
 
             newSpan.Start.Line.Should().Be(0);
             newSpan.Start.Character.Should().Be(0);

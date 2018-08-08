@@ -1,11 +1,8 @@
 ﻿using Microsoft.CodeAnalysis.Text;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace WorkspaceServer.Transformations
+namespace WorkspaceServer.Servers.Roslyn.Instrumentation
 {
-    public static class TextSpanToLinePositionSpanTransformer
+    public static class TextSpanExtensions
     {
         public static LinePositionSpan ToLinePositionSpan(this TextSpan span, SourceText text)
         {

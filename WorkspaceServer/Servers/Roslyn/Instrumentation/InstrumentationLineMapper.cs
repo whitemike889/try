@@ -62,9 +62,6 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
             }
         }
 
-        private static bool ContainsLine(this LinePositionSpan viewportSpan, int line) =>
-            line < viewportSpan.End.Line && line > viewportSpan.Start.Line;
-
         private static long CalculateOffset(long line, LinePositionSpan viewportSpan)
         {
             var firstLineInViewport = viewportSpan.Start.Line + 1;
