@@ -50,7 +50,7 @@ namespace MLS.Agent
                 Create.Option("--language-service", "Specifies if the agent is being run as language service or not"),
                 Create.Option("-k|--key", "The encryption key", ExactlyOneArgument()),
                 Create.Option("--ai-key", "Application Insights key", ExactlyOneArgument()),
-                Create.Option("--regionId", "A unique id for the agent region", ZeroOrOneArgument()),
+                Create.Option("--region-id", "A unique id for the agent region", ZeroOrOneArgument()),
                 Create.Option("--log-to-file", "Writes a log file", NoArguments()));
 
             var parseResult = parser.Parse(args);
