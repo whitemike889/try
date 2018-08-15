@@ -93,7 +93,42 @@ namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
 ",
 #endregion
                 _sentinel,
-                "even more output"
+                "blank",
+                "",
+                " ",
+                " lines ",
+                "even more output",
+                _sentinel,
+            #region programState
+            @"
+{
+      ""filePosition"": {
+        ""line"": 13,
+        ""character"": 12,
+        ""file"": ""Program.cs""
+      },
+      ""stackTrace"": ""    at FibonacciTest.Program.Main()\r\n "",
+      ""locals"": [],
+      ""parameters"": [{
+          ""name"": ""p"",
+          ""value"": ""1"",
+          ""declaredAt"": {
+            ""start"": 1,
+            ""end"": 1
+          }
+        }],
+      ""fields"": [{
+          ""name"": ""f"",
+          ""value"": ""2"",
+          ""declaredAt"": {
+            ""start"": 2,
+            ""end"": 2
+          }
+        }]
+}
+",
+#endregion
+                _sentinel
             };
 
         private readonly ProgramOutputStreams splitOutput;
@@ -113,12 +148,79 @@ namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
                            .Should()
                            .BeEquivalentTo(new[]
                            {
-                               "",
                                "program output",
+                               "blank",
                                "",
-                               "",
+                               " ",
+                               " lines ",
                                "even more output",
+                               ""
                            }, options => options.WithStrictOrdering());
+            }
+
+            [Fact]
+            public void Empty_standard_out_remains_empty_after_extraction()
+            {
+                InstrumentedOutputExtractor.ExtractOutput(new string[] { })
+                    .StdOut.Count().Should().Be(0);
+            }
+
+            [Fact]
+            public void Empty_standard_out_with_instrumentation_remains_empty_after_extraction()
+            {
+                InstrumentedOutputExtractor.ExtractOutput(
+                    new string[] {
+                        _sentinel,
+                        #region variableLocation
+            @"
+{
+""variableLocations"": [
+    {
+        ""name"": ""b"",
+        ""locations"": [
+          {
+            ""startLine"": 12,
+            ""startColumn"": 16,
+            ""endLine"": 12,
+            ""endColumn"": 21
+          }
+        ],
+        ""declaredAt"": {
+          ""start"": 176,
+          ""end"": 181
+        }
+    }
+]
+}",
+            #endregion
+                        _sentinel + _sentinel,
+                        #region programState
+            @"
+{
+      ""filePosition"": {
+        ""line"": 12,
+        ""character"": 12,
+        ""file"": ""Program.cs""
+      },
+      ""stackTrace"": ""    at FibonacciTest.Program.Main()\r\n "",
+      ""locals"": [
+        {
+          ""name"": ""a"",
+          ""value"": ""4"",
+          ""declaredAt"": {
+            ""start"": 153,
+            ""end"": 154
+          }
+        }
+      ],
+      ""parameters"": [],
+      ""fields"": []
+}
+",
+#endregion
+                        _sentinel
+                    }
+                ).StdOut.Count().Should().Be(0);
             }
         }
 
@@ -142,33 +244,44 @@ namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
             [Fact]
             public void First_Program_State_Has_Correct_Local_Name()
             {
-                splitOutput.ProgramStatesArray.ProgramStates.ElementAt(1).Locals.First().Name.Should().Be("a");
+                splitOutput.ProgramStatesArray.ProgramStates.First().Locals.First().Name.Should().Be("a");
             }
 
             [Fact]
             public void Second_Program_State_Has_Correct_Parameter_Name()
             {
-                splitOutput.ProgramStatesArray.ProgramStates.ElementAt(2).Parameters.First().Name.Should().Be("p");
+                splitOutput.ProgramStatesArray.ProgramStates.ElementAt(1).Parameters.First().Name.Should().Be("p");
             }
 
             [Fact]
             public void Second_Program_State_Has_Correct_Field_Name()
             {
-                splitOutput.ProgramStatesArray.ProgramStates.ElementAt(2).Fields.First().Name.Should().Be("f");
+                splitOutput.ProgramStatesArray.ProgramStates.ElementAt(1).Fields.First().Name.Should().Be("f");
             }
 
             [Fact]
-            public void Dummy_Program_Start_Should_Not_Have_Variables()
+            public void Original_output_can_be_reconstructed_from_per_step_output_indices()
             {
-                splitOutput.ProgramStatesArray.ProgramStates.First().Locals.Should().BeNull();
-            }
+                const string newline = "\n";
+                var output = splitOutput.ProgramStatesArray.ProgramStates
+                    .Select(x => ((int)x.Output.Start, (int)x.Output.End))
+                    .Select(tuple => splitOutput.StdOut.Join("\n").Substring(tuple.Item1, tuple.Item2 - tuple.Item1))
+                    .Where(str => !String.IsNullOrEmpty(str));
 
-            [Fact]
-            public void Last_Program_State_Has_Correct_Output()
-            {
-                var output = splitOutput.ProgramStatesArray.ProgramStates.Last().Output;
-                output.Start.Should().Be(18);
-                output.End.Should().Be(34);
+                var firstEmittedLine = "program output" + newline;
+                var secondEmittedLine =
+                    "blank" + newline +
+                    "" + newline +
+                    " " + newline +
+                    " lines " + newline +
+                    "even more output" + newline +
+                    "";
+
+                output.Should().BeEquivalentTo(new[]
+                {
+                    firstEmittedLine,
+                    secondEmittedLine
+                });
             }
         }
 

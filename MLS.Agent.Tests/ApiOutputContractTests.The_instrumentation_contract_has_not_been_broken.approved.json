@@ -55,13 +55,6 @@
   ],
   "instrumentation": [
     {
-      "stackTrace": "Program Started",
-      "output": {
-        "start": 0,
-        "end": 0
-      }
-    },
-    {
       "filePosition": {
         "line": 10,
         "character": 12,
@@ -159,13 +152,6 @@
       ],
       "parameters": [],
       "fields": [],
-      "output": {
-        "start": 0,
-        "end": 0
-      }
-    },
-    {
-      "stackTrace": "Program Terminated",
       "output": {
         "start": 0,
         "end": 0
