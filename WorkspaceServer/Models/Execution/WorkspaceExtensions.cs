@@ -19,7 +19,7 @@ namespace WorkspaceServer.Models.Execution
         }
 
         public static int GetAbsolutePositionForGetBufferWithSpecifiedIdOrSingleBufferIfThereIsOnlyOne(
-            this Workspace workspace, 
+            this Workspace workspace,
             string bufferId = null)
         {
             // TODO: (GetAbsolutePositionForGetBufferWithSpecifiedIdOrSingleBufferIfThereIsOnlyOne) this concept should go away
@@ -30,10 +30,9 @@ namespace WorkspaceServer.Models.Execution
         }
 
         public static Workspace.Buffer GetBufferWithSpecifiedIdOrSingleBufferIfThereIsOnlyOne(
-            this Workspace workspace, 
+            this Workspace workspace,
             string bufferId = null)
         {
-
             // TODO: (GetBufferWithSpecifiedIdOrSingleBufferIfThereIsOnlyOne) this concept should go away
 
             var buffer = workspace.Buffers.SingleOrDefault(b => b.Id == bufferId);
@@ -53,7 +52,7 @@ namespace WorkspaceServer.Models.Execution
             return buffer;
         }
 
-        public static (int line, int column, int absolutePosition) GetTextLocation(
+        internal static (int line, int column, int absolutePosition) GetTextLocation(
             this Workspace workspace,
             string bufferId)
         {
@@ -66,18 +65,45 @@ namespace WorkspaceServer.Models.Execution
             return (line: line.LineNumber, column: absolutePosition - line.Start, absolutePosition);
         }
 
-        public static Workspace ReplaceBuffer(this Workspace workspace, string id, string text)
-        {
-            return new Workspace(
-                usings: workspace.Usings,
-                buffers: workspace.Buffers,
-                files: workspace.Files,
-                workspaceType: workspace.WorkspaceType);
-        }
+        public static Workspace AddBuffer(
+            this Workspace workspace,
+            string id,
+            string text) =>
+            new Workspace(
+                workspace.Usings,
+                workspace.Files,
+                workspace.Buffers.Concat(new[] { new Workspace.Buffer(id, text) }).ToArray(),
+                workspace.WorkspaceType,
+                workspace.IncludeInstrumentation);
 
-        public static Workspace ReplaceFile(this Workspace workspace, string name, string text)
-        {
-            return workspace;
-        }
+        public static Workspace RemoveBuffer(
+            this Workspace workspace,
+            string id) =>
+            new Workspace(
+                workspace.Usings,
+                workspace.Files,
+                workspace.Buffers.Where(b => b.Id != id).ToArray(),
+                workspace.WorkspaceType,
+                workspace.IncludeInstrumentation);
+
+        public static Workspace ReplaceBuffer(
+            this Workspace workspace,
+            string id,
+            string text) =>
+            workspace.RemoveBuffer(id).AddBuffer(id, text);
+
+        public static Workspace ReplaceFile(
+            this Workspace workspace,
+            string name,
+            string text) =>
+            new Workspace(
+                workspace.Usings,
+                workspace.Files
+                         .Where(f => f.Name != name)
+                         .Concat(new[] { new Workspace.File(name, text) })
+                         .ToArray(),
+                workspace.Buffers,
+                workspace.WorkspaceType,
+                workspace.IncludeInstrumentation);
     }
 }

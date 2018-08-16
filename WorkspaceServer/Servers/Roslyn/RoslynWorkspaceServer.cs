@@ -206,7 +206,6 @@ namespace WorkspaceServer.Servers.Roslyn
                     }
                 }
             }
-
         }
 
         private static async Task<RunResult> RunConsoleAsync(Workspace workspace, WorkspaceBuild build, SerializableDiagnostic[] diagnostics, Budget budget)
