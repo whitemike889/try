@@ -115,7 +115,16 @@ package:
                                                                         # in the order they appear here.
                                                                         # We are not doing anything here. In fact, we could have omitted the
                                                                         # package stage entirely.
-            
+
+package_sources:
+  nuget:
+    feeds:                                      # Use this if you use a per-person or team wide NuGet.config and don't have anything specific in your repository.
+      'MLS': 'https://msazure.pkgs.visualstudio.com/_packaging/MLS@Release/nuget/v3/index.json'
+      'NuGet': 'https://api.nuget.org/v3/index.json'
+    config_files:                               # A list of glob patterns specifying the configuration files. Use this if you already have NuGet.Config files in your repository.
+      - include:                                # Configuration files to include for automatic inference.
+        - "**/NuGet.Config"
+
 # An optional user defined stage for running tests that need network access. Note that unit tests and others that do not need network access
 # can be run in build or package stages itself. Any artifacts built in this stage will be separated out and will not be signed.
 # However, we recommend that tests always be run in the test stage.
