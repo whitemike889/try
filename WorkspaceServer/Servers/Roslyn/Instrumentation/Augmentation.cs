@@ -5,6 +5,7 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using WorkspaceServer.Models.Instrumentation;
 
 namespace WorkspaceServer.Servers.Roslyn.Instrumentation
 {
@@ -14,20 +15,46 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
                             IEnumerable<ISymbol> locals,
                             IEnumerable<ISymbol> fields,
                             IEnumerable<ISymbol> parameters,
-                            IEnumerable<ISymbol> internalLocals)
+                            IEnumerable<ISymbol> internalLocals,
+                            FilePosition position = null)
         {
             AssociatedStatement = associatedStatment ?? throw new ArgumentNullException(nameof(associatedStatment));
             Locals = locals ?? Array.Empty<ISymbol>();
             Fields = fields ?? Array.Empty<ISymbol>();
             Parameters = parameters ?? Array.Empty<ISymbol>();
             InternalLocals = internalLocals ?? Array.Empty<ISymbol>();
+
+            if (position == null)
+            {
+                var linePosition = AssociatedStatement.GetLocation().GetLineSpan();
+                CurrentFilePosition = new FilePosition
+                {
+                    Line = linePosition.StartLinePosition.Line,
+                    Character = linePosition.StartLinePosition.Character,
+                    File = Path.GetFileName(linePosition.Path)
+                };
+            }
+            else
+            {
+                CurrentFilePosition = position;
+            }
         }
+
+        public Augmentation withPosition(FilePosition position) => new Augmentation(
+                this.AssociatedStatement,
+                this.Locals,
+                this.Fields,
+                this.Parameters,
+                this.InternalLocals,
+                position
+            );
 
         public CSharpSyntaxNode AssociatedStatement { get; }
         public IEnumerable<ISymbol> Locals { get; }
         public IEnumerable<ISymbol> Fields { get; }
         public IEnumerable<ISymbol> Parameters { get; }
         public IEnumerable<ISymbol> InternalLocals { get; }
+        public FilePosition CurrentFilePosition { get; }
 
         public override bool Equals(object obj)
         {
@@ -37,24 +64,17 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
                    EqualityComparer<IEnumerable<ISymbol>>.Default.Equals(Locals, augmentation.Locals) &&
                    EqualityComparer<IEnumerable<ISymbol>>.Default.Equals(Fields, augmentation.Fields) &&
                    EqualityComparer<IEnumerable<ISymbol>>.Default.Equals(Parameters, augmentation.Parameters) &&
-                   EqualityComparer<IEnumerable<ISymbol>>.Default.Equals(InternalLocals, augmentation.InternalLocals);
+                   EqualityComparer<IEnumerable<ISymbol>>.Default.Equals(InternalLocals, augmentation.InternalLocals) &&
+                   EqualityComparer<FilePosition>.Default.Equals(CurrentFilePosition, augmentation.CurrentFilePosition);
         }
 
         public override int GetHashCode()
         {
-            var hashCode = 1495038390;
-            hashCode = hashCode * -1521134295 + EqualityComparer<CSharpSyntaxNode>.Default.GetHashCode(AssociatedStatement);
-            hashCode = hashCode * -1521134295 + EqualityComparer<IEnumerable<ISymbol>>.Default.GetHashCode(Locals);
-            hashCode = hashCode * -1521134295 + EqualityComparer<IEnumerable<ISymbol>>.Default.GetHashCode(Fields);
-            hashCode = hashCode * -1521134295 + EqualityComparer<IEnumerable<ISymbol>>.Default.GetHashCode(Parameters);
-            hashCode = hashCode * -1521134295 + EqualityComparer<IEnumerable<ISymbol>>.Default.GetHashCode(InternalLocals);
-            return hashCode;
+            return HashCode.Combine(AssociatedStatement, Locals, Fields, Parameters, InternalLocals, CurrentFilePosition);
         }
 
         public string Serialize()
         {
-            var position = this.AssociatedStatement.GetLocation().GetLineSpan();
-
             var symbolInformation = new[] {
                 PrintSymbols("locals", this.Locals),
                 PrintSymbols("parameters", this.Parameters),
@@ -63,9 +83,9 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
 
             var str = $@"
     \""filePosition\"": {{
-        \""line\"": {position.StartLinePosition.Line},
-        \""character\"": {position.StartLinePosition.Character},
-        \""file\"": \""{Path.GetFileName(position.Path)}\""
+        \""line\"": {CurrentFilePosition.Line},
+        \""character\"": {CurrentFilePosition.Character},
+        \""file\"": \""{CurrentFilePosition.File}\""
     }},
     \""stackTrace\"": \"" "" + new System.Diagnostics.StackTrace(false).ToString() + "" \"",
     {symbolInformation}

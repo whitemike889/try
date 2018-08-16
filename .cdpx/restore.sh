@@ -4,9 +4,10 @@ set -e
 # Get absolute path to source root
 REPO_ROOT=`dirname "$0"`; REPO_ROOT=`eval "cd \"$REPO_ROOT/..\" && pwd"`
 cd $REPO_ROOT
-source $REPO_ROOT/.build/conventions.sh
+source $REPO_ROOT/.cdpx/conventions.sh
 
 export NUGET_PACKAGES
+export NUGET_XMLDOC_MODE=none 
 
 # Add packages from APK
 apk update
@@ -14,7 +15,7 @@ apk add xmlstarlet
 apk add shadow
 
 # Add dotnet tools
-dotnet tool install t-rex --version 1.0.0-preview1-004 --add-source https://www.myget.org/F/wultest/api/v3/index.json --tool-path $DOTNET_TOOLS
+dotnet tool install t-rex --tool-path $DOTNET_TOOLS
 
 # Restore the project
 dotnet restore $REPO_ROOT/MLS-LS.sln
@@ -64,4 +65,11 @@ mkdir -p $WORKSPACES_ROOT/xunit
 cd $WORKSPACES_ROOT/xunit
 dotnet new xunit --name tests --output .
 xmlstarlet ed --inplace --insert "/Project/PropertyGroup/OutputType" --type elem -n "LangVersion" --value "7.3" tests.csproj
+dotnet build /fl /p:ProvideCommandLineArgs=true
+
+mkdir -p $WORKSPACES_ROOT/microsoftml
+cd $WORKSPACES_ROOT/microsoftml
+dotnet new console 
+dotnet add package Microsoft.ML --version 0.3.0
+xmlstarlet ed --inplace --insert "/Project/PropertyGroup/OutputType" --type elem -n "LangVersion" --value "7.3" microsoftml.csproj
 dotnet build /fl /p:ProvideCommandLineArgs=true

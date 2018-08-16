@@ -120,7 +120,7 @@ namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
             var expected = TestUtils.RemoveWhitespace(@"
     \""declaredAt\"": {
         \""start\"": 141,
-        \""end\"": 146    
+        \""end\"": 142    
     }"
             );
             Assert.Contains(expected, rewrittenProgram);

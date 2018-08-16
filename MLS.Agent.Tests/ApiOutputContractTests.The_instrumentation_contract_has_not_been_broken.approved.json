@@ -186,12 +186,12 @@
           "startLine": 10,
           "startColumn": 27,
           "endLine": 10,
-          "endColumn": 32
+          "endColumn": 28
         }
       ],
       "declaredAt": {
         "start": 157,
-        "end": 162
+        "end": 158
       }
     },
     {
@@ -213,12 +213,12 @@
           "startLine": 10,
           "startColumn": 16,
           "endLine": 10,
-          "endColumn": 21
+          "endColumn": 17
         }
       ],
       "declaredAt": {
         "start": 146,
-        "end": 151
+        "end": 147
       }
     }
   ]

@@ -31,7 +31,7 @@ namespace WorkspaceServer.Servers.Roslyn
         private readonly ConcurrentDictionary<string, AsyncLock> locks = new ConcurrentDictionary<string, AsyncLock>();
         private readonly BufferInliningTransformer _transformer = new BufferInliningTransformer();
 
-        private readonly string UserCodeCompleted = nameof(UserCodeCompleted);
+        private static readonly string UserCodeCompleted = nameof(UserCodeCompleted);
 
         private delegate Task<WorkspaceBuild> GetWorkspaceBuildByName(string name);
 
@@ -62,7 +62,7 @@ namespace WorkspaceServer.Servers.Roslyn
 
             var processed = await _transformer.TransformAsync(request.Workspace, budget);
             var sourceFiles = processed.GetSourceFiles();
-            var documents = (await build.GetCompilation(sourceFiles, budget)).documents;
+            var (compilation, documents) = (await build.GetCompilation(sourceFiles, budget));
 
             var file = processed.GetFileFromBufferId(request.ActiveBufferId);
             var (line, column, absolutePosition) = processed.GetTextLocation(request.ActiveBufferId);
@@ -72,14 +72,14 @@ namespace WorkspaceServer.Servers.Roslyn
             var completionList = await service.GetCompletionsAsync(selectedDocument, absolutePosition);
             var semanticModel = await selectedDocument.GetSemanticModelAsync();
             var symbols = await Recommender.GetRecommendedSymbolsAtPositionAsync(
-                              semanticModel, 
-                              absolutePosition, 
+                              semanticModel,
+                              absolutePosition,
                               selectedDocument.Project.Solution.Workspace);
 
             var symbolToSymbolKey = new Dictionary<(string, int), ISymbol>();
             foreach (var symbol in symbols)
             {
-                var key = (symbol.Name, (int)symbol.Kind);
+                var key = (symbol.Name, (int) symbol.Kind);
                 if (!symbolToSymbolKey.ContainsKey(key))
                 {
                     symbolToSymbolKey[key] = symbol;
@@ -138,15 +138,15 @@ namespace WorkspaceServer.Servers.Roslyn
         public async Task<RunResult> Run(Workspace workspace, Budget budget = null)
         {
             budget = budget ?? new TimeBudget(TimeSpan.FromSeconds(defaultBudgetInSeconds));
-            RunResult runResult = null;
 
-            using (var operation = Log.OnEnterAndConfirmOnExit())
+            using (Log.OnEnterAndExit())
             using (await locks.GetOrAdd(workspace.WorkspaceType, s => new AsyncLock()).LockAsync())
             {
                 var build = await getWorkspaceBuildByName(workspace.WorkspaceType);
+
                 workspace = await _transformer.TransformAsync(workspace, budget);
 
-                var compilation = await Compile(workspace, budget, build);
+                var compilation = await build.Compile(workspace, budget);
 
                 var diagnostics = ServiceHelpers.GetDiagnostics(
                     workspace,
@@ -155,121 +155,146 @@ namespace WorkspaceServer.Servers.Roslyn
                 if (diagnostics.Any(e => e.Severity == DiagnosticSeverity.Error))
                 {
                     var compileErrorMessages = diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error)
-                                                                   .Select(d => d.Message)
-                                                                   .ToArray();
+                                                          .Select(d => d.Message)
+                                                          .ToArray();
                     return new RunResult(
                         false,
                         compileErrorMessages,
                         diagnostics: diagnostics);
                 }
 
-                await EmitCompilation(compilation, build, operation);
+                await EmitCompilationAsync(compilation, build);
 
                 if (build.IsWebProject)
                 {
-                    runResult = RunWebRequest(build);
+                    return RunWebRequest(build);
                 }
-                else if (build.IsUnitTestProject)
+
+                if (build.IsUnitTestProject)
                 {
-                    var dotnet = new Dotnet(build.Directory);
-
-                    var testRunResult = await dotnet.VSTest(
-                                            $"--logger:trx {build.EntryPointAssemblyPath}",
-                                            budget);
-
-                    string exceptionMessage = null;
-
-                    if (testRunResult.Error.Count > 0)
-                    {
-                        exceptionMessage = string.Join(Environment.NewLine, testRunResult.Error);
-                    }
-
-                    var trex = new FileInfo(
-                        Path.Combine(
-                            Paths.DotnetToolsPath,
-                            "t-rex".ExecutableName()));
-
-                    CommandLineResult tRexResult = null;
-
-                    if (trex.Exists)
-                    { 
-                        tRexResult = await CommandLine.Execute(
-                                         trex,
-                                         "",
-                                         workingDir: build.Directory,
-                                         budget: budget);
-                    }
-
-                    var result = new RunResult(
-                        testRunResult.ExitCode == 0,
-                        tRexResult?.Output ?? testRunResult.Output,
-                        exceptionMessage,
-                        diagnostics);
-
-                    result.AddFeature(new UnitTestRun(new []
-                    {
-                        new UnitTestResult()
-                    }));
-
-                    return result;
+                    return await RunUnitTestsAsync(build, diagnostics, budget);
                 }
-                else
+
+                return await RunConsoleAsync(workspace, build, diagnostics, budget);
+            }
+        }
+
+        private static async Task EmitCompilationAsync(Compilation compilation, WorkspaceBuild build)
+        {
+            using (var operation = Log.OnEnterAndExit())
+            {
+                var numberOfAttempts = 100;
+                for (var attempt = 1; attempt < numberOfAttempts; attempt++)
                 {
-                    var dotnet = new Dotnet(build.Directory);
-
-                    var commandLineResult = await dotnet.Execute(
-                                                build.EntryPointAssemblyPath.FullName,
-                                                budget);
-
-                    var output = InstrumentedOutputExtractor.ExtractOutput(commandLineResult.Output);
-
-                    budget.RecordEntry(UserCodeCompleted);
-
-                    if (commandLineResult.ExitCode == 124)
+                    try
                     {
-                        throw new BudgetExceededException(budget);
+                        compilation.Emit(build.EntryPointAssemblyPath.FullName);
+                        operation.Info("Emit succeeded on attempt #{attempt}", attempt);
+                        break;
                     }
-
-                    string exceptionMessage = null;
-
-                    if (commandLineResult.Error.Count > 0)
+                    catch (IOException)
                     {
-                        exceptionMessage = string.Join(Environment.NewLine, commandLineResult.Error);
-                    }
+                        if (attempt == numberOfAttempts - 1)
+                        {
+                            throw;
+                        }
 
-                    runResult = new RunResult(
-                           succeeded: true,
-                           output: output.StdOut,
-                           exception: exceptionMessage,
-                           diagnostics: diagnostics);
-
-                    if (workspace.IncludeInstrumentation)
-                    {
-                        runResult.AddFeature(output.ProgramStatesArray);
-                        runResult.AddFeature(output.ProgramDescriptor);
+                        await Task.Delay(10);
                     }
                 }
+            }
+
+        }
+
+        private static async Task<RunResult> RunConsoleAsync(Workspace workspace, WorkspaceBuild build, SerializableDiagnostic[] diagnostics, Budget budget)
+        {
+            var dotnet = new Dotnet(build.Directory);
+
+            var commandLineResult = await dotnet.Execute(
+                                        build.EntryPointAssemblyPath.FullName,
+                                        budget);
+
+            budget.RecordEntry(UserCodeCompleted);
+
+            var output = InstrumentedOutputExtractor.ExtractOutput(commandLineResult.Output);
+
+            if (commandLineResult.ExitCode == 124)
+            {
+                throw new BudgetExceededException(budget);
+            }
+
+            string exceptionMessage = null;
+
+            if (commandLineResult.Error.Count > 0)
+            {
+                exceptionMessage = string.Join(Environment.NewLine, commandLineResult.Error);
+            }
+
+            var runResult = new RunResult(
+                succeeded: true,
+                output: output.StdOut,
+                exception: exceptionMessage,
+                diagnostics: diagnostics);
+
+            if (workspace.IncludeInstrumentation)
+            {
+                runResult.AddFeature(output.ProgramStatesArray);
+                runResult.AddFeature(output.ProgramDescriptor);
             }
 
             return runResult;
         }
 
-        private async Task<Compilation> Compile(Workspace workspace, Budget budget, WorkspaceBuild build)
+        private static async Task<RunResult> RunUnitTestsAsync(WorkspaceBuild build, SerializableDiagnostic[] diagnostics, Budget budget)
         {
-            var sourceFiles = workspace.GetSourceFiles();
+            var dotnet = new Dotnet(build.Directory);
 
-            var (compilation, documents) = await build.GetCompilation(sourceFiles, budget);
+            var commandLineResult = await dotnet.VSTest(
+                                        $"--logger:trx {build.EntryPointAssemblyPath}",
+                                        budget);
 
-            var viewports = _transformer.ExtractViewPorts(workspace);
-            var instrumentationRegions = viewports.Where(v => v.Destination?.Name != null)
-                                                  .GroupBy(v => v.Destination.Name, v => v.Region, (name, regions) => new InstrumentationMap(name, regions));
+            budget.RecordEntry(UserCodeCompleted);
 
-            if (workspace.IncludeInstrumentation)
+            if (commandLineResult.ExitCode == 124)
             {
-                compilation = AugmentCompilation(instrumentationRegions, compilation, documents.First().Project.Solution);
+                throw new BudgetExceededException(budget);
             }
 
-            return compilation;
+            string exceptionMessage = null;
+
+            if (commandLineResult.Error.Count > 0)
+            {
+                exceptionMessage = string.Join(Environment.NewLine, commandLineResult.Error);
+            }
+
+            var trex = new FileInfo(
+                Path.Combine(
+                    Paths.DotnetToolsPath,
+                    "t-rex".ExecutableName()));
+
+            CommandLineResult tRexResult = null;
+
+            if (trex.Exists)
+            {
+                tRexResult = await CommandLine.Execute(
+                                 trex,
+                                 "",
+                                 workingDir: build.Directory,
+                                 budget: budget);
+            }
+
+            var result = new RunResult(
+                commandLineResult.ExitCode == 0,
+                tRexResult?.Output ?? commandLineResult.Output,
+                exceptionMessage,
+                diagnostics);
+
+            result.AddFeature(new UnitTestRun(new[]
+            {
+                new UnitTestResult()
+            }));
+
+            return result;
         }
 
         private static RunResult RunWebRequest(WorkspaceBuild build)
@@ -277,61 +302,6 @@ namespace WorkspaceServer.Servers.Roslyn
             var runResult = new RunResult(succeeded: true);
             runResult.AddFeature(new WebServer(build));
             return runResult;
-        }
-
-        private static async Task EmitCompilation(Compilation compilation, WorkspaceBuild build, ConfirmationLogger operation)
-        {
-            var numberOfAttempts = 100;
-            for (var attempt = 1; attempt < numberOfAttempts; attempt++)
-            {
-                try
-                {
-                    compilation.Emit(build.EntryPointAssemblyPath.FullName);
-                    operation.Info("Emit succeeded on attempt #{attempt}", attempt);
-                    break;
-                }
-                catch (IOException)
-                {
-                    if (attempt == numberOfAttempts - 1)
-                    {
-                        throw;
-                    }
-
-                    await Task.Delay(10);
-                }
-            }
-        }
-
-        private Compilation AugmentCompilation(IEnumerable<InstrumentationMap> regions, Compilation compilation, Solution solution)
-        {
-            var newCompilation = compilation;
-            foreach (var tree in newCompilation.SyntaxTrees)
-            {
-                var replacementRegions = regions?.Where(r => tree.FilePath.EndsWith(r.FileToInstrument)).FirstOrDefault()?.InstrumentationRegions;
-
-                var semanticModel = newCompilation.GetSemanticModel(tree);
-
-                var visitor = new InstrumentationSyntaxVisitor(solution.GetDocument(tree), replacementRegions);
-                var linesWithInstrumentation = visitor.Augmentations.Data.Keys;
-
-                var rewrite = new InstrumentationSyntaxRewriter(
-                    linesWithInstrumentation,
-                    new[] { visitor.VariableLocations },
-                    new[] { visitor.Augmentations });
-                var newRoot = rewrite.Visit(tree.GetRoot());
-                var newTree = tree.WithRootAndOptions(newRoot, tree.Options);
-
-                newCompilation = newCompilation.ReplaceSyntaxTree(tree, newTree);
-            }
-
-            // if it failed to compile, just return the original, unaugmented compilation
-            var augmentedDiagnostics = newCompilation.GetDiagnostics();
-            if (augmentedDiagnostics.Any(e => e.Severity == DiagnosticSeverity.Error))
-            {
-                throw new Exception("Augmented source failed to compile: " + string.Join(Environment.NewLine, augmentedDiagnostics));
-            }
-
-            return newCompilation;
         }
     }
 }

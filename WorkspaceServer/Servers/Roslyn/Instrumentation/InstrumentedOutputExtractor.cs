@@ -27,7 +27,10 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
                 .TokenizeWithDelimiter(_sentinel)
                 .Aggregate(new ExtractorState(), (currentState, nextString) =>
                 {
-                    if (nextString == _sentinel) return currentState.With(isInstrumentation: !currentState.IsInstrumentation);
+                    if (nextString == _sentinel)
+                    {
+                        return currentState.With(isInstrumentation: !currentState.IsInstrumentation);
+                    }
 
                     if (currentState.IsInstrumentation)
                     {
@@ -56,9 +59,8 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
                     }
                     else
                     {
-                        var outputStrings = nextString
-                            .Trim()
-                            .Split(new[] { newLine }, StringSplitOptions.None);
+                        var outputStrings = nextString.Split(newLine);
+
                         return currentState.With(
                             stdOut: currentState.StdOut.Concat(outputStrings).ToImmutableList()
                         );

@@ -1,8 +1,8 @@
 ﻿using System;
+using FluentAssertions;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using FluentAssertions;
 using WorkspaceServer.Models;
 using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
@@ -58,6 +58,7 @@ namespace FibonacciTest
         }
     }
 }".EnforceLF();
+
             #endregion
 
             var (processed, position) = CodeManipulation.ProcessMarkup(generator);
@@ -83,7 +84,7 @@ namespace FibonacciTest
         {
             #region bufferSources
 
-            const string program = @"using System;
+            var program = @"using System;
 using System.Linq;
 
 namespace FibonacciTest
@@ -98,8 +99,9 @@ namespace FibonacciTest
             }
         }
     }
-}";
-            const string generator = @"using System.Collections.Generic;
+}".EnforceLF();
+
+            var generator = @"using System.Collections.Generic;
 using System;
 namespace FibonacciTest
 {
@@ -116,7 +118,7 @@ namespace FibonacciTest
             }
         }
     }
-}";
+}".EnforceLF();
 
             #endregion
 
@@ -137,15 +139,14 @@ namespace FibonacciTest
             result.Items.Should().Contain(completion => completion.SortText == "Beep");
             var hasDuplicatedEntries = HasDuplicatedCompletionItems(result);
             hasDuplicatedEntries.Should().BeFalse();
-
         }
 
-        [Fact]
-        public async Task Get_autocompletion_for_jtoken()
+        [Fact(Skip = "temporary to test CI tests")]
+        public async Task Get_documentation_with_autocompletion_of_console_methods()
         {
             #region bufferSources
 
-            const string program = @"using System;
+            var program = @"using System;
 using System.Linq;
 
 namespace FibonacciTest
@@ -160,8 +161,72 @@ namespace FibonacciTest
             }
         }
     }
-}";
-            const string generator = @"using System.Collections.Generic;
+}".EnforceLF();
+
+            var generator = @"using System.Collections.Generic;
+using System;
+namespace FibonacciTest
+{
+    public static class FibonacciGenerator
+    {
+        public static IEnumerable<int> Fibonacci()
+        {
+            int current = 1, next = 1;
+            while (true)
+            {
+                yield return current;
+                next = current + (current = next);
+                Console.$$
+            }
+        }
+    }
+}".EnforceLF();
+
+            #endregion
+
+            var (processed, position) = CodeManipulation.ProcessMarkup(generator);
+
+            var workspace = new Workspace(workspaceType: "console", buffers: new[]
+            {
+                new Workspace.Buffer("Program.cs", program),
+                new Workspace.Buffer("generators/FibonacciGenerator.cs", processed, position)
+            });
+
+            var request = new WorkspaceRequest(workspace, activeBufferId: "generators/FibonacciGenerator.cs");
+            var server = GetLanguageService();
+            var result = await server.GetCompletionList(request);
+
+            result.Items
+                  .Select(i => i.Documentation)
+                  .Where(d => !string.IsNullOrWhiteSpace(d))
+                  .Should()
+                  .Contain(d => d ==
+                                "Plays the sound of a beep through the console speaker.\nSystem.Security.HostProtectionException: This method was executed on a server, such as SQL Server, that does not permit access to a user interface.");
+        }
+
+        [Fact]
+        public async Task Get_autocompletion_for_jtoken()
+        {
+            #region bufferSources
+
+            var program = @"using System;
+using System.Linq;
+
+namespace FibonacciTest
+{
+    public class Program
+    {
+        public static void Main()
+        {
+            foreach (var i in FibonacciGenerator.Fibonacci().Take(20))
+            {
+                Console.WriteLine(i);
+            }
+        }
+    }
+}".EnforceLF();
+
+            var generator = @"using System.Collections.Generic;
 using System;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -181,7 +246,7 @@ namespace FibonacciTest
             }
         }
     }
-}";
+}".EnforceLF();
 
             #endregion
 
@@ -189,10 +254,12 @@ namespace FibonacciTest
 
             var workspace = new Workspace(
                 workspaceType: "console",
-                buffers: new[] {
+                buffers: new[]
+                {
                     new Workspace.Buffer("Program.cs", CodeManipulation.EnforceLF(program)),
                     new Workspace.Buffer("generators/FibonacciGenerator.cs@codeRegion", processed, position)
-                }, files: new[] {
+                }, files: new[]
+                {
                     new Workspace.File("generators/FibonacciGenerator.cs", CodeManipulation.EnforceLF(generator)),
                 });
 
@@ -257,11 +324,13 @@ namespace FibonacciTest
 
             var workspace = new Workspace(
                 workspaceType: "console",
-                buffers: new[] {
+                buffers: new[]
+                {
                     new Workspace.Buffer("Program.cs", program),
                     new Workspace.Buffer("generators/FibonacciGenerator.cs@codeRegion", processed, position)
-                }, files: new[] {
-                    new Workspace.File("generators/FibonacciGenerator.cs",generator),
+                }, files: new[]
+                {
+                    new Workspace.File("generators/FibonacciGenerator.cs", generator),
                 });
 
             var request = new WorkspaceRequest(workspace, activeBufferId: "generators/FibonacciGenerator.cs@codeRegion");
@@ -384,7 +453,6 @@ namespace FibonacciTest
 
             result.Signatures.Should().NotBeNullOrEmpty();
             result.Signatures.Should().Contain(signature => signature.Label == "void Console.WriteLine(string format, params object[] arg)");
-
         }
 
         [Fact]
@@ -493,10 +561,12 @@ namespace FibonacciTest
 
             var workspace = new Workspace(
                 workspaceType: "console",
-                buffers: new[] {
+                buffers: new[]
+                {
                     new Workspace.Buffer("Program.cs", program),
                     new Workspace.Buffer("generators/FibonacciGenerator.cs@codeRegion", processed, position)
-                }, files: new[] {
+                }, files: new[]
+                {
                     new Workspace.File("generators/FibonacciGenerator.cs", generator),
                 });
 
@@ -506,7 +576,6 @@ namespace FibonacciTest
 
             result.Signatures.Should().NotBeNullOrEmpty();
             result.Signatures.Should().Contain(signature => signature.Label == "void Console.WriteLine(string format, params object[] arg)");
-
         }
 
         [Fact]
@@ -559,10 +628,12 @@ namespace FibonacciTest
 
             var workspace = new Workspace(
                 workspaceType: "console",
-                buffers: new[] {
+                buffers: new[]
+                {
                     new Workspace.Buffer("Program.cs", program),
                     new Workspace.Buffer("generators/FibonacciGenerator.cs@codeRegion", processed, position)
-                }, files: new[] {
+                }, files: new[]
+                {
                     new Workspace.File("generators/FibonacciGenerator.cs", generator),
                 });
 
@@ -572,7 +643,6 @@ namespace FibonacciTest
 
             result.Signatures.Should().NotBeNullOrEmpty();
             result.Signatures.Should().Contain(signature => signature.Label == "JToken JToken.FromObject(object o)");
-
         }
 
         protected override Task<ICodeRunner> GetRunner(

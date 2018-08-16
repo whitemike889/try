@@ -71,14 +71,14 @@ versioning:
 build:
   commands:
 
-    - !!buildcommand
-      name: '.build/cdpxrestore.sh'
-      command: '.build/cdpxrestore.sh'
+    - !!defaultcommand
+      name: '.cdpx/restore.sh'
+      command: '.cdpx/restore.sh'
       fail_on_stderr: false
 
     - !!buildcommand
-      name: '.build/cdpxbuild.sh'
-      command: '.build/cdpxbuild.sh'
+      name: '.cdpx/build.sh'
+      command: '.cdpx/build.sh'
       fail_on_stderr: false
                                                                         
       artifacts:                                         
@@ -86,12 +86,8 @@ build:
           to: 'ServiceLayout'
           include:
             - '**/*'        
-        - from: '.'
+        - from: '.release'
           to: '.'
-          include:
-            - 'build.artifact.commit.sha'                                                  
-        - from: './.build'
-          to: '.build'
           include:
             - '**/*' 
                                                                         # We always preserve the root relative path for every matched file.
@@ -133,15 +129,16 @@ package_sources:
 test:
   commands:
     - !!testcommand
-      name: 'Test Agent'
-      command: './.build/cdpxtest.sh'
+      name: 'Test'
+      command: '.cdpx/test.sh'
       fail_on_stderr: false 
       testresults:
-        - from: 'source'
-          title: 'Agent Unit Tests'
-          type: 'xunit'
+        - title: 'Unit Tests'
+          type: 'VSTest'
           include:
-            - '**/*.trx'                                                             # This is a sequence of script files to be executed one after another
+            - '**/*.trx'
+
+                                                                        # This is a sequence of script files to be executed one after another
                                                                         # in the order they appear here.
 #   - !!testcommand                                                     # We are going to run tests and collect back the test results for
 #                                                                       # publishing
@@ -178,3 +175,10 @@ user_cleanup:
                                                                         # in the order they appear here.
                                                                         # We are not doing anything here. In fact, we could have omitted the
                                                                         # user_cleanup stage entirely.
+
+static_analysis_options:
+  elfskim_options: 
+    files_to_scan:
+      - from: 'source'
+        exclude:
+          - '**/obj/Docker/publish/runtimes/**/*.so'
