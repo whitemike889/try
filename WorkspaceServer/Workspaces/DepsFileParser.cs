@@ -1,8 +1,9 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
+using MLS.Agent.Tools;
 using Newtonsoft.Json.Linq;
+
 
 namespace MLS.Agent.Workspaces
 {
@@ -15,7 +16,7 @@ namespace MLS.Agent.Workspaces
                 throw new ArgumentNullException(nameof(depsFile));
             }
 
-            var content = File.ReadAllText(depsFile.FullName);
+            var content = depsFile.Read();
 
             var projectName = depsFile.Name.Replace(".deps.json", "");
 
