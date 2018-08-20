@@ -76,5 +76,30 @@ namespace WorkspaceServer.Models.Instrumentation
         [JsonProperty("file")]
         public string File { get; set; }
     }
+
+    public static class InstrumentationEmitter
+    {
+        public static readonly string Sentinel = "6a2f74a2-f01d-423d-a40f-726aa7358a81";
+        public static JToken GetProgramState(
+            string filePositionStr, //FilePosition filePosition,
+            params string[] variableInfo) //VariableInfo[] variableInfo)
+        {
+            var filePosition = JsonConvert.DeserializeObject<FilePosition>(filePositionStr);
+            var variableInfos = variableInfo.Select(v =>
+            JsonConvert.DeserializeObject<VariableInfo>(v)).ToArray();
+       
+
+            return JToken.FromObject(new ProgramStateAtPosition
+            {
+                FilePosition = filePosition,
+                Locals = variableInfos
+            });
+        }
+
+        public static void EmitProgramState(JToken programState)
+        {
+            Console.WriteLine(Sentinel + programState + Sentinel);
+        }
+    }
 }
 

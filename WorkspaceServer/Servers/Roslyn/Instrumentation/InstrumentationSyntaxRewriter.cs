@@ -82,9 +82,10 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
 
         private StatementSyntax CreateSyntaxNode(string data)
         {
-            var uglifiedData = Regex.Replace(data, @"\r\n|\r|\n", "");
+            var uglifiedData = Regex.Replace(instrumentationJson, @"\r\n|\r|\n", "");
             var injectedCode = $"System.Console.WriteLine(\"{Sentinel}{{{uglifiedData}}}{Sentinel}\");";
             return SyntaxFactory.ParseStatement(injectedCode);
+
         }
     }
 }
