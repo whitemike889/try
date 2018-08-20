@@ -28,7 +28,7 @@ namespace MLS.Agent
 
         private static readonly Assembly[] assembliesEmittingPocketLoggerLogs = {
             typeof(Startup).Assembly,
-            typeof(DepsFileParser).Assembly,
+            typeof(AsyncLazy<>).Assembly,
             typeof(RoslynWorkspaceServer).Assembly
         };
 

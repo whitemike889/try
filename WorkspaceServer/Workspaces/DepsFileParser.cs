@@ -1,9 +1,10 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 
-namespace MLS.Agent.Tools
+namespace MLS.Agent.Workspaces
 {
     public static class DepsFileParser
     {
@@ -14,7 +15,7 @@ namespace MLS.Agent.Tools
                 throw new ArgumentNullException(nameof(depsFile));
             }
 
-            var content = depsFile.Read();
+            var content = File.ReadAllText(depsFile.FullName);
 
             var projectName = depsFile.Name.Replace(".deps.json", "");
 
