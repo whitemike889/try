@@ -13,7 +13,7 @@ namespace MLS.Agent.Tools
                 throw new ArgumentNullException(nameof(runtimeConfigFile));
             }
 
-            var content = runtimeConfigFile.Read();
+            var content = File.ReadAllText(runtimeConfigFile.FullName);
 
             var fileContentJson = JObject.Parse(content);
 
