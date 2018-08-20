@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using MLS.Agent.Tools;
 using WorkspaceServer.Models.Execution;
+using MLS.Agent.Workspaces;
 
 namespace WorkspaceServer.Servers.Roslyn
 {

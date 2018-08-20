@@ -2,8 +2,9 @@
 using System.IO;
 using System.Threading.Tasks;
 using Clockwise;
+using MLS.Agent.Tools;
 
-namespace MLS.Agent.Tools
+namespace MLS.Agent.CLI
 {
     public class Dotnet
     {

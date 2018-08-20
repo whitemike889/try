@@ -5,6 +5,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Host.Mef;
 using MLS.Agent.Tools;
+using MLS.Agent.Workspaces;
 
 namespace WorkspaceServer.Servers.Roslyn
 {

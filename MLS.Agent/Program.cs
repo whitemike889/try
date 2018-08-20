@@ -9,12 +9,12 @@ using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using MLS.Agent.Tools;
 using Pocket.For.ApplicationInsights;
 using Recipes;
 using Serilog.Sinks.RollingFileAlternate;
 using WorkspaceServer.Servers.Roslyn;
 using SerilogLoggerConfiguration = Serilog.LoggerConfiguration;
+using MLS.Agent.Tools;
 
 namespace MLS.Agent
 {
@@ -28,7 +28,7 @@ namespace MLS.Agent
 
         private static readonly Assembly[] assembliesEmittingPocketLoggerLogs = {
             typeof(Startup).Assembly,
-            typeof(Dotnet).Assembly,
+            typeof(DepsFileParser).Assembly,
             typeof(RoslynWorkspaceServer).Assembly
         };
 
