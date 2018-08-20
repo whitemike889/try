@@ -4,9 +4,9 @@
 using System;
 using System.IO;
 using System.Reflection;
-using MLS.Agent.Tools;
+using WorkspaceServer;
 
-namespace MLS.Agent.CLI
+namespace MLS.Agent.DotnetCli
 {
     public static class DotnetMuxer
     {

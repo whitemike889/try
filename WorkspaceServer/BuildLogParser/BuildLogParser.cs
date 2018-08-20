@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using MLS.Agent.CLI;
+using MLS.Agent.DotnetCli;
 
 namespace MLS.Agent.Tools
 {

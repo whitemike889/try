@@ -8,7 +8,7 @@ using Clockwise;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Completion;
 using Microsoft.CodeAnalysis.Recommendations;
-using MLS.Agent.CLI;
+using MLS.Agent.DotnetCli;
 using MLS.Agent.Tools;
 using MLS.Agent.Workspaces;
 using Pocket;
