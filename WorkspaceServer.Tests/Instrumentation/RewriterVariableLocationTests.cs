@@ -43,8 +43,8 @@ namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
 
             var rewriter = new InstrumentationSyntaxRewriter(
                     instrumentedNodes,
-                    new[] { locationMap },
-                    Enumerable.Empty<ISerializableEveryLine>()
+                    locationMap,
+                    new AugmentationMap()
                 );
 
             var rewrittenProgramWithWhitespace = rewriter.ApplyToTree(syntaxTree).ToString();

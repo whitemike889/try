@@ -19,8 +19,8 @@ namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
             var rewriter = new InstrumentationSyntaxRewriter
                 (
                 Enumerable.Empty<SyntaxNode>(),
-                Enumerable.Empty<ISerializableOnce>(),
-                Enumerable.Empty<ISerializableEveryLine>()
+                new VariableLocationMap(),
+                new AugmentationMap()
                 );
 
             // act
@@ -44,8 +44,8 @@ namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
 
             var rewriter = new InstrumentationSyntaxRewriter(
                 augMap.Data.Keys,
-                Enumerable.Empty<ISerializableOnce>(),
-                new[] { augMap }
+                new VariableLocationMap(),
+                augMap 
                 );
 
             // act
@@ -70,8 +70,8 @@ namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
 
             var rewriter = new InstrumentationSyntaxRewriter(
                 augMap.Data.Keys,
-                Enumerable.Empty<ISerializableOnce>(),
-                new[] { augMap }
+                new VariableLocationMap(),
+                augMap
                 );
 
             // act
@@ -97,8 +97,8 @@ namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
             var augMap = new AugmentationMap(augmentations.ToArray());
             var rewriter = new InstrumentationSyntaxRewriter(
                 augMap.Data.Keys,
-                Enumerable.Empty<ISerializableOnce>(),
-                new[] { augMap }
+                new VariableLocationMap(),
+                augMap
                 );
 
             // act
@@ -124,8 +124,8 @@ namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
             var augMap = new AugmentationMap(augmentations.ToArray());
             var rewriter = new InstrumentationSyntaxRewriter(
                  augMap.Data.Keys,
-                 Enumerable.Empty<ISerializableOnce>(),
-                 new[] { augMap }
+                 new VariableLocationMap(),
+                 augMap
                  );
 
             // act
@@ -150,8 +150,8 @@ namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
             var augMap = new AugmentationMap(augmentations.ToArray());
             var rewriter = new InstrumentationSyntaxRewriter(
                              augMap.Data.Keys,
-                             Enumerable.Empty<ISerializableOnce>(),
-                             new[] { augMap }
+                             new VariableLocationMap(),
+                             augMap
                              );
             // act
             var newTree = rewriter.ApplyToTree(syntaxTree);

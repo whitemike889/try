@@ -1,12 +1,14 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using WorkspaceServer.Servers.Roslyn.Instrumentation.Contract;
 
 namespace WorkspaceServer.Servers.Roslyn.Instrumentation
 {
@@ -15,17 +17,17 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
     {
         public static readonly string Sentinel = "6a2f74a2-f01d-423d-a40f-726aa7358a81";
 
-        private readonly IEnumerable<ISerializableOnce> _serializeOnce;
-        private readonly IEnumerable<ISerializableEveryLine> _serializeEveryStep;
+        private readonly VariableLocationMap _variableLocations;
+        private readonly AugmentationMap _augmentations;
         private readonly IEnumerable<SyntaxNode> _instrumentedNodes;
         public InstrumentationSyntaxRewriter(
             IEnumerable<SyntaxNode> instrumentedNodes,
-            IEnumerable<ISerializableOnce> printOnce,
-            IEnumerable<ISerializableEveryLine> printEveryStep
+            VariableLocationMap printOnce,
+            AugmentationMap printEveryStep
             )
         {
-            _serializeOnce = printOnce ?? throw new ArgumentNullException(nameof(printOnce));
-            _serializeEveryStep = printEveryStep ?? throw new ArgumentNullException(nameof(printEveryStep));
+            _variableLocations = printOnce ?? throw new ArgumentNullException(nameof(printOnce));
+            _augmentations = printEveryStep ?? throw new ArgumentNullException(nameof(printEveryStep));
             _instrumentedNodes = instrumentedNodes ?? throw new ArgumentNullException(nameof(instrumentedNodes));
         }
 
@@ -55,37 +57,92 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
         {
             foreach (var node in list)
             {
-                if (IsEntryPoint(node) && node == list.First() && _serializeOnce.Count() > 0)
+                if (IsEntryPoint(node) && node == list.First() && _variableLocations.Data.Count > 0)
                 {
-                    yield return (TNode)(SyntaxNode)PrintInstrumentation();
+                    yield return (TNode)(SyntaxNode)CreateStatementToPrintVariableLocations();
                 }
-                if (_instrumentedNodes.Contains(node) && _serializeEveryStep.Count() > 0)
+                if (_instrumentedNodes.Contains(node) && _augmentations.Data.Count > 0)
                 {
-                    yield return (TNode)(SyntaxNode)PrintLineInstrumentation(node);
+                    yield return (TNode)(SyntaxNode)CreateStatementToPrintAugmentations(node);
                 }
 
                 yield return (TNode)Visit(node);
             }
         }
-        private StatementSyntax PrintLineInstrumentation(SyntaxNode node)
+        private StatementSyntax CreateStatementToPrintAugmentations(SyntaxNode node)
         {
-            var data = _serializeEveryStep.Select(serializer => serializer.SerializeForLine(node))
-                     .Join();
-            return CreateSyntaxNode(data);
+            var augmentation = _augmentations.Data[node];
+            var variableInfos = MapAugmentationToVariableInfo(augmentation);
+            var filePosition = augmentation.CurrentFilePosition;
+            var syntaxNode = CreateSyntaxNode(filePosition, variableInfos);
+            return syntaxNode;
         }
 
-        private StatementSyntax PrintInstrumentation()
+        private StatementSyntax CreateStatementToPrintVariableLocations()
         {
-            var data = _serializeOnce.Select(serializer => serializer.Serialize()).Join();
-            return CreateSyntaxNode(data);
+            var data = _variableLocations.Serialize();
+            var uglifiedData = Regex.Replace(data, "\r|\n", "");
+            return SyntaxFactory.ParseStatement($"Console.WriteLine(\"{Sentinel}{{{uglifiedData}}}{Sentinel}\");");
         }
 
-        private StatementSyntax CreateSyntaxNode(string data)
+        public static StatementSyntax CreateSyntaxNode(FilePosition currentFilePosition, params VariableInfo[] variables)
         {
-            var uglifiedData = Regex.Replace(instrumentationJson, @"\r\n|\r|\n", "");
-            var injectedCode = $"System.Console.WriteLine(\"{Sentinel}{{{uglifiedData}}}{Sentinel}\");";
-            return SyntaxFactory.ParseStatement(injectedCode);
 
+            (object, string)[] x = variables.Select(v => ((object)v, v.Name)).ToArray();
+
+            return SyntaxFactory.ExpressionStatement(
+                CreateMethodInvocation("InstrumentationEmitter", "EmitProgramState",
+                    SyntaxFactory.ArgumentList(
+                        SyntaxFactory.SeparatedList<ArgumentSyntax>( new[] {
+                            SyntaxFactory.Argument(
+                                CreateMethodInvocation("InstrumentationEmitter", "GetProgramState", ArgumentListGenerator.GenerateArgumentListForGetProgramState(currentFilePosition, x)))
+                        })
+            ))).WithTrailingTrivia(SyntaxFactory.Whitespace("\n"));
+        }
+
+        private static InvocationExpressionSyntax CreateMethodInvocation(string container, string methodName, ArgumentListSyntax arguments)
+        {
+            return
+                SyntaxFactory.InvocationExpression(
+                    SyntaxFactory.MemberAccessExpression(
+                        SyntaxKind.SimpleMemberAccessExpression,
+                        SyntaxFactory.IdentifierName(container),
+                        SyntaxFactory.Token(SyntaxKind.DotToken),
+                        SyntaxFactory.IdentifierName(methodName)),
+                        arguments
+                );
+        }
+
+        private VariableInfo[] MapAugmentationToVariableInfo(Augmentation augmentation)
+        {
+            return augmentation.Locals
+                .Concat(augmentation.Parameters)
+                .Concat(augmentation.Fields)
+                .Concat(augmentation.InternalLocals)
+                .Select(variable =>
+                {
+                    var syntax = variable.DeclaringSyntaxReferences.First().GetSyntax();
+                    var location = syntax.Span;
+                    if (syntax is VariableDeclaratorSyntax vds)
+                    {
+                        location = vds.Identifier.Span;
+                    }
+                    else if (syntax is ForEachStatementSyntax fes)
+                    {
+                        location = fes.Identifier.Span;
+                    }
+
+                    return new VariableInfo
+                    {
+                        Name = variable.Name,
+                        Value = null,
+                        DeclaredAt = new DeclarationLocation
+                        {
+                            Start = location.Start,
+                            End = location.End
+                        }
+                    };
+                }).ToArray();
         }
     }
 }

@@ -17,8 +17,8 @@ namespace WorkspaceServer.Tests.Instrumentation
             var visitor = new InstrumentationSyntaxVisitor(code);
             var rewritten = new InstrumentationSyntaxRewriter(
                 visitor.Augmentations.Data.Keys,
-                new[] { visitor.VariableLocations },
-                new[] { visitor.Augmentations }
+                visitor.VariableLocations ,
+                visitor.Augmentations 
                 );
             rewritten.ApplyToTree(code.GetSyntaxTreeAsync().Result).GetText()
                 .Should().Be(Sources.simple);
@@ -26,45 +26,35 @@ namespace WorkspaceServer.Tests.Instrumentation
         [Fact]
         public void Rewritten_program_with_1_statements_has_1_calls_to_EmitProgramState()
         {
-            RewriteCodeWithInstrumentation(@"
+            var rewrittenCode = RewriteCodeWithInstrumentation(@"
 using System;
 
 namespace ConsoleApp2
 {
     class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
             Console.WriteLine(""Hello World!"");
         }
     }
 }"
-            ).Should().Be(@"
+            );
+            string expected = @"
 using System;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace ConsoleApp2
 {
     class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
+InstrumentationEmitter.EmitProgramState(InstrumentationEmitter.GetProgramState(""{\""line\"":9,\""character\"":12,\""file\"":\""document.cs\""}""));
             Console.WriteLine(""Hello World!"");
-            EmitProgramState(
-                GetProgramState(
-                    new FilePosition
-                    {
-                        Line = 10,
-                        Character = 1,
-                        File = ""Program.cs""
-                    }
-                )
-            );
-          
         }
     }
-}");
+}".Replace("\r\n", "\n");
+            rewrittenCode.Should().Be(expected);
         }
         [Fact]
         public void Rewritten_program_with_2_statements_has_2_calls_to_EmitProgramState()
@@ -137,8 +127,8 @@ namespace ConsoleApp2
             var visitor = new InstrumentationSyntaxVisitor(code);
             var rewritten = new InstrumentationSyntaxRewriter(
                 visitor.Augmentations.Data.Keys,
-                new[] { visitor.VariableLocations },
-                new[] { visitor.Augmentations }
+                 visitor.VariableLocations ,
+                 visitor.Augmentations 
                 );
             return rewritten.ApplyToTree(code.GetSyntaxTreeAsync().Result).GetText().ToString();
 

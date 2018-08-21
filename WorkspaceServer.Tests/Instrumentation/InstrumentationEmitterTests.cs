@@ -7,7 +7,6 @@ using FluentAssertions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Recipes;
-using WorkspaceServer.Models.Instrumentation;
 using WorkspaceServer.Servers.Roslyn;
 using WorkspaceServer.Servers.Roslyn.Instrumentation;
 using WorkspaceServer.Servers.Roslyn.Instrumentation.Contract;
@@ -19,11 +18,13 @@ namespace WorkspaceServer.Tests.Instrumentation
     {
 
         private JToken programStateJson;
-        private string programStateString; 
+        private string programStateString;
         public InstrumentationEmitterTests()
         {
             var a = 1;
             var b = "two";
+            var c = a;
+
             programStateJson = InstrumentationEmitter.GetProgramState(
                     new FilePosition
                     {
@@ -31,7 +32,7 @@ namespace WorkspaceServer.Tests.Instrumentation
                         Character = 2,
                         File = "test.cs"
                     }.ToJson(),
-                    new VariableInfo
+                    (new VariableInfo
                     {
                         Name = nameof(a),
                         Value = JToken.FromObject(a),
@@ -41,7 +42,9 @@ namespace WorkspaceServer.Tests.Instrumentation
                             End = 11
                         }
                     }.ToJson(),
-                    new VariableInfo
+                    a
+                    ),
+                    (new VariableInfo
                     {
                         Name = nameof(b),
                         Value = JToken.FromObject(b),
@@ -50,7 +53,8 @@ namespace WorkspaceServer.Tests.Instrumentation
                             Start = 20,
                             End = 21
                         }
-                    }.ToJson()
+                    }.ToJson(),
+                    b)
                 );
             InstrumentationEmitter.EmitProgramState(programStateJson);
             programStateString = programStateJson.ToString();

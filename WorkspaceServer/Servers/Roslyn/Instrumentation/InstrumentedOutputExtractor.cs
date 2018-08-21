@@ -5,6 +5,8 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Recipes;
+using WorkspaceServer.Models.Instrumentation;
 
 namespace WorkspaceServer.Servers.Roslyn.Instrumentation
 {
@@ -45,15 +47,17 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
                             // every piece of instrumentation.
                             var (outputStart, outputEnd) = GetSpanOfStdOutCreatedAtCurrentStep(currentState);
 
-                            var modifiedInstrumentation = (JObject)JsonConvert.DeserializeObject(nextString.Trim());
-                            var output = ImmutableSortedDictionary.Create<string, int>()
-                                .Add("start", outputStart)
-                                .Add("end", outputEnd);
-                            var appendedJson = JObject.FromObject(output);
-                            modifiedInstrumentation.Add("output", appendedJson);
+                            var newOutput = new Output
+                            {
+                                Start = outputStart,
+                                End = outputEnd
+                            };
+
+                            var modifiedInstrumentation = JsonConvert.DeserializeObject<ProgramStateAtPosition>(nextString.Trim());
+                            modifiedInstrumentation.Output = newOutput;
 
                             return currentState.With(
-                                instrumentation: currentState.Instrumentation.Add(modifiedInstrumentation.ToString())
+                                instrumentation: currentState.Instrumentation.Add(modifiedInstrumentation.ToJson())
                             );
                         }
                     }

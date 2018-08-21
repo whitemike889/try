@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Models.Instrumentation;
+using WorkspaceServer.Servers.Roslyn.Instrumentation.Contract;
 using WorkspaceServer.Transformations;
 
 namespace WorkspaceServer.Servers.Roslyn.Instrumentation

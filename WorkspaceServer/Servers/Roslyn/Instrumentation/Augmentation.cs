@@ -6,6 +6,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using WorkspaceServer.Models.Instrumentation;
+using WorkspaceServer.Servers.Roslyn.Instrumentation.Contract;
 
 namespace WorkspaceServer.Servers.Roslyn.Instrumentation
 {

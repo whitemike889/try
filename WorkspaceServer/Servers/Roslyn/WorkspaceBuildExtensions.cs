@@ -7,6 +7,8 @@ using Clockwise;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Host.Mef;
+using Microsoft.CodeAnalysis.Text;
+using MLS.Agent.Tools;
 using MLS.Agent.Workspaces;
 using WorkspaceServer.BuildLogParser;
 using WorkspaceServer.Models.Execution;
@@ -72,14 +74,15 @@ namespace WorkspaceServer.Servers.Roslyn
 
                 var rewrite = new InstrumentationSyntaxRewriter(
                     linesWithInstrumentation,
-                    new[] { remappedVariableLocations },
-                    new[] { remappedAugmentations });
+                    visitor.VariableLocations,
+                    visitor.Augmentations);
                 var newRoot = rewrite.Visit(tree.GetRoot());
                 var newTree = tree.WithRootAndOptions(newRoot, tree.Options);
 
                 newCompilation = newCompilation.ReplaceSyntaxTree(tree, newTree);
             }
 
+            newCompilation = newCompilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(SourceText.From(Resources.InstrumentationEmitter)));
             // if it failed to compile, just return the original, unaugmented compilation
             var augmentedDiagnostics = newCompilation.GetDiagnostics();
             if (augmentedDiagnostics.Any(e => e.Severity == DiagnosticSeverity.Error))
@@ -171,3 +174,4 @@ namespace WorkspaceServer.Servers.Roslyn
         }
     }
 }
+
