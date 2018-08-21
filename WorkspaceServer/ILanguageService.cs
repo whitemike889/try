@@ -2,7 +2,7 @@
 using Clockwise;
 using WorkspaceServer.Models;
 using WorkspaceServer.Models.Completion;
-using WorkspaceServer.Models.SingatureHelp;
+using WorkspaceServer.Models.SignatureHelp;
 
 namespace WorkspaceServer
 {

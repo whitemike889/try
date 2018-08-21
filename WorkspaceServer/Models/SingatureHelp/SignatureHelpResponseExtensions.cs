@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace WorkspaceServer.Models.SingatureHelp
+namespace WorkspaceServer.Models.SignatureHelp
 {
     public static class SignatureHelpResponseExtensions
     {

@@ -10,7 +10,7 @@ using WorkspaceServer.Models;
 
 namespace WorkspaceServer.Servers.Scripting
 {
-    internal static class CompletionExtensions
+    public static class CompletionExtensions
     {
         private static readonly MethodInfo _getSymbolsAsync;
         private static readonly string SymbolCompletionProvider = "Microsoft.CodeAnalysis.CSharp.Completion.Providers.SymbolCompletionProvider";

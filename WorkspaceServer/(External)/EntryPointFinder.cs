@@ -3,7 +3,7 @@ using Microsoft.CodeAnalysis;
 
 namespace WorkspaceServer
 {
-    internal class EntryPointFinder : AbstractEntryPointFinder
+    public class EntryPointFinder : AbstractEntryPointFinder
     {
         protected override bool MatchesMainMethodName(string name)
         {

@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <AssetTargetFallback>$(AssetTargetFallback);dotnet5.4;portable-net45+win8</AssetTargetFallback>
+    <LangVersion>Latest</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\WorkspaceServer\WorkspaceServer.csproj" />
+    <PackageReference Include="clockwise" Version="1.0.244-beta" />
+    <PackageReference Include="pocket.disposable" Version="1.0.4">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="pocketlogger" Version="0.3.0">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="PocketLogger.For.MicrosoftExtensionsLogging" Version="0.1.2">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="trydotnet-references">
+      <Version>1.0.1</Version>
+    </PackageReference>
+    <PackageReference Include="ConfirmationLoggerExtensions" Version="0.1.5980001">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="%28Recipes%29\" />
+  </ItemGroup>
+
+</Project>

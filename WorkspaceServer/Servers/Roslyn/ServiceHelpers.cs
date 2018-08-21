@@ -8,9 +8,9 @@ using Workspace = WorkspaceServer.Models.Execution.Workspace;
 
 namespace WorkspaceServer.Servers.Roslyn
 {
-    internal static class ServiceHelpers
+    public static class ServiceHelpers
     {
-        internal static SerializableDiagnostic[] GetDiagnostics(
+        public static SerializableDiagnostic[] GetDiagnostics(
             Workspace workspace,
             Compilation compilation,
             Budget budget = null)

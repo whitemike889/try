@@ -11,7 +11,7 @@ using Recipes;
 using WorkspaceServer.Models;
 using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
-using WorkspaceServer.Models.SingatureHelp;
+using WorkspaceServer.Models.SignatureHelp;
 using WorkspaceServer.Tests;
 using WorkspaceServer.WorkspaceFeatures;
 using Xunit;

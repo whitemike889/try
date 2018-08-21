@@ -3,9 +3,9 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace WorkspaceServer.Models.SingatureHelp
+namespace WorkspaceServer.Models.SignatureHelp
 {
-    internal class InvocationContext
+    public class InvocationContext
     {
         public SemanticModel SemanticModel { get; }
         public int Position { get; }

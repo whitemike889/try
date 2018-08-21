@@ -11,7 +11,7 @@ using MLS.Agent.Workspaces;
 
 namespace WorkspaceServer.Servers.Roslyn
 {
-    internal static class WorkspaceUtilities
+    public static class WorkspaceUtilities
     {
         private static readonly string _baseDir = Path.GetDirectoryName(typeof(WorkspaceUtilities).Assembly.Location);
 

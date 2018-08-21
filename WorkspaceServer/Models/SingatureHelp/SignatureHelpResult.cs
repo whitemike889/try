@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace WorkspaceServer.Models.SingatureHelp
+namespace WorkspaceServer.Models.SignatureHelp
 {
     public class SignatureHelpResult
     {

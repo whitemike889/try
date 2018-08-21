@@ -16,7 +16,7 @@ using Recipes;
 using WorkspaceServer.Models;
 using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
-using WorkspaceServer.Models.SingatureHelp;
+using WorkspaceServer.Models.SignatureHelp;
 using WorkspaceServer.Servers.Roslyn.Instrumentation;
 using WorkspaceServer.Servers.Scripting;
 using WorkspaceServer.Transformations;
