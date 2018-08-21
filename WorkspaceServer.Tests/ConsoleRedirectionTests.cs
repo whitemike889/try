@@ -7,7 +7,6 @@ using Clockwise;
 using FluentAssertions;
 using FluentAssertions.Extensions;
 using WorkspaceServer.Servers.Roslyn;
-using WorkspaceServer.Servers.Scripting;
 using Xunit;
 
 namespace WorkspaceServer.Tests
@@ -19,7 +18,7 @@ namespace WorkspaceServer.Tests
         {
             using (var console = await ConsoleOutput.Capture())
             {
-                Console.WriteLine("hello");
+                Console.Write("hello");
 
                 console.StandardOutput.Should().Be("hello");
             }
@@ -30,7 +29,7 @@ namespace WorkspaceServer.Tests
         {
             using (var console = await ConsoleOutput.Capture())
             {
-                Console.Error.WriteLine("oops!");
+                Console.Error.Write("oops!");
 
                 console.StandardError.Should().Be("oops!");
             }

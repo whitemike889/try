@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Microsoft.CodeAnalysis;
@@ -22,11 +23,9 @@ namespace WorkspaceServer.Servers.Roslyn
             string projectName,
             string language,
             CommandLineArguments commandLineArguments,
-            string projectDirectory,
-            Workspace workspace = null)
+            string projectDirectory)
         {
-            var tmpWorkspace = workspace ?? new AdhocWorkspace(MefHostServices.DefaultHost);
-            var languageServices = tmpWorkspace.Services.GetLanguageServices(language);
+            var languageServices = new AdhocWorkspace(MefHostServices.DefaultHost).Services.GetLanguageServices(language);
 
             if (languageServices == null)
             {

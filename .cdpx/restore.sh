@@ -7,6 +7,7 @@ cd $REPO_ROOT
 source $REPO_ROOT/.cdpx/conventions.sh
 
 export NUGET_PACKAGES
+export NUGET_XMLDOC_MODE=none 
 
 # Add packages from APK
 apk update
@@ -14,7 +15,7 @@ apk add xmlstarlet
 apk add shadow
 
 # Add dotnet tools
-dotnet tool install t-rex --version 1.0.0-preview1-004 --add-source https://www.myget.org/F/wultest/api/v3/index.json --tool-path $DOTNET_TOOLS
+dotnet tool install t-rex --tool-path $DOTNET_TOOLS
 
 # Restore the project
 dotnet restore $REPO_ROOT/MLS-LS.sln

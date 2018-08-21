@@ -1,14 +1,8 @@
 ﻿using FluentAssertions;
-using FluentAssertions.Primitives;
-using MLS.Agent.Tools;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
 using WorkspaceServer.Servers.Roslyn.Instrumentation;
-using WorkspaceServer.Tests;
 using Xunit;
 
 namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
@@ -16,7 +10,7 @@ namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
     public class InstrumentedOutputExtractorTests
     {
         private static string _sentinel = "6a2f74a2-f01d-423d-a40f-726aa7358a81";
-        private readonly List<String> instrumentedProgramOutput = new List<String>()
+        private readonly List<string> instrumentedProgramOutput = new List<string>
             {
                 _sentinel,
             #region variableLocation
@@ -102,7 +96,7 @@ namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
                 "even more output"
             };
 
-        private ProgramOutputStreams splitOutput;
+        private readonly ProgramOutputStreams splitOutput;
 
         public InstrumentedOutputExtractorTests()
         {
@@ -113,15 +107,18 @@ namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
         public class Non_Sentinel_Bounded_Strings_Are_Parsed_As_Output : InstrumentedOutputExtractorTests
         {
             [Fact]
-            public void It_Should_Have_Correct_First_Line()
+            public void Standard_out_contains_comlpete_output_and_no_sentinels_or_program_metadata()
             {
-                splitOutput.StdOut.First().Should().Be("program output");
-            }
-
-            [Fact]
-            public void It_Should_Have_Correct_Second_Line()
-            {
-                splitOutput.StdOut.ElementAt(1).Should().Be("even more output");
+                splitOutput.StdOut
+                           .Should()
+                           .BeEquivalentTo(new[]
+                           {
+                               "",
+                               "program output",
+                               "",
+                               "",
+                               "even more output",
+                           }, options => options.WithStrictOrdering());
             }
         }
 
@@ -170,8 +167,8 @@ namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
             public void Last_Program_State_Has_Correct_Output()
             {
                 var output = splitOutput.ProgramStatesArray.ProgramStates.Last().Output;
-                output.Start.Should().Be(15);
-                output.End.Should().Be(31);
+                output.Start.Should().Be(18);
+                output.End.Should().Be(34);
             }
         }
 

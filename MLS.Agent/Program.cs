@@ -36,7 +36,7 @@ namespace MLS.Agent
         {
             if (options.IsProduction)
             {
-                var applicationVersion = AssemblyVersionSensor.Version().AssemblyInformationalVersion;
+                var applicationVersion = VersionSensor.Version().AssemblyInformationalVersion;
                 var websiteSiteName = Environment.GetEnvironmentVariable("WEBSITE_SITE_NAME") ?? "UNKNOWN-AGENT";
 
                 disposables.Add(

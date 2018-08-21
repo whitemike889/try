@@ -3,7 +3,6 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using FluentAssertions;
-using WorkspaceServer.Models;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Servers.Roslyn;
 using Xunit;
@@ -23,7 +22,8 @@ namespace WorkspaceServer.Tests
                 $@"using System; using System.Linq; using System.Collections.Generic; class Program {{ static void Main() {{ {text}
                     }}
                 }}
-            ", workspaceType: GetWorkspaceType());
+            ",
+                workspaceType: GetWorkspaceType());
         }
 
         protected override string GetWorkspaceType()
@@ -83,7 +83,7 @@ namespace WorkspaceServer.Tests
             result.Should().BeEquivalentTo(new
             {
                 Succeeded = true,
-                Output = new[] { "10" },
+                Output = new[] { "10", "" },
                 Exception = (string)null, // we already display the error in Output
             }, config => config.ExcludingMissingMembers());
         }
@@ -200,8 +200,8 @@ namespace FibonacciTest
             var result = await server.Run(workspace);
 
             result.Succeeded.Should().BeTrue();
-            result.Output.Count.Should().Be(20);
-            result.Output.Should().BeEquivalentTo("1", "1", "2", "3", "5", "8", "13", "21", "34", "55", "89", "144", "233", "377", "610", "987", "1597", "2584", "4181", "6765");
+            result.Output.Count.Should().Be(21);
+            result.Output.Should().BeEquivalentTo("1", "1", "2", "3", "5", "8", "13", "21", "34", "55", "89", "144", "233", "377", "610", "987", "1597", "2584", "4181", "6765", "");
         }
 
         [Fact]
@@ -255,8 +255,8 @@ namespace FibonacciTest
             var result = await server.Run(workspace);
 
             result.Succeeded.Should().BeTrue();
-            result.Output.Count.Should().Be(20);
-            result.Output.Should().BeEquivalentTo("1", "1", "2", "3", "5", "8", "13", "21", "34", "55", "89", "144", "233", "377", "610", "987", "1597", "2584", "4181", "6765");
+            result.Output.Count.Should().Be(21);
+            result.Output.Should().BeEquivalentTo("1", "1", "2", "3", "5", "8", "13", "21", "34", "55", "89", "144", "233", "377", "610", "987", "1597", "2584", "4181", "6765", "");
         }
 
         protected override async Task<ICodeRunner> GetRunner(

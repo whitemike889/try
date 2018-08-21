@@ -14,7 +14,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="BadRequestOnInvalidModelFilter" Version="0.1.5650001" />
+    <PackageReference Include="CdpxBuildProps" Version="0.1.562.1-alpha-6184a5dd" />
     <PackageReference Include="clockwise" Version="1.0.244-beta" />
+    <PackageReference Include="ConfigurationExtensions" Version="0.1.5650001" />
+    <PackageReference Include="EnvironmentExtensions" Version="0.1.5650001" />
+    <PackageReference Include="LoggerExtensions" Version="0.1.5650001" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.3.0" />
     <PackageReference Include="Microsoft.AspNetCore.App" Version="2.1.1" />
     <PackageReference Include="Microsoft.DotNet.Cli.CommandLine" Version="0.1.1-alpha-201" />
@@ -40,6 +45,8 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
     <PackageReference Include="System.Reactive" Version="4.0.0" />
+    <PackageReference Include="TaskExtensions" Version="0.1.5650001" />
+    <PackageReference Include="VersionSensor" Version="0.1.5650001" />
   </ItemGroup>
   <ItemGroup>
     <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="1.0.0" />
