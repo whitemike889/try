@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using WorkspaceServer.Servers.Roslyn.Instrumentation.Contract;
@@ -80,7 +78,7 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation.Contract
                 {
                     DeclaredAt = vInfo.DeclaredAt,
                     Name = vInfo.Name,
-                    Value = vInfo.Value
+                    Value = value.ToString()
                 };
                 finalInfos.Add(neInfo);
                    

@@ -8,7 +8,7 @@ using Xunit;
 
 namespace WorkspaceServer.Tests.Instrumentation
 {
-    public class NewInstrumentationSyntaxRewriterTests
+    public class CodeRewritingTests
     {
         [Fact]
         public void Rewritten_program_without_instrumentation_is_unchanged()
@@ -53,13 +53,13 @@ InstrumentationEmitter.EmitProgramState(InstrumentationEmitter.GetProgramState("
             Console.WriteLine(""Hello World!"");
         }
     }
-}".Replace("\r\n", "\n");
-            rewrittenCode.Should().Be(expected);
+}";
+            rewrittenCode.ShouldBeEquivalentTo(expected);
         }
         [Fact]
         public void Rewritten_program_with_2_statements_has_2_calls_to_EmitProgramState()
         {
-            RewriteCodeWithInstrumentation(@"
+            string actual = RewriteCodeWithInstrumentation(@"
 using System;
 
 namespace ConsoleApp2
@@ -73,7 +73,8 @@ namespace ConsoleApp2
         }
     }
 }"
-            ).Should().Be(@"
+            );
+            const string expected = @"
 using System;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -118,7 +119,8 @@ namespace ConsoleApp2
             );
         }
     }
-}");
+}";
+            actual.ShouldBeEquivalentTo(expected);
         }
 
         private string RewriteCodeWithInstrumentation(string text)
