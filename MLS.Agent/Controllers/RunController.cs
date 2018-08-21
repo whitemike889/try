@@ -70,14 +70,14 @@ namespace MLS.Agent.Controllers
                     var server = new ScriptingWorkspaceServer();
 
                     result = await server.Run(
-                                 request.Workspace,
+                                 request,
                                  budget);
                 }
                 else
                 {
                     var server = await GetWorkspaceServer(workspaceType);
 
-                    using (result = await server.Run(request.Workspace, budget))
+                    using (result = await server.Run(request, budget))
                     {
                         _disposables.Add(result);
 

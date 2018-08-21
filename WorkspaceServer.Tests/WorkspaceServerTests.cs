@@ -6,6 +6,7 @@ using FluentAssertions;
 using FluentAssertions.Extensions;
 using Microsoft.CodeAnalysis;
 using Pocket;
+using WorkspaceServer.Models;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.WorkspaceFeatures;
 using Xunit;
@@ -26,7 +27,10 @@ namespace WorkspaceServer.Tests
             {
                 var server = await GetRunner();
 
-                var result = await server.Run(CreateWorkspaceWithMainContaining("Console.WriteLine(\"hi!\");"));
+                var result = await server.Run(
+                    new WorkspaceRequest(
+                        CreateWorkspaceWithMainContaining("Console.WriteLine(\"hi!\");"))
+                    );
 
                 result.Output
                       .Should()
@@ -56,7 +60,7 @@ public static class Hello
 
             var server = await GetRunner();
 
-            var result = await server.Run(workspace);
+            var result = await server.Run(new WorkspaceRequest(workspace));
 
             Log.Trace(result.ToString());
 
@@ -81,7 +85,7 @@ public static class Hello
 
             var server = await GetRunner();
 
-            var result = await server.Run(workspace);
+            var result = await server.Run(new WorkspaceRequest(workspace));
 
             result.ShouldSucceedWithOutput(output);
         }
@@ -96,7 +100,7 @@ Console.Write(s);");
 
             var server = await GetRunner();
 
-            var result = await server.Run(request);
+            var result = await server.Run(new WorkspaceRequest(request));
 
             result.ShouldSucceedWithOutput("Jeff is 20 year(s) old");
         }
@@ -109,7 +113,7 @@ Console.WriteLine(banana);");
 
             var server = await GetRunner();
 
-            var result = await server.Run(request);
+            var result = await server.Run(new WorkspaceRequest(request));
             result.Succeeded.Should().BeFalse();
             result.Output
                   .ShouldMatch(
@@ -128,7 +132,7 @@ Console.WriteLine(4);");
 
             var server = await GetRunner();
 
-            var result = await server.Run(request);
+            var result = await server.Run(new WorkspaceRequest(request));
 
             result.ShouldSucceedWithOutput("1", "2", "3", "4", "");
         }
@@ -145,7 +149,7 @@ Console.WriteLine(2);");
 
             var server = await GetRunner();
 
-            var result = await server.Run(request);
+            var result = await server.Run(new WorkspaceRequest(request));
 
             result.ShouldSucceedWithOutput("", "1", "", "", "2", "");
         }
@@ -164,7 +168,7 @@ Console.WriteLine(4);");
 
             var timeBudget = new TimeBudget(30.Seconds());
 
-            var result = await server.Run(request, timeBudget);
+            var result = await server.Run(new WorkspaceRequest(request), timeBudget);
 
             result.ShouldSucceedWithExceptionContaining(
                 "System.Exception: oops!",
@@ -178,7 +182,7 @@ Console.WriteLine(4);");
 
             var server = await GetRunner();
 
-            var result = await server.Run(request);
+            var result = await server.Run(new WorkspaceRequest(request));
 
             result.ShouldSucceedWithExceptionContaining("System.Exception: oops!");
         }
@@ -191,7 +195,7 @@ throw new Exception(""oops!"");");
 
             var server = await GetRunner();
 
-            var result = await server.Run(request);
+            var result = await server.Run(new WorkspaceRequest(request));
 
             result.ShouldSucceedWithExceptionContaining("System.Exception: oops!");
         }
@@ -212,7 +216,7 @@ public static class Hello
 
             var server = await GetRunner();
 
-            var result = await server.Run(workspace);
+            var result = await server.Run(new WorkspaceRequest(workspace));
 
             result.ShouldSucceedWithOutput("Hello there!");
         }
@@ -233,7 +237,7 @@ public static class Hello
             
             var server = await GetRunner();
 
-            var result = await server.Run(workspace);
+            var result = await server.Run(new WorkspaceRequest(workspace));
 
             result.ShouldSucceedWithOutput("Hello there!");
         }
@@ -254,7 +258,7 @@ public static class Hello
 
             var server = await GetRunner();
 
-            var result = await server.Run(workspace);
+            var result = await server.Run(new WorkspaceRequest(workspace));
 
             Log.Trace(result.ToString());
 
@@ -277,10 +281,11 @@ public static class Hello
 
             var server = await GetRunner();
 
-            var result = await server.Run(workspace);
+            var result = await server.Run(new WorkspaceRequest(workspace));
 
             result.ShouldSucceedWithOutput("Hello there!");
         }
+
 
         [Fact]
         public async Task Response_shows_warnings_with_successful_compilation()
@@ -299,7 +304,7 @@ public static class Hello
 }}");
             var server = await GetRunner();
 
-            var result = await server.Run(workspace);
+            var result = await server.Run(new WorkspaceRequest(workspace));
 
             var diagnostics = result.GetFeature<Diagnostics>();
 
@@ -323,7 +328,7 @@ public static class Hello
 }}");
             var server = await GetRunner();
 
-            var result = await server.Run(workspace);
+            var result = await server.Run(new WorkspaceRequest(workspace));
 
             var diagnostics = result.GetFeature<Diagnostics>();
 

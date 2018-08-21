@@ -38,8 +38,9 @@ namespace WorkspaceServer.Servers.Scripting
                 WorkspaceUtilities.DefaultReferencedAssemblies);
         }
 
-        public async Task<RunResult> Run(Workspace workspace, Budget budget = null)
+        public async Task<RunResult> Run(WorkspaceRequest request, Budget budget = null)
         {
+            var workspace = request.Workspace;
             budget = budget ?? new Budget();
 
             using (var operation = Log.OnEnterAndConfirmOnExit())
