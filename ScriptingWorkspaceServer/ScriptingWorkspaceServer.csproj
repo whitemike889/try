@@ -30,4 +30,12 @@
     <Folder Include="%28Recipes%29\" />
   </ItemGroup>
 
+
+  <PropertyGroup>
+    <NuspecFile Condition=" '$(NuspecFile)' == '' ">ScriptingWorkspaceServer.nuspec</NuspecFile>
+    <VersionSuffix Condition=" '$(VersionSuffix)' == '' ">$(CDP_PATCH_NUMBER)</VersionSuffix>
+    <VersionSuffix Condition=" '$(VersionSuffix)' == '' ">0</VersionSuffix>
+    <NuspecProperties Condition=" '$(NuspecProperties)' == '' ">versionsuffix=$(VersionSuffix)</NuspecProperties> 
+  </PropertyGroup>
+
 </Project>

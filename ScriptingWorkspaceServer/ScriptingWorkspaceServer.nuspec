@@ -1,0 +1,9 @@
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>ScriptingWorkspaceServer</id>
+    <version>0.1.$versionsuffix$</version>
+    <authors>rchande</authors>
+    <description>Contains scripting workspace server</description>
+    <developmentDependency>true</developmentDependency>
+  </metadata>
+</package>
