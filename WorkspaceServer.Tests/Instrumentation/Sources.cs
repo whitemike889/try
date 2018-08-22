@@ -69,6 +69,24 @@ namespace RoslynRecorder
     }
 }";
 
+        internal static readonly string withMultipleRegion = @"
+ using System;
+namespace RoslynRecorder
+{
+    class Program
+    {
+        static void Main()
+        {
+#region test
+            Console.WriteLine(""Entry Point"");
+#endregion
+        }
+#region notthis
+    }
+#endregion
+}   
+";
+
         internal static readonly string withLocalsAndParams = @"
 using System;
 namespace RoslynRecorder
@@ -96,24 +114,6 @@ namespace RoslynRecorder
 #endregion
         }
     }
-}";
-
-        internal static readonly string withMultipleRegion = @"
-using System;
-namespace RoslynRecorder
-{
-    class Program
-    {
-        static void Main(string[] args)
-        {
-#region test
-            int a = 0;
-            Console.WriteLine(""Entry Point"");
-#endregion
-        }
-#region notthis
-    }
-#endregion
 }";
 
         internal static readonly string withNonAssignedLocals = @"

@@ -13,7 +13,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="AsyncLock" Version="0.1.5650001" />
+    <PackageReference Include="AsyncSemaphore" Version="0.1.5650001" />
+    <PackageReference Include="CdpxBuildProps" Version="0.1.562.1-alpha-6184a5dd" />
     <PackageReference Include="clockwise" Version="1.0.244-beta" />
+    <PackageReference Include="DictionaryExtensions" Version="0.1.5650001" />
+    <PackageReference Include="JsonSerializationExtensions" Version="0.1.5650001" />
     <PackageReference Include="Microsoft.AspNetCore.App" Version="2.1.1" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="2.8.2" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="2.8.2" />
@@ -34,6 +39,7 @@
     </PackageReference>
     <PackageReference Include="System.Reactive" Version="4.0.0" />
     <PackageReference Include="System.Runtime.Loader" Version="4.3.0" />
+    <PackageReference Include="TaskExtensions" Version="0.1.5650001" />
      <PackageReference Include="trydotnet-references">
       <Version>1.0.1</Version>
     </PackageReference>

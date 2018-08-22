@@ -36,12 +36,13 @@ namespace MLS.Agent
         {
             if (options.IsProduction)
             {
-                var applicationVersion = AssemblyVersionSensor.Version().AssemblyInformationalVersion;
+                var applicationVersion = VersionSensor.Version().AssemblyInformationalVersion;
                 var websiteSiteName = Environment.GetEnvironmentVariable("WEBSITE_SITE_NAME") ?? "UNKNOWN-AGENT";
-
+                var regionId = options.RegionId ?? "undefined";
                 disposables.Add(
                     LogEvents.Enrich(a =>
                     {
+                        a(("regionId", regionId));
                         a(("applicationVersion", applicationVersion));
                         a(("websiteSiteName", websiteSiteName));
                         a(("id", options.Id));

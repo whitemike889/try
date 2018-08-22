@@ -45,7 +45,7 @@ $""{person.Name} is {person.Age} year(s) old""", "script");
 
             var server = await GetRunner();
 
-            var result = await server.Run(workspace);
+            var result = await server.Run(new WorkspaceRequest(workspace));
 
             Log.Trace(result.ToJson());
 
@@ -65,7 +65,7 @@ $""{person.Name} is {person.Age} year(s) old""", "script");
 Console.WriteLine(banana);", "script");
             var server = await GetRunner();
 
-            var result = await server.Run(workspace);
+            var result = await server.Run(new WorkspaceRequest(workspace));
 
             result.Should().BeEquivalentTo(new
             {
@@ -124,7 +124,7 @@ public static class Hello
 
             var server = await GetRunner();
 
-            var result = await server.Run(workspace);
+            var result = await server.Run(new WorkspaceRequest(workspace));
 
             result.Should().BeEquivalentTo(new
             {
@@ -149,7 +149,7 @@ public static class Hello
 }", workspaceType: "script");
             var server = await GetRunner();
 
-            var result = await server.Run(workspace);
+            var result = await server.Run(new WorkspaceRequest(workspace));
 
             result.ShouldSucceedWithNoOutput();
         }
@@ -169,7 +169,7 @@ public static class Hello
 }", workspaceType: "script");
             var server = await GetRunner();
 
-            var result = await server.Run(workspace);
+            var result = await server.Run(new WorkspaceRequest(workspace));
 
             var diagnostics = result.GetFeature<Diagnostics>();
 
@@ -196,7 +196,7 @@ public static class Hello
                 buffers: new[] { new Workspace.Buffer(@"Main.cs@toReplace", @"Console.WriteLine(""Hello there!"");", 0) });
             var server = await GetRunner();
 
-            var result = await server.Run(workspace);
+            var result = await server.Run(new WorkspaceRequest(workspace));
 
             result.ShouldSucceedWithOutput("Hello there!");
         }
@@ -221,7 +221,7 @@ public static class Hello
                 buffers: new[] { new Workspace.Buffer(@"Main.cs@toReplace", @"Console.WriteLine(banana);", 0) });
 
             var server = await GetRunner();
-            var result = await server.Run(workspace);
+            var result = await server.Run(new WorkspaceRequest(workspace));
 
             result.Should().BeEquivalentTo(new
             {

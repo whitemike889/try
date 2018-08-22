@@ -135,8 +135,9 @@ namespace WorkspaceServer.Servers.Roslyn
                        absolutePosition);
         }
 
-        public async Task<RunResult> Run(Workspace workspace, Budget budget = null)
+        public async Task<RunResult> Run(WorkspaceRequest request, Budget budget = null)
         {
+            var workspace = request.Workspace;
             budget = budget ?? new TimeBudget(TimeSpan.FromSeconds(defaultBudgetInSeconds));
 
             using (Log.OnEnterAndExit())
@@ -146,7 +147,7 @@ namespace WorkspaceServer.Servers.Roslyn
 
                 workspace = await _transformer.TransformAsync(workspace, budget);
 
-                var compilation = await build.Compile(workspace, budget);
+                var compilation = await build.Compile(workspace, budget, request.ActiveBufferId);
 
                 var diagnostics = ServiceHelpers.GetDiagnostics(
                     workspace,
