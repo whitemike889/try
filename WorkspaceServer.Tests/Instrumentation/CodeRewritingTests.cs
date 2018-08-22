@@ -66,57 +66,28 @@ namespace ConsoleApp2
 {
     class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
-            Console.WriteLine(""Hello World!"");
             int a = 1;
+            Console.WriteLine(""Hello World!"");
         }
     }
 }"
             );
             const string expected = @"
 using System;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace ConsoleApp2
 {
     class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
-            Console.WriteLine(""Hello World!"");
-            EmitProgramState(
-                GetProgramState(
-                    new FilePosition
-                    {
-                        Line = 10,
-                        Character = 1,
-                        File = ""Program.cs""
-                    }
-                )
-            );
-            int a = 1;
-            EmitProgramState(
-                GetProgramState(
-                    new FilePosition
-                    {
-                        Line = 10,
-                        Character = 1,
-                        File = ""Program.cs""
-                    },
-                    new VariableInfo
-                    {
-                        Name = nameof(a),
-                        Value = JToken.FromObject(a),
-                        DeclaredAt = new DeclarationLocation
-                        {
-                            Start = 0,
-                            End = 0
-                        }
-                    }
-                )
-            );
+                System.Console.WriteLine(""6a2f74a2-f01d-423d-a40f-726aa7358a81{\""variableLocations\"": [{    \""name\"": \""a\"",    \""locations\"": [{    \""startLine\"": 9,    \""startColumn\"": 16,    \""endLine\"": 9,    \""endColumn\"": 17}],    \""declaredAt\"": {        \""start\"": 117,        \""end\"": 118    }}]}6a2f74a2-f01d-423d-a40f-726aa7358a81"");
+                InstrumentationEmitter.EmitProgramState(InstrumentationEmitter.GetProgramState(""{\""line\"":9,\""character\"":12,\""file\"":\""document.cs\""}""));
+                int a = 1;
+                InstrumentationEmitter.EmitProgramState(InstrumentationEmitter.GetProgramState(""{\""line\"":10,\""character\"":12,\""file\"":\""document.cs\""}"", (""{\""name\"":\""a\"",\""value\"":null,\""declaredAt\"":{\""start\"":117,\""end\"":118}}"", a)));
+                Console.WriteLine(""Hello World!"");
         }
     }
 }";

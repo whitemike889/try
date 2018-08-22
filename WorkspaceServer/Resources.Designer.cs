@@ -63,8 +63,6 @@ namespace WorkspaceServer {
         /// <summary>
         ///   Looks up a localized string similar to using System;
         ///using System.Collections.Generic;
-        ///using System.Linq;
-        ///using System.Text;
         ///using Newtonsoft.Json;
         ///using Newtonsoft.Json.Linq;
         ///using WorkspaceServer.Servers.Roslyn.Instrumentation.Contract;
@@ -78,7 +76,9 @@ namespace WorkspaceServer {
         ///
         ///        [JsonProperty(&quot;stackTrace&quot;)]
         ///        public string StackTrace { get; set; }
-        /// [rest of string was truncated]&quot;;.
+        ///
+        ///        [JsonProperty(&quot;locals&quot;)]
+        ///     [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string InstrumentationEmitter {
             get {

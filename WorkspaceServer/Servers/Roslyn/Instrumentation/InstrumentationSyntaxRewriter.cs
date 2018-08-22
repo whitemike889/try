@@ -82,7 +82,8 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
         {
             var data = _variableLocations.Serialize();
             var uglifiedData = Regex.Replace(data, "\r|\n", "");
-            return SyntaxFactory.ParseStatement($"System.Console.WriteLine(\"{Sentinel}{{{uglifiedData}}}{Sentinel}\");");
+            return SyntaxFactory.ParseStatement($"System.Console.WriteLine(\"{Sentinel}{{{uglifiedData}}}{Sentinel}\");")
+                .WithTrailingTrivia(SyntaxFactory.Whitespace("\n"));
         }
 
         public static StatementSyntax CreateSyntaxNode(FilePosition currentFilePosition, params VariableInfo[] variables)
