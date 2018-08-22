@@ -22,7 +22,6 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
             var newLine = "\n";
 
             string rawOutput = string.Join(newLine, outputLines);
-            var test = rawOutput.TokenizeWithDelimiter(_sentinel);
 
             var splitOutput = rawOutput
                 .TokenizeWithDelimiter(_sentinel)
