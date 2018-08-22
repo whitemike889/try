@@ -79,7 +79,7 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
             else
             {
                 return stdOut
-                    .Join("")
+                    .Join(String.Empty)
                     .Split("\n")
                     .ToImmutableList();
             }
@@ -91,7 +91,7 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
             else
             {
                 var newOutput = currentState.StdOut.Last();
-                var entireOutput = currentState.StdOut.Join("");
+                var entireOutput = currentState.StdOut.Join(String.Empty);
                 var endLocation = entireOutput.Length;
 
                 return (endLocation - newOutput.Length, endLocation);

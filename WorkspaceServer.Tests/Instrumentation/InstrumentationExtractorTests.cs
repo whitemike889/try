@@ -266,7 +266,7 @@ namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
                 var output = splitOutput.ProgramStatesArray.ProgramStates
                     .Select(x => ((int)x.Output.Start, (int)x.Output.End))
                     .Select(tuple => splitOutput.StdOut.Join("\n").Substring(tuple.Item1, tuple.Item2 - tuple.Item1))
-                    .Where(str => !String.IsNullOrEmpty(str));
+                    .Where(str => !string.IsNullOrEmpty(str));
 
                 var firstEmittedLine = "program output" + newline;
                 var secondEmittedLine =
@@ -277,7 +277,7 @@ namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
                     "even more output" + newline +
                     "";
 
-                output.Should().BeEquivalentTo(new[]
+                output.Should().BeEquivalentTo(new []
                 {
                     firstEmittedLine,
                     secondEmittedLine
