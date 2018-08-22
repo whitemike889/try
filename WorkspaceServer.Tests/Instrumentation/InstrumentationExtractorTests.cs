@@ -277,11 +277,10 @@ namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
                     "even more output" + newline +
                     "";
 
-                output.Should().BeEquivalentTo(new []
-                {
+                output.Should().BeEquivalentTo(
                     firstEmittedLine,
                     secondEmittedLine
-                });
+                );
             }
         }
 
