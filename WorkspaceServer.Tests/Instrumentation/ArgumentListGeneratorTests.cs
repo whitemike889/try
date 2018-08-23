@@ -39,8 +39,9 @@ namespace WorkspaceServer.Tests.Instrumentation
                 File = "test.cs"
             };
 
-            var result = InstrumentationSyntaxRewriter.CreateSyntaxNode(filePosition, vi);
-            result.ToString().Should().Be(@"InstrumentationEmitter.EmitProgramState((""{\""name\"":\""a\"",\""value\"":{\""foo\"":3},\""declaredAt\"":{\""start\"":10,\""end\"":11}}"",a));");
+            var result = InstrumentationSyntaxRewriter.CreateSyntaxNode(filePosition, vi).ToString();
+            var expected = "InstrumentationEmitter.EmitProgramState(InstrumentationEmitter.GetProgramState(\"{\\\"line\\\":1,\\\"character\\\":1,\\\"file\\\":\\\"test.cs\\\"}\",(\"{\\\"name\\\":\\\"a\\\",\\\"value\\\":{\\\"foo\\\":3},\\\"declaredAt\\\":{\\\"start\\\":10,\\\"end\\\":11}}\",a)));";
+            result.Should().Be(expected);
         }
 
         [Fact]
@@ -57,12 +58,12 @@ namespace WorkspaceServer.Tests.Instrumentation
             (argument, "foo"));
 
             var text = list.ToString();
-            var expected = "((\"{\\\"foo\\\":3}\",foo))";
+            var expected = "(\"{\\\"line\\\":1,\\\"character\\\":1,\\\"file\\\":\\\"test.cs\\\"}\",(\"{\\\"foo\\\":3}\",foo))";
             Assert.Equal(expected, text);
         }
 
         [Fact]
-        public void It_can_pass_through_2_arguments()
+        public void It_can_pass_through_multiple_arguments()
         {
             var argument = new { foo = 3 };
             var secondArgument = new { bar = 2 };
@@ -75,7 +76,7 @@ namespace WorkspaceServer.Tests.Instrumentation
             },(argument, "foo"), (secondArgument, "bar"));
 
             var text = list.ToString();
-            var expected = "((\"{\\\"foo\\\":3}\",foo),(\"{\\\"bar\\\":2}\",bar))";
+            var expected = "(\"{\\\"line\\\":1,\\\"character\\\":1,\\\"file\\\":\\\"test.cs\\\"}\",(\"{\\\"foo\\\":3}\",foo),(\"{\\\"bar\\\":2}\",bar))";
             Assert.Equal(expected, text);
         }
 

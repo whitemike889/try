@@ -16,41 +16,6 @@
       "message": "EntrypointCode.cs(3,1): hidden CS8019: Unnecessary using directive.",
       "severity": 0,
       "id": "CS8019"
-    },
-    {
-      "start": 1638,
-      "end": 1647,
-      "message": "EntrypointCode.cs(11,1509): warning CS0472: The result of the expression is always 'true' since a value of type 'int' is never equal to 'null' of type 'int?'",
-      "severity": 2,
-      "id": "CS0472"
-    },
-    {
-      "start": 2174,
-      "end": 2183,
-      "message": "EntrypointCode.cs(11,2045): warning CS0472: The result of the expression is always 'true' since a value of type 'int' is never equal to 'null' of type 'int?'",
-      "severity": 2,
-      "id": "CS0472"
-    },
-    {
-      "start": 2341,
-      "end": 2350,
-      "message": "EntrypointCode.cs(11,2212): warning CS0472: The result of the expression is always 'true' since a value of type 'int' is never equal to 'null' of type 'int?'",
-      "severity": 2,
-      "id": "CS0472"
-    },
-    {
-      "start": 2873,
-      "end": 2882,
-      "message": "EntrypointCode.cs(11,2744): warning CS0472: The result of the expression is always 'true' since a value of type 'int' is never equal to 'null' of type 'int?'",
-      "severity": 2,
-      "id": "CS0472"
-    },
-    {
-      "start": 3040,
-      "end": 3049,
-      "message": "EntrypointCode.cs(11,2911): warning CS0472: The result of the expression is always 'true' since a value of type 'int' is never equal to 'null' of type 'int?'",
-      "severity": 2,
-      "id": "CS0472"
     }
   ],
   "instrumentation": [
@@ -60,10 +25,7 @@
         "character": 12,
         "file": "EntrypointCode.cs"
       },
-      "stackTrace": "    at Example.Program.Main()\n ",
       "locals": [],
-      "parameters": [],
-      "fields": [],
       "output": {
         "start": 0,
         "end": 0
@@ -75,7 +37,6 @@
         "character": 23,
         "file": "EntrypointCode.cs"
       },
-      "stackTrace": "    at Example.Program.Main()\n ",
       "locals": [
         {
           "name": "a",
@@ -86,8 +47,6 @@
           }
         }
       ],
-      "parameters": [],
-      "fields": [],
       "output": {
         "start": 0,
         "end": 0
@@ -99,7 +58,6 @@
         "character": 34,
         "file": "EntrypointCode.cs"
       },
-      "stackTrace": "    at Example.Program.Main()\n ",
       "locals": [
         {
           "name": "b",
@@ -118,8 +76,6 @@
           }
         }
       ],
-      "parameters": [],
-      "fields": [],
       "output": {
         "start": 0,
         "end": 0
@@ -131,7 +87,6 @@
         "character": 41,
         "file": "EntrypointCode.cs"
       },
-      "stackTrace": "    at Example.Program.Main()\n ",
       "locals": [
         {
           "name": "b",
@@ -150,8 +105,6 @@
           }
         }
       ],
-      "parameters": [],
-      "fields": [],
       "output": {
         "start": 0,
         "end": 0

@@ -96,7 +96,9 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
                     SyntaxFactory.ArgumentList(
                         SyntaxFactory.SeparatedList<ArgumentSyntax>( new[] {
                             SyntaxFactory.Argument(
-                                CreateMethodInvocation("InstrumentationEmitter", "GetProgramState", ArgumentListGenerator.GenerateArgumentListForGetProgramState(currentFilePosition, x)))
+                                CreateMethodInvocation("InstrumentationEmitter",
+                                    "GetProgramState",
+                                    ArgumentListGenerator.GenerateArgumentListForGetProgramState(currentFilePosition, x)))
                         })
             ))).WithTrailingTrivia(SyntaxFactory.Whitespace("\n"));
         }
@@ -136,7 +138,7 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
                     return new VariableInfo
                     {
                         Name = variable.Name,
-                        Value = null,
+                        Value = JToken.FromObject("unavailable"),
                         DeclaredAt = new DeclarationLocation
                         {
                             Start = location.Start,

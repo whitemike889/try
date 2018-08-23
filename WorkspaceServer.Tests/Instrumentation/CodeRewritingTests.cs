@@ -11,19 +11,6 @@ namespace WorkspaceServer.Tests.Instrumentation
     public class CodeRewritingTests
     {
         [Fact]
-        public void Rewritten_program_without_instrumentation_is_unchanged()
-        {
-            var code = Sources.GetDocument(Sources.simple, true);
-            var visitor = new InstrumentationSyntaxVisitor(code);
-            var rewritten = new InstrumentationSyntaxRewriter(
-                visitor.Augmentations.Data.Keys,
-                visitor.VariableLocations ,
-                visitor.Augmentations 
-                );
-            rewritten.ApplyToTree(code.GetSyntaxTreeAsync().Result).GetText()
-                .Should().Be(Sources.simple);
-        }
-        [Fact]
         public void Rewritten_program_with_1_statements_has_1_calls_to_EmitProgramState()
         {
             var rewrittenCode = RewriteCodeWithInstrumentation(@"
@@ -86,7 +73,7 @@ namespace ConsoleApp2
                 System.Console.WriteLine(""6a2f74a2-f01d-423d-a40f-726aa7358a81{\""variableLocations\"": [{    \""name\"": \""a\"",    \""locations\"": [{    \""startLine\"": 9,    \""startColumn\"": 16,    \""endLine\"": 9,    \""endColumn\"": 17}],    \""declaredAt\"": {        \""start\"": 117,        \""end\"": 118    }}]}6a2f74a2-f01d-423d-a40f-726aa7358a81"");
                 InstrumentationEmitter.EmitProgramState(InstrumentationEmitter.GetProgramState(""{\""line\"":9,\""character\"":12,\""file\"":\""document.cs\""}""));
                 int a = 1;
-                InstrumentationEmitter.EmitProgramState(InstrumentationEmitter.GetProgramState(""{\""line\"":10,\""character\"":12,\""file\"":\""document.cs\""}"", (""{\""name\"":\""a\"",\""value\"":null,\""declaredAt\"":{\""start\"":117,\""end\"":118}}"", a)));
+                InstrumentationEmitter.EmitProgramState(InstrumentationEmitter.GetProgramState(""{\""line\"":10,\""character\"":12,\""file\"":\""document.cs\""}"",(""{\""name\"":\""a\"",\""value\"":\""unavailable\"",\""declaredAt\"":{\""start\"":117,\""end\"":118}}"",a)));
                 Console.WriteLine(""Hello World!"");
         }
     }
@@ -108,19 +95,5 @@ namespace ConsoleApp2
             throw new NotImplementedException();
         }
 
-        [Fact]
-        public void Rewritten_program_with_2_statements_has_2_calls_to_GetProgramState() { }
-
-        [Fact]
-        public void Rewritten_program_passes_current_file_position_to_GetProgramState() { }
-
-        [Fact]
-        public void Rewritten_program_passes_all_in_scope_variables_to_GetProgramState() { }
-
-        [Fact]
-        public void Rewritten_program_passes_variable_values_to_GetProgramState() { }
-
-        [Fact]
-        public void Rewritten_program_passes_variable_declaredAt_location_to_GetProgramState() { }
     }
 }

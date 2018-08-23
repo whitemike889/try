@@ -70,7 +70,7 @@ namespace WorkspaceServer.Tests.Instrumentation
             using (var output = await ConsoleOutput.Capture())
             {
                 InstrumentationEmitter.EmitProgramState(programStateJson);
-                output.StandardOutput.Should().Match(InstrumentationEmitter.Sentinel + "*" + InstrumentationEmitter.Sentinel);
+                output.StandardOutput.Should().MatchEquivalentOf($"{ InstrumentationEmitter.Sentinel}*{InstrumentationEmitter.Sentinel}");
             }
         }
 
