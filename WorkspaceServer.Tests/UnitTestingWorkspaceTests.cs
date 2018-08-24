@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Clockwise;
 using MLS.Agent.Workspaces;
 using Pocket;
+using WorkspaceServer.Models;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Servers.Roslyn;
 using Xunit;
@@ -30,9 +31,12 @@ namespace WorkspaceServer.Tests
             var (runner, workspace) = await GetRunnerAndWorkspace();
 
             var runResult = await runner.Run(
+                new WorkspaceRequest(
                                 Workspace.FromDirectory(
                                     workspace.Directory,
-                                    workspace.Name));
+                                    workspace.Name)
+                )
+            );
 
             Log.Info("Output: {output}", runResult.Output);
 
@@ -76,7 +80,7 @@ public class Tests
                                  "UnitTest1.cs",
                                  "");
 
-            var runResult = await runner.Run(workspaceModel);
+            var runResult = await runner.Run(new WorkspaceRequest(workspaceModel));
 
             Log.Info("Output: {output}", runResult.Output);
 

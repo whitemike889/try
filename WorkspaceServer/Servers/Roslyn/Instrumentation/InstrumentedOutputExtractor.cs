@@ -27,7 +27,7 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
                 .TokenizeWithDelimiter(_sentinel)
                 .Aggregate(new ExtractorState(), (currentState, nextString) =>
                 {
-                    if (nextString == _sentinel)
+                    if (nextString.TrimEnd() == _sentinel)
                     {
                         return currentState.With(isInstrumentation: !currentState.IsInstrumentation);
                     }
@@ -59,17 +59,30 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
                     }
                     else
                     {
-                        var outputStrings = nextString.Split(newLine);
-
                         return currentState.With(
-                            stdOut: currentState.StdOut.Concat(outputStrings).ToImmutableList()
+                            stdOut: currentState.StdOut.Add(nextString)
                         );
                     }
                 });
 
-            var withStartEnd = AddProgramStartEnd(splitOutput);
+            var withSplitStdOut = splitOutput.With(stdOut: SplitStdOutByNewline(splitOutput.StdOut));
 
-            return new ProgramOutputStreams(withStartEnd.StdOut, withStartEnd.Instrumentation, withStartEnd.ProgramDescriptor);
+            return new ProgramOutputStreams(withSplitStdOut.StdOut, withSplitStdOut.Instrumentation, withSplitStdOut.ProgramDescriptor);
+        }
+
+        static ImmutableList<string> SplitStdOutByNewline(ImmutableList<string> stdOut)
+        {
+            if (stdOut.IsEmpty)
+            {
+                return stdOut;
+            }
+            else
+            {
+                return stdOut
+                    .Join(String.Empty)
+                    .Split("\n")
+                    .ToImmutableList();
+            }
         }
 
         static (int outputStart, int outputEnd) GetSpanOfStdOutCreatedAtCurrentStep(ExtractorState currentState)
@@ -78,25 +91,14 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
             else
             {
                 var newOutput = currentState.StdOut.Last();
-                var entireOutput = String.Join("\n", currentState.StdOut);
+                var entireOutput = currentState.StdOut.Join(String.Empty);
                 var endLocation = entireOutput.Length;
 
                 return (endLocation - newOutput.Length, endLocation);
             }
         }
 
-        static IEnumerable<string> TokenizeWithDelimiter(this string input, string delimiter) => Regex.Split(input, $"({delimiter})").Where(str => !String.IsNullOrWhiteSpace(str));
-
-        static ExtractorState AddProgramStartEnd(ExtractorState input)
-        {
-            var (outputStart, outputEnd) = GetSpanOfStdOutCreatedAtCurrentStep(input);
-
-            var programStarted = "{ \"stackTrace\": \"Program Started\", \"output\": { \"start\": 0, \"end\": 0 } }";
-            var programEnded = "{ \"stackTrace\": \"Program Terminated\", \"output\": { \"start\": " + outputStart + ", \"end\": " + outputEnd + " } }";
-
-            var newInstrumentation = input.Instrumentation.Insert(0, programStarted).Add(programEnded);
-            return input.With(instrumentation: newInstrumentation);
-        }
+        static IEnumerable<string> TokenizeWithDelimiter(this string input, string delimiter) => Regex.Split(input, $"({delimiter}[\n]?)").Where(str => !String.IsNullOrWhiteSpace(str));
 
     }
 }

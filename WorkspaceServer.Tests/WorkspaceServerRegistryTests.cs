@@ -78,7 +78,7 @@ namespace Twilio_try.dot.net_sample
 }",
                     workspaceType: workspaceId);
 
-                var result = await workspaceServer.Run(workspace);
+                var result = await workspaceServer.Run(new WorkspaceRequest(workspace));
 
                 result.Succeeded.Should().BeTrue(because: "compilation can't succeed unless the NuGet package has been restored.");
             }
@@ -110,7 +110,7 @@ namespace Twilio_try.dot.net_sample
 
                 var workspaceRequest = WorkspaceRequest.FromDirectory(unregisteredWorkspace.Directory, unregisteredWorkspace.Name);
 
-                var result = await server.Run(workspaceRequest.Workspace);
+                var result = await server.Run(workspaceRequest);
 
                 result.Succeeded.Should().BeTrue();
             }

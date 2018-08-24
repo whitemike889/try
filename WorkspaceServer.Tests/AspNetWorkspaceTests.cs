@@ -8,6 +8,7 @@ using FluentAssertions.Extensions;
 using MLS.Agent.Workspaces;
 using Pocket;
 using Recipes;
+using WorkspaceServer.Models;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Servers.Roslyn;
 using WorkspaceServer.WorkspaceFeatures;
@@ -33,7 +34,7 @@ namespace WorkspaceServer.Tests
         {
             var (server, workspace) = await GetRunnerAndWorkspace();
 
-            using (var runResult = await server.Run(Models.Execution.Workspace.FromDirectory(workspace.Directory, workspace.Name)))
+            using (var runResult = await server.Run(new WorkspaceRequest(Workspace.FromDirectory(workspace.Directory, workspace.Name))))
             {
                 var webServer = runResult.GetFeature<WebServer>();
 

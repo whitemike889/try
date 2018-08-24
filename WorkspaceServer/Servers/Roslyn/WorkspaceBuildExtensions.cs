@@ -18,7 +18,7 @@ namespace WorkspaceServer.Servers.Roslyn
 {
     public static class WorkspaceBuildExtensions
     {
-        public static async Task<Compilation> Compile(this WorkspaceBuild build, Workspace workspace, Budget budget)
+        public static async Task<Compilation> Compile(this WorkspaceBuild build, Workspace workspace, Budget budget, string activeBufferId)
         {
             var sourceFiles = workspace.GetSourceFiles()
                                        .Concat(await build.GetSourceFiles())
@@ -28,21 +28,26 @@ namespace WorkspaceServer.Servers.Roslyn
 
             var viewports = new BufferInliningTransformer().ExtractViewPorts(workspace);
 
-            var instrumentationRegions = viewports.Where(v => v.Destination?.Name != null)
-                                                  .GroupBy(v => v.Destination.Name,
-                                                           v => v.Region,
-                                                           (name, regions) => new InstrumentationMap(name, regions));
-
             if (workspace.IncludeInstrumentation)
             {
-                compilation = AugmentCompilation(instrumentationRegions, compilation, documents.First().Project.Solution);
+                var activeDocument = GetActiveDocument(documents, activeBufferId);
+                compilation = await AugmentCompilationAsync(viewports, compilation, activeDocument, activeBufferId);
             }
 
             return compilation;
         }
 
-        private static Compilation AugmentCompilation(IEnumerable<InstrumentationMap> regions, Compilation compilation, Solution solution)
+
+        private static async Task<Compilation> AugmentCompilationAsync(IEnumerable<Viewport> viewports, Compilation compilation, Document document, string activeBufferId)
         {
+            var regions = InstrumentationLineMapper.FilterActiveViewport(viewports, activeBufferId)
+                .Where(v => v.Destination?.Name != null)
+                .GroupBy(v => v.Destination.Name,
+                         v => v.Region,
+                        (name, region) => new InstrumentationMap(name, region)
+            );
+
+            var solution = document.Project.Solution;
             var newCompilation = compilation;
             foreach (var tree in newCompilation.SyntaxTrees)
             {
@@ -51,10 +56,19 @@ namespace WorkspaceServer.Servers.Roslyn
                 var visitor = new InstrumentationSyntaxVisitor(solution.GetDocument(tree), replacementRegions);
                 var linesWithInstrumentation = visitor.Augmentations.Data.Keys;
 
+                var activeViewport = viewports.DefaultIfEmpty(null).First();
+
+                var (remappedAugmentations, remappedVariableLocations) = await InstrumentationLineMapper.MapLineLocationsRelativeToViewportAsync(
+                        visitor.Augmentations,
+                        visitor.VariableLocations,
+                        document,
+                        activeViewport
+                    );
+
                 var rewrite = new InstrumentationSyntaxRewriter(
                     linesWithInstrumentation,
-                    new[] { visitor.VariableLocations },
-                    new[] { visitor.Augmentations });
+                    new[] { remappedVariableLocations },
+                    new[] { remappedAugmentations });
                 var newRoot = rewrite.Visit(tree.GetRoot());
                 var newTree = tree.WithRootAndOptions(newRoot, tree.Options);
 
@@ -70,7 +84,7 @@ namespace WorkspaceServer.Servers.Roslyn
 
             return newCompilation;
         }
-        
+
         public static async Task<(Compilation compilation, IReadOnlyCollection<Document> documents)> GetCompilation(
             this WorkspaceBuild build,
             IReadOnlyCollection<SourceFile> sources,
@@ -144,6 +158,12 @@ namespace WorkspaceServer.Servers.Roslyn
             // FIX: (GetSourceFiles) include source files from compiler args
 
             return Enumerable.Empty<SourceFile>();
+        }
+
+        private static Document GetActiveDocument(IEnumerable<Document> documents, string activeBufferId)
+        {
+            var filename = activeBufferId.Split("@").First();
+            return documents.First(d => d.Name == filename);
         }
     }
 }
