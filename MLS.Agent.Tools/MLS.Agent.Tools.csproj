@@ -27,12 +27,12 @@
     <Folder Include="%28External%29\" />
   </ItemGroup>
 
-  <PropertyGroup>
+  <!-- <PropertyGroup>
     <NuspecFile Condition=" '$(NuspecFile)' == '' ">MLS.Agent.Tools.nuspec</NuspecFile>
     <VersionSuffix Condition=" '$(VersionSuffix)' == '' ">$(CDP_PATCH_NUMBER)</VersionSuffix>
     <VersionSuffix Condition=" '$(VersionSuffix)' == '' ">0</VersionSuffix>
     <NuspecProperties Condition=" '$(NuspecProperties)' == '' ">versionsuffix=$(VersionSuffix)</NuspecProperties> 
     <Version>0.1.$(VersionSuffix)</Version>
-  </PropertyGroup>
+  </PropertyGroup> -->
 
 </Project>

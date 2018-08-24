@@ -1,9 +1,0 @@
-<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
-  <metadata>
-    <id>MLS.Agent.Tools</id>
-    <version>0.1.$versionsuffix$</version>
-    <authors>rchande</authors>
-    <description>Contains MLS agent tools</description>
-    <developmentDependency>true</developmentDependency>
-  </metadata>
-</package>

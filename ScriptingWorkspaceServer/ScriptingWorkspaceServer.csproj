@@ -24,19 +24,7 @@
     <PackageReference Include="ConfirmationLoggerExtensions" Version="0.1.5980001">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="CdpxBuildProps" Version="0.1.562.1-alpha-6184a5dd" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="%28Recipes%29\" />
-  </ItemGroup>
-
-
-  <PropertyGroup>
-    <NuspecFile Condition=" '$(NuspecFile)' == '' ">ScriptingWorkspaceServer.nuspec</NuspecFile>
-    <VersionSuffix Condition=" '$(VersionSuffix)' == '' ">$(CDP_PATCH_NUMBER)</VersionSuffix>
-    <VersionSuffix Condition=" '$(VersionSuffix)' == '' ">0</VersionSuffix>
-    <NuspecProperties Condition=" '$(NuspecProperties)' == '' ">versionsuffix=$(VersionSuffix)</NuspecProperties> 
-    <Version>0.1.$(VersionSuffix)</Version>
-  </PropertyGroup>
 
 </Project>
