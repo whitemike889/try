@@ -6,7 +6,7 @@ using WorkspaceServer.Servers.Roslyn.Instrumentation;
 using WorkspaceServer.Tests.Servers.Roslyn.Instrumentation;
 using Xunit;
 
-namespace WorkspaceServer.Tests.Instrumentation
+namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
 {
     public class CodeRewritingTests
     {

@@ -12,7 +12,7 @@ using WorkspaceServer.Servers.Roslyn.Instrumentation;
 using WorkspaceServer.Servers.Roslyn.Instrumentation.Contract;
 using Xunit;
 
-namespace WorkspaceServer.Tests.Instrumentation
+namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
 {
     public class InstrumentationEmitterTests
     {
