@@ -8,6 +8,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Host.Mef;
 using MLS.Agent.Tools;
+using MLS.Agent.Workspaces;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Servers.Roslyn.Instrumentation;
 using WorkspaceServer.Transformations;

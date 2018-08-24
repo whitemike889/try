@@ -4,8 +4,11 @@ using Clockwise;
 using System.Linq;
 using System.Threading.Tasks;
 using Pocket;
+using MLS.Agent.Tools;
+using MLS.Agent.DotnetCli;
+using WorkspaceServer;
 
-namespace MLS.Agent.Tools
+namespace MLS.Agent.Workspaces
 {
     public class WorkspaceBuild
     {

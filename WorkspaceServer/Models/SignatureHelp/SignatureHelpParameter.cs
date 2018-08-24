@@ -1,4 +1,4 @@
-﻿namespace WorkspaceServer.Models.SingatureHelp
+﻿namespace WorkspaceServer.Models.SignatureHelp
 {
     public class SignatureHelpParameter
     {

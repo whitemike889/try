@@ -4,9 +4,9 @@ using Microsoft.CodeAnalysis.Scripting;
 
 namespace WorkspaceServer
 {
-    internal static class ExceptionExtensions
+    public static class ExceptionExtensions
     {
-        internal static string ToDisplayString(this Exception exception)
+        public static string ToDisplayString(this Exception exception)
         {
             switch (exception)
             {

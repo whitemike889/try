@@ -4,10 +4,13 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using Microsoft.CodeAnalysis;
+using MLS.Agent.Tools;
+using WorkspaceServer.Models.Execution;
+using MLS.Agent.Workspaces;
 
 namespace WorkspaceServer.Servers.Roslyn
 {
-    internal static class WorkspaceUtilities
+    public static class WorkspaceUtilities
     {
         private static readonly string _baseDir = Path.GetDirectoryName(typeof(WorkspaceUtilities).Assembly.Location);
 

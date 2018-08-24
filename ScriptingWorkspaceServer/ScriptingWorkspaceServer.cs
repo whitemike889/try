@@ -16,11 +16,12 @@ using Pocket;
 using WorkspaceServer.Models;
 using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
-using WorkspaceServer.Models.SingatureHelp;
+using WorkspaceServer.Models.SignatureHelp;
 using WorkspaceServer.Transformations;
 using static Pocket.Logger<WorkspaceServer.Servers.Scripting.ScriptingWorkspaceServer>;
 using Workspace = WorkspaceServer.Models.Execution.Workspace;
 using WorkspaceServer.Servers.Roslyn;
+using Recipes;
 
 namespace WorkspaceServer.Servers.Scripting
 {
@@ -102,7 +103,7 @@ namespace WorkspaceServer.Servers.Scripting
                     exception: (userException ?? state?.Exception).ToDisplayString(),
                     diagnostics: diagnostics);
 
-                operation.Complete(result, budget);
+                operation.Complete(budget);
 
                 return result;
             }

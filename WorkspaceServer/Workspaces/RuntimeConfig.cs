@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using Newtonsoft.Json.Linq;
 
-namespace MLS.Agent.Tools
+namespace MLS.Agent.Workspaces
 {
     public static class RuntimeConfig
     {
@@ -13,7 +13,7 @@ namespace MLS.Agent.Tools
                 throw new ArgumentNullException(nameof(runtimeConfigFile));
             }
 
-            var content = runtimeConfigFile.Read();
+            var content = File.ReadAllText(runtimeConfigFile.FullName);
 
             var fileContentJson = JObject.Parse(content);
 

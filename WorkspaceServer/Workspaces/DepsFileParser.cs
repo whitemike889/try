@@ -1,9 +1,11 @@
 using System;
 using System.IO;
 using System.Linq;
+using MLS.Agent.Tools;
 using Newtonsoft.Json.Linq;
 
-namespace MLS.Agent.Tools
+
+namespace MLS.Agent.Workspaces
 {
     public static class DepsFileParser
     {

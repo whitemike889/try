@@ -11,13 +11,14 @@ using Recipes;
 using WorkspaceServer.Models;
 using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
-using WorkspaceServer.Models.SingatureHelp;
+using WorkspaceServer.Models.SignatureHelp;
 using WorkspaceServer.Tests;
 using WorkspaceServer.WorkspaceFeatures;
 using Xunit;
 using Xunit.Abstractions;
 using static Pocket.Logger<MLS.Agent.Tests.ApiViaHttpTests>;
 using Workspace = WorkspaceServer.Models.Execution.Workspace;
+using MLS.Agent.Workspaces;
 
 namespace MLS.Agent.Tests
 {
@@ -407,7 +408,7 @@ namespace FibonacciTest
         [Fact]
         public async Task When_aspnet_webapi_workspace_request_succeeds_then_output_shows_web_response()
         {
-            var workspaceType = Tools.WorkspaceBuild.Copy(await Default.WebApiWorkspace);
+            var workspaceType = WorkspaceBuild.Copy(await Default.WebApiWorkspace);
             var workspace = Workspace.FromDirectory(
                 workspaceType.Directory, 
                 workspaceType.Directory.Name);
@@ -440,7 +441,7 @@ namespace FibonacciTest
         [Fact(Skip = "WIP")]
         public async Task When_aspnet_webapi_workspace_request_succeeds_then_standard_out_is_available_on_response()
         {
-            var workspaceType = Tools.WorkspaceBuild.Copy(await Default.WebApiWorkspace);
+            var workspaceType = WorkspaceBuild.Copy(await Default.WebApiWorkspace);
             var workspace = Workspace.FromDirectory(workspaceType.Directory, workspaceType.Directory.Name);
 
             var request = new WorkspaceRequest(workspace, new HttpRequest("/api/values", "get"));
@@ -460,7 +461,7 @@ namespace FibonacciTest
         [Fact]
         public async Task When_aspnet_webapi_workspace_request_fails_then_diagnostics_are_returned()
         {
-            var workspaceType = Tools.WorkspaceBuild.Copy(await Default.WebApiWorkspace);
+            var workspaceType = WorkspaceBuild.Copy(await Default.WebApiWorkspace);
             var workspace = Workspace.FromDirectory(workspaceType.Directory, workspaceType.Directory.Name);
             var nonCompilingBuffer = new Workspace.Buffer("broken.cs", "this does not compile", 0);
             workspace = new Workspace(

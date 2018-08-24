@@ -4,7 +4,7 @@ using FluentAssertions;
 using Recipes;
 using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
-using WorkspaceServer.Models.SingatureHelp;
+using WorkspaceServer.Models.SignatureHelp;
 using Xunit;
 using Xunit.Abstractions;
 

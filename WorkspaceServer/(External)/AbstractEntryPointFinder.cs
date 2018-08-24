@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis;
 
 namespace WorkspaceServer
 {
-    internal abstract class AbstractEntryPointFinder : SymbolVisitor
+    public abstract class AbstractEntryPointFinder : SymbolVisitor
     {
         protected readonly HashSet<IMethodSymbol> EntryPoints = new HashSet<IMethodSymbol>();
  

@@ -2,14 +2,13 @@ using System;
 using System.IO;
 using FluentAssertions;
 using FluentAssertions.Extensions;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Clockwise;
-using MLS.Agent.Tools;
 using Pocket;
 using Xunit;
 using Xunit.Abstractions;
+using MLS.Agent.Workspaces;
 
 namespace WorkspaceServer.Tests
 {

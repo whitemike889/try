@@ -18,3 +18,7 @@ cp $REPO_ROOT/MLS.Agent/Dockerfile $DOCKER_CONTEXT_ROOT/Dockerfile
 
 mkdir -p $DOCKER_NUGET_PACKAGES
 cp -r $NUGET_PACKAGES/. $DOCKER_NUGET_PACKAGES
+
+# create packages
+mkdir $PACKAGE_ROOT
+dotnet pack $REPO_ROOT/MLS-LS.sln  -c Release --no-build -o $PACKAGE_ROOT /p:NoPackageAnalysis=true

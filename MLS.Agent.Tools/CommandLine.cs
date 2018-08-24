@@ -213,7 +213,7 @@ namespace MLS.Agent.Tools
             }
         }
 
-        internal static string AppendArgs(this string initial, string append = null) =>
+        public static string AppendArgs(this string initial, string append = null) =>
             string.IsNullOrWhiteSpace(append)
                 ? initial
                 : $"{initial} {append}";

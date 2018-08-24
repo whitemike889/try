@@ -90,6 +90,10 @@ build:
           to: '.'
           include:
             - '**/*' 
+        - from: '.package'
+          to: '.'
+          include:
+            - '**/*.nupkg' 
                                                                         # We always preserve the root relative path for every matched file.
                                                                         # Sometimes that's OK and sometimes it's not. The from, to options
                                                                         # (both are optional and either of them can be used independently)

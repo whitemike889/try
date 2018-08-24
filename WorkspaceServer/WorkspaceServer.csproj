@@ -31,6 +31,24 @@
     <PackageReference Include="pocket.disposable" Version="1.0.4">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="ConfirmationLoggerExtensions" Version="0.1.5980001">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="AsyncLock" Version="0.1.5650001">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="AsyncSemaphore" Version="0.1.5650001">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="DictionaryExtensions" Version="0.1.5650001">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="JsonSerializationExtensions" Version="0.1.5650001">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="TaskExtensions" Version="0.1.5650001">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="pocketlogger" Version="0.3.0">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
