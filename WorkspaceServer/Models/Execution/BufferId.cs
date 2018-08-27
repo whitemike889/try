@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Newtonsoft.Json;
 
 namespace WorkspaceServer.Models.Execution
@@ -24,7 +25,13 @@ namespace WorkspaceServer.Models.Execution
                    RegionName == other.RegionName;
         }
 
-        public override int GetHashCode() => HashCode.Combine(FileName, RegionName);
+        public override int GetHashCode()
+        {
+            var hashCode = 1013130118;
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(FileName);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(RegionName);
+            return hashCode;
+        }
 
         public static bool operator ==(BufferId left, BufferId right) => Equals(left, right);
 
@@ -41,7 +48,7 @@ namespace WorkspaceServer.Models.Execution
                 return Empty;
             }
 
-            var parts = value.Split("@");
+            var parts = value.Split('@');
 
             return new BufferId(parts[0].Trim(), parts.Length > 1 ? parts[1].Trim() : null);
         }
