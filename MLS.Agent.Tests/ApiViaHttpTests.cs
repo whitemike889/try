@@ -33,10 +33,11 @@ namespace MLS.Agent.Tests
         {
             var output = Guid.NewGuid().ToString();
 
-            var requestJson = Workspace.FromSource(
-                source: $@"Console.WriteLine(""{output}"");".EnforceLF(),
-                workspaceType: "script"
-            ).ToJson();
+            var requestJson = new WorkspaceRequest(
+                Workspace.FromSource(
+                    source: $@"Console.WriteLine(""{output}"");".EnforceLF(),
+                    workspaceType: "script"
+                )).ToJson();
 
             var response = await CallRun(requestJson);
 
@@ -53,7 +54,7 @@ namespace MLS.Agent.Tests
         public async Task The_workspace_endpoint_compiles_code_using_dotnet_when_a_non_script_workspace_type_is_specified()
         {
             var output = Guid.NewGuid().ToString();
-            var requestJson = Create.SimpleWorkspaceAsJson(output, "console");
+            var requestJson = Create.SimpleWorkspaceRequestAsJson(output, "console");
 
             var response = await CallRun(requestJson);
 
@@ -70,7 +71,7 @@ namespace MLS.Agent.Tests
         public async Task The_workspace_endpoint_will_prevent_compiling_if_is_in_language_service_mode()
         {
             var output = Guid.NewGuid().ToString();
-            var requestJson = Create.SimpleWorkspaceAsJson(output, "console");
+            var requestJson = Create.SimpleWorkspaceRequestAsJson(output, "console");
 
             var response = await CallRun(requestJson, options: new CommandLineOptions(true, false,string.Empty,false,true,string.Empty));
 
@@ -81,11 +82,13 @@ namespace MLS.Agent.Tests
         [Fact]
         public async Task When_a_non_script_workspace_type_is_specified_then_code_fragments_cannot_be_compiled_successfully()
         {
-            var requestJson = Workspace.FromSource(
-                @"Console.WriteLine(""hello!"");",
-                id: "Program.cs",
-                workspaceType: "console"
-            ).ToJson();
+            var requestJson =
+                new WorkspaceRequest(
+                    Workspace.FromSource(
+                        @"Console.WriteLine(""hello!"");",
+                        id: "Program.cs",
+                        workspaceType: "console"
+                    )).ToJson();
 
             var response = await CallRun(requestJson);
 
@@ -107,10 +110,12 @@ namespace MLS.Agent.Tests
 
             using (var agent = new AgentService())
             {
-                var json = Workspace.FromSource(
-                                        $@"Console.WriteLine(""{output}""".EnforceLF(),
-                                        workspaceType: "script")
-                                    .ToJson();
+                var json =
+                    new WorkspaceRequest(
+                            Workspace.FromSource(
+                                $@"Console.WriteLine(""{output}""".EnforceLF(),
+                                workspaceType: "script"))
+                        .ToJson();
 
                 var request = new HttpRequestMessage(
                     HttpMethod.Post,
@@ -385,26 +390,6 @@ namespace FibonacciTest
             }
         }
 
-        [Theory]
-        [InlineData("script")]
-        [InlineData("console")]
-        public async Task When_run_is_invoked_with_workspace_it_executes_correctly(string workspaceType)
-        {
-            var output = "1";
-            var requestJson =
-                $@"{{ ""Buffers"":[{{""Id"":"""",""Content"":""using System;\nusing System.Linq;\nusing System.Collections.Generic;\n\npublic class Program\n{{\n  public static void Main()\n  {{\n    foreach (var i in Fibonacci().Take(1))\n    {{\n      Console.WriteLine(i);\n    }}\n  }}\n\n  private static IEnumerable<int> Fibonacci()\n  {{\n    int current = 1, next = 1;\n\n    while (true) \n    {{\n      yield return current;\n      next = current + (current = next);\n    }}\n  }}\n}}\n"",""Position"":0}}],""Usings"":[],""WorkspaceType"":""{workspaceType}"",""Files"":[]}}";
-
-            var response = await CallRun(requestJson);
-
-            var result = await response
-                .EnsureSuccess()
-                .DeserializeAs<RunResult>();
-
-            VerifySucceeded(result);
-
-            result.ShouldSucceedWithOutput(output);
-        }
-
         [Fact]
         public async Task When_aspnet_webapi_workspace_request_succeeds_then_output_shows_web_response()
         {
@@ -505,14 +490,12 @@ namespace FibonacciTest
             Clock.Reset();
 
             var requestJson =
-                $@"{{ ""Buffers"":[{{""Id"":"""",""Content"":""public class Program {{ public static void Main()\n  {{\n  System.Threading.Thread.Sleep(System.TimeSpan.FromSeconds(30));  }}  }}""}}],""WorkspaceType"":""{workspaceType}""}}";
+                $@"{{""Workspace"":{{ ""Buffers"":[{{""Id"":"""",""Content"":""public class Program {{ public static void Main()\n  {{\n  System.Threading.Thread.Sleep(System.TimeSpan.FromSeconds(30));  }}  }}""}}],""WorkspaceType"":""{workspaceType}""}}}}";
 
             var response = await CallRun(requestJson, 15000);
 
             response.StatusCode.Should().Be(HttpStatusCode.ExpectationFailed);
         }
-        
-
 
         private class FailedRunResult : Exception
         {

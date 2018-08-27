@@ -2,6 +2,7 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using MLS.Agent.Workspaces;
 using Recipes;
+using WorkspaceServer.Models;
 using WorkspaceServer.Models.Execution;
 
 namespace WorkspaceServer.Tests
@@ -26,13 +27,17 @@ namespace WorkspaceServer.Tests
         public static WorkspaceBuild EmptyWorkspace([CallerMemberName] string testName = null, IWorkspaceInitializer initializer = null) =>
             new WorkspaceBuild(WorkspaceBuild.CreateDirectory(testName), initializer: initializer);
 
-        public static string SimpleWorkspaceAsJson(
+        public static string SimpleWorkspaceRequestAsJson(
             string consoleOutput = "Hello!",
-            string workspaceType = null) =>
-            Workspace.FromSource(
+            string workspaceType = null)
+        {
+            var workspace = Workspace.FromSource(
                 SimpleConsoleAppCodeWithoutNamespaces(consoleOutput),
                 workspaceType
-            ).ToJson();
+            );
+
+            return new WorkspaceRequest(workspace).ToJson();
+        }
 
         public static string SimpleConsoleAppCodeWithoutNamespaces(string consoleOutput)
         {
