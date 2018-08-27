@@ -18,7 +18,7 @@ namespace WorkspaceServer.Servers.Roslyn
 {
     public static class WorkspaceBuildExtensions
     {
-        public static async Task<Compilation> Compile(this WorkspaceBuild build, Workspace workspace, Budget budget, string activeBufferId)
+        public static async Task<Compilation> Compile(this WorkspaceBuild build, Workspace workspace, Budget budget, BufferId activeBufferId)
         {
             var sourceFiles = workspace.GetSourceFiles()
                                        .Concat(await build.GetSourceFiles())
@@ -38,7 +38,11 @@ namespace WorkspaceServer.Servers.Roslyn
         }
 
 
-        private static async Task<Compilation> AugmentCompilationAsync(IEnumerable<Viewport> viewports, Compilation compilation, Document document, string activeBufferId)
+        private static async Task<Compilation> AugmentCompilationAsync(
+            IEnumerable<Viewport> viewports, 
+            Compilation compilation, 
+            Document document,
+            BufferId activeBufferId)
         {
             var regions = InstrumentationLineMapper.FilterActiveViewport(viewports, activeBufferId)
                 .Where(v => v.Destination?.Name != null)
@@ -160,10 +164,9 @@ namespace WorkspaceServer.Servers.Roslyn
             return Enumerable.Empty<SourceFile>();
         }
 
-        private static Document GetActiveDocument(IEnumerable<Document> documents, string activeBufferId)
+        private static Document GetActiveDocument(IEnumerable<Document> documents, BufferId activeBufferId)
         {
-            var filename = activeBufferId.Split('@').First();
-            return documents.First(d => d.Name == filename);
+            return documents.First(d => d.Name.Equals(activeBufferId.FileName));
         }
     }
 }

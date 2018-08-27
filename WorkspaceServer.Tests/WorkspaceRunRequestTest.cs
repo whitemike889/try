@@ -15,7 +15,7 @@ namespace WorkspaceServer.Tests
             request.Buffers.Should().NotBeNullOrEmpty();
             request.Files.Should().BeNullOrEmpty();
             request.WorkspaceType.Should().Be("console");
-            request.Buffers.FirstOrDefault(b => b.Id == "test").Should().NotBeNull();
+            request.Buffers.FirstOrDefault(b => b.Id.FileName == "test").Should().NotBeNull();
         }
 
         [Fact]
@@ -25,7 +25,7 @@ namespace WorkspaceServer.Tests
             request.Buffers.Should().NotBeNullOrEmpty();
             request.Files.Should().NotBeNullOrEmpty();
             request.WorkspaceType.Should().Be("console");
-            request.Buffers.FirstOrDefault(b => b.Id == "test").Should().NotBeNull();
+            request.Buffers.FirstOrDefault(b => b.Id.FileName == "test").Should().NotBeNull();
             request.Files.FirstOrDefault(b => b.Name == "filedOne.cs").Should().NotBeNull();
         }
 
@@ -36,7 +36,7 @@ namespace WorkspaceServer.Tests
             request.Buffers.Should().NotBeNullOrEmpty();
             request.Files.Should().NotBeNullOrEmpty();
             request.WorkspaceType.Should().Be("console");
-            request.Buffers.FirstOrDefault(b => b.Id == "test").Should().NotBeNull();
+            request.Buffers.FirstOrDefault(b => b.Id.FileName == "test").Should().NotBeNull();
             request.Files.FirstOrDefault(b => b.Name == "filedOne.cs").Should().NotBeNull();
             request.Usings.Should().BeEquivalentTo("using System1;", "using System2;");
         }

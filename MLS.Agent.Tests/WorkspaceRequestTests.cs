@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using FluentAssertions;
 using MLS.Agent.JsonContracts;
 using Newtonsoft.Json;
+using Recipes;
 using WorkspaceServer.Models;
 using WorkspaceServer.Models.Execution;
+using WorkspaceServer.Tests;
 using Xunit;
 
 namespace MLS.Agent.Tests
@@ -64,7 +66,27 @@ namespace MLS.Agent.Tests
                         new Workspace.Buffer("the.only.buffer.cs", "its content", 123)
                     }));
 
-            request.ActiveBufferId.Should().Be("the.only.buffer.cs");
+            request.ActiveBufferId.Should().Be(BufferId.Parse("the.only.buffer.cs"));
+        }
+
+        [Fact]
+        public void WorkspaceRequest_deserializes_from_JSON()
+        {
+            var (processed, position) = CodeManipulation.ProcessMarkup("Console.WriteLine($$)");
+
+            var original = new WorkspaceRequest(
+                activeBufferId: BufferId.Parse("default.cs"),
+                workspace: Workspace.FromSource(
+                    processed,
+                    "script",
+                    id: "default.cs",
+                    position: position));
+
+            var json = original.ToJson();
+
+            var deserialized = json.FromJsonTo<WorkspaceRequest>();
+
+            deserialized.Should().BeEquivalentTo(original);
         }
     }
 }

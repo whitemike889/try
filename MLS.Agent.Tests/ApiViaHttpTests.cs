@@ -216,7 +216,7 @@ namespace MLS.Agent.Tests
                             id: "default.cs",
                             position: position))
                     .ToJson();
-
+                
                 var request = new HttpRequestMessage(HttpMethod.Post, @"/workspace/signaturehelp")
                 {
                     Content = new StringContent(
@@ -413,9 +413,11 @@ namespace FibonacciTest
                 workspaceType.Directory, 
                 workspaceType.Directory.Name);
 
-            var request = new WorkspaceRequest(workspace, new HttpRequest("/api/values", "get"));
+            var request = new WorkspaceRequest(workspace, httpRequest: new HttpRequest("/api/values", "get"));
 
-            var response = await CallRun(request.ToJson());
+            var json = request.ToJson();
+
+            var response = await CallRun(json);
 
             var result = await response
                                .EnsureSuccess()
@@ -444,7 +446,7 @@ namespace FibonacciTest
             var workspaceType = WorkspaceBuild.Copy(await Default.WebApiWorkspace);
             var workspace = Workspace.FromDirectory(workspaceType.Directory, workspaceType.Directory.Name);
 
-            var request = new WorkspaceRequest(workspace, new HttpRequest("/api/values", "get"));
+            var request = new WorkspaceRequest(workspace, httpRequest: new HttpRequest("/api/values", "get"));
 
             var response = await CallRun(request.ToJson(), 30000);
 
@@ -469,7 +471,7 @@ namespace FibonacciTest
                 files: workspace.Files.ToArray(),
                 workspaceType: workspace.WorkspaceType);
 
-            var request = new WorkspaceRequest(workspace, new HttpRequest("/api/values", "get"));
+            var request = new WorkspaceRequest(workspace, httpRequest: new HttpRequest("/api/values", "get"));
 
             var response = await CallRun(request.ToJson(), null);
 

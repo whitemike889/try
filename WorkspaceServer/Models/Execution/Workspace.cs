@@ -57,23 +57,15 @@ namespace WorkspaceServer.Models.Execution
         {
             private readonly int offSetFromParentBuffer;
 
-            public Buffer(string id, string content, int position, int offSetFromParentBuffer)
+            public Buffer(BufferId id, string content, int position = 0, int offSetFromParentBuffer = 0)
             {
                 this.offSetFromParentBuffer = offSetFromParentBuffer;
-                Id = id;
+                Id = id ?? throw new ArgumentNullException(nameof(id));
                 Content = content;
                 Position = position;
             }
 
-            [JsonConstructor]
-            public Buffer(string id, string content, int position = 0)
-            {
-                Id = id;
-                Content = content;
-                Position = position;
-            }
-
-            public string Id { get; }
+            public BufferId Id { get; }
 
             public string Content { get; }
 
@@ -95,7 +87,7 @@ namespace WorkspaceServer.Models.Execution
                 workspaceType: workspaceType,
                 buffers: new[]
                 {
-                    new Buffer(id ?? $"file{source.GetHashCode()}.cs", source, position)
+                    new Buffer(BufferId.Parse(id ?? $"file{source.GetHashCode()}.cs"), source, position)
                 },
                 usings: usings);
 
@@ -104,7 +96,7 @@ namespace WorkspaceServer.Models.Execution
             params (string id, string content, int position)[] sources) =>
             new Workspace(
                 workspaceType: workspaceType,
-                buffers: sources.Select(s => new Buffer(s.id, s.content, s.position)).ToArray());
+                buffers: sources.Select(s => new Buffer(BufferId.Parse(s.id), s.content, s.position)).ToArray());
 
         public static Workspace FromDirectory(DirectoryInfo directory, string workspaceType)
         {
@@ -122,7 +114,7 @@ namespace WorkspaceServer.Models.Execution
                 buffers: new[]
                 {
                     new Buffer(
-                        files.First().Name,
+                        BufferId.Parse(files.First().Name),
                         filesOnDisk.First().Read(),
                         0)
                 },

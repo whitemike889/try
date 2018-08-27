@@ -47,10 +47,10 @@ namespace WorkspaceServer.Transformations
             var buffers = new List<Workspace.Buffer>();
             foreach (var sourceBuffer in source.Buffers)
             {
-                if (sourceBuffer.Id.Contains("@"))
+                if (!string.IsNullOrWhiteSpace(sourceBuffer.Id.RegionName))
                 {
                     var viewPorts = ExtractViewPorts(files.Values);
-                    if (viewPorts.SingleOrDefault(p => p.Name == sourceBuffer.Id) is Viewport viewPort)
+                    if (viewPorts.SingleOrDefault(p => p.Name == sourceBuffer.Id.ToString()) is Viewport viewPort)
                     {
                         var tree = CSharpSyntaxTree.ParseText(viewPort.Destination.Text.ToString());
                         var textChange = new TextChange(
@@ -77,7 +77,7 @@ namespace WorkspaceServer.Transformations
                 }
                 else
                 {
-                    files[sourceBuffer.Id] = SourceFile.Create(sourceBuffer.Content, sourceBuffer.Id);
+                    files[sourceBuffer.Id.FileName] = SourceFile.Create(sourceBuffer.Content, sourceBuffer.Id.FileName);
                     buffers.Add(sourceBuffer);
                 }
             }

@@ -64,7 +64,7 @@ namespace WorkspaceServer.Servers.Roslyn
 
             var processed = await _transformer.TransformAsync(request.Workspace, budget);
             var sourceFiles = processed.GetSourceFiles();
-            var (compilation, documents) = (await build.GetCompilation(sourceFiles, budget));
+            var (compilation, documents) = await build.GetCompilation(sourceFiles, budget);
 
             var file = processed.GetFileFromBufferId(request.ActiveBufferId);
             var (line, column, absolutePosition) = processed.GetTextLocation(request.ActiveBufferId);
@@ -114,9 +114,8 @@ namespace WorkspaceServer.Servers.Roslyn
             var sourceFiles = processed.GetSourceFiles();
             var (compilation, documents) = await build.GetCompilation(sourceFiles, budget);
 
-            var requestActiveBufferId = request.ActiveBufferId.Split('@').First();
 
-            var document = documents.FirstOrDefault(doc => doc.Name == requestActiveBufferId)
+            var document = documents.FirstOrDefault(doc => doc.Name == request.ActiveBufferId.FileName)
                            ??
                            (documents.Count == 1 ? documents.Single() : null);
 

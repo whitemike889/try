@@ -12,15 +12,19 @@ namespace WorkspaceServer.Models.Execution
             return workspace.Files?.Select(f => SourceFile.Create(f.Text, f.Name)).ToArray() ?? Array.Empty<SourceFile>();
         }
 
-        public static Workspace.File GetFileFromBufferId(this Workspace workspace, string bufferId)
+        public static Workspace.File GetFileFromBufferId(this Workspace workspace, BufferId bufferId)
         {
-            var parsed = bufferId?.Split('@')[0].Trim();
-            return workspace.Files.FirstOrDefault(f => f.Name == parsed);
+            if (bufferId == null)
+            {
+                throw new ArgumentNullException(nameof(bufferId));
+            }
+
+            return workspace.Files.FirstOrDefault(f => f.Name == bufferId.FileName);
         }
 
         public static int GetAbsolutePositionForGetBufferWithSpecifiedIdOrSingleBufferIfThereIsOnlyOne(
             this Workspace workspace,
-            string bufferId = null)
+            BufferId bufferId = null)
         {
             // TODO: (GetAbsolutePositionForGetBufferWithSpecifiedIdOrSingleBufferIfThereIsOnlyOne) this concept should go away
 
@@ -31,7 +35,7 @@ namespace WorkspaceServer.Models.Execution
 
         public static Workspace.Buffer GetBufferWithSpecifiedIdOrSingleBufferIfThereIsOnlyOne(
             this Workspace workspace,
-            string bufferId = null)
+            BufferId bufferId = null)
         {
             // TODO: (GetBufferWithSpecifiedIdOrSingleBufferIfThereIsOnlyOne) this concept should go away
 
@@ -54,7 +58,7 @@ namespace WorkspaceServer.Models.Execution
 
         internal static (int line, int column, int absolutePosition) GetTextLocation(
             this Workspace workspace,
-            string bufferId)
+            BufferId bufferId)
         {
             var file = workspace.GetFileFromBufferId(bufferId);
             var absolutePosition = GetAbsolutePositionForGetBufferWithSpecifiedIdOrSingleBufferIfThereIsOnlyOne(workspace, bufferId);
@@ -72,7 +76,7 @@ namespace WorkspaceServer.Models.Execution
             new Workspace(
                 workspace.Usings,
                 workspace.Files,
-                workspace.Buffers.Concat(new[] { new Workspace.Buffer(id, text) }).ToArray(),
+                workspace.Buffers.Concat(new[] { new Workspace.Buffer(BufferId.Parse(id), text) }).ToArray(),
                 workspace.WorkspaceType,
                 workspace.IncludeInstrumentation);
 
@@ -82,7 +86,7 @@ namespace WorkspaceServer.Models.Execution
             new Workspace(
                 workspace.Usings,
                 workspace.Files,
-                workspace.Buffers.Where(b => b.Id != id).ToArray(),
+                workspace.Buffers.Where(b => b.Id.ToString() != id).ToArray(),
                 workspace.WorkspaceType,
                 workspace.IncludeInstrumentation);
 
