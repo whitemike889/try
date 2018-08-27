@@ -39,7 +39,7 @@ namespace WorkspaceServer.Servers.Roslyn
             {
                 var expectedXmlFile =
                     filePath.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
-                        ? filePath.Replace(".dll", ".xml", StringComparison.OrdinalIgnoreCase)
+                        ? ReplaceCaseInsensitive(filePath, ".dll", ".xml")
                         : Path.Combine(_baseDir,
                                        "completion",
                                        "references",
@@ -49,6 +49,18 @@ namespace WorkspaceServer.Servers.Roslyn
                     filePath,
                     documentation: XmlDocumentationProvider.CreateFromFile(expectedXmlFile));
             }
+        }
+
+        static string ReplaceCaseInsensitive(string str, string toReplace, string replacement)
+        {
+            var index = str.IndexOf(toReplace, StringComparison.OrdinalIgnoreCase);
+            if (index >= 0)
+            {
+                str = str.Remove(index, toReplace.Length);
+                str = str.Insert(index, replacement);
+            }
+
+            return str;
         }
 
         private static string[] AssembliesNamesToReference() => new[]

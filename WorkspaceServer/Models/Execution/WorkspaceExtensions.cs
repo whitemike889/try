@@ -14,7 +14,7 @@ namespace WorkspaceServer.Models.Execution
 
         public static Workspace.File GetFileFromBufferId(this Workspace workspace, string bufferId)
         {
-            var parsed = bufferId?.Split("@")[0].Trim();
+            var parsed = bufferId?.Split('@')[0].Trim();
             return workspace.Files.FirstOrDefault(f => f.Name == parsed);
         }
 

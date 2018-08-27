@@ -47,11 +47,10 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
                    kv => kv.Key,
                    kv =>
                    {
-                       HashSet<VariableLocation> variableLocations = kv.Value;
-                       return variableLocations
+                       var variableLocations = kv.Value;
+                       return new HashSet<VariableLocation>(variableLocations
                            .Where(loc => viewportSpan.ContainsLine(loc.StartLine) && viewportSpan.ContainsLine(loc.EndLine))
-                           .Select(location => MapVariableLocationToViewport(location, viewportSpan))
-                           .ToHashSet();
+                           .Select(location => MapVariableLocationToViewport(location, viewportSpan)));
                    }
                 );
 
@@ -88,7 +87,7 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
 
         public static IEnumerable<Viewport> FilterActiveViewport(IEnumerable<Viewport> viewports, string activeBufferId)
         {
-            var activeFile = activeBufferId.Split("@").First();
+            var activeFile = activeBufferId.Split('@').First();
             return viewports.Where(viewport => viewport.Destination.Name == activeFile && viewport.Name == activeBufferId);
         }
     }
