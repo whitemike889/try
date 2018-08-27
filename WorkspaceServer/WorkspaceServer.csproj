@@ -15,7 +15,7 @@
   <ItemGroup>
     <PackageReference Include="AsyncLock" Version="0.1.5650001" />
     <PackageReference Include="AsyncSemaphore" Version="0.1.5650001" />
-    <PackageReference Include="CdpxBuildProps" Version="0.1.562.1-alpha-6184a5dd" />
+    <PackageReference Include="CdpxBuildProps" Version="0.1.6040001" />
     <PackageReference Include="clockwise" Version="1.0.244-beta" />
     <PackageReference Include="DictionaryExtensions" Version="0.1.5650001" />
     <PackageReference Include="JsonSerializationExtensions" Version="0.1.5650001" />
@@ -69,9 +69,5 @@
   <ItemGroup>
     <ProjectReference Include="..\MLS.Agent.Tools\MLS.Agent.Tools.csproj" />
   </ItemGroup>
-
-  <PropertyGroup>
-    <Version>$(CDP_PACKAGE_VERSION_SEMANTIC)</Version>
-  </PropertyGroup>
 
 </Project>
