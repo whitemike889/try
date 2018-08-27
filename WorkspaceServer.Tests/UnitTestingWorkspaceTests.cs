@@ -79,7 +79,7 @@ namespace MyUnitTestNamespace
                              .RemoveBuffer("UnitTest1.cs")
                              .AddBuffer("UnitTest1.cs@facts", "[Fact] public void passing() {  }");
 
-            var runResult = await runner.Run(new WorkspaceRequest(workspaceModel));
+            var runResult1 = await runner.Run(new WorkspaceRequest(workspaceModel));
 
             Log.Info("Output1: {output}", runResult1.Output);
 
@@ -100,7 +100,7 @@ namespace MyUnitTestNamespace
 [Fact] public void failing() => throw new Exception(""oops!"");
 ");
 
-            var runResult2 = await runner.Run(workspaceModel);
+            var runResult2 = await runner.Run(new WorkspaceRequest(workspaceModel));
 
             Log.Info("Output2: {output}", runResult2.Output);
 

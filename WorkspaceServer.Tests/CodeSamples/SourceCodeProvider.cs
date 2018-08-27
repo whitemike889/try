@@ -22,7 +22,7 @@ namespace ConsoleProgramSingleRegion
             #endregion
         }
     }
-}";
+}".EnforceLF();
 
         public static string ConsoleProgramSingleRegion =>
             @"using System;
@@ -38,7 +38,7 @@ namespace ConsoleProgramSingleRegion
             #endregion
         }
     }
-}";
+}".EnforceLF();
 
 
         public static string ConsoleProgramSingleRegionExtraUsing =>
@@ -57,7 +57,7 @@ namespace ConsoleProgramSingleRegion
             #endregion
         }
     }
-}";
+}".EnforceLF();
     }
 }
 
