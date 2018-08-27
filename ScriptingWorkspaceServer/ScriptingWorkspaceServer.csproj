@@ -27,4 +27,8 @@
     <PackageReference Include="CdpxBuildProps" Version="0.1.562.1-alpha-6184a5dd" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <Version>$(CDP_PACKAGE_VERSION_SEMANTIC)</Version>
+  </PropertyGroup>
+
 </Project>

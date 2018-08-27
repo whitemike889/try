@@ -70,4 +70,8 @@
     <ProjectReference Include="..\MLS.Agent.Tools\MLS.Agent.Tools.csproj" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <Version>$(CDP_PACKAGE_VERSION_SEMANTIC)</Version>
+  </PropertyGroup>
+
 </Project>

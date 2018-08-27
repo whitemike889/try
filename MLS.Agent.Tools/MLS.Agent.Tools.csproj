@@ -27,4 +27,8 @@
     <Folder Include="%28External%29\" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <Version>$(CDP_PACKAGE_VERSION_SEMANTIC)</Version>
+  </PropertyGroup>
+
 </Project>
