@@ -10,7 +10,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CdpxBuildProps" Version="0.1.562.1-alpha-6184a5dd" />
+    <PackageReference Include="CdpxBuildProps" Version="0.1.6040001" />
     <PackageReference Include="clockwise" Version="1.0.244-beta" />
     <PackageReference Include="newtonsoft.json" Version="11.0.2" />
     <PackageReference Include="pocketlogger" Version="0.3.0">

@@ -24,7 +24,7 @@
     <PackageReference Include="ConfirmationLoggerExtensions" Version="0.1.5980001">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="CdpxBuildProps" Version="0.1.562.1-alpha-6184a5dd" />
+    <PackageReference Include="CdpxBuildProps" Version="0.1.6040001" />
   </ItemGroup>
 
 </Project>
