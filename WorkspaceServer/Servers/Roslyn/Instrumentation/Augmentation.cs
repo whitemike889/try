@@ -70,7 +70,8 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(AssociatedStatement, Locals, Fields, Parameters, InternalLocals, CurrentFilePosition);
+            return AssociatedStatement.GetHashCode();
+            //return HashCode.Combine(AssociatedStatement, Locals, Fields, Parameters, InternalLocals, CurrentFilePosition);
         }
 
         public string Serialize()
