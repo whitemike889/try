@@ -61,7 +61,7 @@ namespace WorkspaceServer.Transformations
                     {
                         var directoryPath = new FileInfo(lineSpanPath).Directory?.FullName ?? "";
 
-                        if (!directoryPath.EndsWith(Path.DirectorySeparatorChar))
+                        if (!directoryPath.EndsWith(Path.DirectorySeparatorChar.ToString()))
                         {
                             directoryPath += Path.DirectorySeparatorChar;
                         }

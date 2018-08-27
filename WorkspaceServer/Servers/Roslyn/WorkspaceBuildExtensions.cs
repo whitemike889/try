@@ -162,7 +162,7 @@ namespace WorkspaceServer.Servers.Roslyn
 
         private static Document GetActiveDocument(IEnumerable<Document> documents, string activeBufferId)
         {
-            var filename = activeBufferId.Split("@").First();
+            var filename = activeBufferId.Split('@').First();
             return documents.First(d => d.Name == filename);
         }
     }

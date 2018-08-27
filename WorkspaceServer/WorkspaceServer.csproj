@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <AssetTargetFallback>$(AssetTargetFallback);dotnet5.4;portable-net45+win8</AssetTargetFallback>
     <LangVersion>Latest</LangVersion>
   </PropertyGroup>
@@ -45,6 +45,7 @@
     <PackageReference Include="JsonSerializationExtensions" Version="0.1.5650001">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="System.ComponentModel.Annotations" Version="4.5.0" />
     <PackageReference Include="TaskExtensions" Version="0.1.5650001">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>

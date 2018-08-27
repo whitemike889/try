@@ -80,7 +80,7 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
             {
                 return stdOut
                     .Join(String.Empty)
-                    .Split("\n")
+                    .Split('\n')
                     .ToImmutableList();
             }
         }

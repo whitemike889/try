@@ -114,7 +114,7 @@ namespace WorkspaceServer.Servers.Roslyn
             var sourceFiles = processed.GetSourceFiles();
             var (compilation, documents) = await build.GetCompilation(sourceFiles, budget);
 
-            var requestActiveBufferId = request.ActiveBufferId.Split("@").First();
+            var requestActiveBufferId = request.ActiveBufferId.Split('@').First();
 
             var document = documents.FirstOrDefault(doc => doc.Name == requestActiveBufferId)
                            ??
