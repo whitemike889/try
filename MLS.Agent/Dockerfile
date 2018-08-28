@@ -10,7 +10,7 @@ ENV TRYDOTNET_WORKSPACES_PATH=/workspaces
 RUN apk update
 RUN apk add xmlstarlet
 RUN apk add shadow
-RUN dotnet tool install t-rex --tool-path $DOTNET_TOOLS
+RUN dotnet tool install -g t-rex
 
 # set up the working directory where the Agent ASP.NET app runs
 RUN mkdir -p /app

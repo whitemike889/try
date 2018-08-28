@@ -15,7 +15,7 @@ apk add xmlstarlet
 apk add shadow
 
 # Add dotnet tools
-dotnet tool install t-rex --tool-path $DOTNET_TOOLS
+dotnet tool install -g t-rex
 
 # Restore the project
 dotnet restore $REPO_ROOT/MLS-LS.sln

@@ -114,7 +114,6 @@ namespace WorkspaceServer.Servers.Roslyn
             var sourceFiles = processed.GetSourceFiles();
             var (compilation, documents) = await build.GetCompilation(sourceFiles, budget);
 
-
             var document = documents.FirstOrDefault(doc => doc.Name == request.ActiveBufferId.FileName)
                            ??
                            (documents.Count == 1 ? documents.Single() : null);
@@ -275,7 +274,11 @@ namespace WorkspaceServer.Servers.Roslyn
 
             CommandLineResult tRexResult = null;
 
-            if (trex.Exists)
+            if (!trex.Exists)
+            {
+                throw new InvalidOperationException("t-rex not found");
+            }
+            else
             {
                 tRexResult = await CommandLine.Execute(
                                  trex,
@@ -286,7 +289,7 @@ namespace WorkspaceServer.Servers.Roslyn
 
             var result = new RunResult(
                 commandLineResult.ExitCode == 0,
-                tRexResult?.Output ?? commandLineResult.Output,
+                tRexResult.Output,
                 exceptionMessage,
                 diagnostics);
 
