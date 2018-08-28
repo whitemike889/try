@@ -1,9 +1,6 @@
-﻿using FluentAssertions;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System;
+using System.Threading.Tasks;
 using WorkspaceServer.Servers.Roslyn.Instrumentation;
-using WorkspaceServer.Tests.Servers.Roslyn.Instrumentation;
 using Xunit;
 
 namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
@@ -11,9 +8,9 @@ namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
     public class CodeRewritingTests
     {
         [Fact]
-        public void Rewritten_program_with_1_statements_has_1_calls_to_EmitProgramState()
+        public async Task Rewritten_program_with_1_statements_has_1_calls_to_EmitProgramState()
         {
-            var rewrittenCode = RewriteCodeWithInstrumentation(@"
+            var rewrittenCode = await RewriteCodeWithInstrumentation(@"
 using System;
 
 namespace ConsoleApp2
@@ -25,8 +22,8 @@ namespace ConsoleApp2
             Console.WriteLine(""Hello World!"");
         }
     }
-}"
-            );
+}");
+
             string expected = @"
 using System;
 
@@ -43,10 +40,11 @@ InstrumentationEmitter.EmitProgramState(InstrumentationEmitter.GetProgramState("
 }";
             rewrittenCode.ShouldBeEquivalentTo(expected);
         }
+
         [Fact]
-        public void Rewritten_program_with_2_statements_has_2_calls_to_EmitProgramState()
+        public async Task Rewritten_program_with_2_statements_has_2_calls_to_EmitProgramState()
         {
-            string actual = RewriteCodeWithInstrumentation(@"
+            string actual = await RewriteCodeWithInstrumentation(@"
 using System;
 
 namespace ConsoleApp2
@@ -81,19 +79,16 @@ namespace ConsoleApp2
             actual.ShouldBeEquivalentTo(expected);
         }
 
-        private string RewriteCodeWithInstrumentation(string text)
+        private async Task<string> RewriteCodeWithInstrumentation(string text)
         {
-            var code = Sources.GetDocument(text, true);
-            var visitor = new InstrumentationSyntaxVisitor(code);
+            var document = Sources.GetDocument(text, true);
+            var visitor = new InstrumentationSyntaxVisitor(document, await document.GetSemanticModelAsync());
             var rewritten = new InstrumentationSyntaxRewriter(
                 visitor.Augmentations.Data.Keys,
                  visitor.VariableLocations ,
                  visitor.Augmentations 
                 );
-            return rewritten.ApplyToTree(code.GetSyntaxTreeAsync().Result).GetText().ToString();
-
-            throw new NotImplementedException();
+            return rewritten.ApplyToTree(document.GetSyntaxTreeAsync().Result).GetText().ToString();
         }
-
     }
 }
