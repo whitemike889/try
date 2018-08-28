@@ -155,6 +155,7 @@ namespace FibonacciTest
 
             result.Succeeded.Should().BeTrue();
         }
+
         [Fact]
         public async Task Response_with_multi_buffer_workspace_with_instrumentation()
         {
@@ -193,21 +194,23 @@ namespace FibonacciTest
         }
     }
 }";
+
             #endregion
 
-            var workspace = new Workspace(workspaceType: "console", buffers: new[]
+            var request = new WorkspaceRequest(new Workspace(workspaceType: "console", buffers: new[]
             {
-                new Workspace.Buffer("Program.cs",program,0),
-                new Workspace.Buffer("FibonacciGenerator.cs",generator,0)
-            }, includeInstrumentation: true);
+                new Workspace.Buffer("Program.cs", program, 0),
+                new Workspace.Buffer("FibonacciGenerator.cs", generator, 0)
+            }, includeInstrumentation: true));
             var server = await GetRunner();
 
-            var result = await server.Run(workspace);
+            var result = await server.Run(request);
 
             result.Succeeded.Should().BeTrue();
             result.Output.Count.Should().Be(21);
             result.Output.Should().BeEquivalentTo("1", "1", "2", "3", "5", "8", "13", "21", "34", "55", "89", "144", "233", "377", "610", "987", "1597", "2584", "4181", "6765", "");
         }
+
         [Fact]
         public async Task When_Run_is_called_with_instrumentation_and_no_regions_lines_are_not_mapped()
         {

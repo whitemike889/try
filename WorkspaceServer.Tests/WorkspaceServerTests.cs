@@ -120,7 +120,8 @@ Console.WriteLine(banana);");
                       "*(2,19): error CS0103: The name \'banana\' does not exist in the current context");
             result.Exception.Should().BeNull();
         }
-         [Fact]
+
+        [Fact]
         public async Task Multi_line_console_output_is_captured_correctly_a()
         {
             var request = CreateWorkspaceWithMainContaining(@"
@@ -131,7 +132,7 @@ Console.WriteLine(4);");
 
             var server = await GetRunner();
 
-            var result = await server.Run(request);
+            var result = await server.Run(new WorkspaceRequest(request));
 
             result.ShouldSucceedWithOutput("1", "2", "3", "4", "");
         }

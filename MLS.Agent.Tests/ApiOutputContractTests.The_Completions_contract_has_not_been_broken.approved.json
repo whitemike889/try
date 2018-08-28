@@ -6,7 +6,7 @@
       "filterText": "BackgroundColor",
       "sortText": "BackgroundColor",
       "insertText": "BackgroundColor",
-      "documentation": ""
+      "documentation": "Gets or sets the background color of the console.\nReturns: A value that specifies the background color of the console; that is, the color that appears behind each character. The default is black.\nSystem.ArgumentException: The color specified in a set operation is not a valid member of System.ConsoleColor .\nSystem.Security.SecurityException: The user does not have permission to perform this action.\nSystem.IO.IOException: An I/O error occurred."
     },
     {
       "displayText": "Beep",
@@ -14,7 +14,7 @@
       "filterText": "Beep",
       "sortText": "Beep",
       "insertText": "Beep",
-      "documentation": ""
+      "documentation": "Plays the sound of a beep through the console speaker.\nSystem.Security.HostProtectionException: This method was executed on a server, such as SQL Server, that does not permit access to a user interface."
     },
     {
       "displayText": "BufferHeight",
@@ -22,7 +22,7 @@
       "filterText": "BufferHeight",
       "sortText": "BufferHeight",
       "insertText": "BufferHeight",
-      "documentation": ""
+      "documentation": "Gets or sets the height of the buffer area.\nReturns: The current height, in rows, of the buffer area.\nSystem.ArgumentOutOfRangeException: The value in a set operation is less than or equal to zero.  \n-or-  \nThe value in a set operation is greater than or equal to System.Int16.MaxValue .  \n-or-  \nThe value in a set operation is less than System.Console.WindowTop + System.Console.WindowHeight .\nSystem.Security.SecurityException: The user does not have permission to perform this action.\nSystem.IO.IOException: An I/O error occurred."
     },
     {
       "displayText": "BufferWidth",
@@ -30,7 +30,7 @@
       "filterText": "BufferWidth",
       "sortText": "BufferWidth",
       "insertText": "BufferWidth",
-      "documentation": ""
+      "documentation": "Gets or sets the width of the buffer area.\nReturns: The current width, in columns, of the buffer area.\nSystem.ArgumentOutOfRangeException: The value in a set operation is less than or equal to zero.  \n-or-  \nThe value in a set operation is greater than or equal to System.Int16.MaxValue .  \n-or-  \nThe value in a set operation is less than System.Console.WindowLeft + System.Console.WindowWidth .\nSystem.Security.SecurityException: The user does not have permission to perform this action.\nSystem.IO.IOException: An I/O error occurred."
     },
     {
       "displayText": "CancelKeyPress",
@@ -38,7 +38,7 @@
       "filterText": "CancelKeyPress",
       "sortText": "CancelKeyPress",
       "insertText": "CancelKeyPress",
-      "documentation": ""
+      "documentation": "Occurs when the System.ConsoleModifiers.Control modifier key (Ctrl) and either the System.ConsoleKey.C console key (C) or the Break key are pressed simultaneously (Ctrl+C or Ctrl+Break)."
     },
     {
       "displayText": "CapsLock",
@@ -46,7 +46,7 @@
       "filterText": "CapsLock",
       "sortText": "CapsLock",
       "insertText": "CapsLock",
-      "documentation": ""
+      "documentation": "Gets a value indicating whether the CAPS LOCK keyboard toggle is turned on or turned off.\nReturns: true if CAPS LOCK is turned on; false if CAPS LOCK is turned off."
     },
     {
       "displayText": "Clear",
@@ -54,7 +54,7 @@
       "filterText": "Clear",
       "sortText": "Clear",
       "insertText": "Clear",
-      "documentation": ""
+      "documentation": "Clears the console buffer and corresponding console window of display information.\nSystem.IO.IOException: An I/O error occurred."
     },
     {
       "displayText": "CursorLeft",
@@ -62,7 +62,7 @@
       "filterText": "CursorLeft",
       "sortText": "CursorLeft",
       "insertText": "CursorLeft",
-      "documentation": ""
+      "documentation": "Gets or sets the column position of the cursor within the buffer area.\nReturns: The current position, in columns, of the cursor.\nSystem.ArgumentOutOfRangeException: The value in a set operation is less than zero.  \n-or-  \nThe value in a set operation is greater than or equal to System.Console.BufferWidth .\nSystem.Security.SecurityException: The user does not have permission to perform this action.\nSystem.IO.IOException: An I/O error occurred."
     },
     {
       "displayText": "CursorSize",
@@ -70,7 +70,7 @@
       "filterText": "CursorSize",
       "sortText": "CursorSize",
       "insertText": "CursorSize",
-      "documentation": ""
+      "documentation": "Gets or sets the height of the cursor within a character cell.\nReturns: The size of the cursor expressed as a percentage of the height of a character cell. The property value ranges from 1 to 100.\nSystem.ArgumentOutOfRangeException: The value specified in a set operation is less than 1 or greater than 100.\nSystem.Security.SecurityException: The user does not have permission to perform this action.\nSystem.IO.IOException: An I/O error occurred."
     },
     {
       "displayText": "CursorTop",
@@ -78,7 +78,7 @@
       "filterText": "CursorTop",
       "sortText": "CursorTop",
       "insertText": "CursorTop",
-      "documentation": ""
+      "documentation": "Gets or sets the row position of the cursor within the buffer area.\nReturns: The current position, in rows, of the cursor.\nSystem.ArgumentOutOfRangeException: The value in a set operation is less than zero.  \n-or-  \nThe value in a set operation is greater than or equal to System.Console.BufferHeight .\nSystem.Security.SecurityException: The user does not have permission to perform this action.\nSystem.IO.IOException: An I/O error occurred."
     },
     {
       "displayText": "CursorVisible",
@@ -86,7 +86,7 @@
       "filterText": "CursorVisible",
       "sortText": "CursorVisible",
       "insertText": "CursorVisible",
-      "documentation": ""
+      "documentation": "Gets or sets a value indicating whether the cursor is visible.\nReturns: true if the cursor is visible; otherwise, false.\nSystem.Security.SecurityException: The user does not have permission to perform this action.\nSystem.IO.IOException: An I/O error occurred."
     },
     {
       "displayText": "Equals",
@@ -94,7 +94,7 @@
       "filterText": "Equals",
       "sortText": "Equals",
       "insertText": "Equals",
-      "documentation": ""
+      "documentation": "Determines whether the specified object instances are considered equal.\nobjA: The first object to compare.\nobjB: The second object to compare.\nReturns: true if the objects are considered equal; otherwise, false. If both objA objAand objB objBare null, the method returns true."
     },
     {
       "displayText": "Error",
@@ -102,7 +102,7 @@
       "filterText": "Error",
       "sortText": "Error",
       "insertText": "Error",
-      "documentation": ""
+      "documentation": "Gets the standard error output stream.\nReturns: A System.IO.TextWriter that represents the standard error output stream."
     },
     {
       "displayText": "ForegroundColor",
@@ -110,7 +110,7 @@
       "filterText": "ForegroundColor",
       "sortText": "ForegroundColor",
       "insertText": "ForegroundColor",
-      "documentation": ""
+      "documentation": "Gets or sets the foreground color of the console.\nReturns: A System.ConsoleColor that specifies the foreground color of the console; that is, the color of each character that is displayed. The default is gray.\nSystem.ArgumentException: The color specified in a set operation is not a valid member of System.ConsoleColor .\nSystem.Security.SecurityException: The user does not have permission to perform this action.\nSystem.IO.IOException: An I/O error occurred."
     },
     {
       "displayText": "In",
@@ -118,7 +118,7 @@
       "filterText": "In",
       "sortText": "In",
       "insertText": "In",
-      "documentation": ""
+      "documentation": "Gets the standard input stream.\nReturns: A System.IO.TextReader that represents the standard input stream."
     },
     {
       "displayText": "InputEncoding",
@@ -126,7 +126,7 @@
       "filterText": "InputEncoding",
       "sortText": "InputEncoding",
       "insertText": "InputEncoding",
-      "documentation": ""
+      "documentation": "Gets or sets the encoding the console uses to read input.\nReturns: The encoding used to read console input.\nSystem.ArgumentNullException: The property value in a set operation is null.\nSystem.IO.IOException: An error occurred during the execution of this operation.\nSystem.Security.SecurityException: Your application does not have permission to perform this operation."
     },
     {
       "displayText": "IsErrorRedirected",
@@ -134,7 +134,7 @@
       "filterText": "IsErrorRedirected",
       "sortText": "IsErrorRedirected",
       "insertText": "IsErrorRedirected",
-      "documentation": ""
+      "documentation": "Gets a value that indicates whether the error output stream has been redirected from the standard error stream.\nReturns: true if error output is redirected; otherwise, false."
     },
     {
       "displayText": "IsInputRedirected",
@@ -142,7 +142,7 @@
       "filterText": "IsInputRedirected",
       "sortText": "IsInputRedirected",
       "insertText": "IsInputRedirected",
-      "documentation": ""
+      "documentation": "Gets a value that indicates whether input has been redirected from the standard input stream.\nReturns: true if input is redirected; otherwise, false."
     },
     {
       "displayText": "IsOutputRedirected",
@@ -150,7 +150,7 @@
       "filterText": "IsOutputRedirected",
       "sortText": "IsOutputRedirected",
       "insertText": "IsOutputRedirected",
-      "documentation": ""
+      "documentation": "Gets a value that indicates whether output has been redirected from the standard output stream.\nReturns: true if output is redirected; otherwise, false."
     },
     {
       "displayText": "KeyAvailable",
@@ -158,7 +158,7 @@
       "filterText": "KeyAvailable",
       "sortText": "KeyAvailable",
       "insertText": "KeyAvailable",
-      "documentation": ""
+      "documentation": "Gets a value indicating whether a key press is available in the input stream.\nReturns: true if a key press is available; otherwise, false.\nSystem.IO.IOException: An I/O error occurred.\nSystem.InvalidOperationException: Standard input is redirected to a file instead of the keyboard."
     },
     {
       "displayText": "LargestWindowHeight",
@@ -166,7 +166,7 @@
       "filterText": "LargestWindowHeight",
       "sortText": "LargestWindowHeight",
       "insertText": "LargestWindowHeight",
-      "documentation": ""
+      "documentation": "Gets the largest possible number of console window rows, based on the current font and screen resolution.\nReturns: The height of the largest possible console window measured in rows."
     },
     {
       "displayText": "LargestWindowWidth",
@@ -174,7 +174,7 @@
       "filterText": "LargestWindowWidth",
       "sortText": "LargestWindowWidth",
       "insertText": "LargestWindowWidth",
-      "documentation": ""
+      "documentation": "Gets the largest possible number of console window columns, based on the current font and screen resolution.\nReturns: The width of the largest possible console window measured in columns."
     },
     {
       "displayText": "MoveBufferArea",
@@ -182,7 +182,7 @@
       "filterText": "MoveBufferArea",
       "sortText": "MoveBufferArea",
       "insertText": "MoveBufferArea",
-      "documentation": ""
+      "documentation": "Copies a specified source area of the screen buffer to a specified destination area.\nsourceLeft: The leftmost column of the source area.\nsourceTop: The topmost row of the source area.\nsourceWidth: The number of columns in the source area.\nsourceHeight: The number of rows in the source area.\ntargetLeft: The leftmost column of the destination area.\ntargetTop: The topmost row of the destination area.\nSystem.ArgumentOutOfRangeException: One or more of the parameters is less than zero.  \n-or-  \nsourceLeft sourceLeftor targetLeft targetLeftis greater than or equal to System.Console.BufferWidth .  \n-or-  \nsourceTop sourceTopor targetTop targetTopis greater than or equal to System.Console.BufferHeight .  \n-or-  \nsourceTop sourceTop+ sourceHeight sourceHeightis greater than or equal to System.Console.BufferHeight .  \n-or-  \nsourceLeft sourceLeft+ sourceWidth sourceWidthis greater than or equal to System.Console.BufferWidth .\nSystem.Security.SecurityException: The user does not have permission to perform this action.\nSystem.IO.IOException: An I/O error occurred."
     },
     {
       "displayText": "NumberLock",
@@ -190,7 +190,7 @@
       "filterText": "NumberLock",
       "sortText": "NumberLock",
       "insertText": "NumberLock",
-      "documentation": ""
+      "documentation": "Gets a value indicating whether the NUM LOCK keyboard toggle is turned on or turned off.\nReturns: true if NUM LOCK is turned on; false if NUM LOCK is turned off."
     },
     {
       "displayText": "OpenStandardError",
@@ -198,7 +198,7 @@
       "filterText": "OpenStandardError",
       "sortText": "OpenStandardError",
       "insertText": "OpenStandardError",
-      "documentation": ""
+      "documentation": "Acquires the standard error stream.\nReturns: The standard error stream."
     },
     {
       "displayText": "OpenStandardInput",
@@ -206,7 +206,7 @@
       "filterText": "OpenStandardInput",
       "sortText": "OpenStandardInput",
       "insertText": "OpenStandardInput",
-      "documentation": ""
+      "documentation": "Acquires the standard input stream.\nReturns: The standard input stream."
     },
     {
       "displayText": "OpenStandardOutput",
@@ -214,7 +214,7 @@
       "filterText": "OpenStandardOutput",
       "sortText": "OpenStandardOutput",
       "insertText": "OpenStandardOutput",
-      "documentation": ""
+      "documentation": "Acquires the standard output stream.\nReturns: The standard output stream."
     },
     {
       "displayText": "Out",
@@ -222,7 +222,7 @@
       "filterText": "Out",
       "sortText": "Out",
       "insertText": "Out",
-      "documentation": ""
+      "documentation": "Gets the standard output stream.\nReturns: A System.IO.TextWriter that represents the standard output stream."
     },
     {
       "displayText": "OutputEncoding",
@@ -230,7 +230,7 @@
       "filterText": "OutputEncoding",
       "sortText": "OutputEncoding",
       "insertText": "OutputEncoding",
-      "documentation": ""
+      "documentation": "Gets or sets the encoding the console uses to write output.\nReturns: The encoding used to write console output.\nSystem.ArgumentNullException: The property value in a set operation is null.\nSystem.IO.IOException: An error occurred during the execution of this operation.\nSystem.Security.SecurityException: Your application does not have permission to perform this operation."
     },
     {
       "displayText": "Read",
@@ -238,7 +238,7 @@
       "filterText": "Read",
       "sortText": "Read",
       "insertText": "Read",
-      "documentation": ""
+      "documentation": "Reads the next character from the standard input stream.\nReturns: The next character from the input stream, or negative one (-1) if there are currently no more characters to be read.\nSystem.IO.IOException: An I/O error occurred."
     },
     {
       "displayText": "ReadKey",
@@ -246,7 +246,7 @@
       "filterText": "ReadKey",
       "sortText": "ReadKey",
       "insertText": "ReadKey",
-      "documentation": ""
+      "documentation": "Obtains the next character or function key pressed by the user. The pressed key is displayed in the console window.\nReturns: An object that describes the System.ConsoleKey constant and Unicode character, if any, that correspond to the pressed console key. The System.ConsoleKeyInfo object also describes, in a bitwise combination of System.ConsoleModifiers values, whether one or more Shift, Alt, or Ctrl modifier keys was pressed simultaneously with the console key.\nSystem.InvalidOperationException: The System.Console.In property is redirected from some stream other than the console."
     },
     {
       "displayText": "ReadLine",
@@ -254,7 +254,7 @@
       "filterText": "ReadLine",
       "sortText": "ReadLine",
       "insertText": "ReadLine",
-      "documentation": ""
+      "documentation": "Reads the next line of characters from the standard input stream.\nReturns: The next line of characters from the input stream, or null if no more lines are available.\nSystem.IO.IOException: An I/O error occurred.\nSystem.OutOfMemoryException: There is insufficient memory to allocate a buffer for the returned string.\nSystem.ArgumentOutOfRangeException: The number of characters in the next line of characters is greater than System.Int32.MaxValue ."
     },
     {
       "displayText": "ReferenceEquals",
@@ -262,7 +262,7 @@
       "filterText": "ReferenceEquals",
       "sortText": "ReferenceEquals",
       "insertText": "ReferenceEquals",
-      "documentation": ""
+      "documentation": "Determines whether the specified System.Object instances are the same instance.\nobjA: The first object to compare.\nobjB: The second object  to compare.\nReturns: true if objA objAis the same instance as objB objBor if both are null; otherwise, false."
     },
     {
       "displayText": "ResetColor",
@@ -270,7 +270,7 @@
       "filterText": "ResetColor",
       "sortText": "ResetColor",
       "insertText": "ResetColor",
-      "documentation": ""
+      "documentation": "Sets the foreground and background console colors to their defaults.\nSystem.Security.SecurityException: The user does not have permission to perform this action.\nSystem.IO.IOException: An I/O error occurred."
     },
     {
       "displayText": "SetBufferSize",
@@ -278,7 +278,7 @@
       "filterText": "SetBufferSize",
       "sortText": "SetBufferSize",
       "insertText": "SetBufferSize",
-      "documentation": ""
+      "documentation": "Sets the height and width of the screen buffer area to the specified values.\nwidth: The width of the buffer area measured in columns.\nheight: The height of the buffer area measured in rows.\nSystem.ArgumentOutOfRangeException: height heightor width widthis less than or equal to zero.  \n-or-  \nheight heightor width widthis greater than or equal to System.Int16.MaxValue .  \n-or-  \nwidth widthis less than System.Console.WindowLeft + System.Console.WindowWidth .  \n-or-  \nheight heightis less than System.Console.WindowTop + System.Console.WindowHeight .\nSystem.Security.SecurityException: The user does not have permission to perform this action.\nSystem.IO.IOException: An I/O error occurred."
     },
     {
       "displayText": "SetCursorPosition",
@@ -286,7 +286,7 @@
       "filterText": "SetCursorPosition",
       "sortText": "SetCursorPosition",
       "insertText": "SetCursorPosition",
-      "documentation": ""
+      "documentation": "Sets the position of the cursor.\nleft: The column position of the cursor. Columns are numbered from left to right starting at 0.\ntop: The row position of the cursor. Rows are numbered from top to bottom starting at 0.\nSystem.ArgumentOutOfRangeException: left leftor top topis less than zero.  \n-or-  \nleft leftis greater than or equal to System.Console.BufferWidth .  \n-or-  \ntop topis greater than or equal to System.Console.BufferHeight .\nSystem.Security.SecurityException: The user does not have permission to perform this action.\nSystem.IO.IOException: An I/O error occurred."
     },
     {
       "displayText": "SetError",
@@ -294,7 +294,7 @@
       "filterText": "SetError",
       "sortText": "SetError",
       "insertText": "SetError",
-      "documentation": ""
+      "documentation": "Sets the System.Console.Error property to the specified System.IO.TextWriter object.\nnewError: A stream that is the new standard error output.\nSystem.ArgumentNullException: newError newErroris null.\nSystem.Security.SecurityException: The caller does not have the required permission."
     },
     {
       "displayText": "SetIn",
@@ -302,7 +302,7 @@
       "filterText": "SetIn",
       "sortText": "SetIn",
       "insertText": "SetIn",
-      "documentation": ""
+      "documentation": "Sets the System.Console.In property to the specified System.IO.TextReader object.\nnewIn: A stream that is the new standard input.\nSystem.ArgumentNullException: newIn newInis null.\nSystem.Security.SecurityException: The caller does not have the required permission."
     },
     {
       "displayText": "SetOut",
@@ -310,7 +310,7 @@
       "filterText": "SetOut",
       "sortText": "SetOut",
       "insertText": "SetOut",
-      "documentation": ""
+      "documentation": "Sets the System.Console.Out property to the specified System.IO.TextWriter object.\nnewOut: A stream that is the new standard output.\nSystem.ArgumentNullException: newOut newOutis null.\nSystem.Security.SecurityException: The caller does not have the required permission."
     },
     {
       "displayText": "SetWindowPosition",
@@ -318,7 +318,7 @@
       "filterText": "SetWindowPosition",
       "sortText": "SetWindowPosition",
       "insertText": "SetWindowPosition",
-      "documentation": ""
+      "documentation": "Sets the position of the console window relative to the screen buffer.\nleft: The column position of the upper left  corner of the console window.\ntop: The row position of the upper left corner of the console window.\nSystem.ArgumentOutOfRangeException: left leftor top topis less than zero.  \n-or-  \nleft left+ System.Console.WindowWidth is greater than System.Console.BufferWidth .  \n-or-  \ntop top+ System.Console.WindowHeight is greater than System.Console.BufferHeight .\nSystem.Security.SecurityException: The user does not have permission to perform this action.\nSystem.IO.IOException: An I/O error occurred."
     },
     {
       "displayText": "SetWindowSize",
@@ -326,7 +326,7 @@
       "filterText": "SetWindowSize",
       "sortText": "SetWindowSize",
       "insertText": "SetWindowSize",
-      "documentation": ""
+      "documentation": "Sets the height and width of the console window to the specified values.\nwidth: The width of the console window measured in columns.\nheight: The height of the console window measured in rows.\nSystem.ArgumentOutOfRangeException: width widthor height heightis less than or equal to zero.  \n-or-  \nwidth widthplus System.Console.WindowLeft or height heightplus System.Console.WindowTop is greater than or equal to System.Int16.MaxValue .  \n-or-  \nwidth widthor height heightis greater than the largest possible window width or height for the current screen resolution and console font.\nSystem.Security.SecurityException: The user does not have permission to perform this action.\nSystem.IO.IOException: An I/O error occurred."
     },
     {
       "displayText": "Title",
@@ -334,7 +334,7 @@
       "filterText": "Title",
       "sortText": "Title",
       "insertText": "Title",
-      "documentation": ""
+      "documentation": "Gets or sets the title to display in the console title bar.\nReturns: The string to be displayed in the title bar of the console. The maximum length of the title string is 24500 characters.\nSystem.InvalidOperationException: In a get operation, the retrieved title is longer than 24500 characters.\nSystem.ArgumentOutOfRangeException: In a set operation, the specified title is longer than 24500 characters.\nSystem.ArgumentNullException: In a set operation, the specified title is null.\nSystem.IO.IOException: An I/O error occurred."
     },
     {
       "displayText": "TreatControlCAsInput",
@@ -342,7 +342,7 @@
       "filterText": "TreatControlCAsInput",
       "sortText": "TreatControlCAsInput",
       "insertText": "TreatControlCAsInput",
-      "documentation": ""
+      "documentation": "Gets or sets a value indicating whether the combination of the System.ConsoleModifiers.Control modifier key and System.ConsoleKey.C console key (Ctrl+C) is treated as ordinary input or as an interruption that is handled by the operating system.\nReturns: true if Ctrl+C is treated as ordinary input; otherwise, false.\nSystem.IO.IOException: Unable to get or set the input mode of the console input buffer."
     },
     {
       "displayText": "WindowHeight",
@@ -350,7 +350,7 @@
       "filterText": "WindowHeight",
       "sortText": "WindowHeight",
       "insertText": "WindowHeight",
-      "documentation": ""
+      "documentation": "Gets or sets the height of the console window area.\nReturns: The height of the console window measured in rows.\nSystem.ArgumentOutOfRangeException: The value of the System.Console.WindowWidth property or the value of the System.Console.WindowHeight property is less than or equal to 0.  \n-or-  \nThe value of the System.Console.WindowHeight property plus the value of the System.Console.WindowTop property is greater than or equal to System.Int16.MaxValue .  \n-or-  \nThe value of the System.Console.WindowWidth property or the value of the System.Console.WindowHeight property is greater than the largest possible window width or height for the current screen resolution and console font.\nSystem.IO.IOException: Error reading or writing information."
     },
     {
       "displayText": "WindowLeft",
@@ -358,7 +358,7 @@
       "filterText": "WindowLeft",
       "sortText": "WindowLeft",
       "insertText": "WindowLeft",
-      "documentation": ""
+      "documentation": "Gets or sets the leftmost position of the console window area relative to the screen buffer.\nReturns: The leftmost console window position measured in columns.\nSystem.ArgumentOutOfRangeException: In a set operation, the value to be assigned is less than zero.  \n-or-  \nAs a result of the assignment, System.Console.WindowLeft plus System.Console.WindowWidth would exceed System.Console.BufferWidth .\nSystem.IO.IOException: Error reading or writing information."
     },
     {
       "displayText": "WindowTop",
@@ -366,7 +366,7 @@
       "filterText": "WindowTop",
       "sortText": "WindowTop",
       "insertText": "WindowTop",
-      "documentation": ""
+      "documentation": "Gets or sets the top position of the console window area relative to the screen buffer.\nReturns: The uppermost console window position measured in rows.\nSystem.ArgumentOutOfRangeException: In a set operation, the value to be assigned is less than zero.  \n-or-  \nAs a result of the assignment, System.Console.WindowTop plus System.Console.WindowHeight would exceed System.Console.BufferHeight .\nSystem.IO.IOException: Error reading or writing information."
     },
     {
       "displayText": "WindowWidth",
@@ -374,7 +374,7 @@
       "filterText": "WindowWidth",
       "sortText": "WindowWidth",
       "insertText": "WindowWidth",
-      "documentation": ""
+      "documentation": "Gets or sets the width of the console window.\nReturns: The width of the console window measured in columns.\nSystem.ArgumentOutOfRangeException: The value of the System.Console.WindowWidth property or the value of the System.Console.WindowHeight property is less than or equal to 0.  \n-or-  \nThe value of the System.Console.WindowHeight property plus the value of the System.Console.WindowTop property is greater than or equal to System.Int16.MaxValue .  \n-or-  \nThe value of the System.Console.WindowWidth property or the value of the System.Console.WindowHeight property is greater than the largest possible window width or height for the current screen resolution and console font.\nSystem.IO.IOException: Error reading or writing information."
     },
     {
       "displayText": "Write",
@@ -382,7 +382,7 @@
       "filterText": "Write",
       "sortText": "Write",
       "insertText": "Write",
-      "documentation": ""
+      "documentation": "Writes the text representation of the specified Boolean value to the standard output stream.\nvalue: The value to write.\nSystem.IO.IOException: An I/O error occurred."
     },
     {
       "displayText": "WriteLine",
@@ -390,7 +390,7 @@
       "filterText": "WriteLine",
       "sortText": "WriteLine",
       "insertText": "WriteLine",
-      "documentation": ""
+      "documentation": "Writes the current line terminator to the standard output stream.\nSystem.IO.IOException: An I/O error occurred."
     }
   ]
 }
