@@ -114,6 +114,9 @@ namespace MyUnitTestNamespace
                 "  MyUnitTestNamespace*(*s)",
                 "    MyUnitTestClass*(*s)",
                 "      failing*(*s)",
+                "        System.Exception : oops!",
+                "        Stack trace:",
+                "           at MyUnitTestNamespace.MyUnitTestClass.failing()",
                 "",
                 "SUMMARY:",
                 "Passed: 1, Failed: 1, Not run: 0"

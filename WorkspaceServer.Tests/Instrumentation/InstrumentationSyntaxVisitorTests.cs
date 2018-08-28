@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Microsoft.CodeAnalysis;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Text;
 using WorkspaceServer.Servers.Roslyn.Instrumentation;
 using Xunit;
@@ -9,30 +9,33 @@ namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
 {
     public class InstrumentationSyntaxVisitorTests
     {
-        private AugmentationMap GetAugmentationMap(string source, IEnumerable<TextSpan> regions = null)
+        private async Task<AugmentationMap> GetAugmentationMapAsync(string source, IEnumerable<TextSpan> regions = null)
         {
             var document = Sources.GetDocument(source, true);
+
+            var semanticModel = await document.GetSemanticModelAsync();
+
             if (regions == null)
             {
-                return new InstrumentationSyntaxVisitor(document).Augmentations;
+                return new InstrumentationSyntaxVisitor(document, semanticModel).Augmentations;
             }
             else
             {
-                return new InstrumentationSyntaxVisitor(document, regions).Augmentations;
+                return new InstrumentationSyntaxVisitor(document, semanticModel, regions).Augmentations;
             }
         }
 
         [Fact]
-        public void Instrumentation_Is_Not_Produced_When_There_Are_No_Statements()
+        public async Task Instrumentation_Is_Not_Produced_When_There_Are_No_Statements()
         {
-            var augmentations = GetAugmentationMap(Sources.empty).Data;
+            var augmentations = (await GetAugmentationMapAsync(Sources.empty)).Data;
             Assert.Empty(augmentations);
         }
 
         [Fact]
-        public void Instrumentation_Is_Empty_When_There_Is_No_State()
+        public async Task Instrumentation_Is_Empty_When_There_Is_No_State()
         {
-            var augmentations = GetAugmentationMap(Sources.simple).Data.Values.ToList();
+            var augmentations = (await GetAugmentationMapAsync(Sources.simple)).Data.Values.ToList();
 
             //assert
             Assert.Single(augmentations);
@@ -42,10 +45,10 @@ namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
         }
 
         [Fact]
-        public void Single_Statement_Is_Instrumented_In_Single_Statement_Program()
+        public async Task Single_Statement_Is_Instrumented_In_Single_Statement_Program()
         {
             //act
-            var augmentations = GetAugmentationMap(Sources.simple).Data.Values.ToList();
+            var augmentations = (await GetAugmentationMapAsync(Sources.simple)).Data.Values.ToList();
 
             //assert
             Assert.Single(augmentations);
@@ -53,10 +56,10 @@ namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
         }
 
         [Fact]
-        public void Multiple_Statements_Are_Instrumented_In_Multiple_Statement_Program()
+        public async Task Multiple_Statements_Are_Instrumented_In_Multiple_Statement_Program()
         {
             //act
-            var augmentations = GetAugmentationMap(Sources.withLocalsAndParams).Data.Values.ToList();
+            var augmentations = (await GetAugmentationMapAsync(Sources.withLocalsAndParams)).Data.Values.ToList();
 
             //assert
             Assert.Equal(2, augmentations.Count);
@@ -64,15 +67,14 @@ namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
             Assert.Equal(@"Console.WriteLine(""Entry Point"");", augmentations[1].AssociatedStatement.ToString());
         }
 
-
         [Fact]
-        public void Only_Requested_Statements_Are_Instrumented_When_Regions_Are_Supplied()
+        public async Task Only_Requested_Statements_Are_Instrumented_When_Regions_Are_Supplied()
         {
             //arrange
             var regions = new List<TextSpan>() { new TextSpan(169, 84) };
 
             //act
-            var augmentations = GetAugmentationMap(Sources.withMultipleMethodsAndComplexLayout, regions).Data.Values.ToList();
+            var augmentations = (await GetAugmentationMapAsync(Sources.withMultipleMethodsAndComplexLayout, regions)).Data.Values.ToList();
 
             //assert
             Assert.Equal(2, augmentations.Count);
@@ -81,13 +83,13 @@ namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
         }
 
         [Fact]
-        public void Only_Requested_Statements_Are_Instrumented_When_Non_Contiguous_Regions_Are_Supplied()
+        public async Task Only_Requested_Statements_Are_Instrumented_When_Non_Contiguous_Regions_Are_Supplied()
         {
             //arrange
             var regions = new List<TextSpan>() { new TextSpan(156, 35), new TextSpan(625, 32) };
 
             //act
-            var augmentations = GetAugmentationMap(Sources.withMultipleMethodsAndComplexLayout, regions).Data.Values.ToList();
+            var augmentations = (await GetAugmentationMapAsync(Sources.withMultipleMethodsAndComplexLayout, regions)).Data.Values.ToList();
 
             //assert
             Assert.Equal(2, augmentations.Count);
@@ -96,10 +98,10 @@ namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
         }
 
         [Fact]
-        public void Locals_Are_Captured()
+        public async Task Locals_Are_Captured()
         {
             //act
-            var augmentations = GetAugmentationMap(Sources.withLocalsAndParams).Data.Values.ToList();
+            var augmentations = (await GetAugmentationMapAsync(Sources.withLocalsAndParams)).Data.Values.ToList();
 
             //assert
             Assert.Single(augmentations[1].Locals);
@@ -107,10 +109,10 @@ namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
         }
 
         [Fact]
-        public void Locals_Are_Captured_After_Being_Assigned()
+        public async Task Locals_Are_Captured_After_Being_Assigned()
         {
             //act
-            var augmentations = GetAugmentationMap(Sources.withNonAssignedLocals).Data.Values.ToList();
+            var augmentations = (await GetAugmentationMapAsync(Sources.withNonAssignedLocals)).Data.Values.ToList();
 
             //assert
             Assert.Single(augmentations[3].Locals);
@@ -119,10 +121,10 @@ namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
         }
 
         [Fact]
-        public void Locals_Are_Not_Captured_Before_Being_Assigned()
+        public async Task Locals_Are_Not_Captured_Before_Being_Assigned()
         {
             //act
-            var augmentations = GetAugmentationMap(Sources.withNonAssignedLocals).Data.Values.ToList();
+            var augmentations = (await GetAugmentationMapAsync(Sources.withNonAssignedLocals)).Data.Values.ToList();
 
             //assert
             Assert.Empty(augmentations[1].Locals);
@@ -131,23 +133,22 @@ namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
         }
 
         [Fact]
-        public void Locals_Are_Captured_Based_On_Scope()
+        public async Task Locals_Are_Captured_Based_On_Scope()
         {
             //act
-            var augmentations = GetAugmentationMap(Sources.withMultipleMethodsAndComplexLayout).Data.Values.ToList();
+            var augmentations = (await GetAugmentationMapAsync(Sources.withMultipleMethodsAndComplexLayout)).Data.Values.ToList();
 
             //assert
             Assert.NotEmpty(augmentations[6].Locals);
             Assert.Contains(augmentations[6].Locals, l => l.Name == "j");
             Assert.DoesNotContain(augmentations[6].Locals, l => l.Name == "k");
-
         }
 
         [Fact]
-        public void RangeVariables_Are_Captured_As_Locals_Inside_Loops()
+        public async Task RangeVariables_Are_Captured_As_Locals_Inside_Loops()
         {
             //act
-            var augmentations = GetAugmentationMap(Sources.withMultipleMethodsAndComplexLayout).Data.Values.ToList();
+            var augmentations = (await GetAugmentationMapAsync(Sources.withMultipleMethodsAndComplexLayout)).Data.Values.ToList();
 
             //assert
             Assert.NotEmpty(augmentations[7].Locals);
@@ -156,12 +157,11 @@ namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
             Assert.DoesNotContain(augmentations[6].Locals, l => l.Name == "i");
         }
 
-
         [Fact]
-        public void ForEachVariables_Are_Captured_As_Locals_Inside_Loops()
+        public async Task ForEachVariables_Are_Captured_As_Locals_Inside_Loops()
         {
             //act
-            var augmentations = GetAugmentationMap(Sources.withMultipleMethodsAndComplexLayout).Data.Values.ToList();
+            var augmentations = (await GetAugmentationMapAsync(Sources.withMultipleMethodsAndComplexLayout)).Data.Values.ToList();
 
             //assert
             Assert.NotEmpty(augmentations[8].Locals);
@@ -170,11 +170,10 @@ namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
             Assert.DoesNotContain(augmentations[7].Locals, l => l.Name == "number");
         }
 
-
         [Fact]
-        public void Parameters_Are_Captured()
+        public async Task Parameters_Are_Captured()
         {
-            var augmentations = GetAugmentationMap(Sources.withLocalsAndParams).Data.Values.ToList();
+            var augmentations = (await GetAugmentationMapAsync(Sources.withLocalsAndParams)).Data.Values.ToList();
 
             //assert
             Assert.Single(augmentations[0].Parameters);
@@ -182,11 +181,11 @@ namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
         }
 
         [Fact]
-        public void Static_Fields_Are_Captured_In_Static_Methods()
+        public async Task Static_Fields_Are_Captured_In_Static_Methods()
         {
             //arrange
             var document = Sources.GetDocument(Sources.withStaticAndNonStaticField, true);
-            InstrumentationSyntaxVisitor visitor = new InstrumentationSyntaxVisitor(document);
+            InstrumentationSyntaxVisitor visitor = new InstrumentationSyntaxVisitor(document, await document.GetSemanticModelAsync());
 
             //act
             var augmentations = visitor.Augmentations.Data.Values.ToList();
@@ -197,11 +196,10 @@ namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
         }
 
         [Fact]
-        public void Static_Fields_Are_Captured_In_Instance_Methods()
+        public async Task Static_Fields_Are_Captured_In_Instance_Methods()
         {
             //arrange
-            var augmentations = GetAugmentationMap(Sources.withStaticAndNonStaticField).Data.Values.ToList();
-
+            var augmentations = (await GetAugmentationMapAsync(Sources.withStaticAndNonStaticField)).Data.Values.ToList();
 
             //assert
             Assert.NotEmpty(augmentations[1].Fields);
@@ -209,10 +207,10 @@ namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
         }
 
         [Fact]
-        public void Instance_Fields_Are_Captured_In_Instance_Methods()
+        public async Task Instance_Fields_Are_Captured_In_Instance_Methods()
         {
             //arrange
-            var augmentations = GetAugmentationMap(Sources.withStaticAndNonStaticField).Data.Values.ToList();
+            var augmentations = (await GetAugmentationMapAsync(Sources.withStaticAndNonStaticField)).Data.Values.ToList();
 
             //assert
             Assert.NotEmpty(augmentations[1].Fields);
@@ -220,10 +218,10 @@ namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
         }
 
         [Fact]
-        public void Instance_Fields_Are_Not_Captured_In_Static_Methods()
+        public async Task Instance_Fields_Are_Not_Captured_In_Static_Methods()
         {
             //arrange
-            var augmentations = GetAugmentationMap(Sources.withStaticAndNonStaticField).Data.Values.ToList();
+            var augmentations = (await GetAugmentationMapAsync(Sources.withStaticAndNonStaticField)).Data.Values.ToList();
 
             //assert
             Assert.Single(augmentations[0].Fields);

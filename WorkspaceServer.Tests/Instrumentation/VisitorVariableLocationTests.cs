@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using Xunit;
@@ -35,17 +36,17 @@ namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
             return convertedKeyValues.ToDictionary(x => x.Key, x => x.Value);
         }
 
-        private void FindAndValidateVariables(string markup)
+        private async Task FindAndValidateVariablesAsync(string markup)
         {
-            WorkspaceServer.Tests.MarkupTestFile.GetNamedSpans(
+            MarkupTestFile.GetNamedSpans(
                 markup,
                 out var text,
                 out IDictionary<string, ImmutableArray<TextSpan>> spans);
 
             var document = Sources.GetDocument(text);
-            var fileLineLocationSpans = ConvertSpans(spans, document.GetTextAsync().Result);
+            var fileLineLocationSpans = ConvertSpans(spans, await document.GetTextAsync());
 
-            var visitor = new InstrumentationSyntaxVisitor(document);
+            var visitor = new InstrumentationSyntaxVisitor(document, await document.GetSemanticModelAsync());
             var locations = visitor.VariableLocations.Data.ToDictionary(
                 key => key.Key.Name,
                 values => values.Value.Select(location => location.ToLinePositionSpan()));
@@ -59,9 +60,9 @@ namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
         }
 
         [Fact]
-        public void Pattern_Matching_Variables_Should_Be_Recorded()
+        public async Task Pattern_Matching_Variables_Should_Be_Recorded()
         {
-            FindAndValidateVariables(@"
+            await FindAndValidateVariablesAsync(@"
 using System;
 namespace RoslynRecorder
 {
@@ -81,9 +82,9 @@ namespace RoslynRecorder
         }
 
         [Fact]
-        public void Dynamic_Variable_Should_Be_Recorded()
+        public async Task Dynamic_Variable_Should_Be_Recorded()
         {
-            FindAndValidateVariables(@"
+            await FindAndValidateVariablesAsync(@"
 
 using System;
 namespace RoslynRecorder
@@ -100,9 +101,9 @@ namespace RoslynRecorder
 ");
         }
         [Fact]
-        public void Property_Usages_Should_Be_Recorded()
+        public async Task Property_Usages_Should_Be_Recorded()
         {
-            FindAndValidateVariables(@"
+            await FindAndValidateVariablesAsync(@"
 using System;
 
 namespace ConsoleApp1
@@ -128,9 +129,9 @@ namespace ConsoleApp1
         }
 
         [Fact]
-        public void Field_Usages_Should_Be_Recorded()
+        public async Task Field_Usages_Should_Be_Recorded()
         {
-            FindAndValidateVariables(@"
+            await FindAndValidateVariablesAsync(@"
 using System;
 
 namespace ConsoleApp1
@@ -156,9 +157,9 @@ namespace ConsoleApp1
         }
 
         [Fact]
-        public void Out_Variable_Should_Be_Recorded()
+        public async Task Out_Variable_Should_Be_Recorded()
         {
-            FindAndValidateVariables(@"
+            await FindAndValidateVariablesAsync(@"
 using System;
 
 namespace ConsoleApp1
@@ -183,9 +184,9 @@ namespace ConsoleApp1
         }
 
         [Fact]
-        public void Variable_In_Simple_Lambda_Function_Should_Be_Recorded()
+        public async Task Variable_In_Simple_Lambda_Function_Should_Be_Recorded()
         {
-            FindAndValidateVariables(@"
+            await FindAndValidateVariablesAsync(@"
 using System;
 using System.Linq;
 
@@ -206,9 +207,9 @@ namespace ConsoleApp1
         }
 
         [Fact]
-        public void Variable_In_Parens_Lambda_Function_Should_Be_Recorded()
+        public async Task Variable_In_Parens_Lambda_Function_Should_Be_Recorded()
         {
-            FindAndValidateVariables(@"
+            await FindAndValidateVariablesAsync(@"
 using System;
 using System.Linq;
 
@@ -231,9 +232,9 @@ namespace ConsoleApp1
         }
 
         [Fact]
-        public void For_Loop_Variables_Should_Be_Recorded()
+        public async Task For_Loop_Variables_Should_Be_Recorded()
         {
-            FindAndValidateVariables(@"
+            await FindAndValidateVariablesAsync(@"
 using System;
 using System.Linq;
 
@@ -255,9 +256,9 @@ namespace ConsoleApp1
         }
 
         [Fact]
-        public void ForEach_Loop_Variables_Should_Be_Recorded()
+        public async Task ForEach_Loop_Variables_Should_Be_Recorded()
         {
-            FindAndValidateVariables(@"
+            await FindAndValidateVariablesAsync(@"
 using System;
 using System.Linq;
 

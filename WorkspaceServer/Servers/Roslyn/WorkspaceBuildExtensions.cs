@@ -57,7 +57,8 @@ namespace WorkspaceServer.Servers.Roslyn
             {
                 var replacementRegions = regions?.Where(r => tree.FilePath.EndsWith(r.FileToInstrument)).FirstOrDefault()?.InstrumentationRegions;
 
-                var visitor = new InstrumentationSyntaxVisitor(solution.GetDocument(tree), replacementRegions);
+                var subdocument = solution.GetDocument(tree);
+                var visitor = new InstrumentationSyntaxVisitor(subdocument, await subdocument.GetSemanticModelAsync(), replacementRegions);
                 var linesWithInstrumentation = visitor.Augmentations.Data.Keys;
 
                 var activeViewport = viewports.DefaultIfEmpty(null).First();
