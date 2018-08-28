@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using WorkspaceServer.Models.Execution;
 
 namespace WorkspaceServer.Models
@@ -11,19 +10,19 @@ namespace WorkspaceServer.Models
 
         public HttpRequest HttpRequest { get; }
 
-        public string ActiveBufferId { get; }
+        public BufferId ActiveBufferId { get; }
 
         public WorkspaceRequest(
             Workspace workspace,
+            BufferId activeBufferId = null,
             HttpRequest httpRequest = null,
-            string activeBufferId = null,
             int? position = null)
         {
             Workspace = workspace ?? throw new ArgumentNullException(nameof(workspace));
 
             HttpRequest = httpRequest;
 
-            if (!string.IsNullOrWhiteSpace(activeBufferId))
+            if (activeBufferId != null)
             {
                 ActiveBufferId = activeBufferId;
             }

@@ -160,7 +160,7 @@ namespace RoslynRecorder
             MarkupTestFile.GetNamedSpans(text, out var code, out var spans);
             var workspace = new Workspace(files: new[] { new Workspace.File("testFile.cs", code) });
             var viewports = new BufferInliningTransformer().ExtractViewPorts(workspace);
-            var activeViewport = InstrumentationLineMapper.FilterActiveViewport(viewports, "testFile.cs@test").First();
+            var activeViewport = InstrumentationLineMapper.FilterActiveViewport(viewports, BufferId.Parse("testFile.cs@test")).First();
             activeViewport.Region.Start.Should().Be(spans["regionStart"].First().End);
             activeViewport.Region.End.Should().Be(spans["regionEnd"].First().Start);
         }
@@ -171,7 +171,7 @@ namespace RoslynRecorder
             var text = CodeManipulation.EnforceLF(Sources.simple);
             var workspace = new Workspace(files: new[] { new Workspace.File("testFile.cs", text) });
             var viewports = new BufferInliningTransformer().ExtractViewPorts(workspace);
-            var activeViewport = InstrumentationLineMapper.FilterActiveViewport(viewports, "testFile.cs@test");
+            var activeViewport = InstrumentationLineMapper.FilterActiveViewport(viewports, BufferId.Parse("testFile.cs@test"));
             activeViewport.Should().BeEmpty();
         }
     }

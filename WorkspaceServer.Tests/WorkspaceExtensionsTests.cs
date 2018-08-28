@@ -5,7 +5,7 @@ using Xunit;
 
 namespace WorkspaceServer.Tests
 {
-    public class WorkspaceTests
+    public class WorkspaceExtensionsTests
     {
         [Fact]
         public void When_there_is_only_one_buffer_and_it_has_no_id_then_GetAbsolutePosition_returns_its_position
@@ -15,7 +15,7 @@ namespace WorkspaceServer.Tests
                 buffers:
                 new[]
                 {
-                    new Workspace.Buffer("", "content", 123)
+                    new Workspace.Buffer(BufferId.Parse(""), "content", 123)
                 });
 
             workspace.GetAbsolutePositionForGetBufferWithSpecifiedIdOrSingleBufferIfThereIsOnlyOne().Should().Be(123);
@@ -29,27 +29,27 @@ namespace WorkspaceServer.Tests
                 buffers:
                 new[]
                 {
-                    new Workspace.Buffer("nonexistent.cs", "content", 123)
+                    new Workspace.Buffer(BufferId.Parse("nonexistent.cs"), "content", 123)
                 });
 
             workspace.GetAbsolutePositionForGetBufferWithSpecifiedIdOrSingleBufferIfThereIsOnlyOne().Should().Be(123);
         }
 
         [Fact]
-        public void When_buffer_id_is_empty_string_and_there_is_a_file_with_empty_string_for_id_then_GetFileFromBufferId_returns_it()
+        public void When_buffer_id_is_empty_and_there_is_a_file_with_empty_string_for_id_then_GetFileFromBufferId_returns_it()
         {
             var workspace = new Workspace(
                 buffers:
                 new[]
                 {
-                    new Workspace.Buffer("", "content", 123)
+                    new Workspace.Buffer(BufferId.Parse(""), "content", 123)
                 },
                 files: new[]
                 {
                     new Workspace.File("", "content")
                 });
 
-            workspace.GetFileFromBufferId("").Should().NotBeNull();
+            workspace.GetFileFromBufferId(BufferId.Empty).Should().NotBeNull();
         }
     }
 }

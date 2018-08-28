@@ -85,10 +85,9 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
                 input.EndColumn
             );
 
-        public static IEnumerable<Viewport> FilterActiveViewport(IEnumerable<Viewport> viewports, string activeBufferId)
+        public static IEnumerable<Viewport> FilterActiveViewport(IEnumerable<Viewport> viewports, BufferId activeBufferId)
         {
-            var activeFile = activeBufferId.Split('@').First();
-            return viewports.Where(viewport => viewport.Destination.Name == activeFile && viewport.Name == activeBufferId);
+            return viewports.Where(viewport => viewport.Destination.Name == activeBufferId.FileName && viewport.Name == activeBufferId.ToString());
         }
     }
 }

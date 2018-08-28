@@ -10,7 +10,7 @@ ENV TRYDOTNET_WORKSPACES_PATH=/workspaces
 RUN apk update
 RUN apk add xmlstarlet
 RUN apk add shadow
-RUN dotnet tool install t-rex --tool-path $DOTNET_TOOLS
+RUN dotnet tool install -g t-rex
 
 # set up the working directory where the Agent ASP.NET app runs
 RUN mkdir -p /app
@@ -19,7 +19,6 @@ RUN useradd -r --gid app_group --home /app --shell /sbin/nologin --comment "app 
 COPY . ./
 
 RUN chown -R app_user:app_group /app
-RUN chown -R app_user:app_group /dependencies/.dotnet/tools
 RUN chown -R app_user:app_group /dependencies/.nuget/packages
 RUN chown -R app_user:app_group /workspaces
 

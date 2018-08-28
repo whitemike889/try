@@ -25,7 +25,7 @@ namespace WorkspaceServer.Tests
 
         public void Dispose() => _disposables.Dispose();
 
-        [Fact (Skip = "temporary to test CI tests")]
+        [Fact]
         public async Task Run_executes_unit_tests_and_prints_test_results_to_output()
         {
             var (runner, workspace) = await GetRunnerAndWorkspace();
@@ -52,10 +52,9 @@ namespace WorkspaceServer.Tests
             );
         }
 
-        [Fact(Skip = "wip")]
+        [Fact]
         public async Task Subsequent_runs_update_test_output()
         {
-            // FIX: (Subsequent_runs_update_test_output) enable this test
             var (runner, workspace) = await GetRunnerAndWorkspace();
 
             var workspaceModel = Workspace.FromDirectory(
@@ -69,35 +68,59 @@ namespace WorkspaceServer.Tests
 using System; 
 using Xunit;
 
-public class Tests 
+namespace MyUnitTestNamespace
 {
+    public class MyUnitTestClass 
+    {
 #region facts
-    [Fact] public void passing() {  }
 #endregion
-
+    }
 }")
-                             .ReplaceBuffer(
-                                 "UnitTest1.cs",
-                                 "");
+                             .RemoveBuffer("UnitTest1.cs")
+                             .AddBuffer("UnitTest1.cs@facts", "[Fact] public void passing() {  }");
 
-            var runResult = await runner.Run(new WorkspaceRequest(workspaceModel));
+            var runResult1 = await runner.Run(new WorkspaceRequest(workspaceModel));
 
-            Log.Info("Output: {output}", runResult.Output);
+            Log.Info("Output1: {output}", runResult1.Output);
 
-            runResult.Output.ShouldMatch(
+            runResult1.Output.ShouldMatch(
                 "PASSED*(*s)",
-                "  tests*(*s)",
-                "    UnitTest1*(*s)",
-                "      Test1*(*s)",
+                "  MyUnitTestNamespace*(*s)",
+                "    MyUnitTestClass*(*s)",
+                "      passing*(*s)",
+                "",
                 "SUMMARY:",
                 "Passed: 1, Failed: 0, Not run: 0"
             );
 
-            // TODO (Subsequent_runs_update_test_output) write test
-            throw new NotImplementedException("Test Subsequent_runs_update_test_output is not written yet.");
+            workspaceModel = workspaceModel.ReplaceBuffer(
+                id: "UnitTest1.cs@facts",
+                text: @"
+[Fact] public void still_passing() {  } 
+[Fact] public void failing() => throw new Exception(""oops!"");
+");
+
+            var runResult2 = await runner.Run(new WorkspaceRequest(workspaceModel));
+
+            Log.Info("Output2: {output}", runResult2.Output);
+
+            runResult2.Output.ShouldMatch(
+                "PASSED*(*s)",
+                "  MyUnitTestNamespace*(*s)",
+                "    MyUnitTestClass*(*s)",
+                "      still_passing*(*s)",
+                "",
+                "FAILED*(*s)",
+                "  MyUnitTestNamespace*(*s)",
+                "    MyUnitTestClass*(*s)",
+                "      failing*(*s)",
+                "",
+                "SUMMARY:",
+                "Passed: 1, Failed: 1, Not run: 0"
+            );
         }
 
-        protected async Task<(ICodeRunner server, WorkspaceBuild workspace )> GetRunnerAndWorkspace(
+        protected async Task<(ICodeRunner server, WorkspaceBuild workspace)> GetRunnerAndWorkspace(
             [CallerMemberName] string testName = null)
         {
             var workspace = await Create.XunitWorkspaceCopy(testName);

@@ -18,15 +18,22 @@ namespace MLS.Agent
                 return;
             }
 
-            context.Result = new ExceptionResult(exception);
-
-            if (context.ExceptionHandled)
+            if (context.ModelState.ErrorCount > 0)
             {
-                Log.Warning(exception);
+                context.Result = new BadRequestResult();
             }
             else
             {
-                Log.Error(exception);
+                context.Result = new ExceptionResult(exception);
+
+                if (context.ExceptionHandled)
+                {
+                    Log.Warning(exception);
+                }
+                else
+                {
+                    Log.Error(exception);
+                }
             }
         }
 

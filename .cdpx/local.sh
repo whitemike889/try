@@ -14,4 +14,4 @@ $REPO_ROOT/.cdpx/build.sh
 echo testing...
 $REPO_ROOT/.cdpx/test.sh
 
-$DOTNET_TOOLS/t-rex --path $REPO_ROOT --show-test-output
+t-rex --path $REPO_ROOT --show-test-output
