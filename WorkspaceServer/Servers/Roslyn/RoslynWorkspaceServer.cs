@@ -282,7 +282,7 @@ namespace WorkspaceServer.Servers.Roslyn
             {
                 tRexResult = await CommandLine.Execute(
                                  trex,
-                                 "",
+                                 "--show-test-output",
                                  workingDir: build.Directory,
                                  budget: budget);
             }

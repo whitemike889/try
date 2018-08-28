@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -11,6 +13,7 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
     public class InstrumentationSyntaxVisitor : CSharpSyntaxRewriter
     {
         public AugmentationMap Augmentations { get; }
+
         public VariableLocationMap VariableLocations { get; }
 
         private readonly SemanticModel _semanticModel;
@@ -19,24 +22,27 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
 
         private readonly Document _document;
 
-        public InstrumentationSyntaxVisitor(Document document, IEnumerable<TextSpan> replacementRegions = null)
+        public InstrumentationSyntaxVisitor(
+            Document document, 
+            SemanticModel semanticModel,
+            IEnumerable<TextSpan> replacementRegions = null)
         {
-            _semanticModel = document.GetSemanticModelAsync().Result;
+            _document = document ?? throw new ArgumentNullException(nameof(document));
+            _semanticModel = semanticModel ?? throw new ArgumentNullException(nameof(semanticModel));
             _replacementRegions = replacementRegions;
-            _document = document;
             VariableLocations = new VariableLocationMap();
             Augmentations = new AugmentationMap();
 
             Visit(_semanticModel.SyntaxTree.GetRoot());
         }
 
-        private void RecordVariableLocations(IEnumerable<CSharpSyntaxNode> statements)
+        private async Task RecordVariableLocations(IEnumerable<CSharpSyntaxNode> statements)
         {
             IEnumerable<ISymbol> distinctLocalVariables = GetDistinctLocalVariables(statements);
 
             foreach (var variable in distinctLocalVariables)
             {
-                var variableReferences = SymbolFinder.FindReferencesAsync(variable, _document.Project.Solution).Result;
+                var variableReferences = await SymbolFinder.FindReferencesAsync(variable, _document.Project.Solution);
 
                 var variableUsageLocations = variableReferences
                   .SelectMany(reference => reference.Locations)
@@ -50,7 +56,6 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
 
                 VariableLocations.AddLocations(variable, allLocations);
             }
-
         }
 
         private LinePositionSpan GetDeclaringSpan(ISymbol variable)
@@ -107,14 +112,18 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
 
         private void FilterAndInstrument(params CSharpSyntaxNode[] nodes)
         {
-            var filteredStatements = FilterStatementsByRegions(nodes).ToList();
-
-            if (filteredStatements.Count > 0)
+            Task.Run(async () =>
             {
-                RecordAugmentations(filteredStatements);
-                RecordVariableLocations(filteredStatements);
-            }
+                var filteredStatements = FilterStatementsByRegions(nodes).ToList();
+
+                if (filteredStatements.Count > 0)
+                {
+                    RecordAugmentations(filteredStatements);
+                    await RecordVariableLocations(filteredStatements);
+                }
+            }).Wait();
         }
+
         private void RecordAugmentations(IEnumerable<CSharpSyntaxNode> statements)
         {
             // get the parent assigned variables, and static status
@@ -148,7 +157,7 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
 
                 var augmentation = new Augmentation(statement, locals, fields, param, validForChildren);
 
-                this.Augmentations.Data[statement] = (augmentation);
+                Augmentations.Data[statement] = augmentation;
             }
         }
 

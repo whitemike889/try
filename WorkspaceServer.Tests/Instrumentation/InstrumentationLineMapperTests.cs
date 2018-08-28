@@ -1,11 +1,9 @@
 ﻿using FluentAssertions;
 using Microsoft.CodeAnalysis.Text;
-using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Servers.Roslyn.Instrumentation;
-using WorkspaceServer.Tests.Servers.Roslyn.Instrumentation;
 using WorkspaceServer.Transformations;
 using Xunit;
 using SpanDictionary = System.Collections.Generic.IDictionary<string, System.Collections.Generic.IEnumerable<Microsoft.CodeAnalysis.Text.LinePositionSpan>>;
@@ -14,12 +12,12 @@ namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
 {
     public class InstrumentationLineMapperTests
     {
-        private (AugmentationMap,
+        private async Task<(AugmentationMap,
             VariableLocationMap,
             Microsoft.CodeAnalysis.Document,
             Viewport,
             SpanDictionary
-            ) Setup(string viewportCodeMarkup)
+            )> Setup(string viewportCodeMarkup)
         {
             MarkupTestFile.GetNamedSpans(viewportCodeMarkup, out var viewportCode, out var textSpans);
             var code = $@"
@@ -48,7 +46,7 @@ namespace RoslynRecorder
             var withLF = CodeManipulation.EnforceLF(code);
             var document = Sources.GetDocument(withLF);
             var workspace = new Workspace(files: new[] { new Workspace.File("test.cs", withLF) });
-            var visitor = new InstrumentationSyntaxVisitor(document);
+            var visitor = new InstrumentationSyntaxVisitor(document, await document.GetSemanticModelAsync());
             var viewport = new BufferInliningTransformer().ExtractViewPorts(workspace).DefaultIfEmpty(null).First();
 
             return (visitor.Augmentations, visitor.VariableLocations, document, viewport, linePositionSpans);
@@ -57,7 +55,7 @@ namespace RoslynRecorder
         [Fact]
         public async Task MapLineLocationsRelativeToViewport_Does_Nothing_Without_Viewport()
         {
-            var (augmentation, locations, document, _, _) = Setup(@"Console.WriteLine(""hello world"");");
+            var (augmentation, locations, document, _, _) = await Setup(@"Console.WriteLine(""hello world"");");
             var (newAugmentation, newLocations) = await InstrumentationLineMapper.MapLineLocationsRelativeToViewportAsync(augmentation, locations, document);
 
             augmentation.Should().BeEquivalentTo(newAugmentation);
@@ -67,7 +65,7 @@ namespace RoslynRecorder
         [Fact]
         public async Task MapLineLocationsRelativeToViewport_Maps_Augmentation_FilePosition_Correctly()
         {
-            var (augmentation, locations, document, viewport, spans) = Setup(
+            var (augmentation, locations, document, viewport, spans) = await Setup(
 @"
 {|a:int a = 0;|}
 {|b:Console.WriteLine(""Entry Point"");|}
@@ -85,7 +83,7 @@ namespace RoslynRecorder
         public async Task MapLineLocationsRelativeToViewport_Maps_Variable_Location_Correctly()
         {
 
-            var (augmentation, locations, document, viewport, spans) = Setup(
+            var (augmentation, locations, document, viewport, spans) = await Setup(
                 @"
 {|a:int a = 0;|}
 {|b:Console.WriteLine(""Entry Point"");|}
@@ -103,7 +101,7 @@ namespace RoslynRecorder
         [Fact]
         public async Task MapLineLocationsRelativeToViewport_Maps_Variable_At_Viewport_End_Correctly()
         {
-            var (augmentation, locations, document, viewport, spans) = Setup(
+            var (augmentation, locations, document, viewport, spans) = await Setup(
                 @"
 {|b:Console.WriteLine(""Entry Point"");|}
 {|a:int a = 0;|}
@@ -122,7 +120,7 @@ namespace RoslynRecorder
         [Fact]
         public async Task MapLineLocationsRelativeToViewport_Maps_Multiple_Variables_On_Single_Line_Correctly()
         {
-            var (augmentation, locations, document, viewport, spans) = Setup(
+            var (augmentation, locations, document, viewport, spans) = await Setup(
                 @"
 {|variables:var (a, b) = (1, 2);|}
 ");

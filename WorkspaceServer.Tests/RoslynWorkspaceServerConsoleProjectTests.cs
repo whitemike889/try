@@ -11,7 +11,6 @@ using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Models.Instrumentation;
 using WorkspaceServer.Servers.Roslyn;
 using WorkspaceServer.Servers.Roslyn.Instrumentation;
-using WorkspaceServer.Transformations;
 using Xunit;
 using Xunit.Abstractions;
 
