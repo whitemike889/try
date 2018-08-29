@@ -379,6 +379,7 @@ namespace ConsoleProgram
 
             filePositions.Should().BeEquivalentTo(expectedLines);
         }
+
         [Fact]
         public async Task Response_with_multi_buffer_workspace()
         {

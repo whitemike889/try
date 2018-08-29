@@ -62,7 +62,8 @@ namespace WorkspaceServer.Servers.Roslyn
 
                 var activeViewport = viewports.DefaultIfEmpty(null).First();
 
-                await InstrumentationLineMapper.MapLineLocationsRelativeToViewportAsync(
+                var (augmentationMap, variableLocationMap) =
+                    await InstrumentationLineMapper.MapLineLocationsRelativeToViewportAsync(
                         visitor.Augmentations,
                         visitor.VariableLocations,
                         document,
@@ -70,8 +71,8 @@ namespace WorkspaceServer.Servers.Roslyn
 
                 var rewrite = new InstrumentationSyntaxRewriter(
                     linesWithInstrumentation,
-                    visitor.VariableLocations,
-                    visitor.Augmentations);
+                    variableLocationMap,
+                    augmentationMap);
                 var newRoot = rewrite.Visit(tree.GetRoot());
                 var newTree = tree.WithRootAndOptions(newRoot, tree.Options);
 
