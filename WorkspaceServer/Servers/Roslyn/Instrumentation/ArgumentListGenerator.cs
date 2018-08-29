@@ -16,7 +16,7 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
                 var (argument, value) = a;
                 return SyntaxFactory.Argument(
                     SyntaxFactory.TupleExpression(
-                        SyntaxFactory.SeparatedList(new[]
+                        SyntaxFactory.SeparatedList<ArgumentSyntax>(new[]
                         {
                             ConvertObjectToArgument(argument),
                             SyntaxFactory.Argument(SyntaxFactory.IdentifierName(SyntaxFactory.Identifier(value)))
@@ -26,7 +26,7 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
             variableInfoArgument.Insert(0, ConvertObjectToArgument(filePosition));
 
             return SyntaxFactory.ArgumentList(
-                SyntaxFactory.SeparatedList(variableInfoArgument));
+                SyntaxFactory.SeparatedList<ArgumentSyntax>(variableInfoArgument));
         }
 
         private static ArgumentSyntax ConvertObjectToArgument(object argument)

@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using WorkspaceServer.Servers.Roslyn.Instrumentation;
-using WorkspaceServer.Tests.Servers.Roslyn.Instrumentation;
 using Xunit;
 
 namespace WorkspaceServer.Tests.Instrumentation
@@ -89,10 +88,9 @@ namespace WorkspaceServer.Tests.Instrumentation
             // arrange
             var document = Sources.GetDocument(Sources.withMultipleMethodsAndComplexLayout);
             var syntaxTree = await document.GetSyntaxTreeAsync();
-            var statementCount = syntaxTree.GetRoot().DescendantNodes().Count(n => n is StatementSyntax);
             var statement = (StatementSyntax)syntaxTree.GetRoot().DescendantNodes().Single(n => n.ToString() == @"Console.WriteLine(""Entry Point"");");
 
-            var locals = (await document.GetSemanticModelAsync()).LookupSymbols(310).Where(s => s.Kind == Microsoft.CodeAnalysis.SymbolKind.Local);
+            var locals = (await document.GetSemanticModelAsync()).LookupSymbols(310).Where(s => s.Kind == SymbolKind.Local);
             var augmentations = new[] { new Augmentation(statement, locals, null, null, null) };
 
             var augMap = new AugmentationMap(augmentations.ToArray());
@@ -107,9 +105,9 @@ namespace WorkspaceServer.Tests.Instrumentation
             var treeString = newTree.ToString();
 
             // assert
-            Assert.Contains("\\\"name\\\": \\\"j\\\"", treeString);
-            Assert.Contains("\\\"name\\\": \\\"k\\\"", treeString);
-            Assert.Contains("\\\"name\\\": \\\"p\\\"", treeString);
+            Assert.Contains("\\\"name\\\":\\\"j\\\"", treeString);
+            Assert.Contains("\\\"name\\\":\\\"k\\\"", treeString);
+            Assert.Contains("\\\"name\\\":\\\"p\\\"", treeString);
         }
 
         [Fact]
@@ -118,9 +116,9 @@ namespace WorkspaceServer.Tests.Instrumentation
             // arrange
             var document = Sources.GetDocument(Sources.withMultipleMethodsAndComplexLayout);
             var syntaxTree = await document.GetSyntaxTreeAsync();
-            var statementCount = syntaxTree.GetRoot().DescendantNodes().Count(n => n is StatementSyntax);
+          
             var statement = (StatementSyntax)syntaxTree.GetRoot().DescendantNodes().Single(n => n.ToString() == @"Console.WriteLine(""Entry Point"");");
-            var fields = (await document.GetSemanticModelAsync()).LookupSymbols(310).Where(s => s.Kind == Microsoft.CodeAnalysis.SymbolKind.Field);
+            var fields = (await document.GetSemanticModelAsync()).LookupSymbols(310).Where(s => s.Kind == SymbolKind.Field);
             var augmentations = new[] { new Augmentation(statement, null, fields, null, null) };
             var augMap = new AugmentationMap(augmentations.ToArray());
             var rewriter = new InstrumentationSyntaxRewriter(
@@ -134,8 +132,8 @@ namespace WorkspaceServer.Tests.Instrumentation
             var treeString = newTree.ToString();
 
             // assert
-            Assert.Contains("\\\"name\\\": \\\"a\\\"", treeString);
-            Assert.Contains("\\\"name\\\": \\\"b\\\"", treeString);
+            Assert.Contains("\\\"name\\\":\\\"a\\\"", treeString);
+            Assert.Contains("\\\"name\\\":\\\"b\\\"", treeString);
         }
 
         [Fact]
@@ -144,9 +142,8 @@ namespace WorkspaceServer.Tests.Instrumentation
             // arrange
             var document = Sources.GetDocument(Sources.withMultipleMethodsAndComplexLayout);
             var syntaxTree = await document.GetSyntaxTreeAsync();
-            var statementCount = syntaxTree.GetRoot().DescendantNodes().Count(n => n is StatementSyntax);
             var statement = (StatementSyntax)syntaxTree.GetRoot().DescendantNodes().Single(n => n.ToString() == @"Console.WriteLine(""Entry Point"");");
-            var parameters = (await document.GetSemanticModelAsync()).LookupSymbols(310).Where(s => s.Kind == Microsoft.CodeAnalysis.SymbolKind.Parameter);
+            var parameters = (await document.GetSemanticModelAsync()).LookupSymbols(310).Where(s => s.Kind == SymbolKind.Parameter);
             var augmentations = new[] { new Augmentation(statement, null, null, parameters, null) };
             var augMap = new AugmentationMap(augmentations.ToArray());
             var rewriter = new InstrumentationSyntaxRewriter(
@@ -159,7 +156,7 @@ namespace WorkspaceServer.Tests.Instrumentation
             var treeString = newTree.ToString();
 
             // assert
-            Assert.Contains("\\\"name\\\": \\\"args\\\"", treeString);
+            Assert.Contains("\\\"name\\\":\\\"args\\\"", treeString);
         }
     }
 }
