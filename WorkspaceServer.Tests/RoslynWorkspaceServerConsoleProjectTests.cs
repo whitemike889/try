@@ -197,11 +197,15 @@ namespace FibonacciTest
 
             #endregion
 
-            var request = new WorkspaceRequest(new Workspace(workspaceType: "console", buffers: new[]
-            {
-                new Workspace.Buffer("Program.cs", program, 0),
-                new Workspace.Buffer("FibonacciGenerator.cs", generator, 0)
-            }, includeInstrumentation: true));
+            var request = new WorkspaceRequest(
+                new Workspace(
+                    workspaceType: "console", buffers: new[]
+                    {
+                        new Workspace.Buffer("Program.cs", program, 0),
+                        new Workspace.Buffer("FibonacciGenerator.cs", generator, 0)
+                    }, 
+                    includeInstrumentation: true),
+                new BufferId("Program.cs"));
             var server = await GetRunner();
 
             var result = await server.Run(request);
