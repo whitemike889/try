@@ -8,9 +8,7 @@ using Clockwise;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Completion;
 using Microsoft.CodeAnalysis.Recommendations;
-using MLS.Agent.DotnetCli;
 using MLS.Agent.Tools;
-using MLS.Agent.Workspaces;
 using Pocket;
 using Recipes;
 using WorkspaceServer.Models;
@@ -21,6 +19,7 @@ using WorkspaceServer.Servers.Roslyn.Instrumentation;
 using WorkspaceServer.Servers.Scripting;
 using WorkspaceServer.Transformations;
 using WorkspaceServer.WorkspaceFeatures;
+using WorkspaceServer.Workspaces;
 using static Pocket.Logger<WorkspaceServer.Servers.Roslyn.RoslynWorkspaceServer>;
 using Workspace = WorkspaceServer.Models.Execution.Workspace;
 
@@ -272,20 +271,16 @@ namespace WorkspaceServer.Servers.Roslyn
                     Paths.DotnetToolsPath,
                     "t-rex".ExecutableName()));
 
-            CommandLineResult tRexResult = null;
-
             if (!trex.Exists)
             {
                 throw new InvalidOperationException("t-rex not found");
             }
-            else
-            {
-                tRexResult = await CommandLine.Execute(
-                                 trex,
-                                 "--show-test-output",
-                                 workingDir: build.Directory,
-                                 budget: budget);
-            }
+
+            var tRexResult = await CommandLine.Execute(
+                 trex,
+                 "--show-test-output",
+                 workingDir: build.Directory,
+                 budget: budget);
 
             var result = new RunResult(
                 commandLineResult.ExitCode == 0,

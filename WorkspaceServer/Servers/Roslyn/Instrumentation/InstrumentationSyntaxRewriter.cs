@@ -1,18 +1,15 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
 using WorkspaceServer.Servers.Roslyn.Instrumentation.Contract;
 
 namespace WorkspaceServer.Servers.Roslyn.Instrumentation
 {
-
     public class InstrumentationSyntaxRewriter : CSharpSyntaxRewriter
     {
         public static readonly string Sentinel = "6a2f74a2-f01d-423d-a40f-726aa7358a81";
@@ -20,11 +17,12 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
         private readonly VariableLocationMap _variableLocations;
         private readonly AugmentationMap _augmentations;
         private readonly IEnumerable<SyntaxNode> _instrumentedNodes;
+
         public InstrumentationSyntaxRewriter(
             IEnumerable<SyntaxNode> instrumentedNodes,
             VariableLocationMap printOnce,
             AugmentationMap printEveryStep
-            )
+        )
         {
             _variableLocations = printOnce ?? throw new ArgumentNullException(nameof(printOnce));
             _augmentations = printEveryStep ?? throw new ArgumentNullException(nameof(printEveryStep));
@@ -37,7 +35,6 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
             return tree.WithRootAndOptions(newRoot, tree.Options);
         }
 
-
         public override SyntaxList<TNode> VisitList<TNode>(SyntaxList<TNode> list)
         {
             return SyntaxFactory.List(AugmentListWithInstrumentationStatments(list));
@@ -47,10 +44,11 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
         {
             if (node.Parent is BlockSyntax && node.Parent.Parent is MethodDeclarationSyntax)
             {
-                var method = (MethodDeclarationSyntax)node.Parent.Parent;
+                var method = (MethodDeclarationSyntax) node.Parent.Parent;
                 return method.Identifier.Text == "Main";
             }
-            else return false;
+
+            return false;
         }
 
         public IEnumerable<TNode> AugmentListWithInstrumentationStatments<TNode>(SyntaxList<TNode> list) where TNode : SyntaxNode
@@ -59,16 +57,18 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
             {
                 if (IsEntryPoint(node) && node == list.First() && _variableLocations.Data.Count > 0)
                 {
-                    yield return (TNode)(SyntaxNode)CreateStatementToPrintVariableLocations();
-                }
-                if (_instrumentedNodes.Contains(node) && _augmentations.Data.Count > 0)
-                {
-                    yield return (TNode)(SyntaxNode)CreateStatementToPrintAugmentations(node);
+                    yield return (TNode) (SyntaxNode) CreateStatementToPrintVariableLocations();
                 }
 
-                yield return (TNode)Visit(node);
+                if (_instrumentedNodes.Contains(node) && _augmentations.Data.Count > 0)
+                {
+                    yield return (TNode) (SyntaxNode) CreateStatementToPrintAugmentations(node);
+                }
+
+                yield return (TNode) Visit(node);
             }
         }
+
         private StatementSyntax CreateStatementToPrintAugmentations(SyntaxNode node)
         {
             var augmentation = _augmentations.Data[node];
@@ -83,24 +83,25 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
             var data = _variableLocations.Serialize();
             var uglifiedData = Regex.Replace(data, "\r|\n", "");
             return SyntaxFactory.ParseStatement($"System.Console.WriteLine(\"{Sentinel}{{{uglifiedData}}}{Sentinel}\");")
-                .WithTrailingTrivia(SyntaxFactory.Whitespace("\n"));
+                                .WithTrailingTrivia(SyntaxFactory.Whitespace("\n"));
         }
 
         public static StatementSyntax CreateSyntaxNode(FilePosition currentFilePosition, params VariableInfo[] variables)
         {
-
-            (object, string)[] x = variables.Select(v => ((object)v, v.Name)).ToArray();
+            (object, string)[] x = variables.Select(v => ((object) v, v.Name)).ToArray();
 
             return SyntaxFactory.ExpressionStatement(
                 CreateMethodInvocation("InstrumentationEmitter", "EmitProgramState",
-                    SyntaxFactory.ArgumentList(
-                        SyntaxFactory.SeparatedList<ArgumentSyntax>( new[] {
-                            SyntaxFactory.Argument(
-                                CreateMethodInvocation("InstrumentationEmitter",
-                                    "GetProgramState",
-                                    ArgumentListGenerator.GenerateArgumentListForGetProgramState(currentFilePosition, x)))
-                        })
-            ))).WithTrailingTrivia(SyntaxFactory.Whitespace("\n"));
+                                       SyntaxFactory.ArgumentList(
+                                           SyntaxFactory.SeparatedList(new[]
+                                           {
+                                               SyntaxFactory.Argument(
+                                                   CreateMethodInvocation("InstrumentationEmitter",
+                                                                          "GetProgramState",
+                                                                          ArgumentListGenerator
+                                                                              .GenerateArgumentListForGetProgramState(currentFilePosition, x)))
+                                           })
+                                       ))).WithTrailingTrivia(SyntaxFactory.Whitespace("\n"));
         }
 
         private static InvocationExpressionSyntax CreateMethodInvocation(string container, string methodName, ArgumentListSyntax arguments)
@@ -112,41 +113,40 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
                         SyntaxFactory.IdentifierName(container),
                         SyntaxFactory.Token(SyntaxKind.DotToken),
                         SyntaxFactory.IdentifierName(methodName)),
-                        arguments
+                    arguments
                 );
         }
 
         private VariableInfo[] MapAugmentationToVariableInfo(Augmentation augmentation)
         {
             return augmentation.Locals
-                .Concat(augmentation.Parameters)
-                .Concat(augmentation.Fields)
-                .Concat(augmentation.InternalLocals)
-                .Select(variable =>
-                {
-                    var syntax = variable.DeclaringSyntaxReferences.First().GetSyntax();
-                    var location = syntax.Span;
-                    if (syntax is VariableDeclaratorSyntax vds)
-                    {
-                        location = vds.Identifier.Span;
-                    }
-                    else if (syntax is ForEachStatementSyntax fes)
-                    {
-                        location = fes.Identifier.Span;
-                    }
+                               .Concat(augmentation.Parameters)
+                               .Concat(augmentation.Fields)
+                               .Concat(augmentation.InternalLocals)
+                               .Select(variable =>
+                               {
+                                   var syntax = variable.DeclaringSyntaxReferences.First().GetSyntax();
+                                   var location = syntax.Span;
+                                   if (syntax is VariableDeclaratorSyntax vds)
+                                   {
+                                       location = vds.Identifier.Span;
+                                   }
+                                   else if (syntax is ForEachStatementSyntax fes)
+                                   {
+                                       location = fes.Identifier.Span;
+                                   }
 
-                    return new VariableInfo
-                    {
-                        Name = variable.Name,
-                        Value = JToken.FromObject("unavailable"),
-                        DeclaredAt = new DeclarationLocation
-                        {
-                            Start = location.Start,
-                            End = location.End
-                        }
-                    };
-                }).ToArray();
+                                   return new VariableInfo
+                                   {
+                                       Name = variable.Name,
+                                       Value = JToken.FromObject("unavailable"),
+                                       DeclaredAt = new DeclarationLocation
+                                       {
+                                           Start = location.Start,
+                                           End = location.End
+                                       }
+                                   };
+                               }).ToArray();
         }
     }
 }
-

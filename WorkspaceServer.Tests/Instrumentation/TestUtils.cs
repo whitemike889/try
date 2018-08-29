@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
-namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
+namespace WorkspaceServer.Tests.Instrumentation
 {
     public static class TestUtils
     {

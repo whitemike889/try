@@ -1,12 +1,10 @@
-﻿using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Text;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Text;
 using WorkspaceServer.Models.Execution;
-using WorkspaceServer.Models.Instrumentation;
 using WorkspaceServer.Servers.Roslyn.Instrumentation.Contract;
-using WorkspaceServer.Transformations;
 
 namespace WorkspaceServer.Servers.Roslyn.Instrumentation
 {
@@ -31,13 +29,11 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
 
             return (mappedAugmentations, mappedLocations);
 
-
-
             AugmentationMap MapAugmentationsToViewport()
             {
                 var augmentations = augmentationMap.Data.Values
-                    .Where(augmentation => viewportSpan.ContainsLine((int)augmentation.CurrentFilePosition.Line))
-                    .Select(augmentation => MapAugmentationToViewport(augmentation, viewportSpan));
+                                                   .Where(augmentation => viewportSpan.ContainsLine((int) augmentation.CurrentFilePosition.Line))
+                                                   .Select(augmentation => MapAugmentationToViewport(augmentation, viewportSpan));
 
                 return new AugmentationMap(augmentations.ToArray());
             }
@@ -45,14 +41,15 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
             VariableLocationMap MapVariableLocationsToViewport()
             {
                 var variableLocationDictionary = locations.Data.ToDictionary(
-                   kv => kv.Key,
-                   kv =>
-                   {
-                       var variableLocations = kv.Value;
-                       return new HashSet<VariableLocation>(variableLocations
-                           .Where(loc => viewportSpan.ContainsLine(loc.StartLine) && viewportSpan.ContainsLine(loc.EndLine))
-                           .Select(location => MapVariableLocationToViewport(location, viewportSpan)));
-                   }
+                    kv => kv.Key,
+                    kv =>
+                    {
+                        var variableLocations = kv.Value;
+                        return new HashSet<VariableLocation>(variableLocations
+                                                             .Where(loc => viewportSpan.ContainsLine(loc.StartLine) &&
+                                                                           viewportSpan.ContainsLine(loc.EndLine))
+                                                             .Select(location => MapVariableLocationToViewport(location, viewportSpan)));
+                    }
                 );
 
                 return new VariableLocationMap
@@ -77,14 +74,15 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
             }
         );
 
-        private static VariableLocation MapVariableLocationToViewport(VariableLocation input,
+        private static VariableLocation MapVariableLocationToViewport(
+            VariableLocation input,
             LinePositionSpan viewportSpan) => new VariableLocation(
-                input.Variable,
-                (int)CalculateOffset(input.StartLine, viewportSpan),
-                (int)CalculateOffset(input.EndLine, viewportSpan),
-                input.StartColumn,
-                input.EndColumn
-            );
+            input.Variable,
+            (int) CalculateOffset(input.StartLine, viewportSpan),
+            (int) CalculateOffset(input.EndLine, viewportSpan),
+            input.StartColumn,
+            input.EndColumn
+        );
 
         public static IEnumerable<Viewport> FilterActiveViewport(IEnumerable<Viewport> viewports, BufferId activeBufferId)
         {
@@ -92,4 +90,3 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
         }
     }
 }
-

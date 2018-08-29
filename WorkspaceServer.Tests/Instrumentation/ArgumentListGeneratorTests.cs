@@ -1,23 +1,15 @@
-﻿using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Recipes;
-using System;
+﻿using System;
 using System.Linq;
-using System.Collections.Generic;
-using System.Text;
-using Xunit;
+using FluentAssertions;
+using Newtonsoft.Json.Linq;
 using WorkspaceServer.Servers.Roslyn.Instrumentation;
 using WorkspaceServer.Servers.Roslyn.Instrumentation.Contract;
-using Newtonsoft.Json.Linq;
-using FluentAssertions;
+using Xunit;
 
-namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
+namespace WorkspaceServer.Tests.Instrumentation
 {
     public class ArgumentListGeneratorTests
     {
-        
-
         [Fact]
         public void CreateSyntaxNode_works_correctly()
         {

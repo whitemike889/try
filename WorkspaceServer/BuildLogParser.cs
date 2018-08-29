@@ -2,10 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using MLS.Agent.DotnetCli;
 using MLS.Agent.Tools;
 
-namespace WorkspaceServer.BuildLogParser
+namespace WorkspaceServer
 {
     public static class BuildLogParser
     {

@@ -25,10 +25,9 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation.Contract
 
         [JsonProperty("output")]
         public DeclarationLocation Output { get; set; }
-     
     }
 
-    public partial class VariableInfo
+    public class VariableInfo
     {
         [JsonProperty("name")]
         public string Name { get; set; }
@@ -40,7 +39,7 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation.Contract
         public DeclarationLocation DeclaredAt { get; set; }
     }
 
-    public partial class DeclarationLocation
+    public class DeclarationLocation
     {
         [JsonProperty("start")]
         public long Start { get; set; }
@@ -49,7 +48,7 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation.Contract
         public long End { get; set; }
     }
 
-    public partial class FilePosition
+    public class FilePosition
     {
         [JsonProperty("line")]
         public long Line { get; set; }

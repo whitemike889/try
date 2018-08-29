@@ -4,7 +4,6 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Recipes;
 using WorkspaceServer.Models.Instrumentation;
 
@@ -91,15 +90,16 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
 
         static (int outputStart, int outputEnd) GetSpanOfStdOutCreatedAtCurrentStep(ExtractorState currentState)
         {
-            if (currentState.StdOut.IsEmpty) return (0, 0);
-            else
+            if (currentState.StdOut.IsEmpty)
             {
-                var newOutput = currentState.StdOut.Last();
-                var entireOutput = currentState.StdOut.Join(String.Empty);
-                var endLocation = entireOutput.Length;
-
-                return (endLocation - newOutput.Length, endLocation);
+                return (0, 0);
             }
+
+            var newOutput = currentState.StdOut.Last();
+            var entireOutput = currentState.StdOut.Join(String.Empty);
+            var endLocation = entireOutput.Length;
+
+            return (endLocation - newOutput.Length, endLocation);
         }
 
         static IEnumerable<string> TokenizeWithDelimiter(this string input, string delimiter) => Regex.Split(input, $"({delimiter}[\n]?)").Where(str => !String.IsNullOrWhiteSpace(str));

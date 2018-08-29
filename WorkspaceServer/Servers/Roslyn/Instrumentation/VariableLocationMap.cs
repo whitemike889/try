@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace WorkspaceServer.Servers.Roslyn.Instrumentation
 {
-    public class VariableLocationMap : ISerializableOnce
+    public class VariableLocationMap 
     {
         public Dictionary<ISymbol, HashSet<VariableLocation>> Data;
         public VariableLocationMap()
@@ -25,6 +25,7 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
                 Data[variable].Add(location);
             }
         }
+
         public string Serialize()
         {
             var strings = Data.Select(kv =>

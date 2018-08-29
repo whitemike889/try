@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Clockwise;
 
-namespace MLS.Agent.Workspaces
+namespace WorkspaceServer.Workspaces
 {
     public interface IWorkspaceInitializer
     {

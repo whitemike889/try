@@ -1,12 +1,13 @@
-﻿using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using WorkspaceServer.Servers.Roslyn.Instrumentation;
+using WorkspaceServer.Tests.Servers.Roslyn.Instrumentation;
 using Xunit;
 
-namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
+namespace WorkspaceServer.Tests.Instrumentation
 {
     public class InstrumentationSyntaxRewriterTests
     {

@@ -21,7 +21,6 @@ namespace WorkspaceServer.Models.Instrumentation
         {
             result.AddProperty("instrumentation", ProgramStates);
         }
-
     }
     
     public class ProgramStateAtPosition 
@@ -45,7 +44,7 @@ namespace WorkspaceServer.Models.Instrumentation
         public Output Output { get; set; }
     }
 
-    public partial class Output
+    public class Output
     {
         [JsonProperty("start")]
         public long Start { get; set; }

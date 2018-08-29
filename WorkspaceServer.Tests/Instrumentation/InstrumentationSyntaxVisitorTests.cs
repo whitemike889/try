@@ -3,9 +3,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Text;
 using WorkspaceServer.Servers.Roslyn.Instrumentation;
+using WorkspaceServer.Tests.Servers.Roslyn.Instrumentation;
 using Xunit;
 
-namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
+namespace WorkspaceServer.Tests.Instrumentation
 {
     public class InstrumentationSyntaxVisitorTests
     {
@@ -71,7 +72,7 @@ namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
         public async Task Only_Requested_Statements_Are_Instrumented_When_Regions_Are_Supplied()
         {
             //arrange
-            var regions = new List<TextSpan>() { new TextSpan(169, 84) };
+            var regions = new List<TextSpan> { new TextSpan(169, 84) };
 
             //act
             var augmentations = (await GetAugmentationMapAsync(Sources.withMultipleMethodsAndComplexLayout, regions)).Data.Values.ToList();
@@ -86,7 +87,7 @@ namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
         public async Task Only_Requested_Statements_Are_Instrumented_When_Non_Contiguous_Regions_Are_Supplied()
         {
             //arrange
-            var regions = new List<TextSpan>() { new TextSpan(156, 35), new TextSpan(625, 32) };
+            var regions = new List<TextSpan> { new TextSpan(156, 35), new TextSpan(625, 32) };
 
             //act
             var augmentations = (await GetAugmentationMapAsync(Sources.withMultipleMethodsAndComplexLayout, regions)).Data.Values.ToList();

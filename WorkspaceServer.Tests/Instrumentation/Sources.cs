@@ -1,11 +1,11 @@
-﻿using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 
-namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
+namespace WorkspaceServer.Tests.Instrumentation
 {
 
     internal class Sources
@@ -43,7 +43,6 @@ namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
             return projectWithReferences.GetDocument(document.Id);
         }
 
-
         internal static readonly string empty = @"
 using System;
 namespace RoslynRecorder
@@ -54,7 +53,7 @@ namespace RoslynRecorder
         {
         }
     }
-}";
+}".EnforceLF();
 
         internal static readonly string simple = @"
 using System;
@@ -67,7 +66,7 @@ namespace RoslynRecorder
             Console.WriteLine(""Entry Point"");
         }
     }
-}";
+}".EnforceLF();
 
         internal static readonly string withMultipleRegion = @"
  using System;
@@ -85,7 +84,7 @@ namespace RoslynRecorder
     }
 #endregion
 }   
-";
+".EnforceLF();
 
         internal static readonly string withLocalsAndParams = @"
 using System;
@@ -99,7 +98,7 @@ namespace RoslynRecorder
             Console.WriteLine(""Entry Point"");
         }
     }
-}";
+}".EnforceLF();
         internal static readonly string withLocalParamsAndRegion = @"
 using System;
 namespace RoslynRecorder
@@ -114,7 +113,7 @@ namespace RoslynRecorder
 #endregion
         }
     }
-}";
+}".EnforceLF();
 
         internal static readonly string withNonAssignedLocals = @"
 using System;
@@ -131,7 +130,7 @@ namespace RoslynRecorder
             a = 3;
         }
     }
-}";
+}".EnforceLF();
 
         internal static readonly string withStaticAndNonStaticField = @"
 using System;
@@ -152,7 +151,8 @@ namespace RoslynRecorder
             Console.WriteLine(""Instance"");
         }
     }
-}";
+}".EnforceLF();
+
         internal static readonly string withMultipleMethodsAndComplexLayout = @"
 using System;
 namespace RoslynRecorder
@@ -185,7 +185,7 @@ namespace RoslynRecorder
             Console.WriteLine(""Instance"");
         }
     }
-}";
+}".EnforceLF();
 
         internal static readonly string withDynamic = @"
 using System;
@@ -199,7 +199,7 @@ namespace RoslynRecorder
             Console.WriteLine(""Entry Point"");
         }
     }
-}";
+}".EnforceLF();
 
     }
 }

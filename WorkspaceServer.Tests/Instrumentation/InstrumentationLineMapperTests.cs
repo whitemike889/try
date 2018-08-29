@@ -1,14 +1,15 @@
-﻿using FluentAssertions;
-using Microsoft.CodeAnalysis.Text;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
+using FluentAssertions;
+using Microsoft.CodeAnalysis.Text;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Servers.Roslyn.Instrumentation;
+using WorkspaceServer.Tests.Servers.Roslyn.Instrumentation;
 using WorkspaceServer.Transformations;
 using Xunit;
 using SpanDictionary = System.Collections.Generic.IDictionary<string, System.Collections.Generic.IEnumerable<Microsoft.CodeAnalysis.Text.LinePositionSpan>>;
 
-namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
+namespace WorkspaceServer.Tests.Instrumentation
 {
     public class InstrumentationLineMapperTests
     {
@@ -39,11 +40,11 @@ namespace RoslynRecorder
 ";
             var linePositionSpans = textSpans.ToDictionary(
                 kv => kv.Key,
-                kv => kv.Value.Select(span => TextSpanExtensions.ToLinePositionSpan(span, SourceText.From(viewportCode))
+                kv => kv.Value.Select(span => span.ToLinePositionSpan(SourceText.From(viewportCode))
                     )
                 );
 
-            var withLF = CodeManipulation.EnforceLF(code);
+            var withLF = code.EnforceLF();
             var document = Sources.GetDocument(withLF);
             var workspace = new Workspace(files: new[] { new Workspace.File("test.cs", withLF) });
             var visitor = new InstrumentationSyntaxVisitor(document, await document.GetSemanticModelAsync());
@@ -138,7 +139,7 @@ namespace RoslynRecorder
         [Fact]
         public void FilterActiveViewport_Should_Return_Viewport_In_ActiveBufferId()
         {
-            var text = CodeManipulation.EnforceLF(@"
+            var text = @"
 using System;
 namespace RoslynRecorder
 {
@@ -154,7 +155,7 @@ namespace RoslynRecorder
 #region notthis
     }
 #endregion
-}");
+}".EnforceLF();
             MarkupTestFile.GetNamedSpans(text, out var code, out var spans);
             var workspace = new Workspace(files: new[] { new Workspace.File("testFile.cs", code) });
             var viewports = new BufferInliningTransformer().ExtractViewPorts(workspace);
@@ -166,7 +167,7 @@ namespace RoslynRecorder
         [Fact]
         public void FilterActiveViewport_Should_Return_Empty_Array_If_No_Regions()
         {
-            var text = CodeManipulation.EnforceLF(Sources.simple);
+            var text = Sources.simple.EnforceLF();
             var workspace = new Workspace(files: new[] { new Workspace.File("testFile.cs", text) });
             var viewports = new BufferInliningTransformer().ExtractViewPorts(workspace);
             var activeViewport = InstrumentationLineMapper.FilterActiveViewport(viewports, BufferId.Parse("testFile.cs@test"));

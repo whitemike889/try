@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 using FluentAssertions;
-using MLS.Agent.Workspaces;
 using Pocket;
 using Recipes;
 using WorkspaceServer.WorkspaceFeatures;
+using WorkspaceServer.Workspaces;
 using Xunit;
 using Xunit.Abstractions;
 

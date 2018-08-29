@@ -2,11 +2,11 @@ using System;
 using System.Threading.Tasks;
 using Clockwise;
 using FluentAssertions;
-using MLS.Agent.Workspaces;
 using Pocket;
 using WorkspaceServer.Models;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Servers.Roslyn;
+using WorkspaceServer.Workspaces;
 using Xunit;
 using Xunit.Abstractions;
 

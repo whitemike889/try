@@ -1,6 +1,4 @@
-﻿using System;
-using System.Linq;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using WorkspaceServer.Models.Execution;
 
 namespace WorkspaceServer.Models.Instrumentation
@@ -14,9 +12,9 @@ namespace WorkspaceServer.Models.Instrumentation
         {
             result.AddProperty("variableLocations", VariableLocations);
         }
-
     }
-    public partial class VariableLocation
+
+    public class VariableLocation
     {
         [JsonProperty("name")]
         public string Name { get; set; }
@@ -28,7 +26,7 @@ namespace WorkspaceServer.Models.Instrumentation
         public DeclaredAt DeclaredAt { get; set; }
     }
 
-    public partial class DeclaredAt
+    public class DeclaredAt
     {
         [JsonProperty("start")]
         public long Start { get; set; }
@@ -37,7 +35,7 @@ namespace WorkspaceServer.Models.Instrumentation
         public long End { get; set; }
     }
 
-    public partial class Location
+    public class Location
     {
         [JsonProperty("startLine")]
         public long StartLine { get; set; }

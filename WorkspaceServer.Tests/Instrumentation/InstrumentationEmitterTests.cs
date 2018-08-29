@@ -1,24 +1,21 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Recipes;
 using WorkspaceServer.Servers.Roslyn;
-using WorkspaceServer.Servers.Roslyn.Instrumentation;
 using WorkspaceServer.Servers.Roslyn.Instrumentation.Contract;
 using Xunit;
 
-namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
+namespace WorkspaceServer.Tests.Instrumentation
 {
     public class InstrumentationEmitterTests
     {
+        private readonly JToken programStateJson;
+        private readonly string programStateString;
 
-        private JToken programStateJson;
-        private string programStateString;
         public InstrumentationEmitterTests()
         {
             var a = 1;

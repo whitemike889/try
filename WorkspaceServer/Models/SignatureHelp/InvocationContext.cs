@@ -21,14 +21,5 @@ namespace WorkspaceServer.Models.SignatureHelp
             ArgumentTypes = argList.Arguments.Select(argument => semanticModel.GetTypeInfo(argument.Expression));
             Separators = argList.Arguments.GetSeparators();
         }
-
-        public InvocationContext(SemanticModel semanticModel, int position, SyntaxNode receiver, AttributeArgumentListSyntax argList)
-        {
-            SemanticModel = semanticModel;
-            Position = position;
-            Receiver = receiver;
-            ArgumentTypes = argList.Arguments.Select(argument => semanticModel.GetTypeInfo(argument.Expression));
-            Separators = argList.Arguments.GetSeparators();
-        }
     }
 }

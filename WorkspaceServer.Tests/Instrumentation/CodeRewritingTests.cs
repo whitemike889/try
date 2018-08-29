@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Threading.Tasks;
 using WorkspaceServer.Servers.Roslyn.Instrumentation;
+using WorkspaceServer.Tests.Servers.Roslyn.Instrumentation;
 using Xunit;
 
-namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
+namespace WorkspaceServer.Tests.Instrumentation
 {
     public class CodeRewritingTests
     {
@@ -37,7 +38,8 @@ InstrumentationEmitter.EmitProgramState(InstrumentationEmitter.GetProgramState("
             Console.WriteLine(""Hello World!"");
         }
     }
-}";
+}".EnforceLF();
+
             rewrittenCode.ShouldBeEquivalentTo(expected);
         }
 
@@ -57,9 +59,9 @@ namespace ConsoleApp2
             Console.WriteLine(""Hello World!"");
         }
     }
-}"
-            );
-            const string expected = @"
+}");
+
+            string expected = @"
 using System;
 
 namespace ConsoleApp2
@@ -75,7 +77,7 @@ namespace ConsoleApp2
                 Console.WriteLine(""Hello World!"");
         }
     }
-}";
+}".EnforceLF();
             actual.ShouldBeEquivalentTo(expected);
         }
 
@@ -88,7 +90,7 @@ namespace ConsoleApp2
                  visitor.VariableLocations ,
                  visitor.Augmentations 
                 );
-            return rewritten.ApplyToTree(document.GetSyntaxTreeAsync().Result).GetText().ToString();
+            return rewritten.ApplyToTree(document.GetSyntaxTreeAsync().Result).GetText().ToString().EnforceLF();
         }
     }
 }

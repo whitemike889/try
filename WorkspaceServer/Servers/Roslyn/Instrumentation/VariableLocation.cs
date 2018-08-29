@@ -4,7 +4,7 @@ using Microsoft.CodeAnalysis.Text;
 
 namespace WorkspaceServer.Servers.Roslyn.Instrumentation
 {
-    public class VariableLocation : ISerializableOnce
+    public class VariableLocation 
     {
         public ISymbol Variable { get; }
         public int StartLine { get; }
@@ -24,25 +24,23 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
         public static VariableLocation FromSpan(ISymbol variable, LinePositionSpan span)
         {
             return new VariableLocation(
-                variable: variable,
-                startLine: span.Start.Line,
+                variable,
+                span.Start.Line,
                 startColumn: span.Start.Character,
                 endLine: span.End.Line,
-                endColumn: span.End.Character
-                );
+                endColumn: span.End.Character);
         }
 
         public LinePositionSpan ToLinePositionSpan()
         {
             return new LinePositionSpan(
-                new Microsoft.CodeAnalysis.Text.LinePosition(StartLine, StartColumn),
-                new Microsoft.CodeAnalysis.Text.LinePosition(EndLine, EndColumn));
+                new LinePosition(StartLine, StartColumn),
+                new LinePosition(EndLine, EndColumn));
         }
 
         public override bool Equals(object obj)
         {
-            var location = obj as VariableLocation;
-            return location != null &&
+            return obj is VariableLocation location &&
                    EqualityComparer<ISymbol>.Default.Equals(Variable, location.Variable) &&
                    StartLine == location.StartLine &&
                    EndLine == location.EndLine &&

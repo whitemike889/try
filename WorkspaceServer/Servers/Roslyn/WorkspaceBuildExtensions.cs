@@ -8,12 +8,10 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.Text;
-using MLS.Agent.Tools;
-using MLS.Agent.Workspaces;
-using WorkspaceServer.BuildLogParser;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Servers.Roslyn.Instrumentation;
 using WorkspaceServer.Transformations;
+using WorkspaceServer.Workspaces;
 using Workspace = WorkspaceServer.Models.Execution.Workspace;
 
 namespace WorkspaceServer.Servers.Roslyn
@@ -38,7 +36,6 @@ namespace WorkspaceServer.Servers.Roslyn
 
             return compilation;
         }
-
 
         private static async Task<Compilation> AugmentCompilationAsync(
             IEnumerable<Viewport> viewports, 
@@ -65,12 +62,11 @@ namespace WorkspaceServer.Servers.Roslyn
 
                 var activeViewport = viewports.DefaultIfEmpty(null).First();
 
-                var (remappedAugmentations, remappedVariableLocations) = await InstrumentationLineMapper.MapLineLocationsRelativeToViewportAsync(
+                await InstrumentationLineMapper.MapLineLocationsRelativeToViewportAsync(
                         visitor.Augmentations,
                         visitor.VariableLocations,
                         document,
-                        activeViewport
-                    );
+                        activeViewport);
 
                 var rewrite = new InstrumentationSyntaxRewriter(
                     linesWithInstrumentation,

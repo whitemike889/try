@@ -3,9 +3,10 @@ using Microsoft.CodeAnalysis;
 
 namespace WorkspaceServer.Servers.Roslyn.Instrumentation
 {
-    public class AugmentationMap : ISerializableEveryLine
+    public class AugmentationMap 
     {
         public Dictionary<SyntaxNode, Augmentation> Data { get; }
+
         public AugmentationMap(Dictionary<SyntaxNode, Augmentation> data = null)
         {
             Data = data ?? new Dictionary<SyntaxNode, Augmentation>();
@@ -18,10 +19,6 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
             {
                 Data[augmentation.AssociatedStatement] = augmentation;
             }
-        }
-        public string SerializeForLine(SyntaxNode line)
-        {
-            return Data[line].Serialize();
         }
     }
 }
