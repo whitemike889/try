@@ -10,7 +10,6 @@ ENV TRYDOTNET_WORKSPACES_PATH=/workspaces
 RUN apk update
 RUN apk add xmlstarlet
 RUN apk add shadow
-RUN dotnet tool install -g t-rex
 
 # set up the working directory where the Agent ASP.NET app runs
 RUN mkdir -p /app
@@ -29,5 +28,7 @@ EXPOSE 4242
 
 WORKDIR /app
 USER app_user
+
+RUN dotnet tool install -g t-rex
 
 ENTRYPOINT ["dotnet", "MLS.Agent.dll"]
