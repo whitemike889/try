@@ -79,12 +79,13 @@ namespace WorkspaceServer.Servers.Roslyn
                 newCompilation = newCompilation.ReplaceSyntaxTree(tree, newTree);
             }
 
-            newCompilation = newCompilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(SourceText.From(Resources.InstrumentationEmitter)));
+            var syntaxTree = CSharpSyntaxTree.ParseText(SourceText.From(Resources.InstrumentationEmitter));
+            newCompilation = newCompilation.AddSyntaxTrees(syntaxTree);
             // if it failed to compile, just return the original, unaugmented compilation
             var augmentedDiagnostics = newCompilation.GetDiagnostics();
             if (augmentedDiagnostics.Any(e => e.Severity == DiagnosticSeverity.Error))
             {
-                throw new Exception("Augmented source failed to compile: " + string.Join(Environment.NewLine, augmentedDiagnostics));
+                throw new InvalidOperationException("Augmented source failed to compile: " + string.Join(Environment.NewLine, augmentedDiagnostics) + Environment.NewLine + Environment.NewLine + syntaxTree);
             }
 
             return newCompilation;
