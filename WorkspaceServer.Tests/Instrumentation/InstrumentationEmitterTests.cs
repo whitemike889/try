@@ -33,7 +33,7 @@ namespace WorkspaceServer.Tests.Instrumentation
                     {
                         Name = nameof(a),
                         Value = JToken.FromObject(a),
-                        DeclaredAt = new DeclarationLocation
+                        RangeOfLines = new RangeOfLines
                         {
                             Start = 10,
                             End = 11
@@ -45,7 +45,7 @@ namespace WorkspaceServer.Tests.Instrumentation
                     {
                         Name = nameof(b),
                         Value = JToken.FromObject(b),
-                        DeclaredAt = new DeclarationLocation
+                        RangeOfLines = new RangeOfLines
                         {
                             Start = 20,
                             End = 21
@@ -86,13 +86,13 @@ namespace WorkspaceServer.Tests.Instrumentation
         [Fact]
         public void Emitted_Json_Has_Correct_DeclaredAt_Start_For_A()
         {
-            getJson().Locals.Where(v => v.Name == "a").First().DeclaredAt.Start.Should().Equals(10);
+            getJson().Locals.Where(v => v.Name == "a").First().RangeOfLines.Start.Should().Equals(10);
         }
 
         [Fact]
         public void Emitted_Json_Has_Correct_DeclaredAt_End_For_A()
         {
-            getJson().Locals.Where(v => v.Name == "a").First().DeclaredAt.End.Should().Equals(11);
+            getJson().Locals.Where(v => v.Name == "a").First().RangeOfLines.End.Should().Equals(11);
         }
 
         [Fact]

@@ -140,7 +140,7 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
                                    {
                                        Name = variable.Name,
                                        Value = JToken.FromObject("unavailable"),
-                                       DeclaredAt = new DeclarationLocation
+                                       RangeOfLines = new RangeOfLines
                                        {
                                            Start = location.Start,
                                            End = location.End

@@ -18,7 +18,7 @@ namespace WorkspaceServer.Tests.Instrumentation
             {
                 Name = nameof(a),
                 Value = JToken.FromObject(a),
-                DeclaredAt = new DeclarationLocation
+                RangeOfLines = new RangeOfLines
                 {
                     Start = 10,
                     End = 11

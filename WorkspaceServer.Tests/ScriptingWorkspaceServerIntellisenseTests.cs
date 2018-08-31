@@ -4,6 +4,7 @@ using FluentAssertions;
 using WorkspaceServer.Models;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Servers.Scripting;
+using WorkspaceServer.Workspaces;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -18,9 +19,9 @@ namespace WorkspaceServer.Tests
         protected override ILanguageService GetLanguageService(string testName = null) =>
             new ScriptingWorkspaceServer();
 
-        protected override Task<ICodeRunner> GetRunner(string testName = null)
+        protected override  Task<(ICodeRunner runner, WorkspaceBuild workspace)> GetRunnerAndWorkpaceBuild(string testName = null)
         {
-            return Task.FromResult<ICodeRunner>(new ScriptingWorkspaceServer());
+            return Task.FromResult(((ICodeRunner)new ScriptingWorkspaceServer(), new WorkspaceBuild("script")));
         }
 
         [Fact]

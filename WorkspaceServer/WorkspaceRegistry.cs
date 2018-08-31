@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Clockwise;
-using MLS.Agent.Tools;
 using WorkspaceServer.Workspaces;
 
 namespace WorkspaceServer
@@ -101,12 +100,14 @@ namespace WorkspaceServer
                                   workspace =>
                                   {
                                       workspace.CreateUsingDotnet("console");
+                                      workspace.AddPackageReference("Newtonsoft.Json");
                                   });
 
             registry.Add("xunit",
                                   workspace =>
                                   {
                                       workspace.CreateUsingDotnet("xunit", "tests");
+                                      workspace.AddPackageReference("Newtonsoft.Json");
                                   });
 
             return registry;

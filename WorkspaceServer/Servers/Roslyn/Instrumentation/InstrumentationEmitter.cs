@@ -6,7 +6,7 @@ using WorkspaceServer.Servers.Roslyn.Instrumentation.Contract;
 
 namespace WorkspaceServer.Servers.Roslyn.Instrumentation.Contract
 {
-    public class ProgramStateAtPosition 
+    public class ProgramStateAtPosition
     {
         [JsonProperty("filePosition")]
         public FilePosition FilePosition { get; set; }
@@ -24,7 +24,7 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation.Contract
         public VariableInfo[] Fields { get; set; }
 
         [JsonProperty("output")]
-        public DeclarationLocation Output { get; set; }
+        public RangeOfLines Output { get; set; }
     }
 
     public class VariableInfo
@@ -36,10 +36,10 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation.Contract
         public JToken Value { get; set; }
 
         [JsonProperty("declaredAt")]
-        public DeclarationLocation DeclaredAt { get; set; }
+        public RangeOfLines RangeOfLines { get; set; }
     }
 
-    public class DeclarationLocation
+    public class RangeOfLines
     {
         [JsonProperty("start")]
         public long Start { get; set; }
@@ -60,40 +60,40 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation.Contract
         public string File { get; set; }
     }
 }
-    public static class InstrumentationEmitter
+
+public static class InstrumentationEmitter
+{
+    public static readonly string Sentinel = "6a2f74a2-f01d-423d-a40f-726aa7358a81";
+
+    public static JToken GetProgramState(
+        string filePositionStr, //FilePosition filePosition,
+        params (string info, object value)[] variableInfo) //VariableInfo[] variableInfo) // string = variableInfo about variable
     {
-        public static readonly string Sentinel = "6a2f74a2-f01d-423d-a40f-726aa7358a81";
-        public static JToken GetProgramState(
-            string filePositionStr, //FilePosition filePosition,
-            params (string info, object value)[] variableInfo) //VariableInfo[] variableInfo) // string = variableInfo about variable
+        var filePosition = JsonConvert.DeserializeObject<FilePosition>(filePositionStr);
+
+        List<VariableInfo> finalInfos = new List<VariableInfo>();
+
+        foreach (var (info, value) in variableInfo)
         {
-            var filePosition = JsonConvert.DeserializeObject<FilePosition>(filePositionStr);
-
-            List<VariableInfo> finalInfos = new List<VariableInfo>();
-            foreach (var (info, value) in variableInfo)
+            var vInfo = JsonConvert.DeserializeObject<VariableInfo>(info);
+            var neInfo = new VariableInfo()
             {
-                var vInfo = JsonConvert.DeserializeObject<VariableInfo>(info);
-                var neInfo = new VariableInfo()
-                {
-                    DeclaredAt = vInfo.DeclaredAt,
-                    Name = vInfo.Name,
-                    Value = value.ToString()
-                };
-                finalInfos.Add(neInfo);
-                   
-            }
-
-
-            return JToken.FromObject(new ProgramStateAtPosition
-            {
-                FilePosition = filePosition,
-                Locals = finalInfos.ToArray()
-            });
+                RangeOfLines = vInfo.RangeOfLines,
+                Name = vInfo.Name,
+                Value = value.ToString()
+            };
+            finalInfos.Add(neInfo);
         }
 
-        public static void EmitProgramState(JToken programState)
+        return JToken.FromObject(new ProgramStateAtPosition
         {
-            Console.WriteLine(Sentinel + programState + Sentinel);
-        }
+            FilePosition = filePosition,
+            Locals = finalInfos.ToArray()
+        });
     }
 
+    public static void EmitProgramState(JToken programState)
+    {
+        Console.WriteLine(Sentinel + programState + Sentinel);
+    }
+}

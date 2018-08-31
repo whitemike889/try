@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 using Recipes;
 using WorkspaceServer.Models.Instrumentation;
+using WorkspaceServer.Servers.Roslyn.Instrumentation.Contract;
 
 namespace WorkspaceServer.Servers.Roslyn.Instrumentation
 {
@@ -46,7 +47,7 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
                             // every piece of instrumentation.
                             var (outputStart, outputEnd) = GetSpanOfStdOutCreatedAtCurrentStep(currentState);
 
-                            var newOutput = new Output
+                            var newOutput = new RangeOfLines
                             {
                                 Start = outputStart,
                                 End = outputEnd

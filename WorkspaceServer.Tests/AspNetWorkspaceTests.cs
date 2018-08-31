@@ -47,7 +47,7 @@ namespace WorkspaceServer.Tests
             }
         }
 
-        protected async Task<(ICodeRunner server, WorkspaceBuild workspace )> GetRunnerAndWorkspace(
+        protected async Task<(ICodeRunner server, WorkspaceBuild workspace)> GetRunnerAndWorkspace(
             [CallerMemberName] string testName = null)
         {
             var workspace = await Create.WebApiWorkspaceCopy(testName);
