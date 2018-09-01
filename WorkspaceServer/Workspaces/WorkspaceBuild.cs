@@ -1,14 +1,12 @@
 ﻿using System;
 using System.IO;
-using Clockwise;
 using System.Linq;
 using System.Threading.Tasks;
-using Pocket;
+using Clockwise;
 using MLS.Agent.Tools;
-using MLS.Agent.DotnetCli;
-using WorkspaceServer;
+using Pocket;
 
-namespace MLS.Agent.Workspaces
+namespace WorkspaceServer.Workspaces
 {
     public class WorkspaceBuild
     {

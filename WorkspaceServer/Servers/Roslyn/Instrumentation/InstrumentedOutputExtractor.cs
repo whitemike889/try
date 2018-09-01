@@ -4,7 +4,8 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using Recipes;
+using WorkspaceServer.Models.Instrumentation;
 
 namespace WorkspaceServer.Servers.Roslyn.Instrumentation
 {
@@ -45,15 +46,17 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
                             // every piece of instrumentation.
                             var (outputStart, outputEnd) = GetSpanOfStdOutCreatedAtCurrentStep(currentState);
 
-                            var modifiedInstrumentation = (JObject)JsonConvert.DeserializeObject(nextString.Trim());
-                            var output = ImmutableSortedDictionary.Create<string, int>()
-                                .Add("start", outputStart)
-                                .Add("end", outputEnd);
-                            var appendedJson = JObject.FromObject(output);
-                            modifiedInstrumentation.Add("output", appendedJson);
+                            var newOutput = new RangeOfLines
+                            {
+                                Start = outputStart,
+                                End = outputEnd
+                            };
+
+                            var modifiedInstrumentation = JsonConvert.DeserializeObject<ProgramStateAtPosition>(nextString.Trim());
+                            modifiedInstrumentation.Output = newOutput;
 
                             return currentState.With(
-                                instrumentation: currentState.Instrumentation.Add(modifiedInstrumentation.ToString())
+                                instrumentation: currentState.Instrumentation.Add(modifiedInstrumentation.ToJson())
                             );
                         }
                     }
@@ -87,15 +90,16 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
 
         static (int outputStart, int outputEnd) GetSpanOfStdOutCreatedAtCurrentStep(ExtractorState currentState)
         {
-            if (currentState.StdOut.IsEmpty) return (0, 0);
-            else
+            if (currentState.StdOut.IsEmpty)
             {
-                var newOutput = currentState.StdOut.Last();
-                var entireOutput = currentState.StdOut.Join(String.Empty);
-                var endLocation = entireOutput.Length;
-
-                return (endLocation - newOutput.Length, endLocation);
+                return (0, 0);
             }
+
+            var newOutput = currentState.StdOut.Last();
+            var entireOutput = currentState.StdOut.Join(String.Empty);
+            var endLocation = entireOutput.Length;
+
+            return (endLocation - newOutput.Length, endLocation);
         }
 
         static IEnumerable<string> TokenizeWithDelimiter(this string input, string delimiter) => Regex.Split(input, $"({delimiter}[\n]?)").Where(str => !String.IsNullOrWhiteSpace(str));

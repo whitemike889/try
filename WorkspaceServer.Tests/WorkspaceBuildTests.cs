@@ -8,7 +8,7 @@ using Clockwise;
 using Pocket;
 using Xunit;
 using Xunit.Abstractions;
-using MLS.Agent.Workspaces;
+using WorkspaceServer.Workspaces;
 
 namespace WorkspaceServer.Tests
 {

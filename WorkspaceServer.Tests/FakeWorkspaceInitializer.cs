@@ -1,7 +1,7 @@
 using System.IO;
 using System.Threading.Tasks;
 using Clockwise;
-using MLS.Agent.Workspaces;
+using WorkspaceServer.Workspaces;
 
 namespace WorkspaceServer.Tests
 {

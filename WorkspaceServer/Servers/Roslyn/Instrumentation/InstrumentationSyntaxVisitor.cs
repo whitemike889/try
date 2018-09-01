@@ -131,13 +131,11 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
             var parentAssigned = GetAssignedVariablesAtParent(statements.First());
             var isInStaticMethod = _semanticModel.GetEnclosingSymbol(statements.First().SpanStart).IsStatic;
             var dataFlowIn = _semanticModel.AnalyzeDataFlow(statements.First()).DataFlowsIn;
-            var dataflow = _semanticModel.AnalyzeDataFlow(statements.First());
 
             var filteredStatements = FilterStatementsByRegions(statements).ToList();
 
             for (int i = 0; i < statements.Count(); i++)
             {
-                var currentDataflow = _semanticModel.AnalyzeDataFlow(filteredStatements.ElementAt(i));
                 var statement = filteredStatements[i];
                 var prevAssigned = i > 0 ? _semanticModel.AnalyzeDataFlow(filteredStatements[0], filteredStatements[i - 1]).AlwaysAssigned : Enumerable.Empty<ISymbol>();
                 var assigned = prevAssigned.Union(parentAssigned).Union(dataFlowIn);

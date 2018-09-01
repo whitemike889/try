@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Text;
 
 namespace WorkspaceServer.Servers.Roslyn.Instrumentation
 {
@@ -24,17 +22,17 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
             StdOut = stdOut ?? ImmutableList.Create<string>();
         }
 
-        public ExtractorState With(bool? isInstrumentation = null,
+        public ExtractorState With(
+            bool? isInstrumentation = null,
             string programDescriptor = "",
             ImmutableList<string> instrumentation = null,
             ImmutableList<string> stdOut = null)
         {
             return new ExtractorState(
-                isInstrumentation ?? this.IsInstrumentation,
-                programDescriptor == "" ? this.ProgramDescriptor : programDescriptor,
-                instrumentation ?? this.Instrumentation,
-                stdOut ?? this.StdOut
-            );
+                isInstrumentation ?? IsInstrumentation,
+                programDescriptor == "" ? ProgramDescriptor : programDescriptor,
+                instrumentation ?? Instrumentation,
+                stdOut ?? StdOut);
         }
     }
 }

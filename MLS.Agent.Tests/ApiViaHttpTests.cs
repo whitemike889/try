@@ -18,7 +18,7 @@ using Xunit;
 using Xunit.Abstractions;
 using static Pocket.Logger<MLS.Agent.Tests.ApiViaHttpTests>;
 using Workspace = WorkspaceServer.Models.Execution.Workspace;
-using MLS.Agent.Workspaces;
+using WorkspaceServer.Workspaces;
 
 namespace MLS.Agent.Tests
 {
@@ -73,7 +73,7 @@ namespace MLS.Agent.Tests
             var output = Guid.NewGuid().ToString();
             var requestJson = Create.SimpleWorkspaceRequestAsJson(output, "console");
 
-            var response = await CallRun(requestJson, options: new CommandLineOptions(true, false,string.Empty,false,true,string.Empty));
+            var response = await CallRun(requestJson, options: new CommandLineOptions(true, false, string.Empty, false, true, string.Empty));
 
             var result = response;
             result.Should().BeNotFound();

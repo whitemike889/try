@@ -4,9 +4,11 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 using WorkspaceServer.Servers.Roslyn.Instrumentation;
+using WorkspaceServer.Tests.Servers.Roslyn.Instrumentation;
 using Xunit;
+using TestUtils = WorkspaceServer.Tests.Instrumentation.TestUtils;
 
-namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
+namespace WorkspaceServer.Tests.Instrumentation
 {
     public class RewriterVariableLocationTests
     {
@@ -23,14 +25,14 @@ namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
             var symbols = document.GetSemanticModelAsync().Result.LookupSymbols(250)
                 .Where(symbol => symbol.Kind == SymbolKind.Local);
 
-            var a = symbols.Where(symbol => symbol.Name == "a").First();
+            var a = symbols.First(symbol => symbol.Name == "a");
             var aLocations = new[]
             {
                 new VariableLocation(a, 12, 12, 12, 13),
                 new VariableLocation(a, 9, 9, 16, 21)
             };
 
-            var s = symbols.Where(symbol => symbol.Name == "s").First();
+            var s = symbols.First(symbol => symbol.Name == "s");
             var sLocations = new[]
             {
                 new VariableLocation(s, 8, 8, 19, 20),
@@ -43,8 +45,8 @@ namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
 
             var rewriter = new InstrumentationSyntaxRewriter(
                     instrumentedNodes,
-                    new[] { locationMap },
-                    Enumerable.Empty<ISerializableEveryLine>()
+                    locationMap,
+                    new AugmentationMap()
                 );
 
             var rewrittenProgramWithWhitespace = rewriter.ApplyToTree(syntaxTree).ToString();
@@ -55,24 +57,24 @@ namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
         public void Rewritten_Program_Should_Have_Balanced_Brackets()
         {
             Assert.Equal(
-                rewrittenProgram.ToList().Count(x => x == '('),
-                rewrittenProgram.ToList().Count(x => x == ')')
+                rewrittenProgram.Count(x => x == '('),
+                rewrittenProgram.Count(x => x == ')')
                 );
         }
         [Fact]
         public void Rewritten_Program_Should_Have_Balanced_Square_Brackets()
         {
             Assert.Equal(
-                rewrittenProgram.ToList().Count(x => x == '['),
-                rewrittenProgram.ToList().Count(x => x == ']')
+                rewrittenProgram.Count(x => x == '['),
+                rewrittenProgram.Count(x => x == ']')
                 );
         }
         [Fact]
         public void Rewritten_Program_Should_Have_Balanced_Squiggly_Brackets()
         {
             Assert.Equal(
-                rewrittenProgram.ToList().Count(x => x == '{'),
-                rewrittenProgram.ToList().Count(x => x == '}')
+                rewrittenProgram.Count(x => x == '{'),
+                rewrittenProgram.Count(x => x == '}')
                 );
         }
 

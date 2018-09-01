@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Clockwise;
 using MLS.Agent.Tools;
 
-namespace MLS.Agent.DotnetCli
+namespace WorkspaceServer
 {
     public class Dotnet
     {

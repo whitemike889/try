@@ -2,11 +2,10 @@
 using System.Net.Http;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
-using MLS.Agent.DotnetCli;
 using MLS.Agent.Tools;
-using MLS.Agent.Workspaces;
 using Pocket;
 using WorkspaceServer.Models.Execution;
+using WorkspaceServer.Workspaces;
 using static Pocket.Logger;
 
 namespace WorkspaceServer.WorkspaceFeatures

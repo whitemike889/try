@@ -14,5 +14,10 @@ namespace WorkspaceServer.Tests
             }
         }
 
+        public static void ShouldBeEquivalentTo(this IReadOnlyCollection<string> actual, params string[] expected)
+            => ShouldMatch(actual.Select(x => x.Trim()).ToList(), expected.Select(x => x.Trim()).ToArray());
+
+        public static void ShouldBeEquivalentTo(this string actual, string expected)
+            => ShouldBeEquivalentTo(actual.EnforceLF().Split("\n"), expected.EnforceLF().Split("\n"));
     }
 }

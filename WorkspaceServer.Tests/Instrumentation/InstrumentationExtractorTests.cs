@@ -1,11 +1,11 @@
-﻿using FluentAssertions;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using FluentAssertions;
 using WorkspaceServer.Servers.Roslyn.Instrumentation;
 using Xunit;
 
-namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
+namespace WorkspaceServer.Tests.Instrumentation
 {
     public class InstrumentedOutputExtractorTests
     {
@@ -169,7 +169,7 @@ namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
             public void Empty_standard_out_with_instrumentation_remains_empty_after_extraction()
             {
                 InstrumentedOutputExtractor.ExtractOutput(
-                    new string[] {
+                    new[] {
                         _sentinel,
                         #region variableLocation
             @"

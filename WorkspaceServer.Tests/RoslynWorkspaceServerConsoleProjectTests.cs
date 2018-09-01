@@ -11,6 +11,8 @@ using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Models.Instrumentation;
 using WorkspaceServer.Servers.Roslyn;
 using WorkspaceServer.Servers.Roslyn.Instrumentation;
+using WorkspaceServer.Tests.CodeSamples;
+using WorkspaceServer.Workspaces;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -22,29 +24,26 @@ namespace WorkspaceServer.Tests
         {
         }
 
-        protected override Workspace CreateWorkspaceWithMainContaining(string text)
+        protected override Workspace CreateWorkspaceWithMainContaining(string text, WorkspaceBuild workspaceBuild)
         {
             return Workspace.FromSource(
                 $@"using System; using System.Linq; using System.Collections.Generic; class Program {{ static void Main() {{ {text}
                     }}
                 }}
             ",
-                workspaceType: GetWorkspaceType());
-        }
-
-        protected override string GetWorkspaceType()
-        {
-            return "console";
+                workspaceType: workspaceBuild.Name);
         }
 
         [Fact]
-        public async Task When_compile_is_unsuccessful_diagnostic_are_aligned_with_buffer_span()
+        public async Task When_compile_is_unsuccessful_diagnostics_are_aligned_with_buffer_span()
         {
+            var (server, build) = await GetRunnerAndWorkpaceBuild();
+
             var workspace = new Workspace(
-                workspaceType: "console",
+                workspaceType: build.Name,
                 files: new[] { new Workspace.File("Program.cs", CodeSamples.SourceCodeProvider.ConsoleProgramSingleRegion) },
                 buffers: new[] { new Workspace.Buffer("Program.cs@alpha", @"Console.WriteLine(banana);", 0) });
-            var server = await GetRunner();
+
 
             var result = await server.Run(new WorkspaceRequest(workspace));
 
@@ -57,13 +56,14 @@ namespace WorkspaceServer.Tests
         }
 
         [Fact]
-        public async Task When_compile_is_unsuccessful_diagnostic_are_aligned_with_buffer_span_when_code_is_multi_line()
+        public async Task When_compile_is_unsuccessful_diagnostics_are_aligned_with_buffer_span_when_code_is_multi_line()
         {
+            var (server, build) = await GetRunnerAndWorkpaceBuild();
+            
             var workspace = new Workspace(
-                workspaceType: "console",
+                workspaceType: build.Name,
                 files: new[] { new Workspace.File("Program.cs", CodeSamples.SourceCodeProvider.ConsoleProgramSingleRegion) },
                 buffers: new[] { new Workspace.Buffer("Program.cs@alpha", @"var a = 10;" + Environment.NewLine + "Console.WriteLine(banana);", 0) });
-            var server = await GetRunner();
 
             var result = await server.Run(new WorkspaceRequest(workspace));
 
@@ -78,11 +78,12 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task When_diagnostics_are_outside_of_viewport_then_they_are_omitted()
         {
+            var (server, build) = await GetRunnerAndWorkpaceBuild();
+
             var workspace = new Workspace(
-                workspaceType: "console",
-                files: new[] { new Workspace.File("Program.cs", CodeSamples.SourceCodeProvider.ConsoleProgramSingleRegionExtraUsing) },
+                workspaceType: build.Name,
+                files: new[] { new Workspace.File("Program.cs", SourceCodeProvider.ConsoleProgramSingleRegionExtraUsing) },
                 buffers: new[] { new Workspace.Buffer("Program.cs@alpha", @"var a = 10;" + Environment.NewLine + "Console.WriteLine(a);", 0) });
-            var server = await GetRunner();
 
             var result = await server.Run(new WorkspaceRequest(workspace));
 
@@ -90,7 +91,7 @@ namespace WorkspaceServer.Tests
             {
                 Succeeded = true,
                 Output = new[] { "10", "" },
-                Exception = (string)null, // we already display the error in Output
+                Exception = (string) null, // we already display the error in Output
             }, config => config.ExcludingMissingMembers());
         }
 
@@ -135,18 +136,19 @@ namespace FibonacciTest
 
             #endregion
 
-            var workspace = new Workspace(workspaceType: "console", buffers: new[]
+            var (server, build) = await GetRunnerAndWorkpaceBuild();
+
+            var workspace = new Workspace(workspaceType: build.Name, buffers: new[]
             {
                 new Workspace.Buffer("Program.cs", program, 0),
                 new Workspace.Buffer("FibonacciGenerator.cs", generator, 0)
             });
-            var server = await GetRunner();
 
             var result = await server.Run(new WorkspaceRequest(workspace));
 
             result.Succeeded.Should().BeTrue();
 
-            workspace = new Workspace(workspaceType: "console", buffers: new[]
+            workspace = new Workspace(workspaceType: build.Name, buffers: new[]
             {
                 new Workspace.Buffer("NotProgram.cs", program, 0),
                 new Workspace.Buffer("FibonacciGenerator.cs", generator, 0)
@@ -154,6 +156,66 @@ namespace FibonacciTest
             result = await server.Run(new WorkspaceRequest(workspace));
 
             result.Succeeded.Should().BeTrue();
+        }
+
+        [Fact]
+        public async Task Response_with_multi_buffer_workspace_with_instrumentation()
+        {
+            #region bufferSources
+
+            const string program = @"using System;
+using System.Linq;
+
+namespace FibonacciTest
+{
+    public class Program
+    {
+        public static void Main()
+        {
+            foreach (var i in FibonacciGenerator.Fibonacci().Take(20))
+            {
+                Console.WriteLine(i);
+            }
+        }
+    }
+}";
+            const string generator = @"using System.Collections.Generic;
+
+namespace FibonacciTest
+{
+    public static class FibonacciGenerator
+    {
+        public  static IEnumerable<int> Fibonacci()
+        {
+            int current = 1, next = 1;
+            while (true)
+            {
+                yield return current;
+                next = current + (current = next);
+            }
+        }
+    }
+}";
+
+            #endregion
+
+            var (server, build) = await GetRunnerAndWorkpaceBuild();
+
+            var request = new WorkspaceRequest(
+                new Workspace(
+                    workspaceType: build.Name, buffers: new[]
+                    {
+                        new Workspace.Buffer("Program.cs", program, 0),
+                        new Workspace.Buffer("FibonacciGenerator.cs", generator, 0)
+                    }, 
+                    includeInstrumentation: true),
+                new BufferId("Program.cs"));
+
+            var result = await server.Run(request);
+
+            result.Succeeded.Should().BeTrue();
+            result.Output.Count.Should().Be(21);
+            result.Output.Should().BeEquivalentTo("1", "1", "2", "3", "5", "8", "13", "21", "34", "55", "89", "144", "233", "377", "610", "987", "1597", "2584", "4181", "6765", "");
         }
 
         [Fact]
@@ -177,13 +239,13 @@ namespace ConsoleProgram
 
             var linePositionSpans = ToLinePositionSpan(spans, code);
 
-            var workspace = new Workspace(
-                workspaceType: "console",
-                buffers: new[] { new Workspace.Buffer("test.cs", code)},
-                includeInstrumentation: true
-                );
+            var (server, build) = await GetRunnerAndWorkpaceBuild();
 
-            var server = await GetRunner();
+            var workspace = new Workspace(
+                workspaceType: build.Name,
+                buffers: new[] { new Workspace.Buffer("test.cs", code)},
+                includeInstrumentation: true);
+
             var result = await server.Run(new WorkspaceRequest(workspace));
             var filePositions = result.Features[typeof(ProgramStateAtPositionArray)].As<ProgramStateAtPositionArray>()
                 .ProgramStates
@@ -216,13 +278,14 @@ namespace ConsoleProgram
 
             var linePositionSpans = ToLinePositionSpan(spans, code);
 
+            var (server, build) = await GetRunnerAndWorkpaceBuild();
+
             var workspace = new Workspace(
-                workspaceType: "console",
+                workspaceType: build.Name,
                 buffers: new[] { new Workspace.Buffer("test.cs", code)},
                 includeInstrumentation: true
                 );
 
-            var server = await GetRunner();
             var result = await server.Run(new WorkspaceRequest(workspace));
 
             var locations = result.Features[typeof(ProgramDescriptor)].As<ProgramDescriptor>()
@@ -258,14 +321,15 @@ namespace ConsoleProgram
             MarkupTestFile.GetNamedSpans(regionCodeWithMarkup, out var regionCode, out var spans);
             var linePositionSpans = ToLinePositionSpan(spans, regionCode);
 
+            var (server, build) = await GetRunnerAndWorkpaceBuild();
+
             var workspace = new Workspace(
-                workspaceType: "console",
+                workspaceType: build.Name,
                 buffers: new[] { new Workspace.Buffer("test.cs@reg", regionCode) },
                 files: new [] { new Workspace.File("test.cs", code) },
                 includeInstrumentation: true
                 );
 
-            var server = await GetRunner();
             var result = await server.Run(new WorkspaceRequest(workspace));
 
             var locations = result.Features[typeof(ProgramDescriptor)].As<ProgramDescriptor>()
@@ -302,14 +366,15 @@ namespace ConsoleProgram
             MarkupTestFile.GetNamedSpans(regionCodeWithMarkup, out var regionCode, out var spans);
             var linePositionSpans = ToLinePositionSpan(spans, regionCode);
 
+            var (server, build) = await GetRunnerAndWorkpaceBuild();
+
             var workspace = new Workspace(
-                workspaceType: "console",
+                workspaceType: build.Name,
                 buffers: new[] { new Workspace.Buffer("test.cs@reg", regionCode)},
                 files: new [] { new Workspace.File("test.cs", code)},
                 includeInstrumentation: true
                 );
 
-            var server = await GetRunner();
             var result = await server.Run(new WorkspaceRequest(workspace));
             var filePositions = result.Features[typeof(ProgramStateAtPositionArray)].As<ProgramStateAtPositionArray>()
                 .ProgramStates
@@ -320,6 +385,7 @@ namespace ConsoleProgram
 
             filePositions.Should().BeEquivalentTo(expectedLines);
         }
+
         [Fact]
         public async Task Response_with_multi_buffer_workspace()
         {
@@ -360,12 +426,13 @@ namespace FibonacciTest
 }";
             #endregion
 
-            var workspace = new Workspace(workspaceType: "console", buffers: new[]
+            var (server, build) = await GetRunnerAndWorkpaceBuild();
+
+            var workspace = new Workspace(workspaceType: build.Name, buffers: new[]
             {
                 new Workspace.Buffer("Program.cs",program,0),
                 new Workspace.Buffer("FibonacciGenerator.cs",generator,0)
             });
-            var server = await GetRunner();
 
             var result = await server.Run(new WorkspaceRequest(workspace));
 
@@ -414,13 +481,13 @@ namespace FibonacciTest
 }";
             #endregion
 
-            var workspace = new Workspace(workspaceType: "console", buffers: new[]
+            var (server, build) = await GetRunnerAndWorkpaceBuild();
+
+            var workspace = new Workspace(workspaceType: build.Name, buffers: new[]
             {
                 new Workspace.Buffer("Program.cs",program,0),
                 new Workspace.Buffer("generators/FibonacciGenerator.cs",generator,0)
             });
-
-            var server = await GetRunner();
 
             var result = await server.Run(new WorkspaceRequest(workspace));
 
@@ -434,15 +501,18 @@ namespace FibonacciTest
                 kv => kv.Key,
                 kv => kv.Value.Select(span => span.ToLinePositionSpan(SourceText.From(code))));
 
-        protected override async Task<ICodeRunner> GetRunner(
+        protected override async Task<(ICodeRunner runner, WorkspaceBuild workspace)> GetRunnerAndWorkpaceBuild(
             [CallerMemberName] string testName = null)
         {
-            return new RoslynWorkspaceServer(WorkspaceRegistry.CreateDefault());
+            var workspace = await Create.ConsoleWorkspaceCopy(testName);
+
+            var server = new RoslynWorkspaceServer(workspace);
+
+            return (server, workspace);
         }
 
         protected override ILanguageService GetLanguageService(
             [CallerMemberName] string testName = null) => new RoslynWorkspaceServer(
-                WorkspaceRegistry.CreateDefault());
-
+            WorkspaceRegistry.CreateDefault());
     }
 }

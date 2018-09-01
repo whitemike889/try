@@ -4,9 +4,8 @@
 using System;
 using System.IO;
 using System.Reflection;
-using WorkspaceServer;
 
-namespace MLS.Agent.DotnetCli
+namespace WorkspaceServer
 {
     public static class DotnetMuxer
     {

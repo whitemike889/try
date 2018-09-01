@@ -112,11 +112,6 @@ namespace WorkspaceServer.Transformations
                 lineOffset++;
             }
 
-            if (lineOffset >= lines.Count)
-            {
-                return null;
-            }
-
             var bufferTextSource = SourceFile.Create(viewport.Destination.Text.GetSubText(selectionSpan).ToString());
             var lineText = line.ToString();
             var partToFind = lineText.Substring(diagnostic.Location.GetMappedLineSpan().Span.Start.Character);

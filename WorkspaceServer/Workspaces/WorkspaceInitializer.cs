@@ -2,10 +2,9 @@
 using System.IO;
 using System.Threading.Tasks;
 using Clockwise;
-using MLS.Agent.DotnetCli;
 using MLS.Agent.Tools;
 
-namespace MLS.Agent.Workspaces
+namespace WorkspaceServer.Workspaces
 {
     public class WorkspaceInitializer : IWorkspaceInitializer
     {

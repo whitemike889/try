@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace WorkspaceServer.Tests.CodeSamples
+﻿namespace WorkspaceServer.Tests.CodeSamples
 {
     internal static class SourceCodeProvider
     {

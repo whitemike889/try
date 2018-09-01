@@ -4,9 +4,6 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using Microsoft.CodeAnalysis;
-using MLS.Agent.Tools;
-using WorkspaceServer.Models.Execution;
-using MLS.Agent.Workspaces;
 
 namespace WorkspaceServer.Servers.Roslyn
 {

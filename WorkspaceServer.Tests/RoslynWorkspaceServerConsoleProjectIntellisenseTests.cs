@@ -7,6 +7,7 @@ using WorkspaceServer.Models;
 using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Servers.Roslyn;
+using WorkspaceServer.Workspaces;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -645,7 +646,7 @@ namespace FibonacciTest
             result.Signatures.Should().Contain(signature => signature.Label == "JToken JToken.FromObject(object o)");
         }
 
-        protected override Task<ICodeRunner> GetRunner(
+        protected override Task<(ICodeRunner runner, WorkspaceBuild workspace)> GetRunnerAndWorkpaceBuild(
             [CallerMemberName] string testName = null)
         {
             throw new NotImplementedException();
