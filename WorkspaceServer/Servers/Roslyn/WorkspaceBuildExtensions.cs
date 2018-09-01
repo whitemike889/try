@@ -1,7 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Resources;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.CodeAnalysis;
@@ -18,6 +22,8 @@ namespace WorkspaceServer.Servers.Roslyn
 {
     public static class WorkspaceBuildExtensions
     {
+        private static readonly Lazy<SyntaxTree> _instrumentationEmitterSyntaxTree =new Lazy<SyntaxTree>(GetInstrumentationEmitterSyntaxTree);
+
         public static async Task<Compilation> Compile(this WorkspaceBuild build, Workspace workspace, Budget budget, BufferId activeBufferId)
         {
             var sourceFiles = workspace.GetSourceFiles()
@@ -79,16 +85,37 @@ namespace WorkspaceServer.Servers.Roslyn
                 newCompilation = newCompilation.ReplaceSyntaxTree(tree, newTree);
             }
 
-            var syntaxTree = CSharpSyntaxTree.ParseText(SourceText.From(Resources.InstrumentationEmitter));
-            newCompilation = newCompilation.AddSyntaxTrees(syntaxTree);
-            // if it failed to compile, just return the original, unaugmented compilation
+            newCompilation = newCompilation.AddSyntaxTrees(_instrumentationEmitterSyntaxTree.Value);
+           
             var augmentedDiagnostics = newCompilation.GetDiagnostics();
             if (augmentedDiagnostics.Any(e => e.Severity == DiagnosticSeverity.Error))
             {
-                throw new InvalidOperationException("Augmented source failed to compile: " + string.Join(Environment.NewLine, augmentedDiagnostics) + Environment.NewLine + Environment.NewLine + syntaxTree);
+                throw new InvalidOperationException(
+                    "Augmented source failed to compile: " + 
+                    string.Join(Environment.NewLine, augmentedDiagnostics) + 
+                    Environment.NewLine + 
+                    Environment.NewLine + 
+                    newCompilation.SyntaxTrees.Join(Environment.NewLine + Environment.NewLine));
             }
 
             return newCompilation;
+        }
+
+        private static SyntaxTree GetInstrumentationEmitterSyntaxTree()
+        {
+            var resourceName = "WorkspaceServer.Servers.Roslyn.Instrumentation.InstrumentationEmitter.cs"; // $"{typeof(InstrumentationEmitter).FullName}.cs";
+
+            var assembly = typeof(WorkspaceBuildExtensions).Assembly;
+
+            using (var stream = assembly.GetManifestResourceStream(resourceName))
+            using (var reader = new StreamReader(stream ?? throw new InvalidOperationException($"Resource \"{resourceName}\" not found"), Encoding.UTF8))
+            {
+                var source = reader.ReadToEnd();
+               
+                var syntaxTree = CSharpSyntaxTree.ParseText(SourceText.From(source));
+
+                return syntaxTree;
+            }
         }
 
         public static async Task<(Compilation compilation, IReadOnlyCollection<Document> documents)> GetCompilation(

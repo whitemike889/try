@@ -3,7 +3,6 @@ using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Recipes;
-using WorkspaceServer.Servers.Roslyn.Instrumentation.Contract;
 
 namespace WorkspaceServer.Servers.Roslyn.Instrumentation
 {

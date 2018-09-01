@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Recipes;
 using WorkspaceServer.Servers.Roslyn;
-using WorkspaceServer.Servers.Roslyn.Instrumentation.Contract;
+using WorkspaceServer.Servers.Roslyn.Instrumentation;
 using Xunit;
 
 namespace WorkspaceServer.Tests.Instrumentation

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
 using WorkspaceServer.Servers.Roslyn.Instrumentation;
-using WorkspaceServer.Tests.Servers.Roslyn.Instrumentation;
 using Xunit;
 
 namespace WorkspaceServer.Tests.Instrumentation
@@ -25,20 +24,22 @@ namespace ConsoleApp2
     }
 }");
 
-            string expected = @"
+            var emitterTypeName = typeof(InstrumentationEmitter).FullName;
+
+            string expected = $@"
 using System;
 
 namespace ConsoleApp2
-{
+{{
     class Program
-    {
+    {{
         static void Main()
-        {
-InstrumentationEmitter.EmitProgramState(InstrumentationEmitter.GetProgramState(""{\""line\"":9,\""character\"":12,\""file\"":\""document.cs\""}""));
+        {{
+{emitterTypeName}.EmitProgramState({emitterTypeName}.GetProgramState(""{{\""line\"":9,\""character\"":12,\""file\"":\""document.cs\""}}""));
             Console.WriteLine(""Hello World!"");
-        }
-    }
-}".EnforceLF();
+        }}
+    }}
+}}".EnforceLF();
 
             rewrittenCode.ShouldBeEquivalentTo(expected);
         }
@@ -61,23 +62,25 @@ namespace ConsoleApp2
     }
 }");
 
-            string expected = @"
+            var emitterTypeName = typeof(InstrumentationEmitter).FullName;
+
+            string expected = $@"
 using System;
 
 namespace ConsoleApp2
-{
+{{
     class Program
-    {
+    {{
         static void Main()
-        {
-                System.Console.WriteLine(""6a2f74a2-f01d-423d-a40f-726aa7358a81{\""variableLocations\"": [{    \""name\"": \""a\"",    \""locations\"": [{    \""startLine\"": 9,    \""startColumn\"": 16,    \""endLine\"": 9,    \""endColumn\"": 17}],    \""declaredAt\"": {        \""start\"": 117,        \""end\"": 118    }}]}6a2f74a2-f01d-423d-a40f-726aa7358a81"");
-                InstrumentationEmitter.EmitProgramState(InstrumentationEmitter.GetProgramState(""{\""line\"":9,\""character\"":12,\""file\"":\""document.cs\""}""));
+        {{
+                System.Console.WriteLine(""6a2f74a2-f01d-423d-a40f-726aa7358a81{{\""variableLocations\"": [{{    \""name\"": \""a\"",    \""locations\"": [{{    \""startLine\"": 9,    \""startColumn\"": 16,    \""endLine\"": 9,    \""endColumn\"": 17}}],    \""declaredAt\"": {{        \""start\"": 117,        \""end\"": 118    }}}}]}}6a2f74a2-f01d-423d-a40f-726aa7358a81"");
+                {emitterTypeName}.EmitProgramState({emitterTypeName}.GetProgramState(""{{\""line\"":9,\""character\"":12,\""file\"":\""document.cs\""}}""));
                 int a = 1;
-                InstrumentationEmitter.EmitProgramState(InstrumentationEmitter.GetProgramState(""{\""line\"":10,\""character\"":12,\""file\"":\""document.cs\""}"",(""{\""name\"":\""a\"",\""value\"":\""unavailable\"",\""declaredAt\"":{\""start\"":117,\""end\"":118}}"",a)));
+                {emitterTypeName}.EmitProgramState({emitterTypeName}.GetProgramState(""{{\""line\"":10,\""character\"":12,\""file\"":\""document.cs\""}}"",(""{{\""name\"":\""a\"",\""value\"":\""unavailable\"",\""declaredAt\"":{{\""start\"":117,\""end\"":118}}}}"",a)));
                 Console.WriteLine(""Hello World!"");
-        }
-    }
-}".EnforceLF();
+        }}
+    }}
+}}".EnforceLF();
             actual.ShouldBeEquivalentTo(expected);
         }
 

@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using WorkspaceServer.Servers.Roslyn.Instrumentation.Contract;
+using WorkspaceServer.Servers.Roslyn.Instrumentation;
 
-namespace WorkspaceServer.Servers.Roslyn.Instrumentation.Contract
+namespace WorkspaceServer.Servers.Roslyn.Instrumentation
 {
     public class ProgramStateAtPosition
     {
@@ -76,7 +76,7 @@ public static class InstrumentationEmitter
         foreach (var (info, value) in variableInfo)
         {
             var vInfo = JsonConvert.DeserializeObject<VariableInfo>(info);
-            var neInfo = new VariableInfo()
+            var neInfo = new VariableInfo
             {
                 RangeOfLines = vInfo.RangeOfLines,
                 Name = vInfo.Name,

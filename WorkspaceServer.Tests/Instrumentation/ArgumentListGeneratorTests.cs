@@ -1,9 +1,6 @@
-﻿using System;
-using System.Linq;
-using FluentAssertions;
+﻿using FluentAssertions;
 using Newtonsoft.Json.Linq;
 using WorkspaceServer.Servers.Roslyn.Instrumentation;
-using WorkspaceServer.Servers.Roslyn.Instrumentation.Contract;
 using Xunit;
 
 namespace WorkspaceServer.Tests.Instrumentation
@@ -32,7 +29,11 @@ namespace WorkspaceServer.Tests.Instrumentation
             };
 
             var result = InstrumentationSyntaxRewriter.CreateSyntaxNode(filePosition, vi).ToString();
-            var expected = "InstrumentationEmitter.EmitProgramState(InstrumentationEmitter.GetProgramState(\"{\\\"line\\\":1,\\\"character\\\":1,\\\"file\\\":\\\"test.cs\\\"}\",(\"{\\\"name\\\":\\\"a\\\",\\\"value\\\":{\\\"foo\\\":3},\\\"declaredAt\\\":{\\\"start\\\":10,\\\"end\\\":11}}\",a)));";
+
+            var emitterTypeName = typeof(InstrumentationEmitter).FullName;
+
+            var expected =
+                $"{emitterTypeName}.EmitProgramState({emitterTypeName}.GetProgramState(\"{{\\\"line\\\":1,\\\"character\\\":1,\\\"file\\\":\\\"test.cs\\\"}}\",(\"{{\\\"name\\\":\\\"a\\\",\\\"value\\\":{{\\\"foo\\\":3}},\\\"declaredAt\\\":{{\\\"start\\\":10,\\\"end\\\":11}}}}\",a)));";
             result.Should().Be(expected);
         }
 

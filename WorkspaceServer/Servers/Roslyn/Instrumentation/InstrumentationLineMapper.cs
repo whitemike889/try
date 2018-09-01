@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using WorkspaceServer.Models.Execution;
-using WorkspaceServer.Servers.Roslyn.Instrumentation.Contract;
 
 namespace WorkspaceServer.Servers.Roslyn.Instrumentation
 {

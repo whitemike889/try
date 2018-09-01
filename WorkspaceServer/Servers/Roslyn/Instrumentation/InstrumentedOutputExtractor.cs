@@ -6,7 +6,6 @@ using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 using Recipes;
 using WorkspaceServer.Models.Instrumentation;
-using WorkspaceServer.Servers.Roslyn.Instrumentation.Contract;
 
 namespace WorkspaceServer.Servers.Roslyn.Instrumentation
 {

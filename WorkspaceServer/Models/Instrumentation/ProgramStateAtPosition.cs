@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
 using WorkspaceServer.Models.Execution;
-using WorkspaceServer.Servers.Roslyn.Instrumentation.Contract;
+using WorkspaceServer.Servers.Roslyn.Instrumentation;
 
 namespace WorkspaceServer.Models.Instrumentation
 {

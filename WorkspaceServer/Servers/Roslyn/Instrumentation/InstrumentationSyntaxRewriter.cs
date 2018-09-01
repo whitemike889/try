@@ -6,7 +6,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Newtonsoft.Json.Linq;
-using WorkspaceServer.Servers.Roslyn.Instrumentation.Contract;
 
 namespace WorkspaceServer.Servers.Roslyn.Instrumentation
 {
@@ -86,22 +85,31 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
                                 .WithTrailingTrivia(SyntaxFactory.Whitespace("\n"));
         }
 
-        public static StatementSyntax CreateSyntaxNode(FilePosition currentFilePosition, params VariableInfo[] variables)
+        public static StatementSyntax CreateSyntaxNode(
+            FilePosition currentFilePosition,
+            params VariableInfo[] variables)
         {
-            (object, string)[] x = variables.Select(v => ((object) v, v.Name)).ToArray();
+            var instrumentationemitter = typeof(InstrumentationEmitter).FullName;
+            var emitProgramState = nameof(InstrumentationEmitter.EmitProgramState);
+            var getProgramState = nameof(InstrumentationEmitter.GetProgramState);
 
             return SyntaxFactory.ExpressionStatement(
-                CreateMethodInvocation("InstrumentationEmitter", "EmitProgramState",
-                                       SyntaxFactory.ArgumentList(
-                                           SyntaxFactory.SeparatedList(new[]
-                                           {
-                                               SyntaxFactory.Argument(
-                                                   CreateMethodInvocation("InstrumentationEmitter",
-                                                                          "GetProgramState",
-                                                                          ArgumentListGenerator
-                                                                              .GenerateArgumentListForGetProgramState(currentFilePosition, x)))
-                                           })
-                                       ))).WithTrailingTrivia(SyntaxFactory.Whitespace("\n"));
+                CreateMethodInvocation(
+                    instrumentationemitter,
+                    emitProgramState,
+                    SyntaxFactory.ArgumentList(
+                        SyntaxFactory.SeparatedList(new[]
+                        {
+                            SyntaxFactory.Argument(
+                                CreateMethodInvocation(
+                                    instrumentationemitter,
+                                    getProgramState,
+                                    ArgumentListGenerator
+                                        .GenerateArgumentListForGetProgramState(
+                                            currentFilePosition,
+                                            variables.Select(v => ((object) v, v.Name)).ToArray())))
+                        })
+                    ))).WithTrailingTrivia(SyntaxFactory.Whitespace("\n"));
         }
 
         private static InvocationExpressionSyntax CreateMethodInvocation(string container, string methodName, ArgumentListSyntax arguments)
