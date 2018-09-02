@@ -5,7 +5,6 @@ ENV DOTNET_TOOLS=/dependencies/.dotnet/tools
 ENV NUGET_PACKAGES=/dependencies/.nuget/packages
 ENV TRYDOTNET_WORKSPACES_PATH=/workspaces
 
-
 # install command line tools
 RUN apk update
 RUN apk add xmlstarlet
