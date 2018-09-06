@@ -180,3 +180,4 @@ $RECYCLE.BIN/
 .idea/
 
 *.DotSettings
+*.nupkg
