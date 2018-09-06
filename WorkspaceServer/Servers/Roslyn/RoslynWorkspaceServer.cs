@@ -273,12 +273,12 @@ namespace WorkspaceServer.Servers.Roslyn
 
             if (!trex.Exists)
             {
-                throw new InvalidOperationException("t-rex not found");
+                throw new InvalidOperationException($"t-rex not found in at location {trex}");
             }
 
             var tRexResult = await CommandLine.Execute(
                  trex,
-                 "--show-test-output",
+                 "",
                  workingDir: build.Directory,
                  budget: budget);
 
