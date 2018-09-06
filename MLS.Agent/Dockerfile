@@ -5,7 +5,6 @@ ENV DOTNET_TOOLS=/dependencies/.dotnet/tools
 ENV NUGET_PACKAGES=/dependencies/.nuget/packages
 ENV TRYDOTNET_WORKSPACES_PATH=/workspaces
 
-
 # install command line tools
 RUN apk update
 RUN apk add xmlstarlet
@@ -29,6 +28,6 @@ EXPOSE 4242
 WORKDIR /app
 USER app_user
 
-RUN dotnet tool install -g t-rex
+RUN dotnet tool install -g --version 1.0.62 t-rex
 
 ENTRYPOINT ["dotnet", "MLS.Agent.dll"]
