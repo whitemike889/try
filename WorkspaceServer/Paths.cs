@@ -13,11 +13,7 @@ namespace WorkspaceServer
                     ? "USERPROFILE"
                     : "HOME");
 
-            var dotnetToolsPath = Environment.GetEnvironmentVariable("DOTNET_TOOLS");
-
-            DotnetToolsPath = string.IsNullOrWhiteSpace(dotnetToolsPath)
-                                  ? Path.Combine(UserProfile, ".dotnet", "tools")
-                                  : dotnetToolsPath;
+            DotnetToolsPath = Path.Combine(UserProfile, ".dotnet", "tools");
 
             var nugetPackagesEnvironmentVariable = Environment.GetEnvironmentVariable("NUGET_PACKAGES");
 

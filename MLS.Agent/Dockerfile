@@ -1,7 +1,6 @@
 FROM microsoft/dotnet:2.1.301-sdk-alpine
 
 # configure environment
-ENV DOTNET_TOOLS=/dependencies/.dotnet/tools
 ENV NUGET_PACKAGES=/dependencies/.nuget/packages
 ENV TRYDOTNET_WORKSPACES_PATH=/workspaces
 
