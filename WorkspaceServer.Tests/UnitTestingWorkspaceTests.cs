@@ -2,6 +2,7 @@
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Clockwise;
+using FluentAssertions;
 using Pocket;
 using WorkspaceServer.Models;
 using WorkspaceServer.Models.Execution;
@@ -121,6 +122,40 @@ namespace MyUnitTestNamespace
                 "SUMMARY:",
                 "Passed: 1, Failed: 1, Not run: 0"
             );
+        }
+
+        [Fact]
+        public async Task RunResult_does_not_show_exception_for_test_failures()
+        {
+            var (runner, workspace) = await GetRunnerAndWorkspace();
+
+            var workspaceModel = Workspace.FromDirectory(
+                workspace.Directory,
+                workspace.Name);
+
+            workspaceModel = workspaceModel
+                             .ReplaceFile(
+                                 "UnitTest1.cs",
+                                 @"
+using System; 
+using Xunit;
+
+namespace MyUnitTestNamespace
+{
+    public class MyUnitTestClass 
+    {
+#region facts
+#endregion
+    }
+}")
+                             .RemoveBuffer("UnitTest1.cs")
+                             .AddBuffer("UnitTest1.cs@facts", "[Fact] public void failing() => throw new Exception(\"oops!\");");
+
+            var runResult = await runner.Run(new WorkspaceRequest(workspaceModel));
+
+            Log.Info("Output: {output}", runResult.Output);
+
+            runResult.Exception.Should().BeNullOrEmpty();
         }
 
         protected async Task<(ICodeRunner server, WorkspaceBuild workspace)> GetRunnerAndWorkspace(
