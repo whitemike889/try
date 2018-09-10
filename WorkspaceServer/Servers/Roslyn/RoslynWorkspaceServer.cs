@@ -259,12 +259,6 @@ namespace WorkspaceServer.Servers.Roslyn
                 throw new BudgetExceededException(budget);
             }
 
-            string exceptionMessage = null;
-
-            if (commandLineResult.Error.Count > 0)
-            {
-                exceptionMessage = string.Join(Environment.NewLine, commandLineResult.Error);
-            }
 
             var trex = new FileInfo(
                 Path.Combine(
@@ -285,8 +279,7 @@ namespace WorkspaceServer.Servers.Roslyn
             var result = new RunResult(
                 commandLineResult.ExitCode == 0,
                 tRexResult.Output,
-                exceptionMessage,
-                diagnostics);
+                diagnostics: diagnostics);
 
             result.AddFeature(new UnitTestRun(new[]
             {
