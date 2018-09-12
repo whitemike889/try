@@ -92,7 +92,7 @@ namespace WorkspaceServer.Servers.Roslyn
             var metadataReferences = commandLineArguments
                                      .MetadataReferences
                                      .Select(r => r.Reference)
-                                     .GetMetadadataReferences();
+                                     .GetMetadataReferences();
 
             var projectInfo = ProjectInfo.Create(
                 projectId,

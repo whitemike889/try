@@ -12,20 +12,26 @@ namespace WorkspaceServer.Transformations
     public class DiagnosticTransformer
     {
         public static IEnumerable<SerializableDiagnostic> ReconstructDiagnosticLocations(
-            IEnumerable<Diagnostic> bodyDiagnostics,
-            IReadOnlyCollection<Viewport> viewPortsByBufferId,
+            IReadOnlyCollection<Diagnostic> diagnostics,
+            IReadOnlyCollection<Viewport> viewPorts,
             int paddingSize)
         {
-            const string unmappedPath = "unmapped";
-            var diagnostics = bodyDiagnostics ?? Enumerable.Empty<Diagnostic>();
+            if (diagnostics == null)
+            {
+                throw new ArgumentNullException(nameof(diagnostics));
+            }
+
+            if (viewPorts == null)
+            {
+                throw new ArgumentNullException(nameof(viewPorts));
+            }
 
             foreach (var diagnostic in diagnostics)
             {
                 var lineSpan = diagnostic.Location.GetMappedLineSpan();
                 var lineSpanPath = lineSpan.Path;
-                var diagnosticPath = lineSpan.HasMappedPath ? lineSpanPath : unmappedPath;
 
-                if (viewPortsByBufferId == null || viewPortsByBufferId.Count == 0)
+                if (viewPorts.Count == 0)
                 {
                     var errorMessage = RelativizeFilePath();
 
@@ -33,8 +39,9 @@ namespace WorkspaceServer.Transformations
                 }
                 else
                 {
-                    var target = viewPortsByBufferId
-                                 .Where(e => e.Name.Contains("@") && (diagnosticPath == unmappedPath || diagnosticPath.EndsWith(e.Destination.Name)))
+                    var target = viewPorts
+                                 .Where(e => e.Name.Contains("@") &&
+                                             (!lineSpan.HasMappedPath || lineSpanPath.EndsWith(e.Destination.Name)))
                                  .FirstOrDefault(e => e.Region.Contains(diagnostic.Location.SourceSpan.Start));
 
                     if (target != null && !target.Region.IsEmpty)
@@ -88,7 +95,7 @@ namespace WorkspaceServer.Transformations
             Diagnostic diagnostic, 
             int paddingSize)
         {
-            // offest of the buffer int othe original source file
+            // offset of the buffer into the original source file
             var offset = viewport.Region.Start;
             // span of content injected in the buffer viewport
             var selectionSpan = new TextSpan(offset + paddingSize, viewport.Region.Length - (2 * paddingSize));
@@ -99,9 +106,11 @@ namespace WorkspaceServer.Transformations
             // line containing the diagnostic in the original source file
             var line = viewport.Destination.Text.Lines[diagnostic.Location.GetMappedLineSpan().StartLinePosition.Line];
 
-            // first line of the region from the soruce file
+            // first line of the region from the source file
             var lineOffset = 0;
-            var lines = viewport.Destination.Text.GetSubText(selectionSpan).Lines;
+            var sourceText = viewport.Destination.Text.GetSubText(selectionSpan);
+
+            var lines = sourceText.Lines;
             foreach (var regionLine in lines)
             {
                 if (regionLine.ToString() == line.ToString())
@@ -111,11 +120,10 @@ namespace WorkspaceServer.Transformations
 
                 lineOffset++;
             }
-
-            var bufferTextSource = SourceFile.Create(viewport.Destination.Text.GetSubText(selectionSpan).ToString());
+          
             var lineText = line.ToString();
             var partToFind = lineText.Substring(diagnostic.Location.GetMappedLineSpan().Span.Start.Character);
-            var charOffset = bufferTextSource.Text.Lines[lineOffset].ToString().IndexOf(partToFind, StringComparison.Ordinal);
+            var charOffset = sourceText.Lines[lineOffset].ToString().IndexOf(partToFind, StringComparison.Ordinal);
 
             var errorMessage = $"({lineOffset + 1},{charOffset + 1}): error {diagnostic.Id}: {diagnostic.GetMessage()}";
 

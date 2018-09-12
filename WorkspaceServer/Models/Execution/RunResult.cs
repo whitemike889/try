@@ -52,8 +52,6 @@ namespace WorkspaceServer.Models.Execution
 
         public IReadOnlyDictionary<Type, object> Features => _features;
 
-        public bool HasFeature<T>() => _features.ContainsKey(typeof(T));
-
         public override string ToString() =>
             $@"{nameof(Succeeded)}: {Succeeded}
 {nameof(Output)}: {string.Join("\n", Output)}
@@ -61,13 +59,11 @@ namespace WorkspaceServer.Models.Execution
 
         public void Dispose() => _disposables.Dispose();
 
-        private List<(string, object )> _featureProperties;
+        private List<(string, object)> _featureProperties;
 
-        internal List<(string Name, object Value)> FeatureProperties => _featureProperties ?? (_featureProperties = new List<(string, object )>());
+        private List<(string Name, object Value)> FeatureProperties => _featureProperties ?? (_featureProperties = new List<(string, object )>());
 
         public void AddProperty(string name, object value) => FeatureProperties.Add((name, value));
-
-        public void WriteToOutput(string value) => _output.Add(value);
 
         private class RunResultJsonConverter : JsonConverter
         {

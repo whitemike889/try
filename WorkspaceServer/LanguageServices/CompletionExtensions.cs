@@ -1,8 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
-using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Completion;
@@ -12,12 +9,10 @@ namespace WorkspaceServer.Servers.Scripting
 {
     public static class CompletionExtensions
     {
-        private static readonly MethodInfo _getSymbolsAsync;
         private static readonly string SymbolCompletionProvider = "Microsoft.CodeAnalysis.CSharp.Completion.Providers.SymbolCompletionProvider";
         private static readonly string Provider = nameof(Provider);
         private static readonly string SymbolName = nameof(SymbolName);
         private static readonly string Symbols = nameof(Symbols);
-        private static readonly string SymbolCompletionItem = "Microsoft.CodeAnalysis.Completion.Providers.SymbolCompletionItem";
         private static readonly string GetSymbolsAsync = nameof(GetSymbolsAsync);
 
         private static readonly ImmutableArray<string> KindTags = ImmutableArray.Create(
@@ -101,22 +96,7 @@ namespace WorkspaceServer.Servers.Scripting
                 }
             }
 
-            // if the completion provider encoded symbols into Properties, we can return them
-            if (properties.ContainsKey(Symbols))
-            {
-                // the API to decode symbols is not public at the moment
-                // http://source.roslyn.io/#Microsoft.CodeAnalysis.Features/Completion/Providers/SymbolCompletionItem.cs,93
-                var decodedSymbolsTask = (Task<ImmutableArray<ISymbol>>)_getSymbolsAsync.Invoke(null, new object[] { completionItem, document, default(CancellationToken) });
-                if (decodedSymbolsTask != null)
-                {
-                    var symbols = await decodedSymbolsTask;
-                    return symbols.FirstOrDefault();
-                }
-            }
-
             return null;
         }
     }
-
-   
 }

@@ -41,7 +41,7 @@ namespace WorkspaceServer.Tests
 
             var workspace = new Workspace(
                 workspaceType: build.Name,
-                files: new[] { new Workspace.File("Program.cs", CodeSamples.SourceCodeProvider.ConsoleProgramSingleRegion) },
+                files: new[] { new Workspace.File("Program.cs", SourceCodeProvider.ConsoleProgramSingleRegion) },
                 buffers: new[] { new Workspace.Buffer("Program.cs@alpha", @"Console.WriteLine(banana);", 0) });
 
 
@@ -62,7 +62,7 @@ namespace WorkspaceServer.Tests
             
             var workspace = new Workspace(
                 workspaceType: build.Name,
-                files: new[] { new Workspace.File("Program.cs", CodeSamples.SourceCodeProvider.ConsoleProgramSingleRegion) },
+                files: new[] { new Workspace.File("Program.cs", SourceCodeProvider.ConsoleProgramSingleRegion) },
                 buffers: new[] { new Workspace.Buffer("Program.cs@alpha", @"var a = 10;" + Environment.NewLine + "Console.WriteLine(banana);", 0) });
 
             var result = await server.Run(new WorkspaceRequest(workspace));

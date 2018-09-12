@@ -19,8 +19,11 @@ namespace WorkspaceServer.Servers.Roslyn
 
             var processor = new BufferInliningTransformer();
             var viewPorts = processor.ExtractViewPorts(workspace);
-            var sourceDiagnostics = compilation.GetDiagnostics().Where(d => d.Id != "CS7022");
+            var sourceDiagnostics = compilation.GetDiagnostics()
+                                               .Where(d => d.Id != "CS7022")
+                                               .ToArray();
             budget.RecordEntry();
+
             return DiagnosticTransformer.ReconstructDiagnosticLocations(
                                             sourceDiagnostics,
                                             viewPorts,

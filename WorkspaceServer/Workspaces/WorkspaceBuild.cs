@@ -264,7 +264,6 @@ namespace WorkspaceServer.Workspaces
                 }
 
                 operation.Succeed();
-                
             }
 
             return true;

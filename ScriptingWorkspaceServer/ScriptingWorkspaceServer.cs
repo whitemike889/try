@@ -30,7 +30,7 @@ namespace WorkspaceServer.Servers.Scripting
         private readonly BufferInliningTransformer _transformer = new BufferInliningTransformer();
         private readonly WorkspaceFixture _fixture;
 
-        private static readonly Regex _diagnosticfilter = new Regex(@"^(?<location>\(\d+,\d+\):)\s*(?<level>\S+)\s*(?<code>[A-Z]{2}\d+:)(?<message>.+)", RegexOptions.Compiled);
+        private static readonly Regex _diagnosticFilter = new Regex(@"^(?<location>\(\d+,\d+\):)\s*(?<level>\S+)\s*(?<code>[A-Z]{2}\d+:)(?<message>.+)", RegexOptions.Compiled);
 
         public ScriptingWorkspaceServer()
         {
@@ -121,7 +121,7 @@ namespace WorkspaceServer.Servers.Scripting
             return output.Concat(errormessages).ToArray();
         }
 
-        private bool IsNotDiagnostic(string line) => !_diagnosticfilter.IsMatch(line);
+        private bool IsNotDiagnostic(string line) => !_diagnosticFilter.IsMatch(line);
 
         private static ScriptOptions CreateOptions(Workspace request) =>
             ScriptOptions.Default

@@ -103,7 +103,7 @@ namespace WorkspaceServer.Servers.Roslyn
 
         private static SyntaxTree GetInstrumentationEmitterSyntaxTree()
         {
-            var resourceName = "WorkspaceServer.Servers.Roslyn.Instrumentation.InstrumentationEmitter.cs"; // $"{typeof(InstrumentationEmitter).FullName}.cs";
+            var resourceName = "WorkspaceServer.Servers.Roslyn.Instrumentation.InstrumentationEmitter.cs"; 
 
             var assembly = typeof(WorkspaceBuildExtensions).Assembly;
 
@@ -135,7 +135,7 @@ namespace WorkspaceServer.Servers.Roslyn
                                    .SelectMany(p => p.Documents)
                                    .FirstOrDefault(d => d.Name == source.Name) is Document document)
                 {
-                    // there's a pre-existing document, so overwrite it's contents
+                    // there's a pre-existing document, so overwrite its contents
                     document = document.WithText(source.Text);
                     currentSolution = document.Project.Solution;
                 }
@@ -145,7 +145,6 @@ namespace WorkspaceServer.Servers.Roslyn
 
                     currentSolution = currentSolution.AddDocument(docId, source.Name, source.Text);
                 }
-
             }
 
             var project = currentSolution.GetProject(projectId);
