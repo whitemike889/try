@@ -5,6 +5,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="TestResults\**" />
+    <EmbeddedResource Remove="TestResults\**" />
+    <None Remove="TestResults\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Remove="%28External%29\NativeMethodsShared.cs" />
     <Compile Remove="%28External%29\ProcessExtensions.cs" />
   </ItemGroup>
