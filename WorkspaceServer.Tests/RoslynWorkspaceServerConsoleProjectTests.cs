@@ -12,6 +12,7 @@ using WorkspaceServer.Models.Instrumentation;
 using WorkspaceServer.Servers.Roslyn;
 using WorkspaceServer.Servers.Roslyn.Instrumentation;
 using WorkspaceServer.Tests.CodeSamples;
+using WorkspaceServer.WorkspaceFeatures;
 using WorkspaceServer.Workspaces;
 using Xunit;
 using Xunit.Abstractions;
@@ -86,14 +87,8 @@ namespace WorkspaceServer.Tests
                 buffers: new[] { new Workspace.Buffer("Program.cs@alpha", @"var a = 10;" + Environment.NewLine + "Console.WriteLine(a);", 0) });
 
             var result = await server.Run(new WorkspaceRequest(workspace));
-
-            result.Should().BeEquivalentTo(new
-            {
-                Succeeded = true,
-                Output = new[] { "10", "" },
-                Exception = (string) null, // we already display the error in Output
-            }, config => config.ExcludingMissingMembers());
             
+            result.GetFeature<Diagnostics>().Should().BeEmpty();
         }
 
         [Fact]

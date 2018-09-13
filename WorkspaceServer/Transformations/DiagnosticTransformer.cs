@@ -40,7 +40,7 @@ namespace WorkspaceServer.Transformations
                 else
                 {
                     var target = viewPorts
-                                 .Where(e => e.Name.Contains("@") &&
+                                 .Where(e => e.BufferId.RegionName != null &&
                                              (!lineSpan.HasMappedPath || lineSpanPath.EndsWith(e.Destination.Name)))
                                  .FirstOrDefault(e => e.Region.Contains(diagnostic.Location.SourceSpan.Start));
 
@@ -51,12 +51,6 @@ namespace WorkspaceServer.Transformations
                         {
                             yield return processedDiagnostic;
                         }
-                    }
-                    else
-                    {
-                        var errorMessage = RelativizeFilePath();
-
-                        yield return new SerializableDiagnostic(diagnostic, errorMessage);
                     }
                 }
 
@@ -77,15 +71,9 @@ namespace WorkspaceServer.Transformations
                         {
                             return message.Substring(directoryPath.Length);
                         }
-                        else
-                        {
-                            return message;
-                        }
                     }
-                    else
-                    {
-                        return message;
-                    }
+
+                    return message;
                 }
             }
         }
@@ -110,29 +98,28 @@ namespace WorkspaceServer.Transformations
             var lineOffset = 0;
             var sourceText = viewport.Destination.Text.GetSubText(selectionSpan);
 
-            var lines = sourceText.Lines;
-            foreach (var regionLine in lines)
+            foreach (var regionLine in sourceText.Lines)
             {
                 if (regionLine.ToString() == line.ToString())
                 {
-                    break;
+                    var lineText = line.ToString();
+                    var partToFind = lineText.Substring(diagnostic.Location.GetMappedLineSpan().Span.Start.Character);
+                    var charOffset = sourceText.Lines[lineOffset].ToString().IndexOf(partToFind, StringComparison.Ordinal);
+
+                    var errorMessage = $"({lineOffset + 1},{charOffset + 1}): error {diagnostic.Id}: {diagnostic.GetMessage()}";
+
+                    return new SerializableDiagnostic(
+                        start,
+                        end,
+                        errorMessage,
+                        diagnostic.Severity,
+                        diagnostic.Id);
                 }
 
                 lineOffset++;
             }
-          
-            var lineText = line.ToString();
-            var partToFind = lineText.Substring(diagnostic.Location.GetMappedLineSpan().Span.Start.Character);
-            var charOffset = sourceText.Lines[lineOffset].ToString().IndexOf(partToFind, StringComparison.Ordinal);
 
-            var errorMessage = $"({lineOffset + 1},{charOffset + 1}): error {diagnostic.Id}: {diagnostic.GetMessage()}";
-
-            return new SerializableDiagnostic(
-                start,
-                end,
-                errorMessage,
-                diagnostic.Severity,
-                diagnostic.Id);
+            return null;
         }
     }
 }

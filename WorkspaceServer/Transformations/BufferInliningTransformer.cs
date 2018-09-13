@@ -50,7 +50,7 @@ namespace WorkspaceServer.Transformations
                 if (!string.IsNullOrWhiteSpace(sourceBuffer.Id.RegionName))
                 {
                     var viewPorts = ExtractViewPorts(files.Values);
-                    if (viewPorts.SingleOrDefault(p => p.Name == sourceBuffer.Id.ToString()) is Viewport viewPort)
+                    if (viewPorts.SingleOrDefault(p => p.BufferId == sourceBuffer.Id.ToString()) is Viewport viewPort)
                     {
                         var tree = CSharpSyntaxTree.ParseText(viewPort.Destination.Text.ToString());
                         var textChange = new TextChange(
@@ -91,7 +91,7 @@ namespace WorkspaceServer.Transformations
         private static IReadOnlyCollection<Viewport> ExtractViewPorts(
             IReadOnlyCollection<SourceFile> files)
         {
-            var viewPorts = new Dictionary<string, Viewport>();
+            var viewPorts = new Dictionary<BufferId, Viewport>();
 
             foreach (var sourceFile in files)
             {
@@ -102,17 +102,17 @@ namespace WorkspaceServer.Transformations
                 foreach (var region in regions)
                 {
                     viewPorts.Add(
-                        region.regionName, 
-                        new Viewport(sourceFile, region.span, region.regionName));
+                        region.bufferId, 
+                        new Viewport(sourceFile, region.span, region.bufferId));
                 }
             }
 
             return viewPorts.Values;
         }
 
-        private static IEnumerable<(string regionName, TextSpan span)> ExtractRegions(SourceText code, string fileName)
+        private static IEnumerable<(BufferId bufferId, TextSpan span)> ExtractRegions(SourceText code, string fileName)
         {
-            IEnumerable<(SyntaxTrivia startRegion, SyntaxTrivia endRegion, string label)> FindRegions(SyntaxNode syntaxNode)
+            IEnumerable<(SyntaxTrivia startRegion, SyntaxTrivia endRegion, BufferId bufferId)> FindRegions(SyntaxNode syntaxNode)
             {
                 var nodesWithRegionDirectives =
                     from node in syntaxNode.DescendantNodesAndTokens()
@@ -124,6 +124,7 @@ namespace WorkspaceServer.Transformations
 
                 var stack = new Stack<SyntaxTrivia>();
                 var processedSpans = new HashSet<TextSpan>();
+
                 foreach (var nodeWithRegionDirective in nodesWithRegionDirectives)
                 {
                     var triviaList = nodeWithRegionDirective.GetLeadingTrivia();
@@ -140,8 +141,7 @@ namespace WorkspaceServer.Transformations
                             {
                                 var start = stack.Pop();
                                 var regionName = start.ToFullString().Replace("#region", string.Empty).Trim();
-                                var viewPortId = $"{fileName}@{regionName}";
-                                yield return (start, currentTrivia, viewPortId);
+                                yield return (start, currentTrivia, new BufferId(fileName, regionName));
                             }
                         }
                     }

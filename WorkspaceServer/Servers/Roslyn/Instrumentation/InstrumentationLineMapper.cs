@@ -85,7 +85,7 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
 
         public static IEnumerable<Viewport> FilterActiveViewport(IEnumerable<Viewport> viewports, BufferId activeBufferId)
         {
-            return viewports.Where(viewport => viewport.Destination.Name == activeBufferId.FileName && viewport.Name == activeBufferId.ToString());
+            return viewports.Where(viewport => viewport.Destination.Name == activeBufferId.FileName && viewport.BufferId == activeBufferId.ToString());
         }
     }
 }
