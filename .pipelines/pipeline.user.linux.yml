@@ -119,7 +119,7 @@ package:
 package_sources:
   nuget:
     feeds:                                      # Use this if you use a per-person or team wide NuGet.config and don't have anything specific in your repository.
-      'MLS': 'https://msazure.pkgs.visualstudio.com/_packaging/MLS@Release/nuget/v3/index.json'
+      'MLS': 'https://msazure.pkgs.visualstudio.com/_packaging/MLS/nuget/v3/index.json'
       'NuGet': 'https://api.nuget.org/v3/index.json'
     config_files:                               # A list of glob patterns specifying the configuration files. Use this if you already have NuGet.Config files in your repository.
       - include:                                # Configuration files to include for automatic inference.
