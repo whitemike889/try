@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Clockwise;
 using MLS.Agent.Tools;
 using Pocket;
+using Recipes;
 
 namespace WorkspaceServer.Workspaces
 {
@@ -43,6 +44,7 @@ namespace WorkspaceServer.Workspaces
         private FileInfo _entryPointAssemblyPath;
         private static string _targetFramework;
         private readonly Logger _log;
+        private WorkspaceConfiguration _configuration;
 
         public DateTimeOffset? ConstructionTime { get; }
         public DateTimeOffset? CreationTime { get; private set; }
@@ -96,6 +98,39 @@ namespace WorkspaceServer.Workspaces
         public string Name { get; }
 
         public static DirectoryInfo DefaultWorkspacesDirectory { get; }
+
+        public async Task<WorkspaceConfiguration> GetConfigurationAsync()
+        {
+            if (_configuration == null)
+            {
+                await EnsureBuilt();
+
+                var workspaceConfigFile = new FileInfo(Path.Combine(Directory.FullName, ".trydotnet"));
+
+                if (workspaceConfigFile.Exists)
+                {
+                    var json = await workspaceConfigFile.ReadAsync();
+
+                    _configuration = json.FromJsonTo<WorkspaceConfiguration>();
+                }
+                else
+                {
+                    var buildLog = Directory.GetFiles("msbuild.log").SingleOrDefault();
+
+                    var compilerCommandLine = buildLog?.FindCompilerCommandLine().ToArray();
+
+                    _configuration = new WorkspaceConfiguration
+                    {
+                        CompilerArgs = compilerCommandLine
+                    };
+
+                    File.WriteAllText(workspaceConfigFile.FullName,
+                                      _configuration.ToJson());
+                }
+            }
+
+            return _configuration;
+        }
 
         public bool IsPublished { get; private set; }
 

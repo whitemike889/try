@@ -138,7 +138,7 @@ namespace MLS.Agent.Tests
     ""files"": [],
     ""buffers"": [
       {{
-        ""id"": """",
+        ""id"": ""Program.cs"",
         ""content"": ""using System;\nusing System.Collections.Generic;\nusing System.Linq;\n\npublic class Program\n{{\n  public static void Main()\n  {{\n    foreach (var i in Fibonacci().Take(10))\n    {{\n      Console.WriteLine(i);\n    }}\n  }}\n\n  private static IEnumerable<int> Fibonacci()\n  {{\n    int current = 1, next = 1;\n\n    while (true) \n    {{\n      yield return current;\n      next = current + (current = next);\n    }}\n  }}\n}}\n"",
         ""position"": 0
       }}
@@ -156,7 +156,7 @@ namespace MLS.Agent.Tests
     ""files"": [],
     ""buffers"": [
       {{
-        ""id"": """",
+        ""id"": ""Program.cs"",
         ""content"": ""using System;\nusing System.Collections.Generic;\nusing System.Linq;\n\npublic class Program\n{{\n  public static void Main()\n  {{\n    foreach (var i in Fibonacci().Take(10))\n    {{\n      Console.WriteLine(i);\n    }}\n  }}\n\n  private static IEnumerable<int> Fibonacci()\n  {{\n    int current = 1, next = 1;\n\n    while (true) \n    {{\n      yield return current;\n      next = current + (current = next);\n    }}\n  }}\n}}\n"",
         ""position"": 197
       }}

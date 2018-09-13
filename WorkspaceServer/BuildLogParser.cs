@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using MLS.Agent.Tools;
 
 namespace WorkspaceServer
@@ -37,7 +36,22 @@ namespace WorkspaceServer
 
         private static IEnumerable<string> RemoveDotnetAndCsc(this IEnumerable<string> args)
         {
-            return args.Skip(2);
+            var foundCscDll = false;
+
+            foreach (var arg in args)
+            {
+                if (foundCscDll)
+                {
+                    yield return arg;
+                }
+                else
+                {
+                    if (arg.EndsWith("csc.dll"))
+                    {
+                        foundCscDll = true;
+                    }
+                }
+            }
         }
     }
 }

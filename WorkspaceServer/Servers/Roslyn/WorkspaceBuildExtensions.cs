@@ -2,8 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Resources;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -26,9 +24,7 @@ namespace WorkspaceServer.Servers.Roslyn
 
         public static async Task<Compilation> Compile(this WorkspaceBuild build, Workspace workspace, Budget budget, BufferId activeBufferId)
         {
-            var sourceFiles = workspace.GetSourceFiles()
-                                       .Concat(await build.GetSourceFiles())
-                                       .ToArray();
+            var sourceFiles = workspace.GetSourceFiles().ToArray();
 
             var (compilation, documents) = await build.GetCompilation(sourceFiles, budget);
 
@@ -160,12 +156,8 @@ namespace WorkspaceServer.Servers.Roslyn
 
             projectId = projectId ?? ProjectId.CreateNewId(build.Name);
 
-            var buildLog = build.Directory.GetFiles("msbuild.log").SingleOrDefault();
-
-            var commandLineArgs = buildLog?.FindCompilerCommandLine()?.ToArray();
-
             var csharpCommandLineArguments = CSharpCommandLineParser.Default.Parse(
-                commandLineArgs,
+                (await build.GetConfigurationAsync()).CompilerArgs,
                 build.Directory.FullName,
                 RuntimeEnvironment.GetRuntimeDirectory());
 
@@ -181,15 +173,6 @@ namespace WorkspaceServer.Servers.Roslyn
             workspace.AddProject(projectInfo);
 
             return workspace;
-        }
-
-        public static async Task<IEnumerable<SourceFile>> GetSourceFiles(this WorkspaceBuild build)
-        {
-            await build.EnsureBuilt();
-
-            // FIX: (GetSourceFiles) include source files from compiler args
-
-            return Enumerable.Empty<SourceFile>();
         }
 
         private static Document GetActiveDocument(IEnumerable<Document> documents, BufferId activeBufferId)

@@ -93,69 +93,7 @@ namespace WorkspaceServer.Tests
                 Output = new[] { "10", "" },
                 Exception = (string) null, // we already display the error in Output
             }, config => config.ExcludingMissingMembers());
-        }
-
-        [Fact]
-        public async Task When_Run_is_called_again_then_previous_file_state_is_cleaned_up()
-        {
-            #region bufferSources
-
-            const string program = @"using System;
-using System.Linq;
-
-namespace FibonacciTest
-{
-    public class Program
-    {
-        public static void Main()
-        {
-            foreach (var i in FibonacciGenerator.Fibonacci().Take(20))
-            {
-                Console.WriteLine(i);
-            }
-        }
-    }
-}";
-            const string generator = @"using System.Collections.Generic;
-
-namespace FibonacciTest
-{
-    public static class FibonacciGenerator
-    {
-        public  static IEnumerable<int> Fibonacci()
-        {
-            int current = 1, next = 1;
-            while (true)
-            {
-                yield return current;
-                next = current + (current = next);
-            }
-        }
-    }
-}";
-
-            #endregion
-
-            var (server, build) = await GetRunnerAndWorkpaceBuild();
-
-            var workspace = new Workspace(workspaceType: build.Name, buffers: new[]
-            {
-                new Workspace.Buffer("Program.cs", program, 0),
-                new Workspace.Buffer("FibonacciGenerator.cs", generator, 0)
-            });
-
-            var result = await server.Run(new WorkspaceRequest(workspace));
-
-            result.Succeeded.Should().BeTrue();
-
-            workspace = new Workspace(workspaceType: build.Name, buffers: new[]
-            {
-                new Workspace.Buffer("NotProgram.cs", program, 0),
-                new Workspace.Buffer("FibonacciGenerator.cs", generator, 0)
-            });
-            result = await server.Run(new WorkspaceRequest(workspace));
-
-            result.Succeeded.Should().BeTrue();
+            
         }
 
         [Fact]
@@ -243,7 +181,7 @@ namespace ConsoleProgram
 
             var workspace = new Workspace(
                 workspaceType: build.Name,
-                buffers: new[] { new Workspace.Buffer("test.cs", code)},
+                buffers: new[] { new Workspace.Buffer("Program.cs", code)},
                 includeInstrumentation: true);
 
             var result = await server.Run(new WorkspaceRequest(workspace));
@@ -282,7 +220,7 @@ namespace ConsoleProgram
 
             var workspace = new Workspace(
                 workspaceType: build.Name,
-                buffers: new[] { new Workspace.Buffer("test.cs", code)},
+                buffers: new[] { new Workspace.Buffer("Program.cs", code)},
                 includeInstrumentation: true
                 );
 
@@ -325,8 +263,8 @@ namespace ConsoleProgram
 
             var workspace = new Workspace(
                 workspaceType: build.Name,
-                buffers: new[] { new Workspace.Buffer("test.cs@reg", regionCode) },
-                files: new [] { new Workspace.File("test.cs", code) },
+                buffers: new[] { new Workspace.Buffer("Program.cs@reg", regionCode) },
+                files: new [] { new Workspace.File("Program.cs", code) },
                 includeInstrumentation: true
                 );
 
@@ -370,8 +308,8 @@ namespace ConsoleProgram
 
             var workspace = new Workspace(
                 workspaceType: build.Name,
-                buffers: new[] { new Workspace.Buffer("test.cs@reg", regionCode)},
-                files: new [] { new Workspace.File("test.cs", code)},
+                buffers: new[] { new Workspace.Buffer("Program.cs@reg", regionCode)},
+                files: new [] { new Workspace.File("Program.cs", code)},
                 includeInstrumentation: true
                 );
 

@@ -86,9 +86,8 @@ namespace MLS.Agent.Tests
                 new WorkspaceRequest(
                     Workspace.FromSource(
                         @"Console.WriteLine(""hello!"");",
-                        id: "Program.cs",
-                        workspaceType: "console"
-                    )).ToJson();
+                        workspaceType: "console", 
+                        id: "Program.cs")).ToJson();
 
             var response = await CallRun(requestJson);
 

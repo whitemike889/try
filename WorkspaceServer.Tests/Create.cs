@@ -33,7 +33,8 @@ namespace WorkspaceServer.Tests
         {
             var workspace = Workspace.FromSource(
                 SimpleConsoleAppCodeWithoutNamespaces(consoleOutput),
-                workspaceType
+                workspaceType,
+                "Program.cs"
             );
 
             return new WorkspaceRequest(workspace).ToJson();
