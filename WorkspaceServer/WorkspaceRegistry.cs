@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
@@ -9,11 +10,9 @@ using WorkspaceServer.Workspaces;
 
 namespace WorkspaceServer
 {
-    public class WorkspaceRegistry : IDisposable
+    public class WorkspaceRegistry : IEnumerable<WorkspaceBuilder>
     {
         private readonly ConcurrentDictionary<string, WorkspaceBuilder> _workspaceBuilders = new ConcurrentDictionary<string, WorkspaceBuilder>();
-
-        private readonly ConcurrentDictionary<string, WorkspaceBuild> _workspaceServers = new ConcurrentDictionary<string, WorkspaceBuild>();
 
         public void Add(string name, Action<WorkspaceBuilder> configure)
         {
@@ -51,16 +50,8 @@ namespace WorkspaceServer
                                 }).GetWorkspaceBuild(budget);
 
             await build.EnsureReady(budget);
-
+            
             return build;
-        }
-
-        public void Dispose()
-        {
-            foreach (var workspaceServer in _workspaceServers.Values.OfType<IDisposable>())
-            {
-                workspaceServer.Dispose();
-            }
         }
 
         public IEnumerable<WorkspaceInfo> GetRegisteredWorkspaceInfos()
@@ -112,5 +103,11 @@ namespace WorkspaceServer
 
             return registry;
         }
+
+        public IEnumerator<WorkspaceBuilder> GetEnumerator() => 
+            _workspaceBuilders.Values.GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator() => 
+            GetEnumerator();
     }
 }
