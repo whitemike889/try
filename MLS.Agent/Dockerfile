@@ -27,6 +27,7 @@ EXPOSE 4242
 WORKDIR /app
 USER app_user
 
+ENV NUGET_XMLDOC_MODE=none
 RUN dotnet tool install -g --version 1.0.62 t-rex
 
 ENTRYPOINT ["dotnet", "MLS.Agent.dll"]
