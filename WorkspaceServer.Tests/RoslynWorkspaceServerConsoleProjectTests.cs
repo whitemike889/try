@@ -92,6 +92,66 @@ namespace WorkspaceServer.Tests
         }
 
         [Fact]
+        public async Task When_diagnostics_are_outside_of_active_file_then_they_are_omitted()
+        {
+            #region bufferSources
+
+            const string program = @"
+using System;
+using System.Linq;
+
+namespace FibonacciTest
+{
+    public class Program
+    {
+        public static void Main()
+        {
+            foreach (var i in FibonacciGenerator.Fibonacci().Take(20))
+            {
+                Console.WriteLine(i);
+            }
+        }
+    }
+}";
+            const string generator = @"
+using Newtonsoft.Json;
+using System.Collections.Generic;
+
+namespace FibonacciTest
+{
+    public static class FibonacciGenerator
+    {
+        public  static IEnumerable<int> Fibonacci()
+        {
+            int current = 1, next = 1;
+            while (true)
+            {
+                yield return current;
+                next = current + (current = next);
+            }
+        }
+    }
+}";
+            #endregion
+
+            var (server, build) = await GetRunnerAndWorkpaceBuild();
+
+            var request = new WorkspaceRequest(
+                new Workspace(
+                    workspaceType: build.Name, buffers: new[]
+                    {
+                        new Workspace.Buffer("Program.cs", program, 0),
+                        new Workspace.Buffer("FibonacciGenerator.cs", generator, 0)
+                    },
+                    includeInstrumentation: true),
+                new BufferId("Program.cs"));
+
+            var result = await server.Run(request);
+
+            result.GetFeature<Diagnostics>().Should().BeEmpty();
+        }
+
+        [Fact]
         public async Task Response_with_multi_buffer_workspace_with_instrumentation()
         {
             #region bufferSources
@@ -363,11 +423,11 @@ namespace FibonacciTest
 
             var workspace = new Workspace(workspaceType: build.Name, buffers: new[]
             {
-                new Workspace.Buffer("Program.cs",program,0),
-                new Workspace.Buffer("FibonacciGenerator.cs",generator,0)
+                new Workspace.Buffer("Program.cs", program, 0),
+                new Workspace.Buffer("FibonacciGenerator.cs", generator, 0)
             });
 
-            var result = await server.Run(new WorkspaceRequest(workspace));
+            var result = await server.Run(new WorkspaceRequest(workspace, BufferId.Parse("Program.cs")));
 
             result.Succeeded.Should().BeTrue();
             result.Output.Count.Should().Be(21);
@@ -418,11 +478,11 @@ namespace FibonacciTest
 
             var workspace = new Workspace(workspaceType: build.Name, buffers: new[]
             {
-                new Workspace.Buffer("Program.cs",program,0),
-                new Workspace.Buffer("generators/FibonacciGenerator.cs",generator,0)
+                new Workspace.Buffer("Program.cs", program, 0),
+                new Workspace.Buffer("generators/FibonacciGenerator.cs", generator, 0)
             });
 
-            var result = await server.Run(new WorkspaceRequest(workspace));
+            var result = await server.Run(new WorkspaceRequest(workspace, BufferId.Parse("Program.cs")));
 
             result.Succeeded.Should().BeTrue();
             result.Output.Count.Should().Be(21);

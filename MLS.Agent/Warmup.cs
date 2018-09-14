@@ -5,11 +5,11 @@ using System.Text;
 using System.Threading.Tasks;
 using Clockwise;
 using Newtonsoft.Json;
-using Pocket;
 using WorkspaceServer;
 using WorkspaceServer.Models;
+using WorkspaceServer.Models.Execution;
+using Pocket;
 using static Pocket.Logger<MLS.Agent.Warmup>;
-using Workspace = WorkspaceServer.Models.Execution.Workspace;
 
 namespace MLS.Agent
 {
@@ -44,8 +44,6 @@ namespace MLS.Agent
         {
             using (var operation = Log.OnEnterAndExit())
             {
-                await _httpClient.GetAsync("/sensors/version");
-
                 await WarmpUpRoute("/workspace/run");
                 await WarmpUpRoute("/workspace/completion");
                 await WarmpUpRoute("/workspace/diagnostics");

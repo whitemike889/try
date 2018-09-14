@@ -2,85 +2,123 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Clockwise;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using WorkspaceServer.Models;
 using WorkspaceServer.Models.Execution;
+using Workspace = WorkspaceServer.Models.Execution.Workspace;
 
 namespace WorkspaceServer.Transformations
 {
-    public class DiagnosticTransformer
+    public static class DiagnosticTransformer
     {
-        public static IEnumerable<SerializableDiagnostic> ReconstructDiagnosticLocations(
-            IReadOnlyCollection<Diagnostic> diagnostics,
-            IReadOnlyCollection<Viewport> viewPorts,
-            int paddingSize)
+        public static SerializableDiagnostic[] MapDiagnostics(
+            this Workspace workspace,
+            BufferId activeBufferId,
+            Compilation compilation,
+            Budget budget = null)
         {
-            if (diagnostics == null)
+            if (workspace == null)
             {
-                throw new ArgumentNullException(nameof(diagnostics));
+                throw new ArgumentNullException(nameof(workspace));
             }
 
-            if (viewPorts == null)
+            if (activeBufferId == null)
             {
-                throw new ArgumentNullException(nameof(viewPorts));
+                throw new ArgumentNullException(nameof(activeBufferId));
             }
 
-            foreach (var diagnostic in diagnostics)
+            if (compilation == null)
             {
-                var lineSpan = diagnostic.Location.GetMappedLineSpan();
-                var lineSpanPath = lineSpan.Path;
+                throw new ArgumentNullException(nameof(compilation));
+            }
 
-                if (viewPorts.Count == 0)
+            budget = budget ?? new Budget();
+
+            var processor = new BufferInliningTransformer();
+
+            var viewPorts = processor.ExtractViewPorts(workspace);
+
+            var diagnostics = compilation.GetDiagnostics()
+                                         .Where(d => d.Id != "CS7022")
+                                         .ToArray();
+            budget.RecordEntry();
+
+            var paddingSize = BufferInliningTransformer.PaddingSize;
+
+            return ReconstructDiagnosticLocations().ToArray();
+
+            IEnumerable<SerializableDiagnostic> ReconstructDiagnosticLocations()
+            {
+                foreach (var diagnostic in diagnostics)
                 {
-                    var errorMessage = RelativizeFilePath();
+                    var filePath = diagnostic.Location.SourceTree?.FilePath;
 
-                    yield return new SerializableDiagnostic(diagnostic, errorMessage);
-                }
-                else
-                {
-                    var target = viewPorts
-                                 .Where(e => e.BufferId.RegionName != null &&
-                                             (!lineSpan.HasMappedPath || lineSpanPath.EndsWith(e.Destination.Name)))
-                                 .FirstOrDefault(e => e.Region.Contains(diagnostic.Location.SourceSpan.Start));
-
-                    if (target != null && !target.Region.IsEmpty)
+                    // hide warnings that are not within the visible code
+                    if (diagnostic.Severity != DiagnosticSeverity.Error &&
+                        !string.IsNullOrWhiteSpace(filePath))
                     {
-                        var processedDiagnostic = AlignDiagnosticLocation(target, diagnostic, paddingSize);
-                        if (processedDiagnostic != null)
+                        if (Path.GetFileName(filePath) != Path.GetFileName(activeBufferId.FileName))
                         {
-                            yield return processedDiagnostic;
-                        }
-                    }
-                }
-
-                string RelativizeFilePath()
-                {
-                    var message = diagnostic.ToString();
-
-                    if (!string.IsNullOrWhiteSpace(lineSpanPath))
-                    {
-                        var directoryPath = new FileInfo(lineSpanPath).Directory?.FullName ?? "";
-
-                        if (!directoryPath.EndsWith(Path.DirectorySeparatorChar.ToString()))
-                        {
-                            directoryPath += Path.DirectorySeparatorChar;
-                        }
-
-                        if (message.StartsWith(directoryPath))
-                        {
-                            return message.Substring(directoryPath.Length);
+                            continue;
                         }
                     }
 
-                    return message;
+                    var lineSpan = diagnostic.Location.GetMappedLineSpan();
+                    var lineSpanPath = lineSpan.Path;
+
+                    if (viewPorts.Count == 0)
+                    {
+                        var errorMessage = RelativizeDiagnosticMessage();
+
+                        yield return new SerializableDiagnostic(diagnostic, errorMessage);
+                    }
+                    else
+                    {
+                        var target = viewPorts
+                                     .Where(e => e.BufferId.RegionName != null &&
+                                                 (!lineSpan.HasMappedPath || lineSpanPath.EndsWith(e.Destination.Name)))
+                                     .FirstOrDefault(e => e.Region.Contains(diagnostic.Location.SourceSpan.Start));
+
+                        if (target != null && !target.Region.IsEmpty)
+                        {
+                            var processedDiagnostic = AlignDiagnosticLocation(target, diagnostic, paddingSize);
+                            if (processedDiagnostic != null)
+                            {
+                                yield return processedDiagnostic;
+                            }
+                        }
+                    }
+
+                    string RelativizeDiagnosticMessage()
+                    {
+                        var message = diagnostic.ToString();
+
+                        if (!string.IsNullOrWhiteSpace(lineSpanPath))
+                        {
+                            var directoryPath = new FileInfo(lineSpanPath).Directory?.FullName ?? "";
+
+                            if (!directoryPath.EndsWith(Path.DirectorySeparatorChar.ToString()))
+                            {
+                                directoryPath += Path.DirectorySeparatorChar;
+                            }
+
+                            if (message.StartsWith(directoryPath))
+                            {
+                                return message.Substring(directoryPath.Length);
+                            }
+                        }
+
+                        return message;
+                    }
                 }
             }
         }
 
         private static SerializableDiagnostic AlignDiagnosticLocation(
-            Viewport viewport, 
-            Diagnostic diagnostic, 
+            Viewport viewport,
+            Diagnostic diagnostic,
             int paddingSize)
         {
             // offset of the buffer into the original source file

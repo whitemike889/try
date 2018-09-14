@@ -83,7 +83,11 @@ namespace WorkspaceServer.Servers.Scripting
 
                 budget.RecordEntryAndThrowIfBudgetExceeded();
 
-                var diagnostics = await GetDiagnostics(workspace, options);
+                var diagnostics = await GetDiagnostics(
+                                      workspace, 
+                                      request.ActiveBufferId,
+                                      options, 
+                                      budget);
 
                 var output =
                     console.StandardOutput == ""
@@ -130,15 +134,19 @@ namespace WorkspaceServer.Servers.Scripting
 
         private async Task<SerializableDiagnostic[]> GetDiagnostics(
             Workspace workspace,
+            BufferId activeBufferId,
             ScriptOptions options,
-            Budget budget = null)
+            Budget budget)
         {
             budget = budget ?? new Budget();
 
             workspace = await _transformer.TransformAsync(workspace, budget);
             var sourceFile = workspace.GetSourceFiles().Single();
             var code = sourceFile.Text.ToString();
-            return ServiceHelpers.GetDiagnostics(workspace, CSharpScript.Create(code, options).GetCompilation());
+            var compilation = CSharpScript.Create(code, options).GetCompilation();
+            return workspace.MapDiagnostics(
+                activeBufferId,
+                compilation);
         }
 
         private static Task<ScriptState<object>> Run(
@@ -254,9 +262,6 @@ typeof({entryPointMethod.ContainingType.Name})
                                               ? "new object[]{ new string[0] }"
                                               : "null";
         }
-
-        public async Task<DiagnosticResult> GetDiagnostics(Workspace request, Budget budget = null) =>
-            new DiagnosticResult(await GetDiagnostics(request, CreateOptions(request), budget));
 
         public static string UserCodeCompletedBudgetEntryName = "UserCodeCompleted";
     }

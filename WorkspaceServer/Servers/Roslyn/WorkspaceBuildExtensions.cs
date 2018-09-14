@@ -14,6 +14,7 @@ using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Servers.Roslyn.Instrumentation;
 using WorkspaceServer.Transformations;
 using WorkspaceServer.Workspaces;
+using static System.Environment;
 using Workspace = WorkspaceServer.Models.Execution.Workspace;
 
 namespace WorkspaceServer.Servers.Roslyn
@@ -82,16 +83,20 @@ namespace WorkspaceServer.Servers.Roslyn
             }
 
             newCompilation = newCompilation.AddSyntaxTrees(_instrumentationEmitterSyntaxTree.Value);
-           
+
             var augmentedDiagnostics = newCompilation.GetDiagnostics();
             if (augmentedDiagnostics.Any(e => e.Severity == DiagnosticSeverity.Error))
             {
                 throw new InvalidOperationException(
-                    "Augmented source failed to compile: " + 
-                    string.Join(Environment.NewLine, augmentedDiagnostics) + 
-                    Environment.NewLine + 
-                    Environment.NewLine + 
-                    newCompilation.SyntaxTrees.Join(Environment.NewLine + Environment.NewLine));
+                    $@"Augmented source failed to compile
+
+Diagnostics
+-----------
+{string.Join(NewLine, augmentedDiagnostics)}
+
+Source
+------
+{newCompilation.SyntaxTrees.Select(s => $"// {s.FilePath ?? "(anonymous)"}{NewLine}//---------------------------------{NewLine}{NewLine}{s}").Join(NewLine + NewLine)}");
             }
 
             return newCompilation;
