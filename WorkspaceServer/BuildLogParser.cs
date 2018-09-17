@@ -1,13 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using MLS.Agent.Tools;
 
 namespace WorkspaceServer
 {
     public static class BuildLogParser
     {
-        public static IEnumerable<string> FindCompilerCommandLine(this FileInfo logFile)
+        public static string[] FindCompilerCommandLine(this FileInfo logFile)
         {
             if (logFile == null)
             {
@@ -26,12 +27,12 @@ namespace WorkspaceServer
 
                     if (line.StartsWith(dotnetPath, StringComparison.OrdinalIgnoreCase))
                     {
-                        return line.Tokenize().RemoveDotnetAndCsc();
+                        return line.Tokenize().RemoveDotnetAndCsc().ToArray();
                     }
                 }
             }
 
-            return null;
+            throw new InvalidOperationException($"Compiler args not found in {logFile.FullName}.");
         }
 
         private static IEnumerable<string> RemoveDotnetAndCsc(this IEnumerable<string> args)

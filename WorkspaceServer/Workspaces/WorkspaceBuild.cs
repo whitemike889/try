@@ -117,7 +117,12 @@ namespace WorkspaceServer.Workspaces
                 {
                     var buildLog = Directory.GetFiles("msbuild.log").SingleOrDefault();
 
-                    var compilerCommandLine = buildLog?.FindCompilerCommandLine().ToArray();
+                    if (buildLog == null)
+                    {
+                        throw new InvalidOperationException($"msbuild.log not found in {Directory}");
+                    }
+
+                    var compilerCommandLine = buildLog.FindCompilerCommandLine();
 
                     _configuration = new WorkspaceConfiguration
                     {
