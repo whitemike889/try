@@ -27,7 +27,11 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task A_workspace_is_not_initialized_more_than_once()
         {
-            var initializer = new FakeWorkspaceInitializer();
+            var callCount = 0;
+
+            var initializer = new TestWorkspaceInitializer(
+                "console",
+                "MyProject");
 
             var workspace = Create.EmptyWorkspace(initializer: initializer);
 
@@ -58,7 +62,9 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task A_workspace_copy_is_not_reinitialized_if_the_source_was_already_built()
         {
-            var initializer = new FakeWorkspaceInitializer();
+            var initializer = new TestWorkspaceInitializer(
+                "console", 
+                "MyProject");
 
             var original = Create.EmptyWorkspace(initializer: initializer);
 
