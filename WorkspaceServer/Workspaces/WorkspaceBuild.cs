@@ -6,6 +6,7 @@ using Clockwise;
 using MLS.Agent.Tools;
 using Pocket;
 using Recipes;
+using static Pocket.Logger<WorkspaceServer.Workspaces.WorkspaceBuild>;
 
 namespace WorkspaceServer.Workspaces
 {
@@ -31,7 +32,7 @@ namespace WorkspaceServer.Workspaces
                 DefaultWorkspacesDirectory.Create();
             }
 
-            Logger<WorkspaceBuild>.Log.Info("Workspaces path is {DefaultWorkspacesDirectory}", DefaultWorkspacesDirectory);
+            Log.Info("Workspaces path is {DefaultWorkspacesDirectory}", DefaultWorkspacesDirectory);
         }
 
         private readonly IWorkspaceInitializer _initializer;
@@ -45,7 +46,6 @@ namespace WorkspaceServer.Workspaces
         private static string _targetFramework;
         private readonly Logger _log;
         private WorkspaceConfiguration _configuration;
-        private bool _ready = false;
 
         public DateTimeOffset? ConstructionTime { get; }
         public DateTimeOffset? CreationTime { get; private set; }
@@ -85,6 +85,8 @@ namespace WorkspaceServer.Workspaces
         public bool IsCreated { get; private set; }
 
         public bool IsBuilt { get; private set; }
+
+        private bool IsReady  { get; set; }
 
         public bool IsUnitTestProject =>
             _isUnitTestProject ??
@@ -221,7 +223,7 @@ namespace WorkspaceServer.Workspaces
 
         public async Task EnsureReady(Budget budget)
         {
-            if (_ready)
+            if (IsReady)
             {
                 return;
             }
@@ -235,7 +237,7 @@ namespace WorkspaceServer.Workspaces
                 await EnsurePublished(budget);
             }
 
-            _ready = true;
+            IsReady = true;
         }
 
         public bool RequiresPublish { get; }
@@ -274,11 +276,11 @@ namespace WorkspaceServer.Workspaces
                         IsBuilt = true;
                         BuildTime = Clock.Current.Now();
 
-
+                        operation.Info("Workspace built");
                     }
                     catch (Exception exception)
                     {
-                        operation.Error(exception);
+                        operation.Error("Exception building workspace", exception);
                     }
                     finally
                     {
@@ -295,7 +297,6 @@ namespace WorkspaceServer.Workspaces
                 }
 
                 operation.Succeed();
-                operation.Info("Workspace built");
             }
 
             return true;
@@ -376,8 +377,14 @@ namespace WorkspaceServer.Workspaces
                 IsCreated = fromWorkspaceBuild.IsCreated,
                 IsPublished = fromWorkspaceBuild.IsPublished,
                 IsBuilt = fromWorkspaceBuild.IsBuilt,
+                IsReady = fromWorkspaceBuild.IsReady,
                 IsDirectoryCreated = true
             };
+
+            Log.Info(
+                "Copied workspace {from} to {to}", 
+                fromWorkspaceBuild,
+                copy);
 
             return copy;
         }
@@ -403,6 +410,11 @@ namespace WorkspaceServer.Workspaces
             }
 
             return created;
+        }
+
+        public override string ToString()
+        {
+            return $"{Name} ({Directory.FullName}) ({new {IsCreated, CreationTime, IsBuilt, BuildTime, IsPublished, PublicationTime, IsReady}})";
         }
     }
 }

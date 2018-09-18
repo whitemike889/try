@@ -138,7 +138,8 @@ namespace FibonacciTest
 
             var request = new WorkspaceRequest(
                 new Workspace(
-                    workspaceType: build.Name, buffers: new[]
+                    workspaceType: build.Name, 
+                    buffers: new[]
                     {
                         new Workspace.Buffer("Program.cs", program, 0),
                         new Workspace.Buffer("FibonacciGenerator.cs", generator, 0)
@@ -196,7 +197,8 @@ namespace FibonacciTest
 
             var request = new WorkspaceRequest(
                 new Workspace(
-                    workspaceType: build.Name, buffers: new[]
+                    workspaceType: build.Name, 
+                    buffers: new[]
                     {
                         new Workspace.Buffer("Program.cs", program, 0),
                         new Workspace.Buffer("FibonacciGenerator.cs", generator, 0)
