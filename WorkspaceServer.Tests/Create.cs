@@ -10,17 +10,17 @@ namespace WorkspaceServer.Tests
     public static class Create
     {
         public static async Task<WorkspaceBuild> ConsoleWorkspaceCopy([CallerMemberName] string testName = null) =>
-            WorkspaceBuild.Copy(
+            await WorkspaceBuild.Copy(
                 await Default.ConsoleWorkspace,
                 testName);
 
         public static async Task<WorkspaceBuild> WebApiWorkspaceCopy([CallerMemberName] string testName = null) =>
-            WorkspaceBuild.Copy(
+            await WorkspaceBuild.Copy(
                 await Default.WebApiWorkspace,
                 testName);
 
         public static async Task<WorkspaceBuild> XunitWorkspaceCopy([CallerMemberName] string testName = null) =>
-            WorkspaceBuild.Copy(
+            await WorkspaceBuild.Copy(
                 await Default.XunitWorkspace,
                 testName);
 

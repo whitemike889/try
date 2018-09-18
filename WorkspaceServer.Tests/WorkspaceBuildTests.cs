@@ -64,7 +64,7 @@ namespace WorkspaceServer.Tests
 
             await original.EnsureCreated();
 
-            var copy = WorkspaceBuild.Copy(original);
+            var copy = await WorkspaceBuild.Copy(original);
 
             await copy.EnsureCreated();
 

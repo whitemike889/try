@@ -309,7 +309,7 @@ namespace WorkspaceServer.Workspaces
             return true;
         }
 
-        public static WorkspaceBuild Copy(
+        public static async Task<WorkspaceBuild> Copy(
             WorkspaceBuild fromWorkspaceBuild,
             string folderNameStartsWith = null)
         {
@@ -318,16 +318,27 @@ namespace WorkspaceServer.Workspaces
                 throw new ArgumentNullException(nameof(fromWorkspaceBuild));
             }
 
+            await fromWorkspaceBuild.EnsureReady(new Budget());
+
             folderNameStartsWith = folderNameStartsWith ?? fromWorkspaceBuild.Name;
             var parentDirectory = fromWorkspaceBuild.Directory.Parent;
 
             var destination = CreateDirectory(folderNameStartsWith, parentDirectory);
 
-            return Copy(fromWorkspaceBuild, destination);
+            return await Copy(fromWorkspaceBuild, destination);
         }
 
-        public static WorkspaceBuild Copy(WorkspaceBuild fromWorkspaceBuild, DirectoryInfo destination)
+        public static async Task<WorkspaceBuild> Copy(
+            WorkspaceBuild fromWorkspaceBuild,
+            DirectoryInfo destination)
         {
+            if (fromWorkspaceBuild == null)
+            {
+                throw new ArgumentNullException(nameof(fromWorkspaceBuild));
+            }
+
+            await fromWorkspaceBuild.EnsureReady(new Budget());
+
             fromWorkspaceBuild.Directory.CopyTo(destination);
 
             var copy = new WorkspaceBuild(destination, destination.Name)
