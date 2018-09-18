@@ -45,6 +45,7 @@ namespace WorkspaceServer.Workspaces
         private static string _targetFramework;
         private readonly Logger _log;
         private WorkspaceConfiguration _configuration;
+        private bool _ready = false;
 
         public DateTimeOffset? ConstructionTime { get; }
         public DateTimeOffset? CreationTime { get; private set; }
@@ -220,6 +221,11 @@ namespace WorkspaceServer.Workspaces
 
         public async Task EnsureReady(Budget budget)
         {
+            if (_ready)
+            {
+                return;
+            }
+
             await EnsureCreated(budget);
 
             await EnsureBuilt(budget);
@@ -228,6 +234,8 @@ namespace WorkspaceServer.Workspaces
             {
                 await EnsurePublished(budget);
             }
+
+            _ready = true;
         }
 
         public bool RequiresPublish { get; }

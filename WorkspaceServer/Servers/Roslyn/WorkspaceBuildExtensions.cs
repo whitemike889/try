@@ -23,8 +23,14 @@ namespace WorkspaceServer.Servers.Roslyn
     {
         private static readonly Lazy<SyntaxTree> _instrumentationEmitterSyntaxTree =new Lazy<SyntaxTree>(GetInstrumentationEmitterSyntaxTree);
 
-        public static async Task<Compilation> Compile(this WorkspaceBuild build, Workspace workspace, Budget budget, BufferId activeBufferId)
+        public static async Task<Compilation> Compile(
+            this WorkspaceBuild build, 
+            Workspace workspace, 
+            Budget budget, 
+            BufferId activeBufferId)
         {
+            await build.EnsureReady(budget);
+
             var sourceFiles = workspace.GetSourceFiles().ToArray();
 
             var (compilation, documents) = await build.GetCompilation(sourceFiles, budget);
