@@ -15,7 +15,9 @@ namespace WorkspaceServer.Servers.Roslyn
         {
             "System",
             "System.Linq",
-            "System.Collections.Generic"
+            "System.Collections.Generic",
+            "System.Globalization",
+            "System.Threading.Tasks"
         }.ToImmutableArray();
 
         public static ImmutableArray<MetadataReference> DefaultReferencedAssemblies =
