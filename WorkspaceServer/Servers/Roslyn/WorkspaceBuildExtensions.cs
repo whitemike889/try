@@ -2,8 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Resources;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -16,6 +14,7 @@ using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Servers.Roslyn.Instrumentation;
 using WorkspaceServer.Transformations;
 using WorkspaceServer.Workspaces;
+using static System.Environment;
 using Workspace = WorkspaceServer.Models.Execution.Workspace;
 
 namespace WorkspaceServer.Servers.Roslyn
@@ -24,11 +23,15 @@ namespace WorkspaceServer.Servers.Roslyn
     {
         private static readonly Lazy<SyntaxTree> _instrumentationEmitterSyntaxTree =new Lazy<SyntaxTree>(GetInstrumentationEmitterSyntaxTree);
 
-        public static async Task<Compilation> Compile(this WorkspaceBuild build, Workspace workspace, Budget budget, BufferId activeBufferId)
+        public static async Task<Compilation> Compile(
+            this WorkspaceBuild build, 
+            Workspace workspace, 
+            Budget budget, 
+            BufferId activeBufferId)
         {
-            var sourceFiles = workspace.GetSourceFiles()
-                                       .Concat(await build.GetSourceFiles())
-                                       .ToArray();
+            await build.EnsureReady(budget);
+
+            var sourceFiles = workspace.GetSourceFiles().ToArray();
 
             var (compilation, documents) = await build.GetCompilation(sourceFiles, budget);
 
@@ -86,16 +89,20 @@ namespace WorkspaceServer.Servers.Roslyn
             }
 
             newCompilation = newCompilation.AddSyntaxTrees(_instrumentationEmitterSyntaxTree.Value);
-           
+
             var augmentedDiagnostics = newCompilation.GetDiagnostics();
             if (augmentedDiagnostics.Any(e => e.Severity == DiagnosticSeverity.Error))
             {
                 throw new InvalidOperationException(
-                    "Augmented source failed to compile: " + 
-                    string.Join(Environment.NewLine, augmentedDiagnostics) + 
-                    Environment.NewLine + 
-                    Environment.NewLine + 
-                    newCompilation.SyntaxTrees.Join(Environment.NewLine + Environment.NewLine));
+                    $@"Augmented source failed to compile
+
+Diagnostics
+-----------
+{string.Join(NewLine, augmentedDiagnostics)}
+
+Source
+------
+{newCompilation.SyntaxTrees.Select(s => $"// {s.FilePath ?? "(anonymous)"}{NewLine}//---------------------------------{NewLine}{NewLine}{s}").Join(NewLine + NewLine)}");
             }
 
             return newCompilation;
@@ -103,7 +110,7 @@ namespace WorkspaceServer.Servers.Roslyn
 
         private static SyntaxTree GetInstrumentationEmitterSyntaxTree()
         {
-            var resourceName = "WorkspaceServer.Servers.Roslyn.Instrumentation.InstrumentationEmitter.cs"; // $"{typeof(InstrumentationEmitter).FullName}.cs";
+            var resourceName = "WorkspaceServer.Servers.Roslyn.Instrumentation.InstrumentationEmitter.cs"; 
 
             var assembly = typeof(WorkspaceBuildExtensions).Assembly;
 
@@ -135,7 +142,7 @@ namespace WorkspaceServer.Servers.Roslyn
                                    .SelectMany(p => p.Documents)
                                    .FirstOrDefault(d => d.Name == source.Name) is Document document)
                 {
-                    // there's a pre-existing document, so overwrite it's contents
+                    // there's a pre-existing document, so overwrite its contents
                     document = document.WithText(source.Text);
                     currentSolution = document.Project.Solution;
                 }
@@ -145,7 +152,6 @@ namespace WorkspaceServer.Servers.Roslyn
 
                     currentSolution = currentSolution.AddDocument(docId, source.Name, source.Text);
                 }
-
             }
 
             var project = currentSolution.GetProject(projectId);
@@ -161,12 +167,8 @@ namespace WorkspaceServer.Servers.Roslyn
 
             projectId = projectId ?? ProjectId.CreateNewId(build.Name);
 
-            var buildLog = build.Directory.GetFiles("msbuild.log").SingleOrDefault();
-
-            var commandLineArgs = buildLog?.FindCompilerCommandLine()?.ToArray();
-
             var csharpCommandLineArguments = CSharpCommandLineParser.Default.Parse(
-                commandLineArgs,
+                (await build.GetConfigurationAsync()).CompilerArgs,
                 build.Directory.FullName,
                 RuntimeEnvironment.GetRuntimeDirectory());
 
@@ -182,15 +184,6 @@ namespace WorkspaceServer.Servers.Roslyn
             workspace.AddProject(projectInfo);
 
             return workspace;
-        }
-
-        public static async Task<IEnumerable<SourceFile>> GetSourceFiles(this WorkspaceBuild build)
-        {
-            await build.EnsureBuilt();
-
-            // FIX: (GetSourceFiles) include source files from compiler args
-
-            return Enumerable.Empty<SourceFile>();
         }
 
         private static Document GetActiveDocument(IEnumerable<Document> documents, BufferId activeBufferId)

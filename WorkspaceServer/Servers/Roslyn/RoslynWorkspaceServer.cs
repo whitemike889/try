@@ -148,9 +148,7 @@ namespace WorkspaceServer.Servers.Roslyn
 
                 var compilation = await build.Compile(workspace, budget, request.ActiveBufferId);
 
-                var diagnostics = ServiceHelpers.GetDiagnostics(
-                    workspace,
-                    compilation);
+                var diagnostics = workspace.MapDiagnostics(request.ActiveBufferId, compilation);
 
                 if (diagnostics.Any(e => e.Severity == DiagnosticSeverity.Error))
                 {

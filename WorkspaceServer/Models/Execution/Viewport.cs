@@ -5,14 +5,14 @@ namespace WorkspaceServer.Models.Execution
 {
     public class Viewport
     {
-        public Viewport(SourceFile destination, TextSpan region, string name)
+        public Viewport(SourceFile destination, TextSpan region, BufferId bufferId)
         {
             Region = region;
-            Name = name;
+            BufferId = bufferId;
             Destination = destination ?? throw new ArgumentNullException(nameof(destination));
         }
 
-        public string Name { get; }
+        public BufferId BufferId { get; }
 
         public TextSpan Region { get; }
 

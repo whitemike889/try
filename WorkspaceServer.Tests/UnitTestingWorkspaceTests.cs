@@ -35,9 +35,7 @@ namespace WorkspaceServer.Tests
                 new WorkspaceRequest(
                                 Workspace.FromDirectory(
                                     workspace.Directory,
-                                    workspace.Name)
-                )
-            );
+                                    workspace.Name)));
 
             Log.Info("Output: {output}", runResult.Output);
 

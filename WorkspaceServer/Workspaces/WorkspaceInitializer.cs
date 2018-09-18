@@ -36,7 +36,7 @@ namespace WorkspaceServer.Workspaces
             ProjectName = projectName;
         }
 
-        public async Task Initialize(
+        public virtual async Task Initialize(
             DirectoryInfo directory,
             Budget budget = null)
         {

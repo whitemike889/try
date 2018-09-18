@@ -30,7 +30,7 @@ namespace WorkspaceServer.Servers.Roslyn
                 .Cast<MetadataReference>()
                 .ToImmutableArray();
 
-        public static IEnumerable<MetadataReference> GetMetadadataReferences(this IEnumerable<string> filePaths)
+        public static IEnumerable<MetadataReference> GetMetadataReferences(this IEnumerable<string> filePaths)
         {
             foreach (var filePath in filePaths)
             {

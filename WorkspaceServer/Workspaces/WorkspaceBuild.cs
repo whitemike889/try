@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Clockwise;
 using MLS.Agent.Tools;
 using Pocket;
+using Recipes;
 
 namespace WorkspaceServer.Workspaces
 {
@@ -43,6 +44,8 @@ namespace WorkspaceServer.Workspaces
         private FileInfo _entryPointAssemblyPath;
         private static string _targetFramework;
         private readonly Logger _log;
+        private WorkspaceConfiguration _configuration;
+        private bool _ready = false;
 
         public DateTimeOffset? ConstructionTime { get; }
         public DateTimeOffset? CreationTime { get; private set; }
@@ -96,6 +99,44 @@ namespace WorkspaceServer.Workspaces
         public string Name { get; }
 
         public static DirectoryInfo DefaultWorkspacesDirectory { get; }
+
+        public async Task<WorkspaceConfiguration> GetConfigurationAsync()
+        {
+            if (_configuration == null)
+            {
+                await EnsureBuilt();
+
+                var workspaceConfigFile = new FileInfo(Path.Combine(Directory.FullName, ".trydotnet"));
+
+                if (workspaceConfigFile.Exists)
+                {
+                    var json = await workspaceConfigFile.ReadAsync();
+
+                    _configuration = json.FromJsonTo<WorkspaceConfiguration>();
+                }
+                else
+                {
+                    var buildLog = Directory.GetFiles("msbuild.log").SingleOrDefault();
+
+                    if (buildLog == null)
+                    {
+                        throw new InvalidOperationException($"msbuild.log not found in {Directory}");
+                    }
+
+                    var compilerCommandLine = buildLog.FindCompilerCommandLine();
+
+                    _configuration = new WorkspaceConfiguration
+                    {
+                        CompilerArgs = compilerCommandLine
+                    };
+
+                    File.WriteAllText(workspaceConfigFile.FullName,
+                                      _configuration.ToJson());
+                }
+            }
+
+            return _configuration;
+        }
 
         public bool IsPublished { get; private set; }
 
@@ -180,6 +221,11 @@ namespace WorkspaceServer.Workspaces
 
         public async Task EnsureReady(Budget budget)
         {
+            if (_ready)
+            {
+                return;
+            }
+
             await EnsureCreated(budget);
 
             await EnsureBuilt(budget);
@@ -188,6 +234,8 @@ namespace WorkspaceServer.Workspaces
             {
                 await EnsurePublished(budget);
             }
+
+            _ready = true;
         }
 
         public bool RequiresPublish { get; }
@@ -264,13 +312,12 @@ namespace WorkspaceServer.Workspaces
                 }
 
                 operation.Succeed();
-                
             }
 
             return true;
         }
 
-        public static WorkspaceBuild Copy(
+        public static async Task<WorkspaceBuild> Copy(
             WorkspaceBuild fromWorkspaceBuild,
             string folderNameStartsWith = null)
         {
@@ -279,16 +326,27 @@ namespace WorkspaceServer.Workspaces
                 throw new ArgumentNullException(nameof(fromWorkspaceBuild));
             }
 
+            await fromWorkspaceBuild.EnsureReady(new Budget());
+
             folderNameStartsWith = folderNameStartsWith ?? fromWorkspaceBuild.Name;
             var parentDirectory = fromWorkspaceBuild.Directory.Parent;
 
             var destination = CreateDirectory(folderNameStartsWith, parentDirectory);
 
-            return Copy(fromWorkspaceBuild, destination);
+            return await Copy(fromWorkspaceBuild, destination);
         }
 
-        public static WorkspaceBuild Copy(WorkspaceBuild fromWorkspaceBuild, DirectoryInfo destination)
+        public static async Task<WorkspaceBuild> Copy(
+            WorkspaceBuild fromWorkspaceBuild,
+            DirectoryInfo destination)
         {
+            if (fromWorkspaceBuild == null)
+            {
+                throw new ArgumentNullException(nameof(fromWorkspaceBuild));
+            }
+
+            await fromWorkspaceBuild.EnsureReady(new Budget());
+
             fromWorkspaceBuild.Directory.CopyTo(destination);
 
             var copy = new WorkspaceBuild(destination, destination.Name)

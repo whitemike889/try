@@ -1,25 +1,42 @@
 ﻿using System;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Clockwise;
 using Newtonsoft.Json;
-using Pocket;
+using WorkspaceServer;
 using WorkspaceServer.Models;
 using WorkspaceServer.Models.Execution;
+using Pocket;
 using static Pocket.Logger<MLS.Agent.Warmup>;
 
 namespace MLS.Agent
 {
     public class Warmup : HostedService
     {
+        private readonly WorkspaceRegistry workspaceRegistry;
+
         private readonly HttpClient _httpClient = new HttpClient
         {
             BaseAddress = new Uri("http://localhost:4242")
         };
 
+        public Warmup(WorkspaceRegistry workspaceRegistry)
+        {
+            this.workspaceRegistry = workspaceRegistry ??
+                                     throw new ArgumentNullException(nameof(workspaceRegistry));
+        }
+
         protected override async Task ExecuteAsync(Budget budget)
         {
+            await Task.WhenAll(
+                workspaceRegistry.Select(async builder =>
+                {
+                    var build = await builder.GetWorkspaceBuild(budget);
+                    await build.EnsureReady(budget);
+                }));
+
             await WarmUpRoutes();
         }
 
@@ -27,8 +44,6 @@ namespace MLS.Agent
         {
             using (var operation = Log.OnEnterAndExit())
             {
-                await _httpClient.GetAsync("/sensors/version");
-
                 await WarmpUpRoute("/workspace/run");
                 await WarmpUpRoute("/workspace/completion");
                 await WarmpUpRoute("/workspace/diagnostics");

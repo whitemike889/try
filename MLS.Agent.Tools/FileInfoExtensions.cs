@@ -20,5 +20,22 @@ namespace MLS.Agent.Tools
                 return await reader.ReadToEndAsync();
             }
         }
+
+        public static bool IsBuildOutput(this FileInfo fileInfo)
+        {
+            var directory = fileInfo.Directory;
+
+            while (directory != null)
+            {
+                if (directory.Name == "obj" || directory.Name == "bin")
+                {
+                    return true;
+                }
+
+                directory = directory.Parent;
+            }
+
+            return false;
+        }
     }
 }

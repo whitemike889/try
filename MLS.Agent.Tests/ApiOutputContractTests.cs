@@ -175,7 +175,7 @@ namespace Example
             MarkupTestFile.GetPosition(input, out string output, out var position);
 
             return new Workspace.Buffer(
-                "EntrypointCode.cs",
+                "Program.cs",
                 output,
                 position ?? 0);
         }

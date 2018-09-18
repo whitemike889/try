@@ -80,16 +80,18 @@ namespace WorkspaceServer.Models.Execution
         public static Workspace FromSource(
             string source,
             string workspaceType,
+            string id = "Program.cs",
             string[] usings = null,
-            string id = null,
-            int position = 0) =>
-            new Workspace(
+            int position = 0)
+        {
+            return new Workspace(
                 workspaceType: workspaceType,
                 buffers: new[]
                 {
-                    new Buffer(BufferId.Parse(id ?? $"file{source.GetHashCode()}.cs"), source, position)
+                    new Buffer(BufferId.Parse(id ?? throw new ArgumentNullException(nameof(id))), source, position)
                 },
                 usings: usings);
+        }
 
         public static Workspace FromSources(
             string workspaceType = null,
@@ -100,7 +102,9 @@ namespace WorkspaceServer.Models.Execution
 
         public static Workspace FromDirectory(DirectoryInfo directory, string workspaceType)
         {
-            var filesOnDisk = directory.GetFiles("*.cs", SearchOption.AllDirectories);
+            var filesOnDisk = directory.GetFiles("*.cs", SearchOption.AllDirectories)
+                                       .Where(f => !f.IsBuildOutput())
+                                       .ToArray();
 
             if (!filesOnDisk.Any())
             {

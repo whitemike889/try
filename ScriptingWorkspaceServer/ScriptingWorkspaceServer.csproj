@@ -7,6 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="TestResults\**" />
+    <EmbeddedResource Remove="TestResults\**" />
+    <None Remove="TestResults\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\WorkspaceServer\WorkspaceServer.csproj" />
     <PackageReference Include="clockwise" Version="1.0.244-beta" />
     <PackageReference Include="pocket.disposable" Version="1.0.4">

@@ -8,7 +8,7 @@ namespace WorkspaceServer
 {
     public static class BuildLogParser
     {
-        public static IEnumerable<string> FindCompilerCommandLine(this FileInfo logFile)
+        public static string[] FindCompilerCommandLine(this FileInfo logFile)
         {
             if (logFile == null)
             {
@@ -27,17 +27,32 @@ namespace WorkspaceServer
 
                     if (line.StartsWith(dotnetPath, StringComparison.OrdinalIgnoreCase))
                     {
-                        return line.Tokenize().RemoveDotnetAndCsc();
+                        return line.Tokenize().RemoveDotnetAndCsc().ToArray();
                     }
                 }
             }
 
-            return null;
+            throw new InvalidOperationException($"Compiler args not found in {logFile.FullName}.");
         }
 
         private static IEnumerable<string> RemoveDotnetAndCsc(this IEnumerable<string> args)
         {
-            return args.Skip(2);
+            var foundCscDll = false;
+
+            foreach (var arg in args)
+            {
+                if (foundCscDll)
+                {
+                    yield return arg;
+                }
+                else
+                {
+                    if (arg.EndsWith("csc.dll"))
+                    {
+                        foundCscDll = true;
+                    }
+                }
+            }
         }
     }
 }
