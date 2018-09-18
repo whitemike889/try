@@ -260,7 +260,7 @@ namespace WorkspaceServer.Workspaces
                     {
                         operation.Info("Building workspace using {_initializer} in {directory}", _initializer, Directory);
                         var result = await new Dotnet(Directory)
-                                         .Build(args: "/fl /p:ProvideCommandLineArgs=true");
+                                         .Build(args: "/fl /p:ProvideCommandLineArgs=true;append=true");
                         result.ThrowOnFailure();
                     }
 
