@@ -255,17 +255,39 @@ namespace WorkspaceServer.Workspaces
             {
                 if (!IsBuilt)
                 {
-                    operation.Info("Building workspace");
-                    if (Directory.GetFiles("*.deps.json", SearchOption.AllDirectories).Length == 0)
-                    {
-                        operation.Info("Building workspace using {_initializer} in {directory}", _initializer, Directory);
-                        var result = await new Dotnet(Directory)
-                                         .Build(args: "/fl /p:ProvideCommandLineArgs=true;append=true");
-                        result.ThrowOnFailure();
-                    }
+                    var lockFile = new FileInfo(Path.Combine(Directory.FullName, ".trydotnet-lock"));
+                    FileStream fileStream = null;
 
-                    IsBuilt = true;
-                    BuildTime = Clock.Current.Now();
+                    try
+                    {
+                        fileStream = File.Create(lockFile.FullName, 1);
+
+                        operation.Info("Building workspace");
+                        if (Directory.GetFiles("*.deps.json", SearchOption.AllDirectories).Length == 0)
+                        {
+                            operation.Info("Building workspace using {_initializer} in {directory}", _initializer, Directory);
+                            var result = await new Dotnet(Directory)
+                                             .Build(args: "/fl /p:ProvideCommandLineArgs=true;append=true");
+                            result.ThrowOnFailure();
+                        }
+
+                        IsBuilt = true;
+                        BuildTime = Clock.Current.Now();
+
+
+                    }
+                    catch (Exception exception)
+                    {
+                        operation.Error(exception);
+                    }
+                    finally
+                    {
+                        if (fileStream != null)
+                        {
+                            fileStream.Dispose();
+                            lockFile.Delete();
+                        }
+                    }
                 }
                 else
                 {
