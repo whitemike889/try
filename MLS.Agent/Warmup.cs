@@ -30,12 +30,12 @@ namespace MLS.Agent
 
         protected override async Task ExecuteAsync(Budget budget)
         {
-            await Task.WhenAll(
-                workspaceRegistry.Select(async builder =>
-                {
-                    var build = await builder.GetWorkspaceBuild(budget);
-                    await build.EnsureReady(budget);
-                }));
+            // await Task.WhenAll(
+            //     workspaceRegistry.Select(async builder =>
+            //     {
+            //         var build = await builder.GetWorkspaceBuild(budget);
+            //         await build.EnsureReady(budget);
+            //     }));
 
             await WarmUpRoutes();
         }
