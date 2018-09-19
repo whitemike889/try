@@ -262,7 +262,7 @@ namespace WorkspaceServer.Workspaces
 
                     try
                     {
-                        fileStream = File.Create(lockFile.FullName, 1);
+                        fileStream = File.Create(lockFile.FullName, 1, FileOptions.DeleteOnClose);
 
                         operation.Info("Building workspace");
                         if (Directory.GetFiles("*.deps.json", SearchOption.AllDirectories).Length == 0)
@@ -284,11 +284,7 @@ namespace WorkspaceServer.Workspaces
                     }
                     finally
                     {
-                        if (fileStream != null)
-                        {
-                            fileStream.Dispose();
-                            lockFile.Delete();
-                        }
+                        fileStream?.Dispose();
                     }
                 }
                 else
