@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace WorkspaceServer.Models.Execution
+namespace MLS.Protocol.Execution
 {
     public class HttpRequest
     {

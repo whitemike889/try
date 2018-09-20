@@ -53,12 +53,12 @@ namespace WorkspaceServer.Servers.Scripting
             return null;
         }
 
-        public static async Task<Models.Completion.CompletionItem> ToModel(this CompletionItem item, Dictionary<(string, int), ISymbol> recommendedSymbols,
+        public static async Task<MLS.Protocol.Completion.CompletionItem> ToModel(this CompletionItem item, Dictionary<(string, int), ISymbol> recommendedSymbols,
             Document document)
         {
             var documentation = await GetDocumentation(item, recommendedSymbols, document);
 
-            return new Models.Completion.CompletionItem(
+            return new MLS.Protocol.Completion.CompletionItem(
                 displayText: item.DisplayText,
                 kind: item.GetKind(),
                 filterText: item.FilterText,

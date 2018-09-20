@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace WorkspaceServer.Models.SignatureHelp
+namespace MLS.Protocol.SignatureHelp
 {
     public class SignatureHelpItem
     {

@@ -24,7 +24,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".cdpx", ".cdpx", "{376CF23C
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MLS.Agent.Tools", "MLS.Agent.Tools\MLS.Agent.Tools.csproj", "{BAA738F1-211C-4111-B159-3D43C857ECB2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScriptingWorkspaceServer", "ScriptingWorkspaceServer\ScriptingWorkspaceServer.csproj", "{0E9B079F-01B9-4AE5-B69D-C6ACF9741688}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ScriptingWorkspaceServer", "ScriptingWorkspaceServer\ScriptingWorkspaceServer.csproj", "{0E9B079F-01B9-4AE5-B69D-C6ACF9741688}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MLS.Protocol", "MLS.Protocol\MLS.Protocol.csproj", "{02049503-05DA-4898-B45C-E314832734A3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -56,6 +58,10 @@ Global
 		{0E9B079F-01B9-4AE5-B69D-C6ACF9741688}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0E9B079F-01B9-4AE5-B69D-C6ACF9741688}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0E9B079F-01B9-4AE5-B69D-C6ACF9741688}.Release|Any CPU.Build.0 = Release|Any CPU
+		{02049503-05DA-4898-B45C-E314832734A3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{02049503-05DA-4898-B45C-E314832734A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{02049503-05DA-4898-B45C-E314832734A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{02049503-05DA-4898-B45C-E314832734A3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -68,6 +74,7 @@ Global
 		{376CF23C-4046-4962-B999-D0192B742DB2} = {5B03B52F-8C2A-41B5-AFFE-86B29FC5F061}
 		{BAA738F1-211C-4111-B159-3D43C857ECB2} = {6EE8F484-DFA2-4F0F-939F-400CE78DFAC2}
 		{0E9B079F-01B9-4AE5-B69D-C6ACF9741688} = {6EE8F484-DFA2-4F0F-939F-400CE78DFAC2}
+		{02049503-05DA-4898-B45C-E314832734A3} = {6EE8F484-DFA2-4F0F-939F-400CE78DFAC2}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D6CD99BA-B16B-4570-8910-225CBDFFA3AD}

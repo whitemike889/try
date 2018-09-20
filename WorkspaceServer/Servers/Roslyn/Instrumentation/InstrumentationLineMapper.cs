@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
+using MLS.Protocol.Execution;
 using WorkspaceServer.Models.Execution;
 
 namespace WorkspaceServer.Servers.Roslyn.Instrumentation

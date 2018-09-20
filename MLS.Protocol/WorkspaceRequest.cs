@@ -1,8 +1,7 @@
 ﻿using System;
-using System.IO;
-using WorkspaceServer.Models.Execution;
+using MLS.Protocol.Execution;
 
-namespace WorkspaceServer.Models
+namespace MLS.Protocol
 {
     public class WorkspaceRequest
     {
@@ -36,13 +35,6 @@ namespace WorkspaceServer.Models
                 var buffer = Workspace.GetBufferWithSpecifiedIdOrSingleBufferIfThereIsOnlyOne(ActiveBufferId);
                 buffer.Position = position.Value;
             }
-        }
-
-        public static WorkspaceRequest FromDirectory(DirectoryInfo directory, string workspaceType)
-        {
-            var workspace = Workspace.FromDirectory(directory, workspaceType);
-
-            return new WorkspaceRequest(workspace);
         }
     }
 }

@@ -3,13 +3,13 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.AspNetCore.Mvc;
+using MLS.Protocol;
 using Pocket;
 using WorkspaceServer;
-using WorkspaceServer.Models;
 using WorkspaceServer.Servers.Roslyn;
 using WorkspaceServer.Servers.Scripting;
 using static Pocket.Logger<MLS.Agent.Controllers.LanguageServicesController>;
-using Workspace = WorkspaceServer.Models.Execution.Workspace;
+using Workspace = MLS.Protocol.Execution.Workspace;
 
 namespace MLS.Agent.Controllers
 {

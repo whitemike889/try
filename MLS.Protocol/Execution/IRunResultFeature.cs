@@ -1,4 +1,4 @@
-﻿namespace WorkspaceServer.Models.Execution
+﻿namespace MLS.Protocol.Execution
 {
     public interface IRunResultFeature
     {

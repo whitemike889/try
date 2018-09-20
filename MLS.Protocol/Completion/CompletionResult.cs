@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace WorkspaceServer.Models.Completion
+namespace MLS.Protocol.Completion
 {
     public class CompletionResult
     {

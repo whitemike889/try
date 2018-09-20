@@ -2,7 +2,7 @@
 using Microsoft.CodeAnalysis;
 using Newtonsoft.Json;
 
-namespace WorkspaceServer.Models
+namespace MLS.Protocol
 {
     public class SerializableDiagnostic
     {

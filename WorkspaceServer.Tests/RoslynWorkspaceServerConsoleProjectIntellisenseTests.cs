@@ -1,10 +1,12 @@
 ﻿using System;
-using FluentAssertions;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using FluentAssertions;
+using MLS.Protocol;
+using MLS.Protocol.Completion;
+using MLS.Protocol.Execution;
 using WorkspaceServer.Models;
-using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Servers.Roslyn;
 using WorkspaceServer.Workspaces;

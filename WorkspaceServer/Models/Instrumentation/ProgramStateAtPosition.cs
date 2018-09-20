@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using MLS.Protocol.Execution;
 using Newtonsoft.Json;
-using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Servers.Roslyn.Instrumentation;
 
 namespace WorkspaceServer.Models.Instrumentation

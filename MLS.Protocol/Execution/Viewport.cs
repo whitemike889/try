@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.CodeAnalysis.Text;
 
-namespace WorkspaceServer.Models.Execution
+namespace MLS.Protocol.Execution
 {
     public class Viewport
     {

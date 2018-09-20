@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using FluentAssertions;
+using MLS.Protocol.Execution;
 using Recipes;
 using WorkspaceServer.Models.Execution;
 using Xunit;

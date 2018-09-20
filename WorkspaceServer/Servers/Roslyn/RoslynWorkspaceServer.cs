@@ -9,19 +9,21 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Completion;
 using Microsoft.CodeAnalysis.Recommendations;
 using MLS.Agent.Tools;
+using MLS.Protocol.Completion;
 using Pocket;
 using Recipes;
 using WorkspaceServer.Models;
-using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
-using WorkspaceServer.Models.SignatureHelp;
+using MLS.Protocol.SignatureHelp;
 using WorkspaceServer.Servers.Roslyn.Instrumentation;
 using WorkspaceServer.Servers.Scripting;
 using WorkspaceServer.Transformations;
 using WorkspaceServer.WorkspaceFeatures;
 using WorkspaceServer.Workspaces;
 using static Pocket.Logger<WorkspaceServer.Servers.Roslyn.RoslynWorkspaceServer>;
-using Workspace = WorkspaceServer.Models.Execution.Workspace;
+using Workspace = MLS.Protocol.Execution.Workspace;
+using MLS.Protocol.Execution;
+using MLS.Protocol;
 
 namespace WorkspaceServer.Servers.Roslyn
 {

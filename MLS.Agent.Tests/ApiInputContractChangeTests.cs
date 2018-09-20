@@ -1,12 +1,12 @@
-using System;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Recipes;
-using WorkspaceServer.Models.Completion;
+using MLS.Protocol.Completion;
 using WorkspaceServer.Models.Execution;
-using WorkspaceServer.Models.SignatureHelp;
+using MLS.Protocol.SignatureHelp;
 using Xunit;
 using Xunit.Abstractions;
+using MLS.Protocol.Execution;
 
 namespace MLS.Agent.Tests
 {

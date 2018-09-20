@@ -1,4 +1,4 @@
-﻿namespace WorkspaceServer.Models.Completion
+﻿namespace MLS.Protocol.Completion
 {
     public class CompletionItem
     {

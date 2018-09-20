@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using FluentAssertions;
+using MLS.Protocol.Execution;
 using Newtonsoft.Json;
-using WorkspaceServer.Models.Execution;
 using Xunit;
 
 namespace WorkspaceServer.Tests

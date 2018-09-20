@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace WorkspaceServer.Models.Completion
+namespace MLS.Protocol.Completion
 {
-    internal static class CompletionUtilities
+    public static class CompletionUtilities
     {
-        internal static IEnumerable<CompletionItem> Deduplicate(this IEnumerable<CompletionItem> source)
+        public static IEnumerable<CompletionItem> Deduplicate(this IEnumerable<CompletionItem> source)
         {
             return source.Distinct(CompletionItemEqualityComparer.Instance);
         }

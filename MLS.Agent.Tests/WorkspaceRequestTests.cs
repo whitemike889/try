@@ -1,8 +1,8 @@
 ﻿using System;
 using FluentAssertions;
+using MLS.Protocol;
+using MLS.Protocol.Execution;
 using Recipes;
-using WorkspaceServer.Models;
-using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Tests;
 using Xunit;
 

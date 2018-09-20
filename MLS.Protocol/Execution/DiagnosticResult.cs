@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace WorkspaceServer.Models.Execution
+namespace MLS.Protocol.Execution
 {
     public class DiagnosticResult
     {

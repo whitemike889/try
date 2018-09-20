@@ -6,8 +6,9 @@ using Clockwise;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
+using MLS.Protocol.Execution;
 using WorkspaceServer.Models.Execution;
-using Workspace = WorkspaceServer.Models.Execution.Workspace;
+using Workspace = MLS.Protocol.Execution.Workspace;
 
 namespace WorkspaceServer.Transformations
 {

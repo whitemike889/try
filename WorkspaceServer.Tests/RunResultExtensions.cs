@@ -1,7 +1,7 @@
 ﻿using System;
 using FluentAssertions;
 using FluentAssertions.Execution;
-using WorkspaceServer.Models.Execution;
+using MLS.Protocol.Execution;
 
 namespace WorkspaceServer.Tests
 {

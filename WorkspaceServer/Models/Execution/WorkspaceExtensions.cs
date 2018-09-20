@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Microsoft.CodeAnalysis.Text;
+using MLS.Agent.Tools;
+using MLS.Protocol.Execution;
 
 namespace WorkspaceServer.Models.Execution
 {
@@ -28,33 +31,12 @@ namespace WorkspaceServer.Models.Execution
         {
             // TODO: (GetAbsolutePositionForGetBufferWithSpecifiedIdOrSingleBufferIfThereIsOnlyOne) this concept should go away
 
-            var buffer = GetBufferWithSpecifiedIdOrSingleBufferIfThereIsOnlyOne(workspace, bufferId);
+            var buffer = workspace.GetBufferWithSpecifiedIdOrSingleBufferIfThereIsOnlyOne(bufferId);
 
             return buffer.AbsolutePosition;
         }
 
-        public static Workspace.Buffer GetBufferWithSpecifiedIdOrSingleBufferIfThereIsOnlyOne(
-            this Workspace workspace,
-            BufferId bufferId = null)
-        {
-            // TODO: (GetBufferWithSpecifiedIdOrSingleBufferIfThereIsOnlyOne) this concept should go away
-
-            var buffer = workspace.Buffers.SingleOrDefault(b => b.Id == bufferId);
-
-            if (buffer == null)
-            {
-                if (workspace.Buffers.Length == 1)
-                {
-                    buffer = workspace.Buffers.Single();
-                }
-                else
-                {
-                    throw new ArgumentException("Ambiguous buffer");
-                }
-            }
-
-            return buffer;
-        }
+        
 
         internal static (int line, int column, int absolutePosition) GetTextLocation(
             this Workspace workspace,
@@ -109,5 +91,31 @@ namespace WorkspaceServer.Models.Execution
                 workspace.Buffers,
                 workspace.WorkspaceType,
                 workspace.IncludeInstrumentation);
+
+
+        public static Workspace FromDirectory(DirectoryInfo directory, string workspaceType)
+        {
+            var filesOnDisk = directory.GetFiles("*.cs", SearchOption.AllDirectories)
+                                       .Where(f => !f.IsBuildOutput())
+                                       .ToArray();
+
+            if (!filesOnDisk.Any())
+            {
+                throw new ArgumentException("Directory does not contain any .cs files.");
+            }
+
+            var files = filesOnDisk.Select(file => new MLS.Protocol.Execution.Workspace.File(file.Name, file.Read())).ToList();
+
+            return new Workspace(
+                files: files.ToArray(),
+                buffers: new[]
+                {
+                    new MLS.Protocol.Execution.Workspace.Buffer(
+                        BufferId.Parse(files.First().Name),
+                        filesOnDisk.First().Read(),
+                        0)
+                },
+                workspaceType: workspaceType);
+        }
     }
 }
