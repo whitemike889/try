@@ -1,8 +1,7 @@
 ﻿using MLS.Protocol.Execution;
 using Newtonsoft.Json;
-using WorkspaceServer.Servers.Roslyn.Instrumentation;
 
-namespace WorkspaceServer.Models.Instrumentation
+namespace MLS.Protocol.Instrumentation
 {
     public class ProgramDescriptor : IRunResultFeature
     {
@@ -24,7 +23,7 @@ namespace WorkspaceServer.Models.Instrumentation
         public Location[] Locations { get; set; }
 
         [JsonProperty("declaredAt")]
-        public RangeOfLines RangeOfLines { get; set; }
+        public LineRange RangeOfLines { get; set; }
     }
 
     public class Location

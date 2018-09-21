@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Text.RegularExpressions;
+using MLS.Protocol.Instrumentation;
 using Newtonsoft.Json;
 using Recipes;
-using WorkspaceServer.Models.Instrumentation;
 
 namespace WorkspaceServer.Servers.Roslyn.Instrumentation
 {
@@ -46,7 +46,7 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
                             // every piece of instrumentation.
                             var (outputStart, outputEnd) = GetSpanOfStdOutCreatedAtCurrentStep(currentState);
 
-                            var newOutput = new RangeOfLines
+                            var newOutput = new LineRange
                             {
                                 Start = outputStart,
                                 End = outputEnd

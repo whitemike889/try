@@ -34,7 +34,7 @@ namespace WorkspaceServer.Tests
 
             var runResult = await runner.Run(
                 new WorkspaceRequest(
-                                WorkspaceExtensions.FromDirectory(
+                                WorkspaceFactory.FromDirectory(
                                     workspace.Directory,
                                     workspace.Name)));
 
@@ -57,7 +57,7 @@ namespace WorkspaceServer.Tests
         {
             var (runner, workspace) = await GetRunnerAndWorkspace();
 
-            var workspaceModel = WorkspaceExtensions.FromDirectory(
+            var workspaceModel = WorkspaceFactory.FromDirectory(
                 workspace.Directory,
                 workspace.Name);
 
@@ -128,7 +128,7 @@ namespace MyUnitTestNamespace
         {
             var (runner, workspace) = await GetRunnerAndWorkspace();
 
-            var workspaceModel = WorkspaceExtensions.FromDirectory(
+            var workspaceModel = WorkspaceFactory.FromDirectory(
                 workspace.Directory,
                 workspace.Name);
 

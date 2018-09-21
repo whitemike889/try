@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using MLS.Protocol.Instrumentation;
 using Newtonsoft.Json.Linq;
 
 namespace WorkspaceServer.Servers.Roslyn.Instrumentation
@@ -148,7 +149,7 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
                                    {
                                        Name = variable.Name,
                                        Value = JToken.FromObject("unavailable"),
-                                       RangeOfLines = new RangeOfLines
+                                       RangeOfLines = new LineRange
                                        {
                                            Start = location.Start,
                                            End = location.End

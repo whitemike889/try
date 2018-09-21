@@ -11,7 +11,7 @@ namespace WorkspaceServer.Models
 
         public static WorkspaceRequest FromDirectory(DirectoryInfo directory, string workspaceType)
         {
-            var workspace = WorkspaceExtensions.FromDirectory(directory, workspaceType);
+            var workspace = WorkspaceFactory.FromDirectory(directory, workspaceType);
 
             return new WorkspaceRequest(workspace);
         }

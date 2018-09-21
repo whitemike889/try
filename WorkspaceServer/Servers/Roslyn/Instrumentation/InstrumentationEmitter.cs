@@ -1,65 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using MLS.Protocol.Instrumentation;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using WorkspaceServer.Servers.Roslyn.Instrumentation;
-
-namespace WorkspaceServer.Servers.Roslyn.Instrumentation
-{
-    public class ProgramStateAtPosition
-    {
-        [JsonProperty("filePosition")]
-        public FilePosition FilePosition { get; set; }
-
-        [JsonProperty("stackTrace")]
-        public string StackTrace { get; set; }
-
-        [JsonProperty("locals")]
-        public VariableInfo[] Locals { get; set; }
-
-        [JsonProperty("parameters")]
-        public VariableInfo[] Parameters { get; set; }
-
-        [JsonProperty("fields")]
-        public VariableInfo[] Fields { get; set; }
-
-        [JsonProperty("output")]
-        public RangeOfLines Output { get; set; }
-    }
-
-    public class VariableInfo
-    {
-        [JsonProperty("name")]
-        public string Name { get; set; }
-
-        [JsonProperty("value")]
-        public JToken Value { get; set; }
-
-        [JsonProperty("declaredAt")]
-        public RangeOfLines RangeOfLines { get; set; }
-    }
-
-    public class RangeOfLines
-    {
-        [JsonProperty("start")]
-        public long Start { get; set; }
-
-        [JsonProperty("end")]
-        public long End { get; set; }
-    }
-
-    public class FilePosition
-    {
-        [JsonProperty("line")]
-        public long Line { get; set; }
-
-        [JsonProperty("character")]
-        public long Character { get; set; }
-
-        [JsonProperty("file")]
-        public string File { get; set; }
-    }
-}
 
 public static class InstrumentationEmitter
 {

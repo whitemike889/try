@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using MLS.Protocol.Instrumentation;
 using Newtonsoft.Json.Linq;
 using WorkspaceServer.Servers.Roslyn.Instrumentation;
 using Xunit;
@@ -15,7 +16,7 @@ namespace WorkspaceServer.Tests.Instrumentation
             {
                 Name = nameof(a),
                 Value = JToken.FromObject(a),
-                RangeOfLines = new RangeOfLines
+                RangeOfLines = new LineRange
                 {
                     Start = 10,
                     End = 11

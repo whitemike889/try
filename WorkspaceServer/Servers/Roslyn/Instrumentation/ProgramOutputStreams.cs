@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using MLS.Protocol.Instrumentation;
 using Newtonsoft.Json;
-using WorkspaceServer.Models.Instrumentation;
 
 namespace WorkspaceServer.Servers.Roslyn.Instrumentation
 {
