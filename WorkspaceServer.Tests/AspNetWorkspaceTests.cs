@@ -35,7 +35,7 @@ namespace WorkspaceServer.Tests
         {
             var (server, workspace) = await GetRunnerAndWorkspace();
 
-            using (var runResult = await server.Run(new WorkspaceRequest(WorkspaceFactory.FromDirectory(workspace.Directory, workspace.Name))))
+            using (var runResult = await server.Run(new WorkspaceRequest(WorkspaceFactory.CreateWorkspaceFromDirectory(workspace.Directory, workspace.Name))))
             {
                 var webServer = runResult.GetFeature<WebServer>();
 

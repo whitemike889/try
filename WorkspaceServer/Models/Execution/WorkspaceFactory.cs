@@ -8,7 +8,7 @@ namespace WorkspaceServer.Models.Execution
 {
     public class WorkspaceFactory
     {
-        public static Workspace FromDirectory(DirectoryInfo directory, string workspaceType)
+        public static Workspace CreateWorkspaceFromDirectory(DirectoryInfo directory, string workspaceType)
         {
             var filesOnDisk = directory.GetFiles("*.cs", SearchOption.AllDirectories)
                                        .Where(f => !f.IsBuildOutput())

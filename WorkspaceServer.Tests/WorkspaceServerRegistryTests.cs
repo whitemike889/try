@@ -98,7 +98,7 @@ namespace Twilio_try.dot.net_sample
             var unregisteredWorkspace = await Default.ConsoleWorkspace;
             var server = new RoslynWorkspaceServer(registry);
 
-            var workspaceRequest = WorkspaceRequestExtensions.FromDirectory(unregisteredWorkspace.Directory, unregisteredWorkspace.Name);
+            var workspaceRequest = WorkspaceRequestFactory.CreateRequestFromDirectory(unregisteredWorkspace.Directory, unregisteredWorkspace.Name);
 
             var result = await server.Run(workspaceRequest);
 

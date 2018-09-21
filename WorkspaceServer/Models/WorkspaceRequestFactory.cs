@@ -6,12 +6,12 @@ using WorkspaceServer.Models.Execution;
 
 namespace WorkspaceServer.Models
 {
-    public static class WorkspaceRequestExtensions
+    public static class WorkspaceRequestFactory
     { 
 
-        public static WorkspaceRequest FromDirectory(DirectoryInfo directory, string workspaceType)
+        public static WorkspaceRequest CreateRequestFromDirectory(DirectoryInfo directory, string workspaceType)
         {
-            var workspace = WorkspaceFactory.FromDirectory(directory, workspaceType);
+            var workspace = WorkspaceFactory.CreateWorkspaceFromDirectory(directory, workspaceType);
 
             return new WorkspaceRequest(workspace);
         }

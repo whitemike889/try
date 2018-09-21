@@ -395,7 +395,7 @@ namespace FibonacciTest
         public async Task When_aspnet_webapi_workspace_request_succeeds_then_output_shows_web_response()
         {
             var workspaceType = await WorkspaceBuild.Copy(await Default.WebApiWorkspace);
-            var workspace = WorkspaceFactory.FromDirectory(
+            var workspace = WorkspaceFactory.CreateWorkspaceFromDirectory(
                 workspaceType.Directory, 
                 workspaceType.Directory.Name);
 
@@ -430,7 +430,7 @@ namespace FibonacciTest
         public async Task When_aspnet_webapi_workspace_request_succeeds_then_standard_out_is_available_on_response()
         {
             var workspaceType = await WorkspaceBuild.Copy(await Default.WebApiWorkspace);
-            var workspace = WorkspaceFactory.FromDirectory(workspaceType.Directory, workspaceType.Directory.Name);
+            var workspace = WorkspaceFactory.CreateWorkspaceFromDirectory(workspaceType.Directory, workspaceType.Directory.Name);
 
             var request = new WorkspaceRequest(workspace, httpRequest: new HttpRequest("/api/values", "get"));
 
@@ -450,7 +450,7 @@ namespace FibonacciTest
         public async Task When_aspnet_webapi_workspace_request_fails_then_diagnostics_are_returned()
         {
             var workspaceType = await WorkspaceBuild.Copy(await Default.WebApiWorkspace);
-            var workspace = WorkspaceFactory.FromDirectory(workspaceType.Directory, workspaceType.Directory.Name);
+            var workspace = WorkspaceFactory.CreateWorkspaceFromDirectory(workspaceType.Directory, workspaceType.Directory.Name);
             var nonCompilingBuffer = new Workspace.Buffer("broken.cs", "this does not compile", 0);
             workspace = new Workspace(
                 buffers: workspace.Buffers.Concat(new[] { nonCompilingBuffer }).ToArray(),
