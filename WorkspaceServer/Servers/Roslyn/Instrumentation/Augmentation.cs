@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using MLS.Protocol.Instrumentation;
+using static InstrumentationEmitter;
 
 namespace WorkspaceServer.Servers.Roslyn.Instrumentation
 {

@@ -2,8 +2,8 @@
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using MLS.Protocol.Instrumentation;
 using Recipes;
+using static InstrumentationEmitter;
 
 namespace WorkspaceServer.Servers.Roslyn.Instrumentation
 {

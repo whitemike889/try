@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
-using MLS.Protocol.Instrumentation;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Recipes;

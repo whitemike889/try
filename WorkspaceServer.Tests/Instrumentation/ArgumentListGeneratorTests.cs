@@ -1,5 +1,4 @@
 ﻿using FluentAssertions;
-using MLS.Protocol.Instrumentation;
 using Newtonsoft.Json.Linq;
 using WorkspaceServer.Servers.Roslyn.Instrumentation;
 using Xunit;

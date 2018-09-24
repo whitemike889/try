@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using MLS.Protocol.Execution;
 using Newtonsoft.Json;
+using WorkspaceServer.Servers.Roslyn.Instrumentation;
 
-namespace MLS.Protocol.Instrumentation
+namespace WorkspaceServer.Models.Instrumentation
 {
     public class ProgramStateAtPositionArray : IRunResultFeature
     {

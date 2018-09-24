@@ -1,7 +1,8 @@
 ﻿using MLS.Protocol.Execution;
 using Newtonsoft.Json;
+using WorkspaceServer.Servers.Roslyn.Instrumentation;
 
-namespace MLS.Protocol.Instrumentation
+namespace WorkspaceServer.Models.Instrumentation
 {
     public class ProgramDescriptor : IRunResultFeature
     {

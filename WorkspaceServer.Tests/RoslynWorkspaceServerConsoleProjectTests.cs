@@ -8,7 +8,7 @@ using FluentAssertions;
 using Microsoft.CodeAnalysis.Text;
 using MLS.Protocol;
 using MLS.Protocol.Execution;
-using MLS.Protocol.Instrumentation;
+using WorkspaceServer.Models.Instrumentation;
 using WorkspaceServer.Servers.Roslyn;
 using WorkspaceServer.Servers.Roslyn.Instrumentation;
 using WorkspaceServer.Tests.CodeSamples;
