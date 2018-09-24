@@ -5,6 +5,8 @@ using Clockwise;
 using FluentAssertions;
 using FluentAssertions.Extensions;
 using Microsoft.CodeAnalysis;
+using MLS.Protocol;
+using MLS.Protocol.Execution;
 using Pocket;
 using WorkspaceServer.Models;
 using WorkspaceServer.Models.Execution;
@@ -13,7 +15,7 @@ using WorkspaceServer.Workspaces;
 using Xunit;
 using Xunit.Abstractions;
 using static Pocket.Logger<WorkspaceServer.Tests.WorkspaceServerTests>;
-using Workspace = WorkspaceServer.Models.Execution.Workspace;
+using Workspace = MLS.Protocol.Execution.Workspace;
 
 namespace WorkspaceServer.Tests
 {

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis.Text;
+using MLS.Protocol.Execution;
 
 namespace WorkspaceServer.Models.Execution
 {
@@ -28,33 +29,12 @@ namespace WorkspaceServer.Models.Execution
         {
             // TODO: (GetAbsolutePositionForGetBufferWithSpecifiedIdOrSingleBufferIfThereIsOnlyOne) this concept should go away
 
-            var buffer = GetBufferWithSpecifiedIdOrSingleBufferIfThereIsOnlyOne(workspace, bufferId);
+            var buffer = workspace.GetBufferWithSpecifiedIdOrSingleBufferIfThereIsOnlyOne(bufferId);
 
             return buffer.AbsolutePosition;
         }
 
-        public static Workspace.Buffer GetBufferWithSpecifiedIdOrSingleBufferIfThereIsOnlyOne(
-            this Workspace workspace,
-            BufferId bufferId = null)
-        {
-            // TODO: (GetBufferWithSpecifiedIdOrSingleBufferIfThereIsOnlyOne) this concept should go away
 
-            var buffer = workspace.Buffers.SingleOrDefault(b => b.Id == bufferId);
-
-            if (buffer == null)
-            {
-                if (workspace.Buffers.Length == 1)
-                {
-                    buffer = workspace.Buffers.Single();
-                }
-                else
-                {
-                    throw new ArgumentException("Ambiguous buffer");
-                }
-            }
-
-            return buffer;
-        }
 
         internal static (int line, int column, int absolutePosition) GetTextLocation(
             this Workspace workspace,
@@ -109,5 +89,6 @@ namespace WorkspaceServer.Models.Execution
                 workspace.Buffers,
                 workspace.WorkspaceType,
                 workspace.IncludeInstrumentation);
+
     }
 }

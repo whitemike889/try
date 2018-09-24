@@ -4,9 +4,8 @@ using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Pocket;
-using WorkspaceServer.WorkspaceFeatures;
 
-namespace WorkspaceServer.Models.Execution
+namespace MLS.Protocol.Execution
 {
     [JsonConverter(typeof(RunResultJsonConverter))]
     public class RunResult : IDisposable

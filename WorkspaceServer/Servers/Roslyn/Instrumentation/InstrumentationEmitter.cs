@@ -24,7 +24,7 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
         public VariableInfo[] Fields { get; set; }
 
         [JsonProperty("output")]
-        public RangeOfLines Output { get; set; }
+        public LineRange Output { get; set; }
     }
 
     public class VariableInfo
@@ -36,10 +36,10 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
         public JToken Value { get; set; }
 
         [JsonProperty("declaredAt")]
-        public RangeOfLines RangeOfLines { get; set; }
+        public LineRange RangeOfLines { get; set; }
     }
 
-    public class RangeOfLines
+    public class LineRange
     {
         [JsonProperty("start")]
         public long Start { get; set; }

@@ -5,9 +5,10 @@ using System.Threading.Tasks;
 using Clockwise;
 using FluentAssertions;
 using FluentAssertions.Extensions;
+using MLS.Protocol;
+using MLS.Protocol.Execution;
 using Pocket;
 using Recipes;
-using WorkspaceServer.Models;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Servers.Roslyn;
 using WorkspaceServer.WorkspaceFeatures;
@@ -34,7 +35,7 @@ namespace WorkspaceServer.Tests
         {
             var (server, workspace) = await GetRunnerAndWorkspace();
 
-            using (var runResult = await server.Run(new WorkspaceRequest(Workspace.FromDirectory(workspace.Directory, workspace.Name))))
+            using (var runResult = await server.Run(new WorkspaceRequest(WorkspaceFactory.CreateWorkspaceFromDirectory(workspace.Directory, workspace.Name))))
             {
                 var webServer = runResult.GetFeature<WebServer>();
 

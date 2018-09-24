@@ -3,8 +3,9 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Clockwise;
 using FluentAssertions;
+using MLS.Protocol;
+using MLS.Protocol.Execution;
 using Pocket;
-using WorkspaceServer.Models;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Servers.Roslyn;
 using WorkspaceServer.Workspaces;
@@ -33,7 +34,7 @@ namespace WorkspaceServer.Tests
 
             var runResult = await runner.Run(
                 new WorkspaceRequest(
-                                Workspace.FromDirectory(
+                                WorkspaceFactory.CreateWorkspaceFromDirectory(
                                     workspace.Directory,
                                     workspace.Name)));
 
@@ -56,7 +57,7 @@ namespace WorkspaceServer.Tests
         {
             var (runner, workspace) = await GetRunnerAndWorkspace();
 
-            var workspaceModel = Workspace.FromDirectory(
+            var workspaceModel = WorkspaceFactory.CreateWorkspaceFromDirectory(
                 workspace.Directory,
                 workspace.Name);
 
@@ -127,7 +128,7 @@ namespace MyUnitTestNamespace
         {
             var (runner, workspace) = await GetRunnerAndWorkspace();
 
-            var workspaceModel = Workspace.FromDirectory(
+            var workspaceModel = WorkspaceFactory.CreateWorkspaceFromDirectory(
                 workspace.Directory,
                 workspace.Name);
 

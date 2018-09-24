@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using MLS.Protocol.SignatureHelp;
 
 namespace WorkspaceServer.Models.SignatureHelp
 {

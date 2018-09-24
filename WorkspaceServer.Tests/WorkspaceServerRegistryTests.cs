@@ -2,9 +2,10 @@ using System;
 using System.Threading.Tasks;
 using Clockwise;
 using FluentAssertions;
+using MLS.Protocol;
+using MLS.Protocol.Execution;
 using Pocket;
 using WorkspaceServer.Models;
-using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Servers.Roslyn;
 using WorkspaceServer.Workspaces;
 using Xunit;
@@ -97,7 +98,7 @@ namespace Twilio_try.dot.net_sample
             var unregisteredWorkspace = await Default.ConsoleWorkspace;
             var server = new RoslynWorkspaceServer(registry);
 
-            var workspaceRequest = WorkspaceRequest.FromDirectory(unregisteredWorkspace.Directory, unregisteredWorkspace.Name);
+            var workspaceRequest = WorkspaceRequestFactory.CreateRequestFromDirectory(unregisteredWorkspace.Directory, unregisteredWorkspace.Name);
 
             var result = await server.Run(workspaceRequest);
 

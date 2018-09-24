@@ -1,8 +1,9 @@
 ﻿using System.Threading.Tasks;
 using Clockwise;
 using WorkspaceServer.Models;
-using WorkspaceServer.Models.Completion;
-using WorkspaceServer.Models.SignatureHelp;
+using MLS.Protocol.Completion;
+using MLS.Protocol.SignatureHelp;
+using MLS.Protocol;
 
 namespace WorkspaceServer
 {

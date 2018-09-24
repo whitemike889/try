@@ -1,8 +1,8 @@
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using MLS.Protocol;
+using MLS.Protocol.Execution;
 using Recipes;
-using WorkspaceServer.Models;
-using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Workspaces;
 
 namespace WorkspaceServer.Tests

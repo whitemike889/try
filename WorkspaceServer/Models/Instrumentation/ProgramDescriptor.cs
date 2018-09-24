@@ -1,5 +1,5 @@
-﻿using Newtonsoft.Json;
-using WorkspaceServer.Models.Execution;
+﻿using MLS.Protocol.Execution;
+using Newtonsoft.Json;
 using WorkspaceServer.Servers.Roslyn.Instrumentation;
 
 namespace WorkspaceServer.Models.Instrumentation
@@ -24,7 +24,7 @@ namespace WorkspaceServer.Models.Instrumentation
         public Location[] Locations { get; set; }
 
         [JsonProperty("declaredAt")]
-        public RangeOfLines RangeOfLines { get; set; }
+        public LineRange RangeOfLines { get; set; }
     }
 
     public class Location

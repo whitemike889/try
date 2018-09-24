@@ -1,8 +1,8 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
-using WorkspaceServer.Models;
-using WorkspaceServer.Models.Execution;
+using MLS.Protocol;
+using MLS.Protocol.Execution;
 using WorkspaceServer.Servers.Scripting;
 using WorkspaceServer.Workspaces;
 using Xunit;

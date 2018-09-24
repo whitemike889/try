@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Clockwise;
-using WorkspaceServer.Models;
-using WorkspaceServer.Models.Execution;
+using MLS.Protocol;
+using MLS.Protocol.Execution;
 
 namespace WorkspaceServer
 {

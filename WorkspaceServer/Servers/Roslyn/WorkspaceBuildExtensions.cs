@@ -10,12 +10,13 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.Text;
+using MLS.Protocol.Execution;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Servers.Roslyn.Instrumentation;
 using WorkspaceServer.Transformations;
 using WorkspaceServer.Workspaces;
 using static System.Environment;
-using Workspace = WorkspaceServer.Models.Execution.Workspace;
+using Workspace = MLS.Protocol.Execution.Workspace;
 
 namespace WorkspaceServer.Servers.Roslyn
 {

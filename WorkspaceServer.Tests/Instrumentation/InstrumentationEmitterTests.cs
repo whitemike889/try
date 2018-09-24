@@ -33,7 +33,7 @@ namespace WorkspaceServer.Tests.Instrumentation
                     {
                         Name = nameof(a),
                         Value = JToken.FromObject(a),
-                        RangeOfLines = new RangeOfLines
+                        RangeOfLines = new LineRange
                         {
                             Start = 10,
                             End = 11
@@ -45,7 +45,7 @@ namespace WorkspaceServer.Tests.Instrumentation
                     {
                         Name = nameof(b),
                         Value = JToken.FromObject(b),
-                        RangeOfLines = new RangeOfLines
+                        RangeOfLines = new LineRange
                         {
                             Start = 20,
                             End = 21

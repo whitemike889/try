@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using WorkspaceServer.Models.Execution;
+using MLS.Protocol.Execution;
 
 namespace WorkspaceServer.WorkspaceFeatures
 {

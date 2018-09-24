@@ -14,14 +14,16 @@ using Microsoft.CodeAnalysis.Recommendations;
 using Microsoft.CodeAnalysis.Scripting;
 using Pocket;
 using WorkspaceServer.Models;
-using WorkspaceServer.Models.Completion;
+using MLS.Protocol.Completion;
 using WorkspaceServer.Models.Execution;
-using WorkspaceServer.Models.SignatureHelp;
+using MLS.Protocol.SignatureHelp;
 using WorkspaceServer.Transformations;
 using static Pocket.Logger<WorkspaceServer.Servers.Scripting.ScriptingWorkspaceServer>;
-using Workspace = WorkspaceServer.Models.Execution.Workspace;
+using Workspace = MLS.Protocol.Execution.Workspace;
 using WorkspaceServer.Servers.Roslyn;
 using Recipes;
+using MLS.Protocol.Execution;
+using MLS.Protocol;
 
 namespace WorkspaceServer.Servers.Scripting
 {

@@ -1,5 +1,6 @@
 ﻿using System;
 using FluentAssertions;
+using MLS.Protocol.Execution;
 using Recipes;
 using WorkspaceServer.Models.Execution;
 using Xunit;

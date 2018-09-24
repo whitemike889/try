@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace WorkspaceServer.Models.Execution
+namespace MLS.Protocol.Execution
 {
     [JsonConverter(typeof(BufferIdConverter))]
     public class BufferId

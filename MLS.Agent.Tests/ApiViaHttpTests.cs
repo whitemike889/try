@@ -1,24 +1,26 @@
 using System;
 using System.Linq;
-using FluentAssertions;
 using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Clockwise;
+using FluentAssertions;
+using MLS.Protocol;
+using MLS.Protocol.Completion;
+using MLS.Protocol.Execution;
+using MLS.Protocol.SignatureHelp;
 using Pocket;
 using Recipes;
 using WorkspaceServer.Models;
-using WorkspaceServer.Models.Completion;
 using WorkspaceServer.Models.Execution;
-using WorkspaceServer.Models.SignatureHelp;
 using WorkspaceServer.Tests;
 using WorkspaceServer.WorkspaceFeatures;
+using WorkspaceServer.Workspaces;
 using Xunit;
 using Xunit.Abstractions;
 using static Pocket.Logger<MLS.Agent.Tests.ApiViaHttpTests>;
-using Workspace = WorkspaceServer.Models.Execution.Workspace;
-using WorkspaceServer.Workspaces;
+using Workspace = MLS.Protocol.Execution.Workspace;
 
 namespace MLS.Agent.Tests
 {
@@ -393,7 +395,7 @@ namespace FibonacciTest
         public async Task When_aspnet_webapi_workspace_request_succeeds_then_output_shows_web_response()
         {
             var workspaceType = await WorkspaceBuild.Copy(await Default.WebApiWorkspace);
-            var workspace = Workspace.FromDirectory(
+            var workspace = WorkspaceFactory.CreateWorkspaceFromDirectory(
                 workspaceType.Directory, 
                 workspaceType.Directory.Name);
 
@@ -428,7 +430,7 @@ namespace FibonacciTest
         public async Task When_aspnet_webapi_workspace_request_succeeds_then_standard_out_is_available_on_response()
         {
             var workspaceType = await WorkspaceBuild.Copy(await Default.WebApiWorkspace);
-            var workspace = Workspace.FromDirectory(workspaceType.Directory, workspaceType.Directory.Name);
+            var workspace = WorkspaceFactory.CreateWorkspaceFromDirectory(workspaceType.Directory, workspaceType.Directory.Name);
 
             var request = new WorkspaceRequest(workspace, httpRequest: new HttpRequest("/api/values", "get"));
 
@@ -448,7 +450,7 @@ namespace FibonacciTest
         public async Task When_aspnet_webapi_workspace_request_fails_then_diagnostics_are_returned()
         {
             var workspaceType = await WorkspaceBuild.Copy(await Default.WebApiWorkspace);
-            var workspace = Workspace.FromDirectory(workspaceType.Directory, workspaceType.Directory.Name);
+            var workspace = WorkspaceFactory.CreateWorkspaceFromDirectory(workspaceType.Directory, workspaceType.Directory.Name);
             var nonCompilingBuffer = new Workspace.Buffer("broken.cs", "this does not compile", 0);
             workspace = new Workspace(
                 buffers: workspace.Buffers.Concat(new[] { nonCompilingBuffer }).ToArray(),
