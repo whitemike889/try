@@ -7,10 +7,10 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 using MLS.Protocol.Execution;
-using WorkspaceServer.Models.Execution;
+using MLS.Protocol.Extensions;
 using Workspace = MLS.Protocol.Execution.Workspace;
 
-namespace WorkspaceServer.Transformations
+namespace MLS.Protocol.Transformations
 {
     public class BufferInliningTransformer : IWorkspaceTransformer
     {

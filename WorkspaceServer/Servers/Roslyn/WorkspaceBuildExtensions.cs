@@ -11,6 +11,8 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.Text;
 using MLS.Protocol.Execution;
+using MLS.Protocol.Extensions;
+using MLS.Protocol.Transformations;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Servers.Roslyn.Instrumentation;
 using WorkspaceServer.Transformations;

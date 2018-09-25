@@ -13,9 +13,7 @@ using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Recommendations;
 using Microsoft.CodeAnalysis.Scripting;
 using Pocket;
-using WorkspaceServer.Models;
 using MLS.Protocol.Completion;
-using WorkspaceServer.Models.Execution;
 using MLS.Protocol.SignatureHelp;
 using WorkspaceServer.Transformations;
 using static Pocket.Logger<WorkspaceServer.Servers.Scripting.ScriptingWorkspaceServer>;
@@ -24,6 +22,8 @@ using WorkspaceServer.Servers.Roslyn;
 using Recipes;
 using MLS.Protocol.Execution;
 using MLS.Protocol;
+using MLS.Protocol.Extensions;
+using MLS.Protocol.Transformations;
 
 namespace WorkspaceServer.Servers.Scripting
 {
