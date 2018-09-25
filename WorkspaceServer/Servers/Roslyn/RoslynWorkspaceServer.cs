@@ -84,7 +84,7 @@ namespace WorkspaceServer.Servers.Roslyn
             var symbolToSymbolKey = new Dictionary<(string, int), ISymbol>();
             foreach (var symbol in symbols)
             {
-                var key = (symbol.Name, (int) symbol.Kind);
+                var key = (symbol.Name, (int)symbol.Kind);
                 if (!symbolToSymbolKey.ContainsKey(key))
                 {
                     symbolToSymbolKey[key] = symbol;
@@ -296,6 +296,39 @@ namespace WorkspaceServer.Servers.Roslyn
             var runResult = new RunResult(succeeded: true);
             runResult.AddFeature(new WebServer(build));
             return runResult;
+        }
+
+        public async Task<CompileResult> Compile(WorkspaceRequest request, Budget budget = null)
+        {
+            var workspace = request.Workspace;
+            budget = budget ?? new TimeBudget(TimeSpan.FromSeconds(defaultBudgetInSeconds));
+
+            using (Log.OnEnterAndExit())
+            using (await locks.GetOrAdd(workspace.WorkspaceType, s => new AsyncLock()).LockAsync())
+            {
+                var build = await getWorkspaceBuildByName(workspace.WorkspaceType);
+
+                workspace = await _transformer.TransformAsync(workspace, budget);
+
+                var compilation = await build.Compile(workspace, budget, request.ActiveBufferId);
+
+                var diagnostics = workspace.MapDiagnostics(request.ActiveBufferId, compilation);
+
+                if (diagnostics.Any(e => e.Severity == DiagnosticSeverity.Error))
+                {
+                    var compileErrorMessages = string.Join(" ", diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error)
+                                                          .Select(d => d.Message)
+                                                          .ToArray());
+                    return new CompileResult() { error = compileErrorMessages };
+                }
+
+                using (var stream = new MemoryStream())
+                {
+                    compilation.Emit(peStream: stream);
+                    var encodedAssembly = System.Convert.ToBase64String(stream.ToArray());
+                    return new CompileResult() { base64assembly = encodedAssembly };
+                }
+            }
         }
     }
 }

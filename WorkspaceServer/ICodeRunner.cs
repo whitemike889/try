@@ -8,5 +8,6 @@ namespace WorkspaceServer
     public interface ICodeRunner
     {
         Task<RunResult> Run(WorkspaceRequest request, Budget budget = null);
+        Task<CompileResult> Compile(WorkspaceRequest request, Budget budget = null);
     }
 }
