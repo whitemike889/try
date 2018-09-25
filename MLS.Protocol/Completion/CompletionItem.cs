@@ -1,4 +1,6 @@
-﻿namespace MLS.Protocol.Completion
+﻿using System;
+
+namespace MLS.Protocol.Completion
 {
     public class CompletionItem
     {
@@ -8,14 +10,16 @@
         public string SortText { get; }
         public string InsertText { get; }
         public string Documentation { get; set; }
-        public CompletionItem(string displayText, string kind, string filterText, string sortText, string insertText, string documentation)
+        public Uri AcceptanceUri { get; }
+        public CompletionItem(string displayText, string kind, string filterText = null, string sortText = null, string insertText = null, string documentation = null, Uri acceptanceUri = null)
         {
-            DisplayText = displayText;
-            Kind = kind;
+            DisplayText = displayText ?? throw new ArgumentNullException(nameof(displayText));
+            Kind = kind ?? throw new ArgumentException(nameof(kind));
             FilterText = filterText;
             SortText = sortText;
             InsertText = insertText;
             Documentation = documentation;
+            AcceptanceUri = acceptanceUri;
         }
 
         public override string ToString() => DisplayText;

@@ -3,7 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using MLS.Protocol.Execution;
-using WorkspaceServer.Transformations;
+using MLS.Protocol.Transformations;
 using Xunit;
 
 namespace WorkspaceServer.Tests

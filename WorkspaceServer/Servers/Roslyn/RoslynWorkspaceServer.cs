@@ -24,6 +24,8 @@ using static Pocket.Logger<WorkspaceServer.Servers.Roslyn.RoslynWorkspaceServer>
 using Workspace = MLS.Protocol.Execution.Workspace;
 using MLS.Protocol.Execution;
 using MLS.Protocol;
+using MLS.Protocol.Extensions;
+using MLS.Protocol.Transformations;
 
 namespace WorkspaceServer.Servers.Roslyn
 {

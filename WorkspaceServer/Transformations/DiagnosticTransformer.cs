@@ -7,6 +7,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using MLS.Protocol;
 using MLS.Protocol.Execution;
+using MLS.Protocol.Transformations;
 using Workspace = MLS.Protocol.Execution.Workspace;
 
 namespace WorkspaceServer.Transformations
