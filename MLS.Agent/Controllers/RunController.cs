@@ -115,16 +115,6 @@ namespace MLS.Agent.Controllers
             [FromBody] WorkspaceRequest request,
             [FromHeader(Name = "Timeout")] string timeoutInMilliseconds = "15000")
         {
-            //if (!int.TryParse(timeoutInMilliseconds, out var timeoutMs))
-            //{
-            //    return BadRequest();
-            //}
-
-            //var workspaceType = request.Workspace.WorkspaceType;
-            //var runTimeout = TimeSpan.FromMilliseconds(timeoutMs);
-
-            //var budget = new TimeBudget(runTimeout);
-
             if (_options.IsLanguageServiceMode)
             {
                 return StatusCode(404);
