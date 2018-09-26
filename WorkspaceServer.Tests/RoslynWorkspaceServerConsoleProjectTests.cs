@@ -35,7 +35,7 @@ namespace WorkspaceServer.Tests
         }
 
         [Fact]
-        public async Task When_run_fails_to_compile_diagnostics_are_aligned_with_buffer_span()
+        public async Task When_run_fails_to_compile_then_diagnostics_are_aligned_with_buffer_span()
         {
             var (server, build) = await GetRunnerAndWorkpaceBuild();
 
@@ -56,7 +56,7 @@ namespace WorkspaceServer.Tests
         }
 
         [Fact]
-        public async Task When_run_fails_to_compile_diagnostics_are_aligned_with_buffer_span_when_code_is_multi_line()
+        public async Task When_run_fails_to_compile_then_diagnostics_are_aligned_with_buffer_span_when_code_is_multi_line()
         {
             var (server, build) = await GetRunnerAndWorkpaceBuild();
             
@@ -91,7 +91,7 @@ namespace WorkspaceServer.Tests
         }
 
         [Fact]
-        public async Task When_compile_fails_diagnostics_are_aligned_with_buffer_span()
+        public async Task When_compile_fails_then_diagnostics_are_aligned_with_buffer_span()
         {
             var (server, build) = await GetCompilerAndWorkpaceBuild();
 
@@ -112,7 +112,7 @@ namespace WorkspaceServer.Tests
         }
 
         [Fact]
-        public async Task When_compile_fails_diagnostics_are_aligned_with_buffer_span_when_code_is_multi_line()
+        public async Task When_compile_fails_then_diagnostics_are_aligned_with_buffer_span_when_code_is_multi_line()
         {
             var (server, build) = await GetCompilerAndWorkpaceBuild();
 
