@@ -75,6 +75,8 @@ namespace WorkspaceServer.WorkspaceFeatures
 
         public StandardError StandardError { get; } = new StandardError();
 
+        public string Name => nameof(WebServer);
+
         public Task<Uri> EnsureStarted() => _listeningAtUri.ValueAsync();
 
         public async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request)
@@ -88,7 +90,7 @@ namespace WorkspaceServer.WorkspaceFeatures
 
         public void Dispose() => _disposables.Dispose();
 
-        public void Apply(RunResult runResult)
+        public void Apply(FeatureContainer runResult)
         {
         }
     }

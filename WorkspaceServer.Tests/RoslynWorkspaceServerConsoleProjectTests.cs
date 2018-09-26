@@ -241,7 +241,7 @@ namespace ConsoleProgram
                 includeInstrumentation: true);
 
             var result = await server.Run(new WorkspaceRequest(workspace));
-            var filePositions = result.Features[typeof(ProgramStateAtPositionArray)].As<ProgramStateAtPositionArray>()
+            var filePositions = result.Features[nameof(ProgramStateAtPositionArray)].As<ProgramStateAtPositionArray>()
                 .ProgramStates
                 .Where(state => state.FilePosition != null)
                 .Select(state => state.FilePosition.Line);
@@ -282,7 +282,7 @@ namespace ConsoleProgram
 
             var result = await server.Run(new WorkspaceRequest(workspace));
 
-            var locations = result.Features[typeof(ProgramDescriptor)].As<ProgramDescriptor>()
+            var locations = result.Features[nameof(ProgramDescriptor)].As<ProgramDescriptor>()
                 .VariableLocations
                 .Where(variable => variable.Name == "a")
                 .SelectMany(variable => variable.Locations)
@@ -326,7 +326,7 @@ namespace ConsoleProgram
 
             var result = await server.Run(new WorkspaceRequest(workspace));
 
-            var locations = result.Features[typeof(ProgramDescriptor)].As<ProgramDescriptor>()
+            var locations = result.Features[nameof(ProgramDescriptor)].As<ProgramDescriptor>()
                 .VariableLocations
                 .Where(variable => variable.Name == "a")
                 .SelectMany(variable => variable.Locations)
@@ -370,7 +370,7 @@ namespace ConsoleProgram
                 );
 
             var result = await server.Run(new WorkspaceRequest(workspace));
-            var filePositions = result.Features[typeof(ProgramStateAtPositionArray)].As<ProgramStateAtPositionArray>()
+            var filePositions = result.Features[nameof(ProgramStateAtPositionArray)].As<ProgramStateAtPositionArray>()
                 .ProgramStates
                 .Where(state => state.FilePosition != null)
                 .Select(state => state.FilePosition.Line);

@@ -12,12 +12,14 @@ namespace WorkspaceServer.Models.Instrumentation
         [JsonProperty("instrumentation")]
         public IReadOnlyCollection<ProgramStateAtPosition> ProgramStates { get; set; }
 
+        public string Name => nameof(ProgramStateAtPositionArray);
+
         public ProgramStateAtPositionArray(IReadOnlyCollection<string> programStates)
         {
             ProgramStates = programStates.Select(JsonConvert.DeserializeObject<ProgramStateAtPosition>).ToArray();
         }
 
-        public void Apply(RunResult result)
+        public void Apply(FeatureContainer result)
         {
             result.AddProperty("instrumentation", ProgramStates);
         }

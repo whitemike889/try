@@ -319,14 +319,19 @@ namespace WorkspaceServer.Servers.Roslyn
                     var compileErrorMessages = string.Join(" ", diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error)
                                                           .Select(d => d.Message)
                                                           .ToArray());
-                    return new CompileResult() { error = compileErrorMessages };
+                    return new CompileResult(
+                        succeeded: false,
+                        base64assembly: null,
+                        diagnostics);
                 }
 
                 using (var stream = new MemoryStream())
                 {
                     compilation.Emit(peStream: stream);
                     var encodedAssembly = System.Convert.ToBase64String(stream.ToArray());
-                    return new CompileResult() { base64assembly = encodedAssembly };
+                    return new CompileResult(
+                        succeeded: true,
+                        base64assembly: encodedAssembly);
                 }
             }
         }
