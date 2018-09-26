@@ -5,8 +5,8 @@ using MLS.Protocol.Execution;
 
 namespace WorkspaceServer
 {
-    public interface ICodeRunner
+    public interface ICodeCompiler
     {
-        Task<RunResult> Run(WorkspaceRequest request, Budget budget = null);
+        Task<CompileResult> Compile(WorkspaceRequest request, Budget budget = null);
     }
 }

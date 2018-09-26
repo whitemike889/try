@@ -29,7 +29,7 @@ using MLS.Protocol.Transformations;
 
 namespace WorkspaceServer.Servers.Roslyn
 {
-    public class RoslynWorkspaceServer : ILanguageService, ICodeRunner
+    public class RoslynWorkspaceServer : ILanguageService, ICodeRunner, ICodeCompiler
     {
         private readonly GetWorkspaceBuildByName getWorkspaceBuildByName;
         private const int defaultBudgetInSeconds = 30;

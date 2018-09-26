@@ -28,9 +28,9 @@ namespace MLS.Agent.Controllers
             _workspaceServer = workspaceServer;
         }
 
-        protected Task<ICodeRunner> GetWorkspaceServer(string workspaceType, Budget budget = null)
+        protected Task<ICodeCompiler> GetWorkspaceServer(string workspaceType, Budget budget = null)
         {
-            return Task.FromResult((ICodeRunner)_workspaceServer);
+            return Task.FromResult(_workspaceServer as ICodeCompiler);
         }
 
         [HttpPost]
@@ -64,6 +64,10 @@ namespace MLS.Agent.Controllers
                 var budget = new TimeBudget(runTimeout);
 
                 var server = await GetWorkspaceServer(workspaceType);
+                if (server == null)
+                {
+                    return BadRequest();
+                }
 
                 result = await server.Compile(request, budget);
                 budget?.RecordEntry();
