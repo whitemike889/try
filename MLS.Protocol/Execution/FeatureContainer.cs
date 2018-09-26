@@ -10,14 +10,16 @@ namespace MLS.Protocol.Execution
 {
     public abstract class FeatureContainer : IDisposable
     {
-        public void Dispose() => _disposables.Dispose();
-
-        private readonly Dictionary<string, object> _features = 
+        private readonly CompositeDisposable _disposables = new CompositeDisposable();
+        private readonly Dictionary<string, object> _features =
             new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+        private List<(string, object)> _featureProperties;
+
 
         public IReadOnlyDictionary<string, object> Features => _features;
 
-        private readonly CompositeDisposable _disposables = new CompositeDisposable();
+        public void Dispose() => _disposables.Dispose();
+
         public void AddFeature(IRunResultFeature feature)
         {
             if (feature is IDisposable disposable)
@@ -28,7 +30,6 @@ namespace MLS.Protocol.Execution
             _features.Add(feature.Name, feature);
         }
 
-        private List<(string, object)> _featureProperties;
         public List<(string Name, object Value)> FeatureProperties => _featureProperties ?? (_featureProperties = new List<(string, object)>());
 
         public void AddProperty(string name, object value) => FeatureProperties.Add((name, value));
@@ -37,7 +38,6 @@ namespace MLS.Protocol.Execution
     public abstract class FeatureContainerConverter<T> : JsonConverter where T : FeatureContainer
     {
         protected abstract void AddProperties(T result, JObject o);
-
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
@@ -75,16 +75,5 @@ namespace MLS.Protocol.Execution
         public override bool CanWrite { get; } = true;
 
         public override bool CanConvert(Type objectType) => objectType == typeof(RunResult);
-    }
-
-    class ResultThing
-    {
-
-    }
-
-    internal interface IFeatureThing
-    {
-        string Name { get; }
-        object GetValue();
     }
 }

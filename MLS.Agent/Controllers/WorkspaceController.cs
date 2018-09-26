@@ -12,17 +12,17 @@ using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Servers.Roslyn;
 using WorkspaceServer.Servers.Scripting;
 using WorkspaceServer.WorkspaceFeatures;
-using static Pocket.Logger<MLS.Agent.Controllers.RunController>;
+using static Pocket.Logger<MLS.Agent.Controllers.WorkspaceController>;
 
 namespace MLS.Agent.Controllers
 {
-    public class RunController : Controller
+    public class WorkspaceController : Controller
     {
         private readonly AgentOptions _options;
         private readonly RoslynWorkspaceServer _workspaceServer;
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
 
-        public RunController(
+        public WorkspaceController(
             WorkspaceRegistry workspaceRegistry,
             RoslynWorkspaceServer imws,
             AgentOptions options,
