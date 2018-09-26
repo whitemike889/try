@@ -138,6 +138,35 @@ namespace WorkspaceServer.Servers.Roslyn
                        absolutePosition);
         }
 
+        public async Task<CompileResult> Compile(WorkspaceRequest request, Budget budget = null)
+        {
+            var workspace = request.Workspace;
+            budget = budget ?? new TimeBudget(TimeSpan.FromSeconds(defaultBudgetInSeconds));
+
+            using (Log.OnEnterAndExit())
+            using (await locks.GetOrAdd(workspace.WorkspaceType, s => new AsyncLock()).LockAsync())
+            {
+                var (compilation, diagnostics) = await CompileWorker(request.Workspace, request.ActiveBufferId, budget);
+
+                if (diagnostics.Any(e => e.Severity == DiagnosticSeverity.Error))
+                {
+                    return new CompileResult(
+                        succeeded: false,
+                        base64assembly: null,
+                        diagnostics);
+                }
+
+                using (var stream = new MemoryStream())
+                {
+                    compilation.Emit(peStream: stream);
+                    var encodedAssembly = System.Convert.ToBase64String(stream.ToArray());
+                    return new CompileResult(
+                        succeeded: true,
+                        base64assembly: encodedAssembly);
+                }
+            }
+        }
+
         public async Task<RunResult> Run(WorkspaceRequest request, Budget budget = null)
         {
             var workspace = request.Workspace;
@@ -150,9 +179,7 @@ namespace WorkspaceServer.Servers.Roslyn
 
                 workspace = await _transformer.TransformAsync(workspace, budget);
 
-                var compilation = await build.Compile(workspace, budget, request.ActiveBufferId);
-
-                var diagnostics = workspace.MapDiagnostics(request.ActiveBufferId, compilation);
+                var (compilation, diagnostics) = await CompileWorker(request.Workspace, request.ActiveBufferId, budget);
 
                 if (diagnostics.Any(e => e.Severity == DiagnosticSeverity.Error))
                 {
@@ -298,42 +325,14 @@ namespace WorkspaceServer.Servers.Roslyn
             return runResult;
         }
 
-        public async Task<CompileResult> Compile(WorkspaceRequest request, Budget budget = null)
+        private async Task<(Compilation, SerializableDiagnostic[])> CompileWorker(Workspace workspace, BufferId activeBufferId, Budget budget)
         {
-            var workspace = request.Workspace;
-            budget = budget ?? new TimeBudget(TimeSpan.FromSeconds(defaultBudgetInSeconds));
-
-            using (Log.OnEnterAndExit())
-            using (await locks.GetOrAdd(workspace.WorkspaceType, s => new AsyncLock()).LockAsync())
-            {
-                var build = await getWorkspaceBuildByName(workspace.WorkspaceType);
-
-                workspace = await _transformer.TransformAsync(workspace, budget);
-
-                var compilation = await build.Compile(workspace, budget, request.ActiveBufferId);
-
-                var diagnostics = workspace.MapDiagnostics(request.ActiveBufferId, compilation);
-
-                if (diagnostics.Any(e => e.Severity == DiagnosticSeverity.Error))
-                {
-                    var compileErrorMessages = string.Join(" ", diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error)
-                                                          .Select(d => d.Message)
-                                                          .ToArray());
-                    return new CompileResult(
-                        succeeded: false,
-                        base64assembly: null,
-                        diagnostics);
-                }
-
-                using (var stream = new MemoryStream())
-                {
-                    compilation.Emit(peStream: stream);
-                    var encodedAssembly = System.Convert.ToBase64String(stream.ToArray());
-                    return new CompileResult(
-                        succeeded: true,
-                        base64assembly: encodedAssembly);
-                }
-            }
+            var build = await getWorkspaceBuildByName(workspace.WorkspaceType);
+            workspace = await _transformer.TransformAsync(workspace, budget);
+            var compilation = await build.Compile(workspace, budget, activeBufferId);
+            var diagnostics = workspace.MapDiagnostics(activeBufferId, compilation);
+            return (compilation, diagnostics);
         }
+
     }
 }
