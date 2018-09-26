@@ -12,7 +12,6 @@ namespace MLS.Protocol.Execution
 
         public string Name => nameof(Diagnostics);
 
-
         public void Apply(FeatureContainer result)
         {
             var diagnostics =
