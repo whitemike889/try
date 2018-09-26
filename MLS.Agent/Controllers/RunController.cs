@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.AspNetCore.Mvc;
+using MLS.Agent.Middleware;
 using MLS.Protocol;
 using MLS.Protocol.Execution;
 using Pocket;
@@ -38,18 +39,14 @@ namespace MLS.Agent.Controllers
 
         [HttpPost]
         [Route("/workspace/run")]
+        [DebugEnableFilter]
         public async Task<IActionResult> Run(
             [FromBody] WorkspaceRequest request,
             [FromHeader(Name = "Timeout")] string timeoutInMilliseconds = "15000")
         {
             if (_options.IsLanguageServiceMode)
             {
-                return StatusCode(404);
-            }
-
-            if (Debugger.IsAttached && !(Clock.Current is VirtualClock))
-            {
-                _disposables.Add(VirtualClock.Start());
+                return NotFound();
             }
 
             using (var operation = Log.OnEnterAndConfirmOnExit())

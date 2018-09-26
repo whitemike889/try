@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.AspNetCore.Mvc;
+using MLS.Agent.Middleware;
 using MLS.Protocol;
 using Pocket;
 using WorkspaceServer;
@@ -35,15 +36,11 @@ namespace MLS.Agent.Controllers
 
         [HttpPost]
         [Route("/workspace/completion")]
+        [DebugEnableFilter]
         public async Task<IActionResult> Completion(
             [FromBody] WorkspaceRequest request,
             [FromHeader(Name = "Timeout")] string timeoutInMilliseconds = "15000")
         {
-            if (Debugger.IsAttached && !(Clock.Current is VirtualClock))
-            {
-                _disposables.Add(VirtualClock.Start());
-            }
-
             using (var operation = Log.OnEnterAndConfirmOnExit())
             {
                 operation.Info("Processing workspaceType {workspaceType}", request.Workspace.WorkspaceType);
