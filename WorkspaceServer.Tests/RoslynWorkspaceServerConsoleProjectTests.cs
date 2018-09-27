@@ -35,7 +35,7 @@ namespace WorkspaceServer.Tests
         }
 
         [Fact]
-        public async Task When_compile_is_unsuccessful_diagnostics_are_aligned_with_buffer_span()
+        public async Task When_run_fails_to_compile_then_diagnostics_are_aligned_with_buffer_span()
         {
             var (server, build) = await GetRunnerAndWorkpaceBuild();
 
@@ -56,7 +56,7 @@ namespace WorkspaceServer.Tests
         }
 
         [Fact]
-        public async Task When_compile_is_unsuccessful_diagnostics_are_aligned_with_buffer_span_when_code_is_multi_line()
+        public async Task When_run_fails_to_compile_then_diagnostics_are_aligned_with_buffer_span_when_code_is_multi_line()
         {
             var (server, build) = await GetRunnerAndWorkpaceBuild();
             
@@ -87,6 +87,123 @@ namespace WorkspaceServer.Tests
 
             var result = await server.Run(new WorkspaceRequest(workspace));
             
+            result.GetFeature<Diagnostics>().Should().BeEmpty();
+        }
+
+        [Fact]
+        public async Task When_compile_fails_then_diagnostics_are_aligned_with_buffer_span()
+        {
+            var (server, build) = await GetCompilerAndWorkpaceBuild();
+
+            var workspace = new Workspace(
+                workspaceType: build.Name,
+                files: new[] { new Workspace.File("Program.cs", SourceCodeProvider.ConsoleProgramSingleRegion) },
+                buffers: new[] { new Workspace.Buffer("Program.cs@alpha", @"Console.WriteLine(banana);", 0) });
+
+
+            var result = await server.Compile(new WorkspaceRequest(workspace));
+
+            result.Should().BeEquivalentTo(new
+            {
+                Succeeded = false,
+                Output = new[] { "(1,19): error CS0103: The name \'banana\' does not exist in the current context" },
+                Exception = (string)null, // we already display the error in Output
+            }, config => config.ExcludingMissingMembers());
+        }
+
+        [Fact]
+        public async Task When_compile_fails_then_diagnostics_are_aligned_with_buffer_span_when_code_is_multi_line()
+        {
+            var (server, build) = await GetCompilerAndWorkpaceBuild();
+
+            var workspace = new Workspace(
+                workspaceType: build.Name,
+                files: new[] { new Workspace.File("Program.cs", SourceCodeProvider.ConsoleProgramSingleRegion) },
+                buffers: new[] { new Workspace.Buffer("Program.cs@alpha", @"var a = 10;" + Environment.NewLine + "Console.WriteLine(banana);", 0) });
+
+            var result = await server.Compile(new WorkspaceRequest(workspace));
+
+            result.Should().BeEquivalentTo(new
+            {
+                Succeeded = false,
+                Output = new[] { "(2,19): error CS0103: The name \'banana\' does not exist in the current context" },
+                Exception = (string)null, // we already display the error in Output
+            }, config => config.ExcludingMissingMembers());
+        }
+
+        [Fact]
+        public async Task When_compile_diagnostics_are_outside_of_viewport_then_they_are_omitted()
+        {
+            var (server, build) = await GetCompilerAndWorkpaceBuild();
+
+            var workspace = new Workspace(
+                workspaceType: build.Name,
+                files: new[] { new Workspace.File("Program.cs", SourceCodeProvider.ConsoleProgramSingleRegionExtraUsing) },
+                buffers: new[] { new Workspace.Buffer("Program.cs@alpha", @"var a = 10;" + Environment.NewLine + "Console.WriteLine(a);", 0) });
+
+            var result = await server.Compile(new WorkspaceRequest(workspace));
+
+            result.GetFeature<Diagnostics>().Should().BeEmpty();
+        }
+
+        [Fact]
+        public async Task When_compile_diagnostics_are_outside_of_active_file_then_they_are_omitted()
+        {
+            #region bufferSources
+
+            const string program = @"
+using System;
+using System.Linq;
+
+namespace FibonacciTest
+{
+    public class Program
+    {
+        public static void Main()
+        {
+            foreach (var i in FibonacciGenerator.Fibonacci().Take(20))
+            {
+                Console.WriteLine(i);
+            }
+        }
+    }
+}";
+            const string generator = @"
+using Newtonsoft.Json;
+using System.Collections.Generic;
+
+namespace FibonacciTest
+{
+    public static class FibonacciGenerator
+    {
+        public  static IEnumerable<int> Fibonacci()
+        {
+            int current = 1, next = 1;
+            while (true)
+            {
+                yield return current;
+                next = current + (current = next);
+            }
+        }
+    }
+}";
+            #endregion
+
+            var (server, build) = await GetCompilerAndWorkpaceBuild();
+
+            var request = new WorkspaceRequest(
+                new Workspace(
+                    workspaceType: build.Name,
+                    buffers: new[]
+                    {
+                        new Workspace.Buffer("Program.cs", program, 0),
+                        new Workspace.Buffer("FibonacciGenerator.cs", generator, 0)
+                    },
+                    includeInstrumentation: true),
+                new BufferId("Program.cs"));
+
+            var result = await server.Compile(request);
+
             result.GetFeature<Diagnostics>().Should().BeEmpty();
         }
 
@@ -241,7 +358,7 @@ namespace ConsoleProgram
                 includeInstrumentation: true);
 
             var result = await server.Run(new WorkspaceRequest(workspace));
-            var filePositions = result.Features[typeof(ProgramStateAtPositionArray)].As<ProgramStateAtPositionArray>()
+            var filePositions = result.Features[nameof(ProgramStateAtPositionArray)].As<ProgramStateAtPositionArray>()
                 .ProgramStates
                 .Where(state => state.FilePosition != null)
                 .Select(state => state.FilePosition.Line);
@@ -282,7 +399,7 @@ namespace ConsoleProgram
 
             var result = await server.Run(new WorkspaceRequest(workspace));
 
-            var locations = result.Features[typeof(ProgramDescriptor)].As<ProgramDescriptor>()
+            var locations = result.Features[nameof(ProgramDescriptor)].As<ProgramDescriptor>()
                 .VariableLocations
                 .Where(variable => variable.Name == "a")
                 .SelectMany(variable => variable.Locations)
@@ -326,7 +443,7 @@ namespace ConsoleProgram
 
             var result = await server.Run(new WorkspaceRequest(workspace));
 
-            var locations = result.Features[typeof(ProgramDescriptor)].As<ProgramDescriptor>()
+            var locations = result.Features[nameof(ProgramDescriptor)].As<ProgramDescriptor>()
                 .VariableLocations
                 .Where(variable => variable.Name == "a")
                 .SelectMany(variable => variable.Locations)
@@ -370,7 +487,7 @@ namespace ConsoleProgram
                 );
 
             var result = await server.Run(new WorkspaceRequest(workspace));
-            var filePositions = result.Features[typeof(ProgramStateAtPositionArray)].As<ProgramStateAtPositionArray>()
+            var filePositions = result.Features[nameof(ProgramStateAtPositionArray)].As<ProgramStateAtPositionArray>()
                 .ProgramStates
                 .Where(state => state.FilePosition != null)
                 .Select(state => state.FilePosition.Line);
@@ -490,12 +607,75 @@ namespace FibonacciTest
             result.Output.Should().BeEquivalentTo("1", "1", "2", "3", "5", "8", "13", "21", "34", "55", "89", "144", "233", "377", "610", "987", "1597", "2584", "4181", "6765", "");
         }
 
+        [Fact]
+        public async Task Compile_response_with_multi_buffer_using_relative_paths_workspace()
+        {
+            #region bufferSources
+
+            const string program = @"using System;
+using System.Linq;
+
+namespace FibonacciTest
+{
+    public class Program
+    {
+        public static void Main()
+        {
+            foreach (var i in FibonacciGenerator.Fibonacci().Take(20))
+            {
+                Console.WriteLine(i);
+            }
+        }
+    }
+}";
+            const string generator = @"using System.Collections.Generic;
+
+namespace FibonacciTest
+{
+    public static class FibonacciGenerator
+    {
+        public  static IEnumerable<int> Fibonacci()
+        {
+            int current = 1, next = 1;
+            while (true)
+            {
+                yield return current;
+                next = current + (current = next);
+            }
+        }
+    }
+}";
+            #endregion
+
+            var (server, build) = await GetCompilerAndWorkpaceBuild();
+
+            var workspace = new Workspace(workspaceType: build.Name, buffers: new[]
+            {
+                new Workspace.Buffer("Program.cs", program, 0),
+                new Workspace.Buffer("generators/FibonacciGenerator.cs", generator, 0)
+            });
+
+            var result = await server.Compile(new WorkspaceRequest(workspace, BufferId.Parse("Program.cs")));
+
+            result.Succeeded.Should().BeTrue();
+        }
+
         private IDictionary<String, IEnumerable<LinePositionSpan>> ToLinePositionSpan(IDictionary<String, ImmutableArray<TextSpan>> input, string code)
             => input.ToDictionary(
                 kv => kv.Key,
                 kv => kv.Value.Select(span => span.ToLinePositionSpan(SourceText.From(code))));
 
         protected override async Task<(ICodeRunner runner, WorkspaceBuild workspace)> GetRunnerAndWorkpaceBuild(
+            [CallerMemberName] string testName = null)
+        {
+            var workspace = await Create.ConsoleWorkspaceCopy(testName);
+
+            var server = new RoslynWorkspaceServer(workspace);
+
+            return (server, workspace);
+        }
+
+        protected async Task<(ICodeCompiler compiler, WorkspaceBuild workspace)> GetCompilerAndWorkpaceBuild(
             [CallerMemberName] string testName = null)
         {
             var workspace = await Create.ConsoleWorkspaceCopy(testName);

@@ -13,7 +13,9 @@ namespace WorkspaceServer.WorkspaceFeatures
 
         public IEnumerable<UnitTestResult> Results { get; }
 
-        public void Apply(RunResult result)
+        public string Name => nameof(UnitTestRun);
+
+        public void Apply(FeatureContainer result)
         {
             result.AddProperty("testResults", Results);
         }

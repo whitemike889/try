@@ -53,6 +53,22 @@ namespace MLS.Agent.Tests
         }
 
         [Fact]
+        public async Task The_compile_endpoint_returns_badrequest_if_workspace_type_is_scripting()
+        {
+            var output = Guid.NewGuid().ToString();
+
+            var requestJson = new WorkspaceRequest(
+                Workspace.FromSource(
+                    source: $@"Console.WriteLine(""{output}"");".EnforceLF(),
+                    workspaceType: "script"
+                )).ToJson();
+
+            var response = await CallCompile(requestJson);
+
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        }
+
+        [Fact]
         public async Task The_workspace_endpoint_compiles_code_using_dotnet_when_a_non_script_workspace_type_is_specified()
         {
             var output = Guid.NewGuid().ToString();

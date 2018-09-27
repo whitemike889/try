@@ -36,6 +36,15 @@ namespace MLS.Agent.Tests
                  timeoutMs,
                  options);
 
+        protected static Task<HttpResponseMessage> CallCompile(
+            string requestBody,
+            int? timeoutMs = null,
+            CommandLineOptions options = null) =>
+            Call("/workspace/compile",
+                 requestBody,
+                 timeoutMs,
+                 options);
+
         protected static Task<HttpResponseMessage> CallSignatureHelp(
             string requestBody,
             int? timeoutMs = null) =>

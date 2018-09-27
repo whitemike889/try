@@ -105,12 +105,19 @@ namespace WorkspaceServer.Tests
                 this.value = value;
             }
 
-            public void Apply(RunResult result) => result.AddProperty(name, value);
+            public string Name => value.GetType().Name;
+
+            public void Apply(FeatureContainer result)
+            {
+                result.AddProperty(name, value);
+            }
         }
 
         public class DisposableFeature : IRunResultFeature, IDisposable
         {
             private readonly IDisposable disposable;
+
+            public string Name => nameof(DisposableFeature);
 
             public DisposableFeature(IDisposable disposable)
             {
@@ -122,7 +129,7 @@ namespace WorkspaceServer.Tests
                 disposable?.Dispose();
             }
 
-            public void Apply(RunResult result)
+            public void Apply(FeatureContainer result)
             {
             }
         }

@@ -3,11 +3,11 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.AspNetCore.Mvc;
+using MLS.Agent.Middleware;
 using MLS.Protocol;
 using MLS.Protocol.Execution;
 using Pocket;
 using WorkspaceServer;
-using WorkspaceServer.Models;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Servers.Roslyn;
 using WorkspaceServer.Servers.Scripting;
@@ -24,7 +24,6 @@ namespace MLS.Agent.Controllers
 
         public RunController(
             WorkspaceRegistry workspaceRegistry,
-            RoslynWorkspaceServer imws,
             AgentOptions options,
             RoslynWorkspaceServer workspaceServer)
         {
@@ -34,23 +33,19 @@ namespace MLS.Agent.Controllers
 
         protected Task<ICodeRunner> GetWorkspaceServer(string workspaceType, Budget budget = null)
         {
-            return Task.FromResult((ICodeRunner) _workspaceServer);
+            return Task.FromResult((ICodeRunner)_workspaceServer);
         }
 
         [HttpPost]
         [Route("/workspace/run")]
+        [DebugEnableFilter]
         public async Task<IActionResult> Run(
             [FromBody] WorkspaceRequest request,
             [FromHeader(Name = "Timeout")] string timeoutInMilliseconds = "15000")
         {
             if (_options.IsLanguageServiceMode)
             {
-                return StatusCode(404);
-            }
-
-            if (Debugger.IsAttached && !(Clock.Current is VirtualClock))
-            {
-                _disposables.Add(VirtualClock.Start());
+                return NotFound();
             }
 
             using (var operation = Log.OnEnterAndConfirmOnExit())
@@ -107,16 +102,6 @@ namespace MLS.Agent.Controllers
 
                 return Ok(result);
             }
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                _disposables.Dispose();
-            }
-
-            base.Dispose(disposing);
         }
     }
 }

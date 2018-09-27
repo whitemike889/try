@@ -265,6 +265,11 @@ typeof({entryPointMethod.ContainingType.Name})
                                               : "null";
         }
 
+        public Task<CompileResult> Compile(WorkspaceRequest request, Budget budget = null)
+        {
+            throw new NotImplementedException();
+        }
+
         public static string UserCodeCompletedBudgetEntryName = "UserCodeCompleted";
     }
 }

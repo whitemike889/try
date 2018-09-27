@@ -2,6 +2,7 @@
 {
     public interface IRunResultFeature
     {
-        void Apply(RunResult result);
+        string Name { get; }
+        void Apply(FeatureContainer result);
     }
 }

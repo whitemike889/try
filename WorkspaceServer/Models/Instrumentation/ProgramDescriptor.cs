@@ -9,7 +9,9 @@ namespace WorkspaceServer.Models.Instrumentation
         [JsonProperty("variableLocations")]
         public VariableLocation[] VariableLocations { get; set; }
 
-        public void Apply(RunResult result)
+        public string Name => nameof(ProgramDescriptor);
+
+        public void Apply(FeatureContainer result)
         {
             result.AddProperty("variableLocations", VariableLocations);
         }

@@ -71,6 +71,52 @@ namespace MLS.Agent.Tests
             this.Assent(result.FormatJson(), configuration);
         }
 
+
+        [Fact]
+        public async Task The_Compile_contract_for_compiling_code_has_not_been_broken()
+        {
+            var viewport = ViewportCode();
+
+            var requestJson = new WorkspaceRequest(
+                new Workspace(
+                    workspaceType: "console",
+                    buffers: new[]
+                    {
+                        EntrypointCode(),
+                        viewport
+                    }),
+                activeBufferId: viewport.Id);
+
+            var response = await CallCompile(requestJson.ToJson());
+
+            var result = await response.Content.ReadAsStringAsync();
+
+            this.Assent(result.FormatJson(), configuration);
+        }
+
+        [Fact]
+        public async Task The_Compile_contract_for_noncompiling_code_has_not_been_broken()
+        {
+            var viewport = ViewportCode("doesn't compile");
+
+            var request = new WorkspaceRequest(
+                new Workspace(
+                    workspaceType: "console",
+                    buffers: new[]
+                    {
+                        EntrypointCode(),
+                        viewport
+                    }),
+                activeBufferId: viewport.Id);
+
+            var requestBody = request.ToJson();
+
+            var response = await CallCompile(requestBody);
+
+            var result = await response.Content.ReadAsStringAsync();
+
+            this.Assent(result.FormatJson(), configuration);
+        }
         [Fact]
         public async Task The_Completions_contract_has_not_been_broken()
         {
