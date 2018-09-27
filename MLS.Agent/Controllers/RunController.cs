@@ -24,7 +24,6 @@ namespace MLS.Agent.Controllers
 
         public RunController(
             WorkspaceRegistry workspaceRegistry,
-            RoslynWorkspaceServer imws,
             AgentOptions options,
             RoslynWorkspaceServer workspaceServer)
         {

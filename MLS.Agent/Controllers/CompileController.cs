@@ -21,7 +21,6 @@ namespace MLS.Agent.Controllers
 
         public CompileController(
             WorkspaceRegistry workspaceRegistry,
-            RoslynWorkspaceServer imws,
             AgentOptions options,
             RoslynWorkspaceServer workspaceServer)
         {
@@ -56,15 +55,14 @@ namespace MLS.Agent.Controllers
 
                 CompileResult result;
                 var workspaceType = request.Workspace.WorkspaceType;
-                var runTimeout = TimeSpan.FromMilliseconds(timeoutMs);
-
-                var budget = new TimeBudget(runTimeout);
-
-                var server = await GetWorkspaceServer(workspaceType);
-                if (server == null)
+                if (string.Equals(workspaceType, "script", StringComparison.OrdinalIgnoreCase))
                 {
                     return BadRequest();
                 }
+
+                var runTimeout = TimeSpan.FromMilliseconds(timeoutMs);
+                var budget = new TimeBudget(runTimeout);
+                var server = await GetWorkspaceServer(workspaceType);
 
                 result = await server.Compile(request, budget);
                 budget?.RecordEntry();
