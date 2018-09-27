@@ -40,11 +40,6 @@ namespace MLS.Agent.Controllers
             [FromBody] WorkspaceRequest request,
             [FromHeader(Name = "Timeout")] string timeoutInMilliseconds = "15000")
         {
-            if (_options.IsLanguageServiceMode)
-            {
-                return NotFound();
-            }
-
             using (var operation = Log.OnEnterAndConfirmOnExit())
             {
                 operation.Info("Processing workspaceType {workspaceType}", request.Workspace.WorkspaceType);
