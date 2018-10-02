@@ -65,6 +65,7 @@ mkdir -p $WORKSPACES_ROOT/xunit
 cd $WORKSPACES_ROOT/xunit
 dotnet new xunit --name tests --output .
 xmlstarlet ed --inplace --insert "/Project/PropertyGroup/OutputType" --type elem -n "LangVersion" --value "7.3" tests.csproj
+rm UnitTest1.cs
 dotnet build /fl /p:ProvideCommandLineArgs=true
 
 mkdir -p $WORKSPACES_ROOT/microsoftml
