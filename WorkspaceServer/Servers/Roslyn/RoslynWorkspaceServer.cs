@@ -12,7 +12,6 @@ using MLS.Agent.Tools;
 using MLS.Protocol.Completion;
 using Pocket;
 using Recipes;
-using WorkspaceServer.Models;
 using WorkspaceServer.Models.Execution;
 using MLS.Protocol.SignatureHelp;
 using WorkspaceServer.Servers.Roslyn.Instrumentation;
