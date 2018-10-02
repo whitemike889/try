@@ -66,48 +66,49 @@ namespace WorkspaceServer
             var registry = new WorkspaceRegistry();
 
             registry.Add("console",
-                                  workspace =>
-                                  {
-                                      workspace.CreateUsingDotnet("console");
-                                      workspace.AddPackageReference("Newtonsoft.Json");
-                                  });
+                         workspace =>
+                         {
+                             workspace.CreateUsingDotnet("console");
+                             workspace.AddPackageReference("Newtonsoft.Json");
+                         });
 
             registry.Add("nodatime.api",
-                                  workspace =>
-                                  {
-                                      workspace.CreateUsingDotnet("console");
-                                      workspace.AddPackageReference("NodaTime", "2.3.0");
-                                      workspace.AddPackageReference("NodaTime.Testing", "2.3.0");
-                                  });
+                         workspace =>
+                         {
+                             workspace.CreateUsingDotnet("console");
+                             workspace.AddPackageReference("NodaTime", "2.3.0");
+                             workspace.AddPackageReference("NodaTime.Testing", "2.3.0");
+                         });
 
             registry.Add("aspnet.webapi",
-                                  workspace =>
-                                  {
-                                      workspace.CreateUsingDotnet("webapi");
-                                      workspace.RequiresPublish = true;
-                                  });
+                         workspace =>
+                         {
+                             workspace.CreateUsingDotnet("webapi");
+                             workspace.RequiresPublish = true;
+                         });
 
             registry.Add("instrumented",
-                                  workspace =>
-                                  {
-                                      workspace.CreateUsingDotnet("console");
-                                      workspace.AddPackageReference("Newtonsoft.Json");
-                                  });
+                         workspace =>
+                         {
+                             workspace.CreateUsingDotnet("console");
+                             workspace.AddPackageReference("Newtonsoft.Json");
+                         });
 
             registry.Add("xunit",
-                                  workspace =>
-                                  {
-                                      workspace.CreateUsingDotnet("xunit", "tests");
-                                      workspace.AddPackageReference("Newtonsoft.Json");
-                                  });
+                         workspace =>
+                         {
+                             workspace.CreateUsingDotnet("xunit", "tests");
+                             workspace.AddPackageReference("Newtonsoft.Json");
+                             workspace.DeleteFile("UnitTest1.cs");
+                         });
 
             return registry;
         }
 
-        public IEnumerator<WorkspaceBuilder> GetEnumerator() => 
+        public IEnumerator<WorkspaceBuilder> GetEnumerator() =>
             _workspaceBuilders.Values.GetEnumerator();
 
-        IEnumerator IEnumerable.GetEnumerator() => 
+        IEnumerator IEnumerable.GetEnumerator() =>
             GetEnumerator();
     }
 }
