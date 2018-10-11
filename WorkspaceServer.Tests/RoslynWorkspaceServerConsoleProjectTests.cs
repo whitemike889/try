@@ -59,7 +59,7 @@ namespace WorkspaceServer.Tests
         public async Task When_run_fails_to_compile_then_diagnostics_are_aligned_with_buffer_span_when_code_is_multi_line()
         {
             var (server, build) = await GetRunnerAndWorkpaceBuild();
-            
+
             var workspace = new Workspace(
                 workspaceType: build.Name,
                 files: new[] { new Workspace.File("Program.cs", SourceCodeProvider.ConsoleProgramSingleRegion) },
@@ -86,7 +86,7 @@ namespace WorkspaceServer.Tests
                 buffers: new[] { new Workspace.Buffer("Program.cs@alpha", @"var a = 10;" + Environment.NewLine + "Console.WriteLine(a);", 0) });
 
             var result = await server.Run(new WorkspaceRequest(workspace));
-            
+
             result.GetFeature<Diagnostics>().Should().BeEmpty();
         }
 
@@ -254,7 +254,7 @@ namespace FibonacciTest
 
             var request = new WorkspaceRequest(
                 new Workspace(
-                    workspaceType: build.Name, 
+                    workspaceType: build.Name,
                     buffers: new[]
                     {
                         new Workspace.Buffer("Program.cs", program, 0),
@@ -313,12 +313,12 @@ namespace FibonacciTest
 
             var request = new WorkspaceRequest(
                 new Workspace(
-                    workspaceType: build.Name, 
+                    workspaceType: build.Name,
                     buffers: new[]
                     {
                         new Workspace.Buffer("Program.cs", program, 0),
                         new Workspace.Buffer("FibonacciGenerator.cs", generator, 0)
-                    }, 
+                    },
                     includeInstrumentation: true),
                 new BufferId("Program.cs"));
 
@@ -354,7 +354,7 @@ namespace ConsoleProgram
 
             var workspace = new Workspace(
                 workspaceType: build.Name,
-                buffers: new[] { new Workspace.Buffer("Program.cs", code)},
+                buffers: new[] { new Workspace.Buffer("Program.cs", code) },
                 includeInstrumentation: true);
 
             var result = await server.Run(new WorkspaceRequest(workspace));
@@ -393,7 +393,7 @@ namespace ConsoleProgram
 
             var workspace = new Workspace(
                 workspaceType: build.Name,
-                buffers: new[] { new Workspace.Buffer("Program.cs", code)},
+                buffers: new[] { new Workspace.Buffer("Program.cs", code) },
                 includeInstrumentation: true
                 );
 
@@ -437,7 +437,7 @@ namespace ConsoleProgram
             var workspace = new Workspace(
                 workspaceType: build.Name,
                 buffers: new[] { new Workspace.Buffer("Program.cs@reg", regionCode) },
-                files: new [] { new Workspace.File("Program.cs", code) },
+                files: new[] { new Workspace.File("Program.cs", code) },
                 includeInstrumentation: true
                 );
 
@@ -481,8 +481,8 @@ namespace ConsoleProgram
 
             var workspace = new Workspace(
                 workspaceType: build.Name,
-                buffers: new[] { new Workspace.Buffer("Program.cs@reg", regionCode)},
-                files: new [] { new Workspace.File("Program.cs", code)},
+                buffers: new[] { new Workspace.Buffer("Program.cs@reg", regionCode) },
+                files: new[] { new Workspace.File("Program.cs", code) },
                 includeInstrumentation: true
                 );
 
@@ -658,6 +658,26 @@ namespace FibonacciTest
             var result = await server.Compile(new WorkspaceRequest(workspace, BufferId.Parse("Program.cs")));
 
             result.Succeeded.Should().BeTrue();
+        }
+
+        [Fact]
+        public async Task Compile_fails_when_instrumentation_enabled_and_there_is_an_error()
+        {
+            var (server, build) = await GetCompilerAndWorkpaceBuild();
+            var workspace = new Workspace(
+                 workspaceType: build.Name,
+                 files: new[] { new Workspace.File("Program.cs", SourceCodeProvider.ConsoleProgramSingleRegion) },
+                 buffers: new[] { new Workspace.Buffer("Program.cs", @"Console.WriteLine(banana);", 0), },
+                 includeInstrumentation: true);
+
+            var result = await server.Compile(new WorkspaceRequest(workspace));
+
+            result.Should().BeEquivalentTo(new
+            {
+                Succeeded = false,
+                Output = new[] { "(1,19): error CS0103: The name \'banana\' does not exist in the current context" },
+                Exception = (string)null, // we already display the error in Output
+            }, config => config.ExcludingMissingMembers());
         }
 
         private IDictionary<String, IEnumerable<LinePositionSpan>> ToLinePositionSpan(IDictionary<String, ImmutableArray<TextSpan>> input, string code)

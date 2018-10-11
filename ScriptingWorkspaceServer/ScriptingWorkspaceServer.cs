@@ -99,10 +99,8 @@ namespace WorkspaceServer.Servers.Scripting
                                  .Split(new[] { '\n' });
 
                 output = ProcessOutputLines(output,
-                                            diagnostics
-                                                .Where(e => e.Severity == DiagnosticSeverity.Error)
-                                                .Select(e => e.Message)
-                                                .ToArray());
+                                            diagnostics.GetCompileErrorMessages());
+
                 var result = new RunResult(
                     succeeded: !userException.IsConsideredRunFailure(),
                     output: output,

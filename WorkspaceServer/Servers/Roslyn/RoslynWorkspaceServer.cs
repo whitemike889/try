@@ -146,8 +146,8 @@ namespace WorkspaceServer.Servers.Roslyn
             using (await locks.GetOrAdd(workspace.WorkspaceType, s => new AsyncLock()).LockAsync())
             {
                 var (compilation, diagnostics) = await CompileWorker(request.Workspace, request.ActiveBufferId, budget);
-
-                if (diagnostics.Any(e => e.Severity == DiagnosticSeverity.Error))
+              
+                if (diagnostics.ContainsError())
                 {
                     return new CompileResult(
                         succeeded: false,
@@ -180,11 +180,9 @@ namespace WorkspaceServer.Servers.Roslyn
 
                 var (compilation, diagnostics) = await CompileWorker(request.Workspace, request.ActiveBufferId, budget);
 
-                if (diagnostics.Any(e => e.Severity == DiagnosticSeverity.Error))
+                if (diagnostics.ContainsError())
                 {
-                    var compileErrorMessages = diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error)
-                                                          .Select(d => d.Message)
-                                                          .ToArray();
+                    var compileErrorMessages = diagnostics.GetCompileErrorMessages();
                     return new RunResult(
                         false,
                         compileErrorMessages,

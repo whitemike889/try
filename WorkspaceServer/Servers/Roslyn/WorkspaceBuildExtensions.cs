@@ -30,7 +30,9 @@ namespace WorkspaceServer.Servers.Roslyn
 
             var viewports = new BufferInliningTransformer().ExtractViewPorts(workspace);
 
-            if (workspace.IncludeInstrumentation)
+            var diagnostics = compilation.GetDiagnostics();
+
+            if (workspace.IncludeInstrumentation && !diagnostics.ContainsError())
             {
                 var activeDocument = GetActiveDocument(documents, activeBufferId);
                 compilation = await AugmentCompilationAsync(viewports, compilation, activeDocument, activeBufferId, build);
@@ -86,7 +88,7 @@ namespace WorkspaceServer.Servers.Roslyn
             newCompilation = newCompilation.AddSyntaxTrees(instrumentationSyntaxTree);
 
             var augmentedDiagnostics = newCompilation.GetDiagnostics();
-            if (augmentedDiagnostics.Any(e => e.Severity == DiagnosticSeverity.Error))
+            if (augmentedDiagnostics.ContainsError())
             {
                 throw new InvalidOperationException(
                     $@"Augmented source failed to compile
