@@ -10,7 +10,8 @@ namespace WorkspaceServer.Models.Execution
     {
         public static Workspace CreateWorkspaceFromDirectory(
             DirectoryInfo directory,
-            string workspaceType)
+            string workspaceType,
+            bool includeInstrumentation = false)
         {
             var filesOnDisk = directory.GetFiles("*.cs", SearchOption.AllDirectories)
                                        .Where(f => !f.IsBuildOutput())
@@ -25,7 +26,8 @@ namespace WorkspaceServer.Models.Execution
                                           filesOnDisk.Single(fod => fod.Name == f.Name)
                                                      .Read()))
                               .ToArray(),
-                workspaceType: workspaceType);
+                workspaceType: workspaceType,
+                includeInstrumentation: includeInstrumentation);
         }
     }
 }

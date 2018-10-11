@@ -47,13 +47,6 @@ xmlstarlet ed --inplace --insert "/Project/PropertyGroup/OutputType" --type elem
 dotnet build /fl /p:ProvideCommandLineArgs=true
 dotnet publish
 
-mkdir -p $WORKSPACES_ROOT/instrumented
-cd $WORKSPACES_ROOT/instrumented
-dotnet new console
-xmlstarlet ed --inplace --insert "/Project/PropertyGroup/OutputType" --type elem -n "LangVersion" --value "7.3" instrumented.csproj
-dotnet add package Newtonsoft.Json
-dotnet build /fl /p:ProvideCommandLineArgs=true
-
 mkdir -p $WORKSPACES_ROOT/xamarin.essentials.0.8.0-preview
 cd $WORKSPACES_ROOT/xamarin.essentials.0.8.0-preview
 dotnet new console --name console --output .

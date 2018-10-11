@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.AspNetCore.Mvc;
@@ -31,11 +30,6 @@ namespace MLS.Agent.Controllers
             _workspaceServer = workspaceServer;
         }
 
-        protected Task<ICodeRunner> GetWorkspaceServer(string workspaceType, Budget budget = null)
-        {
-            return Task.FromResult((ICodeRunner)_workspaceServer);
-        }
-
         [HttpPost]
         [Route("/workspace/run")]
         [DebugEnableFilter]
@@ -50,14 +44,16 @@ namespace MLS.Agent.Controllers
 
             using (var operation = Log.OnEnterAndConfirmOnExit())
             {
-                operation.Info("Processing workspaceType {workspaceType}", request.Workspace.WorkspaceType);
+                var workspaceType = request.Workspace.WorkspaceType;
+
+                operation.Info("Processing workspaceType {workspaceType}", workspaceType);
+
                 if (!int.TryParse(timeoutInMilliseconds, out var timeoutMs))
                 {
                     return BadRequest();
                 }
 
                 RunResult result;
-                var workspaceType = request.Workspace.WorkspaceType;
                 var runTimeout = TimeSpan.FromMilliseconds(timeoutMs);
 
                 var budget = new TimeBudget(runTimeout);
@@ -72,9 +68,7 @@ namespace MLS.Agent.Controllers
                 }
                 else
                 {
-                    var server = await GetWorkspaceServer(workspaceType);
-
-                    using (result = await server.Run(request, budget))
+                    using (result = await _workspaceServer.Run(request, budget))
                     {
                         _disposables.Add(result);
 
@@ -97,7 +91,7 @@ namespace MLS.Agent.Controllers
                     }
                 }
 
-                budget?.RecordEntry();
+                budget.RecordEntry();
                 operation.Succeed();
 
                 return Ok(result);

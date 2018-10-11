@@ -1,17 +1,26 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading.Tasks;
 using Clockwise;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Host.Mef;
+using Microsoft.CodeAnalysis.Text;
 using MLS.Agent.Tools;
 using Pocket;
 using Recipes;
+using WorkspaceServer.Servers.Roslyn;
 using static Pocket.Logger<WorkspaceServer.Workspaces.WorkspaceBuild>;
 
 namespace WorkspaceServer.Workspaces
 {
     public class WorkspaceBuild
     {
+        const string csharpLanguageVersion = "7.3";
+
         static WorkspaceBuild()
         {
             var workspacesPathEnvironmentVariableName = "TRYDOTNET_WORKSPACES_PATH";
@@ -40,12 +49,14 @@ namespace WorkspaceServer.Workspaces
         private readonly AsyncLazy<bool> _created;
         private readonly AsyncLazy<bool> _built;
         private readonly AsyncLazy<bool> _published;
+        private readonly AsyncLazy<CSharpCommandLineArguments> _csharpCommandLineArguments;
         private bool? _isWebProject;
         private bool? _isUnitTestProject;
         private FileInfo _entryPointAssemblyPath;
         private static string _targetFramework;
         private readonly Logger _log;
         private WorkspaceConfiguration _configuration;
+        private readonly AsyncLazy<SyntaxTree> _instrumentationEmitterSyntaxTree;
 
         public DateTimeOffset? ConstructionTime { get; }
         public DateTimeOffset? CreationTime { get; private set; }
@@ -74,6 +85,8 @@ namespace WorkspaceServer.Workspaces
             _initializer = initializer ?? new WorkspaceInitializer("console", Name);
             ConstructionTime = Clock.Current.Now();
             RequiresPublish = requiresPublish;
+            _csharpCommandLineArguments = new AsyncLazy<CSharpCommandLineArguments>(CreateCSharpCommandLineArguments);
+            _instrumentationEmitterSyntaxTree = new AsyncLazy<SyntaxTree>(CreateInstrumentationEmitterSyntaxTree);
             _created = new AsyncLazy<bool>(VerifyOrCreate);
             _built = new AsyncLazy<bool>(VerifyOrBuild);
             _published = new AsyncLazy<bool>(VerifyOrPublish);
@@ -125,7 +138,7 @@ namespace WorkspaceServer.Workspaces
                         throw new InvalidOperationException($"msbuild.log not found in {Directory}");
                     }
 
-                    var compilerCommandLine = buildLog.FindCompilerCommandLine();
+                    var compilerCommandLine = buildLog.FindCompilerCommandLineAndSetLanguageversion(csharpLanguageVersion);
 
                     _configuration = new WorkspaceConfiguration
                     {
@@ -412,5 +425,55 @@ namespace WorkspaceServer.Workspaces
         {
             return $"{Name} ({Directory.FullName}) ({new {IsCreated, CreationTime, IsBuilt, BuildTime, IsPublished, PublicationTime, IsReady}})";
         }
+
+        public async Task<AdhocWorkspace> CreateRoslynWorkspace(ProjectId projectId = null)
+        {
+            projectId = projectId ?? ProjectId.CreateNewId(Name);
+            CSharpCommandLineArguments csharpCommandLineArguments = await GetCommandLineArguments();
+
+            var projectInfo = CommandLineProject.CreateProjectInfo(
+                projectId,
+                Name,
+                csharpCommandLineArguments.CompilationOptions.Language,
+                csharpCommandLineArguments,
+                Directory.FullName);
+
+            var workspace = new AdhocWorkspace(MefHostServices.DefaultHost);
+
+            workspace.AddProject(projectInfo);
+
+            return workspace;
+        }
+
+        private async Task<CSharpCommandLineArguments> CreateCSharpCommandLineArguments()
+        {
+            await EnsureBuilt();
+            return CSharpCommandLineParser.Default.Parse(
+                (await GetConfigurationAsync()).CompilerArgs,
+                Directory.FullName,
+                RuntimeEnvironment.GetRuntimeDirectory());
+        }
+
+        private async Task<SyntaxTree> CreateInstrumentationEmitterSyntaxTree()
+        {
+            var resourceName = "WorkspaceServer.Servers.Roslyn.Instrumentation.InstrumentationEmitter.cs"; 
+
+            var assembly = typeof(WorkspaceBuildExtensions).Assembly;
+
+            using (var stream = assembly.GetManifestResourceStream(resourceName))
+            using (var reader = new StreamReader(stream ?? throw new InvalidOperationException($"Resource \"{resourceName}\" not found"), Encoding.UTF8))
+            {
+                var source = reader.ReadToEnd();
+
+                var parseOptions = (await _csharpCommandLineArguments.ValueAsync()).ParseOptions;
+                var syntaxTree = CSharpSyntaxTree.ParseText(SourceText.From(source), parseOptions);
+
+                return syntaxTree;
+            }
+        }
+
+        public Task<CSharpCommandLineArguments> GetCommandLineArguments() => _csharpCommandLineArguments.ValueAsync();
+
+        public Task<SyntaxTree> GetInstrumentationEmitterSyntaxTree() => _instrumentationEmitterSyntaxTree.ValueAsync();
     }
 }

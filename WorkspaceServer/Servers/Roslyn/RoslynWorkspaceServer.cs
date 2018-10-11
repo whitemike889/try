@@ -332,6 +332,5 @@ namespace WorkspaceServer.Servers.Roslyn
             var diagnostics = workspace.MapDiagnostics(activeBufferId, compilation);
             return (compilation, diagnostics);
         }
-
     }
 }

@@ -6,7 +6,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Newtonsoft.Json.Linq;
-using static InstrumentationEmitter;
 
 namespace WorkspaceServer.Servers.Roslyn.Instrumentation
 {
@@ -21,8 +20,7 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
         public InstrumentationSyntaxRewriter(
             IEnumerable<SyntaxNode> instrumentedNodes,
             VariableLocationMap printOnce,
-            AugmentationMap printEveryStep
-        )
+            AugmentationMap printEveryStep)
         {
             _variableLocations = printOnce ?? throw new ArgumentNullException(nameof(printOnce));
             _augmentations = printEveryStep ?? throw new ArgumentNullException(nameof(printEveryStep));
@@ -37,7 +35,7 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
 
         public override SyntaxList<TNode> VisitList<TNode>(SyntaxList<TNode> list)
         {
-            return SyntaxFactory.List(AugmentListWithInstrumentationStatments(list));
+            return SyntaxFactory.List(AugmentWithInstrumentationStatements(list));
         }
 
         private bool IsEntryPoint(SyntaxNode node)
@@ -51,7 +49,7 @@ namespace WorkspaceServer.Servers.Roslyn.Instrumentation
             return false;
         }
 
-        public IEnumerable<TNode> AugmentListWithInstrumentationStatments<TNode>(SyntaxList<TNode> list) where TNode : SyntaxNode
+        public IEnumerable<TNode> AugmentWithInstrumentationStatements<TNode>(SyntaxList<TNode> list) where TNode : SyntaxNode
         {
             foreach (var node in list)
             {

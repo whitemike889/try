@@ -78,6 +78,7 @@ namespace WorkspaceServer
                              workspace.CreateUsingDotnet("console");
                              workspace.AddPackageReference("NodaTime", "2.3.0");
                              workspace.AddPackageReference("NodaTime.Testing", "2.3.0");
+                             workspace.AddPackageReference("Newtonsoft.Json");
                          });
 
             registry.Add("aspnet.webapi",
@@ -85,13 +86,6 @@ namespace WorkspaceServer
                          {
                              workspace.CreateUsingDotnet("webapi");
                              workspace.RequiresPublish = true;
-                         });
-
-            registry.Add("instrumented",
-                         workspace =>
-                         {
-                             workspace.CreateUsingDotnet("console");
-                             workspace.AddPackageReference("Newtonsoft.Json");
                          });
 
             registry.Add("xunit",
