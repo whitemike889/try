@@ -144,7 +144,7 @@ namespace FibonacciTest
             hasDuplicatedEntries.Should().BeFalse();
         }
 
-        [Fact(Skip = "temporary to test CI tests")]
+        [Fact]
         public async Task Get_documentation_with_autocompletion_of_console_methods()
         {
             #region bufferSources
@@ -200,13 +200,13 @@ namespace FibonacciTest
             var result = await server.GetCompletionList(request);
 
             result.Items
-                  .Select(i => i.Documentation)
+                  .Select(i => i.Documentation.Value)
                   .Where(d => !string.IsNullOrWhiteSpace(d))
                   .Should()
                   .Contain(d => d ==
-                                "Plays the sound of a beep through the console speaker.\nSystem.Security.HostProtectionException: This method was executed on a server, such as SQL Server, that does not permit access to a user interface.");
+                                "Plays the sound of a beep through the console speaker.");
         }
-
+        
         [Fact]
         public async Task Get_autocompletion_for_jtoken()
         {
@@ -646,6 +646,76 @@ namespace FibonacciTest
 
             result.Signatures.Should().NotBeNullOrEmpty();
             result.Signatures.Should().Contain(signature => signature.Label == "JToken JToken.FromObject(object o)");
+        }
+
+        [Fact]
+        public async Task Get_documentation_with_signature_help_for_console_writeline()
+        {
+            #region bufferSources
+
+            var program = @"using System;
+using System.Linq;
+
+namespace FibonacciTest
+{
+    public class Program
+    {
+        public static void Main()
+        {
+            foreach (var i in FibonacciGenerator.Fibonacci().Take(20))
+            {
+                Console.WriteLine(i);
+            }
+        }
+    }
+}".EnforceLF();
+
+            var generator = @"using System.Collections.Generic;
+using System;
+namespace FibonacciTest
+{
+    public static class FibonacciGenerator
+    {
+        public static IEnumerable<int> Fibonacci()
+        {
+            int current = 1, next = 1;
+            while (true)
+            {
+                yield return current;
+                next = current + (current = next);
+                Console.WriteLine($$);
+            }
+        }
+    }
+}".EnforceLF();
+
+            #endregion
+
+            var (processed, position) = CodeManipulation.ProcessMarkup(generator);
+
+            var workspace = new Workspace(workspaceType: "console", buffers: new[]
+            {
+                new Workspace.Buffer("Program.cs", program),
+                new Workspace.Buffer("generators/FibonacciGenerator.cs", processed, position)
+            });
+
+            var request = new WorkspaceRequest(workspace, activeBufferId: "generators/FibonacciGenerator.cs");
+            var server = GetLanguageService();
+            var result = await server.GetSignatureHelp(request);
+
+            result.Signatures.Should().NotBeNullOrEmpty();
+
+            var sample = result.Signatures.Where(e => e.Label == "void Console.WriteLine(string format, params object[] arg)").First();
+            sample.Documentation.Value.Should().Contain("Writes the text representation of the specified array of objects, followed by the current line terminator, to the standard output stream using the specified format information.");
+            sample.Parameters.Should().HaveCount(2);
+
+            sample.Parameters.ElementAt(0).Name.Should().Be("format");
+            sample.Parameters.ElementAt(0).Label.Should().Be("string format");
+            sample.Parameters.ElementAt(0).Documentation.Value.Should().Contain("A composite format string.");
+
+            sample.Parameters.ElementAt(1).Name.Should().Be("arg");
+            sample.Parameters.ElementAt(1).Label.Should().Be("params object[] arg");
+            sample.Parameters.ElementAt(1).Documentation.Value.Should().Contain("An array of objects to write using format.");
         }
 
         protected override Task<(ICodeRunner runner, WorkspaceBuild workspace)> GetRunnerAndWorkpaceBuild(

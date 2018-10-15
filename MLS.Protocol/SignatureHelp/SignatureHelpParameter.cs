@@ -6,6 +6,6 @@
 
         public string Label { get; set; }
 
-        public string Documentation { get; set; }
+        public MarkdownString Documentation { get; set; }
     }
 }

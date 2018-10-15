@@ -5,7 +5,9 @@ using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using MLS.Protocol;
 using MLS.Protocol.SignatureHelp;
+using WorkspaceServer.Models;
 using WorkspaceServer.Models.SignatureHelp;
 
 // Adapted from https://github.com/OmniSharp/omnisharp-roslyn/blob/master/src/OmniSharp.Roslyn.CSharp/Services/Signatures/SignatureHelpService.cs
@@ -160,17 +162,16 @@ namespace WorkspaceServer.Servers.Scripting
         {
             var signature = new SignatureHelpItem
             {
-                Documentation = symbol.GetDocumentationCommentXml(),
+                Documentation = DocumentationConverter.GetDocumentation(symbol, "\n"),
                 Name = symbol.MethodKind == MethodKind.Constructor ? symbol.ContainingType.Name : symbol.Name,
                 Label = symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat),
                 Parameters = GetParameters(symbol).Select(parameter => new SignatureHelpParameter
                 {
                     Name = parameter.Name,
                     Label = parameter.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat),
-                    Documentation = parameter.GetDocumentationCommentXml()
+                    Documentation = DocumentationConverter.GetDocumentation(parameter, "\n"),
                 })
             };
-
 
             return signature;
         }

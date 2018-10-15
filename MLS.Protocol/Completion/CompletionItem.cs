@@ -9,9 +9,9 @@ namespace MLS.Protocol.Completion
         public string FilterText { get; }
         public string SortText { get; }
         public string InsertText { get; }
-        public string Documentation { get; set; }
+        public MarkdownString Documentation { get; set; }
         public Uri AcceptanceUri { get; }
-        public CompletionItem(string displayText, string kind, string filterText = null, string sortText = null, string insertText = null, string documentation = null, Uri acceptanceUri = null)
+        public CompletionItem(string displayText, string kind, string filterText = null, string sortText = null, string insertText = null, MarkdownString documentation = null, Uri acceptanceUri = null)
         {
             DisplayText = displayText ?? throw new ArgumentNullException(nameof(displayText));
             Kind = kind ?? throw new ArgumentException(nameof(kind));
