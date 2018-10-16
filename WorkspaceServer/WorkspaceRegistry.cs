@@ -68,14 +68,21 @@ namespace WorkspaceServer
             registry.Add("console",
                                   workspace =>
                                   {
-                                      workspace.CreateUsingDotnet("console");
+                                      workspace.CreateUsingDotnet("console", ConsoleTargetConfiguration.Instance);
+                                      workspace.AddPackageReference("Newtonsoft.Json");
+                                  });
+
+            registry.Add("netstandard",
+                                  workspace =>
+                                  {
+                                      workspace.CreateUsingDotnet("classlib", new NetstandardTargetConfiguration());
                                       workspace.AddPackageReference("Newtonsoft.Json");
                                   });
 
             registry.Add("nodatime.api",
                                   workspace =>
                                   {
-                                      workspace.CreateUsingDotnet("console");
+                                      workspace.CreateUsingDotnet("console", ConsoleTargetConfiguration.Instance);
                                       workspace.AddPackageReference("NodaTime", "2.3.0");
                                       workspace.AddPackageReference("NodaTime.Testing", "2.3.0");
                                   });
@@ -83,21 +90,21 @@ namespace WorkspaceServer
             registry.Add("aspnet.webapi",
                                   workspace =>
                                   {
-                                      workspace.CreateUsingDotnet("webapi");
+                                      workspace.CreateUsingDotnet("webapi", ConsoleTargetConfiguration.Instance);
                                       workspace.RequiresPublish = true;
                                   });
 
             registry.Add("instrumented",
                                   workspace =>
                                   {
-                                      workspace.CreateUsingDotnet("console");
+                                      workspace.CreateUsingDotnet("console", ConsoleTargetConfiguration.Instance);
                                       workspace.AddPackageReference("Newtonsoft.Json");
                                   });
 
             registry.Add("xunit",
                                   workspace =>
                                   {
-                                      workspace.CreateUsingDotnet("xunit", "tests");
+                                      workspace.CreateUsingDotnet("xunit", ConsoleTargetConfiguration.Instance, "tests");
                                       workspace.AddPackageReference("Newtonsoft.Json");
                                   });
 

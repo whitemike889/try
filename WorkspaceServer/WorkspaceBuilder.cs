@@ -32,6 +32,7 @@ namespace WorkspaceServer
         internal IWorkspaceInitializer WorkspaceInitializer { get; private set; }
 
         public bool RequiresPublish { get; set; }
+        public ITargetConfiguration TargetConfiguration { get; private set; }
 
         public void AfterCreate(Func<WorkspaceBuild, Budget, Task> action)
         {
@@ -43,11 +44,16 @@ namespace WorkspaceServer
                 _registry,
                 originalWorkspaceName);
 
-        public void CreateUsingDotnet(string template, string projectName = null) =>
+        public void CreateUsingDotnet(string template, ITargetConfiguration targetConfiguration, string projectName = null)
+        {
             WorkspaceInitializer = new WorkspaceInitializer(
-                template,
-                projectName ?? WorkspaceName,
-                AfterCreate);
+               template,
+               projectName ?? WorkspaceName,
+               AfterCreate);
+
+            TargetConfiguration = targetConfiguration;
+        }
+           
 
         public void AddPackageReference(string packageId, string version = null)
         {
@@ -93,6 +99,7 @@ namespace WorkspaceServer
 
             workspaceBuild = new WorkspaceBuild(
                 WorkspaceName,
+                TargetConfiguration,
                 WorkspaceInitializer,
                 requiresPublish: RequiresPublish);
 

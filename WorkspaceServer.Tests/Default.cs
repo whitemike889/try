@@ -12,5 +12,6 @@ namespace WorkspaceServer.Tests
         public static Task<WorkspaceBuild> WebApiWorkspace => _defaultWorkspaces.Get("aspnet.webapi");
 
         public static Task<WorkspaceBuild> XunitWorkspace => _defaultWorkspaces.Get("xunit");
+        public static Task<WorkspaceBuild> NetstandardWorkspace => _defaultWorkspaces.Get("netstandard");
     }
 }
