@@ -11,7 +11,7 @@ environment:
   runtime:
     provider: 'appcontainer'                                            # Currently only appcontainer is supported future will bring
                                                                         # oscontainer and virtualmachine
-    image: 'microsoft/dotnet:2.1.402-sdk-alpine'                                   # This is the image that your pipeline will run in.
+    image: 'microsoft/dotnet:2.1.403-sdk-alpine'                                   # This is the image that your pipeline will run in.
                                                                         # For (appcontainer), Docker Hub public Microsoft repository images
                                                                         # can be used.
                                                                         # Example microsoft/dotnet:1.1.1-sdk-nanoserver. Or the CDP team

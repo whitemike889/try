@@ -16,6 +16,6 @@ Remove-Item -Path "$(Get-ScriptDirectory)\..\.release" -Recurse -ErrorAction Ign
 
 Copy-Item "$env:APPDATA\NuGet\NuGet.Config" "$(Get-ScriptDirectory)\..\User-NuGet.Config.tmp"
 
-docker run -it -v c:\dev\Agent:/Sources microsoft/dotnet:2.1.402-sdk-alpine /bin/sh -c '/Sources/.cdpx/local.sh'
+docker run -it -v c:\dev\Agent:/Sources microsoft/dotnet:2.1.403-sdk-alpine /bin/sh -c '/Sources/.cdpx/local.sh'
 
 t-rex.exe --path "$(Get-ScriptDirectory)/.." 
