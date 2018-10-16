@@ -33,9 +33,11 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task Run_starts_the_kestrel_server_and_provides_a_WebServer_feature_that_can_receive_requests()
         {
-            var (server, workspace) = await GetRunnerAndWorkspace();
+            var (server, build) = await GetRunnerAndWorkspace();
 
-            using (var runResult = await server.Run(new WorkspaceRequest(WorkspaceFactory.CreateWorkspaceFromDirectory(workspace.Directory, workspace.Name))))
+            var workspace = WorkspaceFactory.CreateWorkspaceFromDirectory(build.Directory, build.Name);
+
+            using (var runResult = await server.Run(new WorkspaceRequest(workspace, "Program.cs")))
             {
                 var webServer = runResult.GetFeature<WebServer>();
 

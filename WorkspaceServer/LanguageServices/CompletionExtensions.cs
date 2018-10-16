@@ -3,6 +3,7 @@ using System.Collections.Immutable;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Completion;
+using MLS.Protocol;
 using WorkspaceServer.Models;
 
 namespace WorkspaceServer.Servers.Scripting
@@ -67,18 +68,17 @@ namespace WorkspaceServer.Servers.Scripting
                 documentation: documentation);
         }
 
-        public static async Task<string> GetDocumentation(this CompletionItem item, Dictionary<(string, int), ISymbol> recommendedSymbols,
+        public static async Task<MarkdownString> GetDocumentation(this CompletionItem item, Dictionary<(string, int), ISymbol> recommendedSymbols,
         Document document)
         {
-            var documentation = string.Empty;
             var symbol = await GetCompletionSymbolAsync(item, recommendedSymbols, document);
             if (symbol != null)
             {
                 var xmlDocumentation = symbol.GetDocumentationCommentXml();
-                documentation = DocumentationConverter.ConvertDocumentation(xmlDocumentation, "\n");
+                return DocumentationConverter.GetDocumentation(symbol, "\n");
             }
 
-            return documentation;
+            return null;
         }
 
         public static async Task<ISymbol> GetCompletionSymbolAsync(

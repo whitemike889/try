@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
+using static System.Environment;
 
 namespace MLS.Protocol.Execution
 {
@@ -22,7 +23,18 @@ namespace MLS.Protocol.Execution
             Usings = usings ?? Array.Empty<string>();
             Files = files ?? Array.Empty<File>();
             Buffers = buffers ?? Array.Empty<Buffer>();
+
             IncludeInstrumentation = includeInstrumentation;
+
+            if (Files.Distinct().Count() != Files.Length )
+            {
+                throw new ArgumentException($"Duplicate file names:{NewLine}{string.Join(NewLine, Files.Select(f => f.Name))}");
+            }
+            
+            if (Buffers.Distinct().Count() != Buffers.Length )
+            {
+                throw new ArgumentException($"Duplicate buffer ids:{NewLine}{string.Join(NewLine, Buffers.Select(b => b.Id))}");
+            }
         }
 
         public File[] Files { get; }

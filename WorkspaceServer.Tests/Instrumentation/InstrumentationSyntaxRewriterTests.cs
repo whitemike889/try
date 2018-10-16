@@ -1,8 +1,12 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using MLS.Protocol;
+using WorkspaceServer.Models.Execution;
+using WorkspaceServer.Servers.Roslyn;
 using WorkspaceServer.Servers.Roslyn.Instrumentation;
 using Xunit;
 
@@ -157,6 +161,16 @@ namespace WorkspaceServer.Tests.Instrumentation
 
             // assert
             Assert.Contains("\\\"name\\\":\\\"args\\\"", treeString);
+        }
+
+        [Fact]
+        public async void Syntax_Tree_Has_Same_Language_As_Workspace_Build()
+        {
+            var workspaceBuild = await Create.ConsoleWorkspaceCopy();
+            var workspace = WorkspaceFactory.CreateWorkspaceFromDirectory(workspaceBuild.Directory, workspaceBuild.Name, includeInstrumentation: true);
+            var roslynWorkspaceServer = new RoslynWorkspaceServer(workspaceBuild);
+            Func<Task> run = ()=> roslynWorkspaceServer.Run(new WorkspaceRequest(workspace));
+            run.Should().NotThrow();
         }
     }
 }

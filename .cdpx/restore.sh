@@ -15,7 +15,7 @@ apk add xmlstarlet
 apk add shadow
 
 # Add dotnet tools
-dotnet tool install -g --version 1.0.62 t-rex
+dotnet tool install -g --version 1.0.87 t-rex
 
 # Restore the project
 dotnet restore $REPO_ROOT/MLS-LS.sln
@@ -47,13 +47,6 @@ xmlstarlet ed --inplace --insert "/Project/PropertyGroup/OutputType" --type elem
 dotnet build /fl /p:ProvideCommandLineArgs=true
 dotnet publish
 
-mkdir -p $WORKSPACES_ROOT/instrumented
-cd $WORKSPACES_ROOT/instrumented
-dotnet new console
-xmlstarlet ed --inplace --insert "/Project/PropertyGroup/OutputType" --type elem -n "LangVersion" --value "7.3" instrumented.csproj
-dotnet add package Newtonsoft.Json
-dotnet build /fl /p:ProvideCommandLineArgs=true
-
 mkdir -p $WORKSPACES_ROOT/xamarin.essentials.0.8.0-preview
 cd $WORKSPACES_ROOT/xamarin.essentials.0.8.0-preview
 dotnet new console --name console --output .
@@ -65,6 +58,7 @@ mkdir -p $WORKSPACES_ROOT/xunit
 cd $WORKSPACES_ROOT/xunit
 dotnet new xunit --name tests --output .
 xmlstarlet ed --inplace --insert "/Project/PropertyGroup/OutputType" --type elem -n "LangVersion" --value "7.3" tests.csproj
+rm UnitTest1.cs
 dotnet build /fl /p:ProvideCommandLineArgs=true
 
 mkdir -p $WORKSPACES_ROOT/microsoftml

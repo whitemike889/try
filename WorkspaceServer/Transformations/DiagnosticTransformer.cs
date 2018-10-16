@@ -57,7 +57,7 @@ namespace WorkspaceServer.Transformations
                     var filePath = diagnostic.Location.SourceTree?.FilePath;
 
                     // hide warnings that are not within the visible code
-                    if (diagnostic.Severity != DiagnosticSeverity.Error &&
+                    if (!diagnostic.IsError() &&
                         !string.IsNullOrWhiteSpace(filePath))
                     {
                         if (Path.GetFileName(filePath) != Path.GetFileName(activeBufferId.FileName))

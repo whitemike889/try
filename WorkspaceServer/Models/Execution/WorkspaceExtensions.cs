@@ -71,6 +71,19 @@ namespace WorkspaceServer.Models.Execution
             string text) =>
             workspace.RemoveBuffer(id).AddBuffer(id, text);
 
+        public static Workspace AddFile(
+            this Workspace workspace,
+            string name,
+            string text) =>
+            new Workspace(
+                workspace.Usings,
+                workspace.Files
+                         .Concat(new[] { new Workspace.File(name, text) })
+                         .ToArray(),
+                workspace.Buffers,
+                workspace.WorkspaceType,
+                workspace.IncludeInstrumentation);
+
         public static Workspace ReplaceFile(
             this Workspace workspace,
             string name,

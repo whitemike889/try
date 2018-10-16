@@ -66,55 +66,50 @@ namespace WorkspaceServer
             var registry = new WorkspaceRegistry();
 
             registry.Add("console",
-                                  workspace =>
-                                  {
-                                      workspace.CreateUsingDotnet("console", ConsoleTargetConfiguration.Instance);
-                                      workspace.AddPackageReference("Newtonsoft.Json");
-                                  });
+                         workspace =>
+                         {
+                             workspace.CreateUsingDotnet("console", ConsoleTargetConfiguration.Instance);
+                             workspace.AddPackageReference("Newtonsoft.Json");
+                         });
 
-            registry.Add("netstandard",
+            registry.Add("nodatime.api",
+                         workspace =>
+                         {
+                             workspace.CreateUsingDotnet("console", ConsoleTargetConfiguration.Instance);
+                             workspace.AddPackageReference("NodaTime", "2.3.0");
+                             workspace.AddPackageReference("NodaTime.Testing", "2.3.0");
+                             workspace.AddPackageReference("Newtonsoft.Json");
+                         });
+
+            registry.Add("aspnet.webapi",
+                         workspace =>
+                         {
+                             workspace.CreateUsingDotnet("webapi", ConsoleTargetConfiguration.Instance);
+                             workspace.RequiresPublish = true;
+                         });
+
+            registry.Add("xunit",
+                         workspace =>
+                         {
+                             workspace.CreateUsingDotnet("xunit", ConsoleTargetConfiguration.Instance, "tests");
+                             workspace.AddPackageReference("Newtonsoft.Json");
+                             workspace.DeleteFile("UnitTest1.cs");
+                         });
+
+        registry.Add("netstandard",
                                   workspace =>
                                   {
                                       workspace.CreateUsingDotnet("classlib", new NetstandardTargetConfiguration());
                                       workspace.AddPackageReference("Newtonsoft.Json");
                                   });
 
-            registry.Add("nodatime.api",
-                                  workspace =>
-                                  {
-                                      workspace.CreateUsingDotnet("console", ConsoleTargetConfiguration.Instance);
-                                      workspace.AddPackageReference("NodaTime", "2.3.0");
-                                      workspace.AddPackageReference("NodaTime.Testing", "2.3.0");
-                                  });
-
-            registry.Add("aspnet.webapi",
-                                  workspace =>
-                                  {
-                                      workspace.CreateUsingDotnet("webapi", ConsoleTargetConfiguration.Instance);
-                                      workspace.RequiresPublish = true;
-                                  });
-
-            registry.Add("instrumented",
-                                  workspace =>
-                                  {
-                                      workspace.CreateUsingDotnet("console", ConsoleTargetConfiguration.Instance);
-                                      workspace.AddPackageReference("Newtonsoft.Json");
-                                  });
-
-            registry.Add("xunit",
-                                  workspace =>
-                                  {
-                                      workspace.CreateUsingDotnet("xunit", ConsoleTargetConfiguration.Instance, "tests");
-                                      workspace.AddPackageReference("Newtonsoft.Json");
-                                  });
-
             return registry;
         }
 
-        public IEnumerator<WorkspaceBuilder> GetEnumerator() => 
+        public IEnumerator<WorkspaceBuilder> GetEnumerator() =>
             _workspaceBuilders.Values.GetEnumerator();
 
-        IEnumerator IEnumerable.GetEnumerator() => 
+        IEnumerator IEnumerable.GetEnumerator() =>
             GetEnumerator();
     }
 }

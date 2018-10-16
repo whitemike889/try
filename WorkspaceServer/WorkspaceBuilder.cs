@@ -64,6 +64,15 @@ namespace WorkspaceServer
             });
         }
 
+        public void DeleteFile(string relativePath)
+        {
+            _afterCreateActions.Add(async (workspace, budget) =>
+            {
+                var filePath = Path.Combine(workspace.Directory.FullName, relativePath);
+                File.Delete(filePath);
+            });
+        }
+
         public async Task<WorkspaceBuild> GetWorkspaceBuild(Budget budget = null)
         {
             if (workspaceBuild == null)

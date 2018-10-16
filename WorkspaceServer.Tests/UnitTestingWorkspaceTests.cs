@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Clockwise;
 using FluentAssertions;
 using MLS.Protocol;
-using MLS.Protocol.Execution;
 using Pocket;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Servers.Roslyn;
@@ -30,21 +29,36 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task Run_executes_unit_tests_and_prints_test_results_to_output()
         {
-            var (runner, workspace) = await GetRunnerAndWorkspace();
+            var (runner, workspaceBuild) = await GetRunnerAndWorkspace();
+
+            var workspace = WorkspaceFactory.CreateWorkspaceFromDirectory(
+                                                workspaceBuild.Directory,
+                                                workspaceBuild.Name)
+                                            .AddFile(
+                                                "MyUnitTestClass.cs",
+                                                @"
+using Xunit;
+
+namespace MyUnitTestNamespace
+{
+    public class MyUnitTestClass 
+    {
+        [Fact] public void passing() {  }
+    }
+}");
 
             var runResult = await runner.Run(
-                new WorkspaceRequest(
-                                WorkspaceFactory.CreateWorkspaceFromDirectory(
-                                    workspace.Directory,
-                                    workspace.Name)));
+                                new WorkspaceRequest(
+                                    workspace,
+                                    "MyUnitTestClass.cs"));
 
             Log.Info("Output: {output}", runResult.Output);
 
             runResult.Output.ShouldMatch(
                 "PASSED*(*s)",
-                "  tests*(*s)",
-                "    UnitTest1*(*s)",
-                "      Test1*(*s)",
+                "  MyUnitTestNamespace*(*s)",
+                "    MyUnitTestClass*(*s)",
+                "      passing*(*s)",
                 "",
                 "SUMMARY:",
                 "Passed: 1, Failed: 0, Not run: 0",

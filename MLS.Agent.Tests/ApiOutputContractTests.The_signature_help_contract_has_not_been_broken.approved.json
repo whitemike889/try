@@ -3,249 +3,378 @@
     {
       "name": "Write",
       "label": "void Console.Write(bool value)",
-      "documentation": "\n      <summary>Writes the text representation of the specified Boolean value to the standard output stream.</summary>\n      <param name=\"value\">The value to write.</param>\n      <exception cref=\"T:System.IO.IOException\">An I/O error occurred.</exception>\n    ",
+      "documentation": {
+        "value": "Writes the text representation of the specified Boolean value to the standard output stream.",
+        "isTrusted": false
+      },
       "parameters": [
         {
           "name": "value",
           "label": "bool value",
-          "documentation": ""
+          "documentation": {
+            "value": "**value**: The value to write.",
+            "isTrusted": false
+          }
         }
       ]
     },
     {
       "name": "Write",
       "label": "void Console.Write(char value)",
-      "documentation": "\n      <summary>Writes the specified Unicode character value to the standard output stream.</summary>\n      <param name=\"value\">The value to write.</param>\n      <exception cref=\"T:System.IO.IOException\">An I/O error occurred.</exception>\n    ",
+      "documentation": {
+        "value": "Writes the specified Unicode character value to the standard output stream.",
+        "isTrusted": false
+      },
       "parameters": [
         {
           "name": "value",
           "label": "char value",
-          "documentation": ""
+          "documentation": {
+            "value": "**value**: The value to write.",
+            "isTrusted": false
+          }
         }
       ]
     },
     {
       "name": "Write",
       "label": "void Console.Write(char[] buffer)",
-      "documentation": "\n      <summary>Writes the specified array of Unicode characters to the standard output stream.</summary>\n      <param name=\"buffer\">A Unicode character array.</param>\n      <exception cref=\"T:System.IO.IOException\">An I/O error occurred.</exception>\n    ",
+      "documentation": {
+        "value": "Writes the specified array of Unicode characters to the standard output stream.",
+        "isTrusted": false
+      },
       "parameters": [
         {
           "name": "buffer",
           "label": "char[] buffer",
-          "documentation": ""
+          "documentation": {
+            "value": "**buffer**: A Unicode character array.",
+            "isTrusted": false
+          }
         }
       ]
     },
     {
       "name": "Write",
       "label": "void Console.Write(char[] buffer, int index, int count)",
-      "documentation": "\n      <summary>Writes the specified subarray of Unicode characters to the standard output stream.</summary>\n      <param name=\"buffer\">An array of Unicode characters.</param>\n      <param name=\"index\">The starting position in buffer.</param>\n      <param name=\"count\">The number of characters to write.</param>\n      <exception cref=\"T:System.ArgumentNullException\"><paramref name=\"buffer\">buffer</paramref> is null.</exception>\n      <exception cref=\"T:System.ArgumentOutOfRangeException\"><paramref name=\"index\">index</paramref> or <paramref name=\"count\">count</paramref> is less than zero.</exception>\n      <exception cref=\"T:System.ArgumentException\"><paramref name=\"index\">index</paramref> plus <paramref name=\"count\">count</paramref> specify a position that is not within <paramref name=\"buffer\">buffer</paramref>.</exception>\n      <exception cref=\"T:System.IO.IOException\">An I/O error occurred.</exception>\n    ",
+      "documentation": {
+        "value": "Writes the specified subarray of Unicode characters to the standard output stream.",
+        "isTrusted": false
+      },
       "parameters": [
         {
           "name": "buffer",
           "label": "char[] buffer",
-          "documentation": ""
+          "documentation": {
+            "value": "**buffer**: An array of Unicode characters.",
+            "isTrusted": false
+          }
         },
         {
           "name": "index",
           "label": "int index",
-          "documentation": ""
+          "documentation": {
+            "value": "**index**: The starting position in buffer.",
+            "isTrusted": false
+          }
         },
         {
           "name": "count",
           "label": "int count",
-          "documentation": ""
+          "documentation": {
+            "value": "**count**: The number of characters to write.",
+            "isTrusted": false
+          }
         }
       ]
     },
     {
       "name": "Write",
       "label": "void Console.Write(decimal value)",
-      "documentation": "\n      <summary>Writes the text representation of the specified <see cref=\"T:System.Decimal\"></see> value to the standard output stream.</summary>\n      <param name=\"value\">The value to write.</param>\n      <exception cref=\"T:System.IO.IOException\">An I/O error occurred.</exception>\n    ",
+      "documentation": {
+        "value": "Writes the text representation of the specified System.Decimal  value to the standard output stream.",
+        "isTrusted": false
+      },
       "parameters": [
         {
           "name": "value",
           "label": "decimal value",
-          "documentation": ""
+          "documentation": {
+            "value": "**value**: The value to write.",
+            "isTrusted": false
+          }
         }
       ]
     },
     {
       "name": "Write",
       "label": "void Console.Write(double value)",
-      "documentation": "\n      <summary>Writes the text representation of the specified double-precision floating-point value to the standard output stream.</summary>\n      <param name=\"value\">The value to write.</param>\n      <exception cref=\"T:System.IO.IOException\">An I/O error occurred.</exception>\n    ",
+      "documentation": {
+        "value": "Writes the text representation of the specified double-precision floating-point value to the standard output stream.",
+        "isTrusted": false
+      },
       "parameters": [
         {
           "name": "value",
           "label": "double value",
-          "documentation": ""
+          "documentation": {
+            "value": "**value**: The value to write.",
+            "isTrusted": false
+          }
         }
       ]
     },
     {
       "name": "Write",
       "label": "void Console.Write(int value)",
-      "documentation": "\n      <summary>Writes the text representation of the specified 32-bit signed integer value to the standard output stream.</summary>\n      <param name=\"value\">The value to write.</param>\n      <exception cref=\"T:System.IO.IOException\">An I/O error occurred.</exception>\n    ",
+      "documentation": {
+        "value": "Writes the text representation of the specified 32-bit signed integer value to the standard output stream.",
+        "isTrusted": false
+      },
       "parameters": [
         {
           "name": "value",
           "label": "int value",
-          "documentation": ""
+          "documentation": {
+            "value": "**value**: The value to write.",
+            "isTrusted": false
+          }
         }
       ]
     },
     {
       "name": "Write",
       "label": "void Console.Write(long value)",
-      "documentation": "\n      <summary>Writes the text representation of the specified 64-bit signed integer value to the standard output stream.</summary>\n      <param name=\"value\">The value to write.</param>\n      <exception cref=\"T:System.IO.IOException\">An I/O error occurred.</exception>\n    ",
+      "documentation": {
+        "value": "Writes the text representation of the specified 64-bit signed integer value to the standard output stream.",
+        "isTrusted": false
+      },
       "parameters": [
         {
           "name": "value",
           "label": "long value",
-          "documentation": ""
+          "documentation": {
+            "value": "**value**: The value to write.",
+            "isTrusted": false
+          }
         }
       ]
     },
     {
       "name": "Write",
       "label": "void Console.Write(object value)",
-      "documentation": "\n      <summary>Writes the text representation of the specified object to the standard output stream.</summary>\n      <param name=\"value\">The value to write, or null.</param>\n      <exception cref=\"T:System.IO.IOException\">An I/O error occurred.</exception>\n    ",
+      "documentation": {
+        "value": "Writes the text representation of the specified object to the standard output stream.",
+        "isTrusted": false
+      },
       "parameters": [
         {
           "name": "value",
           "label": "object value",
-          "documentation": ""
+          "documentation": {
+            "value": "**value**: The value to write, or null.",
+            "isTrusted": false
+          }
         }
       ]
     },
     {
       "name": "Write",
       "label": "void Console.Write(float value)",
-      "documentation": "\n      <summary>Writes the text representation of the specified single-precision floating-point value to the standard output stream.</summary>\n      <param name=\"value\">The value to write.</param>\n      <exception cref=\"T:System.IO.IOException\">An I/O error occurred.</exception>\n    ",
+      "documentation": {
+        "value": "Writes the text representation of the specified single-precision floating-point value to the standard output stream.",
+        "isTrusted": false
+      },
       "parameters": [
         {
           "name": "value",
           "label": "float value",
-          "documentation": ""
+          "documentation": {
+            "value": "**value**: The value to write.",
+            "isTrusted": false
+          }
         }
       ]
     },
     {
       "name": "Write",
       "label": "void Console.Write(string value)",
-      "documentation": "\n      <summary>Writes the specified string value to the standard output stream.</summary>\n      <param name=\"value\">The value to write.</param>\n      <exception cref=\"T:System.IO.IOException\">An I/O error occurred.</exception>\n    ",
+      "documentation": {
+        "value": "Writes the specified string value to the standard output stream.",
+        "isTrusted": false
+      },
       "parameters": [
         {
           "name": "value",
           "label": "string value",
-          "documentation": ""
+          "documentation": {
+            "value": "**value**: The value to write.",
+            "isTrusted": false
+          }
         }
       ]
     },
     {
       "name": "Write",
       "label": "void Console.Write(string format, object arg0)",
-      "documentation": "\n      <summary>Writes the text representation of the specified object to the standard output stream using the specified format information.</summary>\n      <param name=\"format\">A composite format string.</param>\n      <param name=\"arg0\">An object to write using format.</param>\n      <exception cref=\"T:System.IO.IOException\">An I/O error occurred.</exception>\n      <exception cref=\"T:System.ArgumentNullException\"><paramref name=\"format\">format</paramref> is null.</exception>\n      <exception cref=\"T:System.FormatException\">The format specification in <paramref name=\"format\">format</paramref> is invalid.</exception>\n    ",
+      "documentation": {
+        "value": "Writes the text representation of the specified object to the standard output stream using the specified format information.",
+        "isTrusted": false
+      },
       "parameters": [
         {
           "name": "format",
           "label": "string format",
-          "documentation": ""
+          "documentation": {
+            "value": "**format**: A composite format string.",
+            "isTrusted": false
+          }
         },
         {
           "name": "arg0",
           "label": "object arg0",
-          "documentation": ""
+          "documentation": {
+            "value": "**arg0**: An object to write using format.",
+            "isTrusted": false
+          }
         }
       ]
     },
     {
       "name": "Write",
       "label": "void Console.Write(string format, object arg0, object arg1)",
-      "documentation": "\n      <summary>Writes the text representation of the specified objects to the standard output stream using the specified format information.</summary>\n      <param name=\"format\">A composite format string.</param>\n      <param name=\"arg0\">The first object to write using format.</param>\n      <param name=\"arg1\">The second object to write using format.</param>\n      <exception cref=\"T:System.IO.IOException\">An I/O error occurred.</exception>\n      <exception cref=\"T:System.ArgumentNullException\"><paramref name=\"format\">format</paramref> is null.</exception>\n      <exception cref=\"T:System.FormatException\">The format specification in <paramref name=\"format\">format</paramref> is invalid.</exception>\n    ",
+      "documentation": {
+        "value": "Writes the text representation of the specified objects to the standard output stream using the specified format information.",
+        "isTrusted": false
+      },
       "parameters": [
         {
           "name": "format",
           "label": "string format",
-          "documentation": ""
+          "documentation": {
+            "value": "**format**: A composite format string.",
+            "isTrusted": false
+          }
         },
         {
           "name": "arg0",
           "label": "object arg0",
-          "documentation": ""
+          "documentation": {
+            "value": "**arg0**: The first object to write using format.",
+            "isTrusted": false
+          }
         },
         {
           "name": "arg1",
           "label": "object arg1",
-          "documentation": ""
+          "documentation": {
+            "value": "**arg1**: The second object to write using format.",
+            "isTrusted": false
+          }
         }
       ]
     },
     {
       "name": "Write",
       "label": "void Console.Write(string format, object arg0, object arg1, object arg2)",
-      "documentation": "\n      <summary>Writes the text representation of the specified objects to the standard output stream using the specified format information.</summary>\n      <param name=\"format\">A composite format string.</param>\n      <param name=\"arg0\">The first object to write using format.</param>\n      <param name=\"arg1\">The second object to write using format.</param>\n      <param name=\"arg2\">The third object to write using format.</param>\n      <exception cref=\"T:System.IO.IOException\">An I/O error occurred.</exception>\n      <exception cref=\"T:System.ArgumentNullException\"><paramref name=\"format\">format</paramref> is null.</exception>\n      <exception cref=\"T:System.FormatException\">The format specification in <paramref name=\"format\">format</paramref> is invalid.</exception>\n    ",
+      "documentation": {
+        "value": "Writes the text representation of the specified objects to the standard output stream using the specified format information.",
+        "isTrusted": false
+      },
       "parameters": [
         {
           "name": "format",
           "label": "string format",
-          "documentation": ""
+          "documentation": {
+            "value": "**format**: A composite format string.",
+            "isTrusted": false
+          }
         },
         {
           "name": "arg0",
           "label": "object arg0",
-          "documentation": ""
+          "documentation": {
+            "value": "**arg0**: The first object to write using format.",
+            "isTrusted": false
+          }
         },
         {
           "name": "arg1",
           "label": "object arg1",
-          "documentation": ""
+          "documentation": {
+            "value": "**arg1**: The second object to write using format.",
+            "isTrusted": false
+          }
         },
         {
           "name": "arg2",
           "label": "object arg2",
-          "documentation": ""
+          "documentation": {
+            "value": "**arg2**: The third object to write using format.",
+            "isTrusted": false
+          }
         }
       ]
     },
     {
       "name": "Write",
       "label": "void Console.Write(string format, params object[] arg)",
-      "documentation": "\n      <summary>Writes the text representation of the specified array of objects to the standard output stream using the specified format information.</summary>\n      <param name=\"format\">A composite format string.</param>\n      <param name=\"arg\">An array of objects to write using format.</param>\n      <exception cref=\"T:System.IO.IOException\">An I/O error occurred.</exception>\n      <exception cref=\"T:System.ArgumentNullException\"><paramref name=\"format\">format</paramref> or <paramref name=\"arg\">arg</paramref> is null.</exception>\n      <exception cref=\"T:System.FormatException\">The format specification in <paramref name=\"format\">format</paramref> is invalid.</exception>\n    ",
+      "documentation": {
+        "value": "Writes the text representation of the specified array of objects to the standard output stream using the specified format information.",
+        "isTrusted": false
+      },
       "parameters": [
         {
           "name": "format",
           "label": "string format",
-          "documentation": ""
+          "documentation": {
+            "value": "**format**: A composite format string.",
+            "isTrusted": false
+          }
         },
         {
           "name": "arg",
           "label": "params object[] arg",
-          "documentation": ""
+          "documentation": {
+            "value": "**arg**: An array of objects to write using format.",
+            "isTrusted": false
+          }
         }
       ]
     },
     {
       "name": "Write",
       "label": "void Console.Write(uint value)",
-      "documentation": "\n      <summary>Writes the text representation of the specified 32-bit unsigned integer value to the standard output stream.</summary>\n      <param name=\"value\">The value to write.</param>\n      <exception cref=\"T:System.IO.IOException\">An I/O error occurred.</exception>\n    ",
+      "documentation": {
+        "value": "Writes the text representation of the specified 32-bit unsigned integer value to the standard output stream.",
+        "isTrusted": false
+      },
       "parameters": [
         {
           "name": "value",
           "label": "uint value",
-          "documentation": ""
+          "documentation": {
+            "value": "**value**: The value to write.",
+            "isTrusted": false
+          }
         }
       ]
     },
     {
       "name": "Write",
       "label": "void Console.Write(ulong value)",
-      "documentation": "\n      <summary>Writes the text representation of the specified 64-bit unsigned integer value to the standard output stream.</summary>\n      <param name=\"value\">The value to write.</param>\n      <exception cref=\"T:System.IO.IOException\">An I/O error occurred.</exception>\n    ",
+      "documentation": {
+        "value": "Writes the text representation of the specified 64-bit unsigned integer value to the standard output stream.",
+        "isTrusted": false
+      },
       "parameters": [
         {
           "name": "value",
           "label": "ulong value",
-          "documentation": ""
+          "documentation": {
+            "value": "**value**: The value to write.",
+            "isTrusted": false
+          }
         }
       ]
     }

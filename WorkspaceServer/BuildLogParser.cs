@@ -8,13 +8,20 @@ namespace WorkspaceServer
 {
     public static class BuildLogParser
     {
-        public static string[] FindCompilerCommandLine(this FileInfo logFile)
+        public static string[] FindCompilerCommandLineAndSetLanguageversion(this FileInfo logFile, string languageVersion)
         {
             if (logFile == null)
             {
                 throw new ArgumentNullException(nameof(logFile));
             }
 
+            var compilerCommandLine = GetCompilerCommandLine(logFile).ToList(); 
+            compilerCommandLine.Add($"-langversion:{languageVersion}");
+            return compilerCommandLine.ToArray();
+        }
+
+        private static IEnumerable<string> GetCompilerCommandLine(this FileInfo logFile)
+        {
             var dotnetPath = DotnetMuxer.Path.FullName;
 
             using (var reader = logFile.OpenText())
@@ -27,7 +34,7 @@ namespace WorkspaceServer
 
                     if (line.StartsWith(dotnetPath, StringComparison.OrdinalIgnoreCase))
                     {
-                        return line.Tokenize().RemoveDotnetAndCsc().ToArray();
+                        return line.Tokenize().RemoveDotnetAndCsc();
                     }
                 }
             }
