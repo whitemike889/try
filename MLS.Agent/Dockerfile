@@ -1,4 +1,4 @@
-FROM microsoft/dotnet:2.1.402-sdk-alpine
+FROM microsoft/dotnet:2.1.403-sdk-alpine
 
 # configure environment
 ENV NUGET_PACKAGES=/dependencies/.nuget/packages
