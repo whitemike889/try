@@ -30,7 +30,7 @@ namespace WorkspaceServer.Tests
                 testName);
 
         public static WorkspaceBuild EmptyWorkspace([CallerMemberName] string testName = null, IWorkspaceInitializer initializer = null) =>
-            new WorkspaceBuild(WorkspaceBuild.CreateDirectory(testName), targetConfiguration: null, initializer: initializer);
+            new WorkspaceBuild(WorkspaceBuild.CreateDirectory(testName), outputConfiguration: null, initializer: initializer);
 
         public static string SimpleWorkspaceRequestAsJson(
             string consoleOutput = "Hello!",

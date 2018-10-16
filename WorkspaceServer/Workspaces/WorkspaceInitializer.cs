@@ -13,7 +13,6 @@ namespace WorkspaceServer.Workspaces
         public string Template { get; }
 
         public string ProjectName { get; }
-        public ITargetConfiguration TargetConfiguration { get; }
 
         public WorkspaceInitializer(
             string template, 

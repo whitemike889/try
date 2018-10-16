@@ -54,11 +54,11 @@ namespace WorkspaceServer.Workspaces
 
         public WorkspaceBuild(
             string name,
-            ITargetConfiguration targetConfiguration,
+            IOutputConfiguration outputConfiguration,
             IWorkspaceInitializer initializer = null,
             bool requiresPublish = false) : this(
             new DirectoryInfo(Path.Combine(DefaultWorkspacesDirectory.FullName, name)),
-            targetConfiguration,
+            outputConfiguration,
             name,
             initializer,
             requiresPublish)
@@ -67,14 +67,14 @@ namespace WorkspaceServer.Workspaces
 
         public WorkspaceBuild(
             DirectoryInfo directory,
-            ITargetConfiguration targetConfiguration,
+            IOutputConfiguration outputConfiguration,
             string name = null,
             IWorkspaceInitializer initializer = null,
             bool requiresPublish = false)
         {
             Name = name ?? directory.Name;
             Directory = directory ?? throw new ArgumentNullException(nameof(directory));
-            TargetConfiguration = targetConfiguration;
+            OutputConfiguration = outputConfiguration;
             _initializer = initializer ?? new WorkspaceInitializer("console", Name);
             ConstructionTime = Clock.Current.Now();
             RequiresPublish = requiresPublish;
@@ -101,7 +101,7 @@ namespace WorkspaceServer.Workspaces
             (_isWebProject = Directory.GetDirectories("wwwroot", SearchOption.AllDirectories).Any()).Value;
 
         public DirectoryInfo Directory { get; }
-        public ITargetConfiguration TargetConfiguration { get; }
+        public IOutputConfiguration OutputConfiguration { get; }
         public string Name { get; }
 
         public static DirectoryInfo DefaultWorkspacesDirectory { get; }
@@ -152,7 +152,7 @@ namespace WorkspaceServer.Workspaces
             {
                 if (_entryPointAssemblyPath == null)
                 {
-                    _entryPointAssemblyPath = TargetConfiguration.GetEntryPointAssemblyPath(Directory, IsWebProject);
+                    _entryPointAssemblyPath = OutputConfiguration.GetEntryPointAssemblyPath(Directory, IsWebProject);
                 }
 
                 return _entryPointAssemblyPath;
@@ -165,7 +165,7 @@ namespace WorkspaceServer.Workspaces
             {
                 if (_targetFramework == null)
                 {
-                    _targetFramework = TargetConfiguration.GetTargetFramework(Directory);
+                    _targetFramework = OutputConfiguration.GetTargetFramework(Directory);
                 }
 
                 return _targetFramework;
@@ -365,7 +365,7 @@ namespace WorkspaceServer.Workspaces
 
             fromWorkspaceBuild.Directory.CopyTo(destination);
 
-            var copy = new WorkspaceBuild(destination, fromWorkspaceBuild.TargetConfiguration, destination.Name)
+            var copy = new WorkspaceBuild(destination, fromWorkspaceBuild.OutputConfiguration, destination.Name)
             {
                 IsCreated = fromWorkspaceBuild.IsCreated,
                 IsPublished = fromWorkspaceBuild.IsPublished,

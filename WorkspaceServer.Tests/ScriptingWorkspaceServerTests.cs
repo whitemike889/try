@@ -28,7 +28,7 @@ namespace WorkspaceServer.Tests
 
         protected override Task<(ICodeRunner runner, WorkspaceBuild workspace)> GetRunnerAndWorkpaceBuild(
             [CallerMemberName] string testName = null) =>
-            Task.FromResult<(ICodeRunner , WorkspaceBuild )>((new ScriptingWorkspaceServer(), new WorkspaceBuild("script", targetConfiguration: null)));
+            Task.FromResult<(ICodeRunner , WorkspaceBuild )>((new ScriptingWorkspaceServer(), new WorkspaceBuild("script", outputConfiguration: null)));
 
         protected override ILanguageService GetLanguageService([CallerMemberName] string testName = null) =>
             new ScriptingWorkspaceServer();
