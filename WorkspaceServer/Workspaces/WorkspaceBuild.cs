@@ -95,7 +95,7 @@ namespace WorkspaceServer.Workspaces
             _published = new AsyncLazy<bool>(VerifyOrPublish);
             _log = new Logger($"{nameof(WorkspaceBuild)}:{Name}");
 
-            buildArifactLocator = buildArifactLocator ?? NetCoreAppBuildArtifactLocator.Instance;
+            BuildArifactLocator = buildArifactLocator ?? NetCoreAppBuildArtifactLocator.Instance;
         }
 
         private bool IsDirectoryCreated { get; set; }
