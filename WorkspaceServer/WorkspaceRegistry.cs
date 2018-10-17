@@ -96,12 +96,21 @@ namespace WorkspaceServer
                              workspace.DeleteFile("UnitTest1.cs");
                          });
 
-        registry.Add("netstandard",
+        registry.Add("blazor-console",
                                   workspace =>
                                   {
                                       workspace.CreateUsingDotnet("classlib", new NetstandardBuildArtifactLocator());
                                       workspace.AddPackageReference("Newtonsoft.Json");
                                   });
+
+        registry.Add("blazor-nodatime",
+                        workspace =>
+                        {
+                            workspace.CreateUsingDotnet("classlib", new NetstandardBuildArtifactLocator());
+                            workspace.AddPackageReference("NodaTime", "2.3.0");
+                            workspace.AddPackageReference("NodaTime.Testing", "2.3.0");
+                            workspace.AddPackageReference("Newtonsoft.Json");
+                        });
 
             return registry;
         }
