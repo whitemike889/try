@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Clockwise;
 using WorkspaceServer.Workspaces;
@@ -32,22 +33,24 @@ namespace WorkspaceServer
         internal IWorkspaceInitializer WorkspaceInitializer { get; private set; }
 
         public bool RequiresPublish { get; set; }
+        public IBuildArtifactLocator BuildArtifactLocator { get; private set; }
 
         public void AfterCreate(Func<WorkspaceBuild, Budget, Task> action)
         {
             _afterCreateActions.Add(action);
         }
+            
 
-        public void CreateCopyOf(string originalWorkspaceName) =>
-            WorkspaceInitializer = new WorkspaceCopyInitializer(
-                _registry,
-                originalWorkspaceName);
-
-        public void CreateUsingDotnet(string template, string projectName = null) =>
+        public void CreateUsingDotnet(string template, IBuildArtifactLocator buildArtifactLocator, string projectName = null)
+        {
             WorkspaceInitializer = new WorkspaceInitializer(
-                template,
-                projectName ?? WorkspaceName,
-                AfterCreate);
+               template,
+               projectName ?? WorkspaceName,
+               AfterCreate);
+
+            BuildArtifactLocator = buildArtifactLocator;
+        }
+           
 
         public void AddPackageReference(string packageId, string version = null)
         {
@@ -102,6 +105,7 @@ namespace WorkspaceServer
 
             workspaceBuild = new WorkspaceBuild(
                 WorkspaceName,
+                BuildArtifactLocator,
                 WorkspaceInitializer,
                 requiresPublish: RequiresPublish);
 

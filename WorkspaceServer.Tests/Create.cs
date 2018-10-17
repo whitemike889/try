@@ -24,8 +24,13 @@ namespace WorkspaceServer.Tests
                 await Default.XunitWorkspace,
                 testName);
 
+        public static async Task<WorkspaceBuild> NetstandardWorkspaceCopy([CallerMemberName] string testName = null) =>
+            await WorkspaceBuild.Copy(
+                await Default.NetstandardWorkspace,
+                testName);
+
         public static WorkspaceBuild EmptyWorkspace([CallerMemberName] string testName = null, IWorkspaceInitializer initializer = null) =>
-            new WorkspaceBuild(WorkspaceBuild.CreateDirectory(testName), initializer: initializer);
+            new WorkspaceBuild(WorkspaceBuild.CreateDirectory(testName), buildArifactLocator: null, initializer: initializer);
 
         public static string SimpleWorkspaceRequestAsJson(
             string consoleOutput = "Hello!",
