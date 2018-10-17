@@ -2,7 +2,7 @@
 
 namespace WorkspaceServer.Workspaces
 {
-    public interface IOutputConfiguration
+    public interface IBuildArtifactLocator
     {
         FileInfo GetEntryPointAssemblyPath(DirectoryInfo directory, bool isWebProject);
         string GetTargetFramework(DirectoryInfo directory);

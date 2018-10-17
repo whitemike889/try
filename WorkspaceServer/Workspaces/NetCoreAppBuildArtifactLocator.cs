@@ -3,9 +3,9 @@ using System.Linq;
 
 namespace WorkspaceServer.Workspaces
 {
-    public class ConsoleTargetConfiguration : IOutputConfiguration
+    public class NetCoreAppBuildArtifactLocator : IBuildArtifactLocator
     {
-        public static readonly ConsoleTargetConfiguration Instance = new ConsoleTargetConfiguration();
+        public static readonly NetCoreAppBuildArtifactLocator Instance = new NetCoreAppBuildArtifactLocator();
 
         public FileInfo GetEntryPointAssemblyPath(DirectoryInfo directory, bool isWebProject)
         {

@@ -65,11 +65,11 @@ namespace WorkspaceServer.Workspaces
 
         public WorkspaceBuild(
             string name,
-            IOutputConfiguration outputConfiguration,
+            IBuildArtifactLocator buildArtifactLocator,
             IWorkspaceInitializer initializer = null,
             bool requiresPublish = false) : this(
             new DirectoryInfo(Path.Combine(DefaultWorkspacesDirectory.FullName, name)),
-            outputConfiguration,
+            buildArtifactLocator,
             name,
             initializer,
             requiresPublish)
@@ -78,14 +78,13 @@ namespace WorkspaceServer.Workspaces
 
         public WorkspaceBuild(
             DirectoryInfo directory,
-            IOutputConfiguration outputConfiguration,
+            IBuildArtifactLocator buildArifactLocator,
             string name = null,
             IWorkspaceInitializer initializer = null,
             bool requiresPublish = false)
         {
             Name = name ?? directory.Name;
             Directory = directory ?? throw new ArgumentNullException(nameof(directory));
-            OutputConfiguration = outputConfiguration;
             _initializer = initializer ?? new WorkspaceInitializer("console", Name);
             ConstructionTime = Clock.Current.Now();
             RequiresPublish = requiresPublish;
@@ -95,6 +94,25 @@ namespace WorkspaceServer.Workspaces
             _built = new AsyncLazy<bool>(VerifyOrBuild);
             _published = new AsyncLazy<bool>(VerifyOrPublish);
             _log = new Logger($"{nameof(WorkspaceBuild)}:{Name}");
+
+            if (buildArifactLocator != null)
+            {
+                BuildArifactLocator = buildArifactLocator;
+            }
+            else
+            {
+                try
+                {
+                    if (NetCoreAppBuildArtifactLocator.Instance.GetTargetFramework(Directory) != null)
+                    {
+                        BuildArifactLocator = NetCoreAppBuildArtifactLocator.Instance;
+                    }
+                }
+                catch
+                {
+                    throw new InvalidOperationException("");
+                }
+            }
         }
 
         private bool IsDirectoryCreated { get; set; }
@@ -103,7 +121,7 @@ namespace WorkspaceServer.Workspaces
 
         public bool IsBuilt { get; private set; }
 
-        private bool IsReady  { get; set; }
+        private bool IsReady { get; set; }
 
         public bool IsUnitTestProject =>
             _isUnitTestProject ??
@@ -114,7 +132,7 @@ namespace WorkspaceServer.Workspaces
             (_isWebProject = Directory.GetDirectories("wwwroot", SearchOption.AllDirectories).Any()).Value;
 
         public DirectoryInfo Directory { get; }
-        public IOutputConfiguration OutputConfiguration { get; }
+        public IBuildArtifactLocator BuildArifactLocator { get; }
         public string Name { get; }
 
         public static DirectoryInfo DefaultWorkspacesDirectory { get; }
@@ -165,7 +183,7 @@ namespace WorkspaceServer.Workspaces
             {
                 if (_entryPointAssemblyPath == null)
                 {
-                    _entryPointAssemblyPath = OutputConfiguration.GetEntryPointAssemblyPath(Directory, IsWebProject);
+                    _entryPointAssemblyPath = BuildArifactLocator.GetEntryPointAssemblyPath(Directory, IsWebProject);
                 }
 
                 return _entryPointAssemblyPath;
@@ -178,7 +196,7 @@ namespace WorkspaceServer.Workspaces
             {
                 if (_targetFramework == null)
                 {
-                    _targetFramework = OutputConfiguration.GetTargetFramework(Directory);
+                    _targetFramework = BuildArifactLocator.GetTargetFramework(Directory);
                 }
 
                 return _targetFramework;
@@ -194,7 +212,7 @@ namespace WorkspaceServer.Workspaces
                 .CancelIfExceeds(budget ?? new Budget());
             budget?.RecordEntry();
         }
-     
+
         private async Task<bool> VerifyOrCreate()
         {
             using (var operation = _log.OnEnterAndConfirmOnExit())
@@ -378,17 +396,18 @@ namespace WorkspaceServer.Workspaces
 
             fromWorkspaceBuild.Directory.CopyTo(destination);
 
-            var copy = new WorkspaceBuild(destination, fromWorkspaceBuild.OutputConfiguration, destination.Name)
+            var copy = new WorkspaceBuild(destination, fromWorkspaceBuild.BuildArifactLocator, destination.Name)
             {
                 IsCreated = fromWorkspaceBuild.IsCreated,
                 IsPublished = fromWorkspaceBuild.IsPublished,
                 IsBuilt = fromWorkspaceBuild.IsBuilt,
                 IsReady = fromWorkspaceBuild.IsReady,
-                IsDirectoryCreated = true
+                IsDirectoryCreated = true,
+
             };
 
             Log.Info(
-                "Copied workspace {from} to {to}", 
+                "Copied workspace {from} to {to}",
                 fromWorkspaceBuild,
                 copy);
 
@@ -420,7 +439,7 @@ namespace WorkspaceServer.Workspaces
 
         public override string ToString()
         {
-            return $"{Name} ({Directory.FullName}) ({new {IsCreated, CreationTime, IsBuilt, BuildTime, IsPublished, PublicationTime, IsReady}})";
+            return $"{Name} ({Directory.FullName}) ({new { IsCreated, CreationTime, IsBuilt, BuildTime, IsPublished, PublicationTime, IsReady }})";
         }
 
         public async Task<AdhocWorkspace> CreateRoslynWorkspace(ProjectId projectId = null)
@@ -453,7 +472,7 @@ namespace WorkspaceServer.Workspaces
 
         private async Task<SyntaxTree> CreateInstrumentationEmitterSyntaxTree()
         {
-            var resourceName = "WorkspaceServer.Servers.Roslyn.Instrumentation.InstrumentationEmitter.cs"; 
+            var resourceName = "WorkspaceServer.Servers.Roslyn.Instrumentation.InstrumentationEmitter.cs";
 
             var assembly = typeof(WorkspaceBuildExtensions).Assembly;
 

@@ -2,7 +2,7 @@
 
 namespace WorkspaceServer.Workspaces
 {
-    public class NetstandardTargetConfiguration : IOutputConfiguration
+    public class NetstandardBuildArtifactLocator : IBuildArtifactLocator
     {
         public FileInfo GetEntryPointAssemblyPath(DirectoryInfo directory, bool isWebProject)
         {

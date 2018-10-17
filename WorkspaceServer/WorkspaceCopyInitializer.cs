@@ -19,7 +19,7 @@ namespace WorkspaceServer
         public async Task Initialize(DirectoryInfo directory, Budget budget = null)
         {
             var original = await registry.Get(workspaceName);
-            WorkspaceBuild.Copy(original, directory);
+            await WorkspaceBuild.Copy(original, directory);
         }
     }
 }
