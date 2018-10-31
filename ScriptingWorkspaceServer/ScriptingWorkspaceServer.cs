@@ -7,7 +7,6 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.CodeAnalysis;
-using Diagnostic = Microsoft.CodeAnalysis.Diagnostic;
 using Microsoft.CodeAnalysis.Completion;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Recommendations;
@@ -67,16 +66,13 @@ namespace WorkspaceServer.Servers.Scripting
                 {
                     state = await Run(buffer, options, budget);
 
-                    if (console.IsEmpty())
+                    if (state != null && 
+                        console.IsEmpty())
                     {
                         state = await EmulateConsoleMainInvocation(state, buffer, options, budget);
                     }
 
                     budget.RecordEntry(UserCodeCompletedBudgetEntryName);
-                }
-                catch (CompilationErrorException ex)
-                {
-                    userException = ex;
                 }
                 catch (Exception ex)
                 {
@@ -234,10 +230,8 @@ namespace WorkspaceServer.Servers.Scripting
             var script = state.Script;
             var compiled = script.Compile();
 
-            if (compiled.FirstOrDefault(d => d.Descriptor.Id == "CS7022")
-                    is Diagnostic noEntryPointWarning &&
-                EntryPointType()
-                    is IMethodSymbol entryPointMethod)
+            if (compiled.FirstOrDefault(d => d.Descriptor.Id == "CS7022") != null &&
+                EntryPointType() is IMethodSymbol entryPointMethod)
             {
                 // e.g. warning CS7022: The entry point of the program is global script code; ignoring 'Program.Main()' entry point.
 

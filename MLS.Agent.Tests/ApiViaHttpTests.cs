@@ -3,6 +3,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Clockwise;
 using FluentAssertions;
@@ -10,6 +11,7 @@ using MLS.Protocol;
 using MLS.Protocol.Completion;
 using MLS.Protocol.Execution;
 using MLS.Protocol.SignatureHelp;
+using MLS.Protocol.Transformations;
 using Pocket;
 using Recipes;
 using WorkspaceServer.Models.Execution;
@@ -489,34 +491,93 @@ namespace FibonacciTest
             result.ShouldFailWithOutput("broken.cs(1,1): error CS1031: Type expected");
         }
 
-        [Fact(Skip = "flaky, needs investigation")]
-        public async Task When_Run_times_out_in_workspace_server_code_then_the_response_code_is_504()
+        [Theory]
+        [InlineData(@"
+            public class Program { public static void Main()\n  {\n  Console.WriteLine();  }  }")]
+        public async Task When_Run_times_out_in_console_workspace_server_code_then_the_response_code_is_504(string code)
         {
-            Clock.Reset();
+            var workspace = Workspace.FromSource(code.EnforceLF(), (await Create.ConsoleWorkspaceCopy()).Name);
 
-            var requestJson =
-                @"{ ""Buffers"":[{""Id"":"""",""Content"":""public class Program { public static void Main()\n  {\n  System.Threading.Thread.Sleep(System.TimeSpan.FromTicks(30));  }  }""}],""Usings"":[],""WorkspaceType"":""console""}";
+            var requestJson = new WorkspaceRequest(workspace).ToJson();
 
-            var response = await CallRun(requestJson, 1);
+            ((VirtualClock) Clock.Current).OnBudgetEntryRecorded((virtualClock, budget, entry) =>
+            {
+                Log.Info("Budget entry created: {entry}", entry);
+
+                if (entry.Name == typeof(BufferInliningTransformer).Name)
+                {
+                    budget.Cancel();
+                }
+            });
+
+            var response = await CallRun(requestJson);
 
             response.StatusCode.Should().Be(HttpStatusCode.GatewayTimeout);
         }
 
         [Theory]
-        [InlineData("script")]
-        [InlineData("console", Skip = "flaky, needs investigation")]
-        public async Task When_Run_times_out_in_user_code_then_the_response_code_is_417(string workspaceType)
+        [InlineData( @"
+            Console.WriteLine();")]
+        [InlineData(@"
+            public class Program { public static void Main()\n  {\n  Console.WriteLine();  }  }")]
+        public async Task When_Run_times_out_in_script_workspace_server_code_then_the_response_code_is_504(string code)
         {
-            // TODO-JOSEQU: (When_Run_times_out_in_user_code_then_the_response_code_is_417) make this test faster
+            var workspace = Workspace.FromSource(code.EnforceLF(), "script");
 
+            var requestJson = new WorkspaceRequest(workspace).ToJson();
+
+            ((VirtualClock) Clock.Current).OnBudgetEntryRecorded((virtualClock, budget, entry) =>
+            {
+                Log.Info("Budget entry created: {entry}", entry);
+
+                // if (budget.Entries.Any(e => e.Name == ScriptingWorkspaceServer.UserCodeCompletedBudgetEntryName))
+                {
+                    budget.Cancel();
+                }
+            });
+
+            var response = await CallRun(requestJson);
+
+            response.StatusCode.Should().Be(HttpStatusCode.GatewayTimeout);
+        }
+
+        [Theory]
+        [InlineData("console", @"
+            public class Program 
+            { 
+                public static void Main()
+                {
+                    // block here until released by the test
+                    System.Threading.EventWaitHandle.OpenExisting(""wait"").WaitOne();
+                }  
+            }")]
+        [InlineData("script", @"
+            System.Threading.EventWaitHandle.OpenExisting(""wait"").WaitOne();")]
+        [InlineData("script", @"
+            public class Program 
+            { 
+                public static void Main()
+                {
+                    // block here until released by the test
+                    System.Threading.EventWaitHandle.OpenExisting(""wait"").WaitOne();
+                }  
+            }")]
+        public async Task When_Run_times_out_in_user_code_then_the_response_code_is_417(string workspaceType, string code)
+        {
             Clock.Reset();
 
-            var requestJson =
-                $@"{{""Workspace"":{{ ""Buffers"":[{{""Id"":"""",""Content"":""public class Program {{ public static void Main()\n  {{\n  System.Threading.Thread.Sleep(System.TimeSpan.FromSeconds(30));  }}  }}""}}],""WorkspaceType"":""{workspaceType}""}}}}";
+            using (new EventWaitHandle(false, EventResetMode.ManualReset, "wait"))
+            {
+                var workspace =
+                    workspaceType == "script"
+                        ? Workspace.FromSource(code, "script")
+                        : Workspace.FromSource(code, (await Create.ConsoleWorkspaceCopy()).Name);
 
-            var response = await CallRun(requestJson, 15000);
+                var requestJson = new WorkspaceRequest(workspace).ToJson();
+                var response = await CallRun(requestJson, 5000);
 
-            response.StatusCode.Should().Be(HttpStatusCode.ExpectationFailed);
+                response.StatusCode.Should().Be(HttpStatusCode.ExpectationFailed);
+            }
         }
 
         private class FailedRunResult : Exception
