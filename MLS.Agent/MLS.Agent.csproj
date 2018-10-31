@@ -20,7 +20,7 @@
   <ItemGroup>
     <PackageReference Include="BadRequestOnInvalidModelFilter" Version="0.1.5650001" />
     <PackageReference Include="CdpxBuildProps" Version="0.1.6040001" />
-    <PackageReference Include="clockwise" Version="1.0.254-beta" />
+    <PackageReference Include="clockwise" Version="1.0.261-beta" />
     <PackageReference Include="ConfigurationExtensions" Version="0.1.5650001" />
     <PackageReference Include="EnvironmentExtensions" Version="0.1.5650001" />
     <PackageReference Include="LoggerExtensions" Version="0.1.5650001" />
@@ -31,8 +31,9 @@
     <PackageReference Include="nodatime" Version="2.3.0" />
     <PackageReference Include="nodatime.testing" Version="2.3.0" />
     <PackageReference Include="Serilog.Sinks.RollingFileAlternate" Version="2.0.9" />
-    <PackageReference Include="pocket.disposable" Version="1.0.4">
+    <PackageReference Include="pocket.disposable" Version="1.0.5">
       <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
     <PackageReference Include="pocket.typediscovery" Version="0.4.1">
       <PrivateAssets>all</PrivateAssets>
