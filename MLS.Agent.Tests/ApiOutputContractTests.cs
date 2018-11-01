@@ -3,8 +3,6 @@ using Assent;
 using MLS.Protocol;
 using MLS.Protocol.Execution;
 using Recipes;
-using WorkspaceServer.Models;
-using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Tests;
 using Xunit;
 using Xunit.Abstractions;
@@ -38,7 +36,8 @@ namespace MLS.Agent.Tests
                         EntrypointCode(),
                         viewport
                     }),
-                activeBufferId: viewport.Id);
+                activeBufferId: viewport.Id,
+                correlationId: "TestRun");
 
             var response = await CallRun(requestJson.ToJson());
 
@@ -60,7 +59,8 @@ namespace MLS.Agent.Tests
                         EntrypointCode(),
                         viewport
                     }),
-                activeBufferId: viewport.Id);
+                activeBufferId: viewport.Id,
+                correlationId: "TestRun");
 
             var requestBody = request.ToJson();
 
@@ -85,7 +85,8 @@ namespace MLS.Agent.Tests
                         EntrypointCode(),
                         viewport
                     }),
-                activeBufferId: viewport.Id);
+                activeBufferId: viewport.Id,
+                correlationId: "TestRun");
 
             var response = await CallCompile(requestJson.ToJson());
 
@@ -107,7 +108,8 @@ namespace MLS.Agent.Tests
                         EntrypointCode(),
                         viewport
                     }),
-                activeBufferId: viewport.Id);
+                activeBufferId: viewport.Id,
+                correlationId: "TestRun");
 
             var requestBody = request.ToJson();
 
@@ -130,7 +132,8 @@ namespace MLS.Agent.Tests
                         EntrypointCode(),
                         viewport
                     }),
-                activeBufferId: viewport.Id).ToJson();
+                activeBufferId: viewport.Id,
+                correlationId: "TestRun").ToJson();
 
             var response = await CallCompletion(requestJson);
 
@@ -152,7 +155,8 @@ namespace MLS.Agent.Tests
                         EntrypointCode(),
                         viewport
                     }),
-                activeBufferId: viewport.Id).ToJson();
+                activeBufferId: viewport.Id,
+                correlationId: "TestRun").ToJson();
 
             var response = await CallSignatureHelp(requestJson);
 
@@ -172,7 +176,8 @@ namespace MLS.Agent.Tests
                     {
                         EntrypointCode("int a = 1; int b = 2; a = 3; b = a;")
                     },
-                    includeInstrumentation: true)
+                    includeInstrumentation: true),
+                correlationId: "TestRun"
             ).ToJson();
 
             var response = await CallRun(requestJson);
@@ -193,7 +198,8 @@ namespace MLS.Agent.Tests
                     {
                         EntrypointCode("int a = 1; int b = 2; a = 3; b = a;")
                     },
-                    includeInstrumentation: false)
+                    includeInstrumentation: false),
+                correlationId: "TestRun"
             ).ToJson();
 
             var response = await CallRun(requestJson);

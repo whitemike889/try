@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace MLS.Protocol.Completion
 {
@@ -6,9 +7,15 @@ namespace MLS.Protocol.Completion
     {
         public CompletionItem[] Items { get; }
 
-        public CompletionResult(CompletionItem[] items = null)
+        public string CorrelationId { get; }
+
+        public IEnumerable<SerializableDiagnostic> Diagnostics { get; }
+
+        public CompletionResult(CompletionItem[] items = null, IEnumerable<SerializableDiagnostic> diagnostics = null, string correlationId = null)
         {
             Items = items ?? Array.Empty<CompletionItem>();
+            Diagnostics = diagnostics;
+            CorrelationId = correlationId;
         }
     }
 }

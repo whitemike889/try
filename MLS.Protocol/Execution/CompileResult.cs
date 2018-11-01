@@ -16,8 +16,10 @@ namespace MLS.Protocol.Execution
         public CompileResult(
             bool succeeded,
             string base64assembly,
-            IReadOnlyCollection<SerializableDiagnostic> diagnostics = null)
+            IReadOnlyCollection<SerializableDiagnostic> diagnostics = null,
+            string correlationId = null)
         {
+            CorrelationId = correlationId;
             Succeeded = succeeded;
             Base64Assembly = base64assembly;
             AddFeature(new Diagnostics(diagnostics?.ToList() ??
@@ -28,12 +30,15 @@ namespace MLS.Protocol.Execution
 
         public string Base64Assembly { get; }
 
+        public string CorrelationId { get;  }
+
         private class CompileResultJsonConverter : FeatureContainerConverter<CompileResult>
         {
             protected override void AddProperties(CompileResult result, JObject o)
             {
-                o.Add(new JProperty("succeeded", result.Succeeded));
+                o.Add(new JProperty("correlationId", result.CorrelationId));
                 o.Add(new JProperty("base64assembly", result.Base64Assembly));
+                o.Add(new JProperty("succeeded", result.Succeeded));
             }
         }
     }

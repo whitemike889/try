@@ -1,4 +1,5 @@
 {
+  "correlationId": "TestRun",
   "succeeded": true,
   "output": [
     "Hello world!",

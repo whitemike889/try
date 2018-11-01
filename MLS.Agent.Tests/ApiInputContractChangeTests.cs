@@ -2,7 +2,6 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Recipes;
 using MLS.Protocol.Completion;
-using WorkspaceServer.Models.Execution;
 using MLS.Protocol.SignatureHelp;
 using Xunit;
 using Xunit.Abstractions;

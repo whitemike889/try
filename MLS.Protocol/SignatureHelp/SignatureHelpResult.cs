@@ -16,5 +16,16 @@ namespace MLS.Protocol.SignatureHelp
         public int ActiveSignature { get; set; }
 
         public int ActiveParameter { get; set; }
+
+        public string CorrelationId { get; set; }
+        public IEnumerable<SerializableDiagnostic> Diagnostics { get; }
+
+
+        public SignatureHelpResult(IEnumerable<SignatureHelpItem> signatures = null, IEnumerable<SerializableDiagnostic> diagnostics = null, string correlationId = null)
+        {
+            CorrelationId = correlationId;
+            Signatures = signatures;
+            Diagnostics = diagnostics;
+        }
     }
 }
