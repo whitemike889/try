@@ -37,7 +37,7 @@ namespace MLS.Agent.Tests
                         viewport
                     }),
                 activeBufferId: viewport.Id,
-                correlationId: "TestRun");
+                requestId: "TestRun");
 
             var response = await CallRun(requestJson.ToJson());
 
@@ -60,7 +60,7 @@ namespace MLS.Agent.Tests
                         viewport
                     }),
                 activeBufferId: viewport.Id,
-                correlationId: "TestRun");
+                requestId: "TestRun");
 
             var requestBody = request.ToJson();
 
@@ -86,7 +86,7 @@ namespace MLS.Agent.Tests
                         viewport
                     }),
                 activeBufferId: viewport.Id,
-                correlationId: "TestRun");
+                requestId: "TestRun");
 
             var response = await CallCompile(requestJson.ToJson());
 
@@ -109,7 +109,7 @@ namespace MLS.Agent.Tests
                         viewport
                     }),
                 activeBufferId: viewport.Id,
-                correlationId: "TestRun");
+                requestId: "TestRun");
 
             var requestBody = request.ToJson();
 
@@ -133,7 +133,7 @@ namespace MLS.Agent.Tests
                         viewport
                     }),
                 activeBufferId: viewport.Id,
-                correlationId: "TestRun").ToJson();
+                requestId: "TestRun").ToJson();
 
             var response = await CallCompletion(requestJson);
 
@@ -156,7 +156,7 @@ namespace MLS.Agent.Tests
                         viewport
                     }),
                 activeBufferId: viewport.Id,
-                correlationId: "TestRun").ToJson();
+                requestId: "TestRun").ToJson();
 
             var response = await CallSignatureHelp(requestJson);
 
@@ -177,7 +177,7 @@ namespace MLS.Agent.Tests
                         EntrypointCode("int a = 1; int b = 2; a = 3; b = a;")
                     },
                     includeInstrumentation: true),
-                correlationId: "TestRun"
+                requestId: "TestRun"
             ).ToJson();
 
             var response = await CallRun(requestJson);
@@ -199,7 +199,7 @@ namespace MLS.Agent.Tests
                         EntrypointCode("int a = 1; int b = 2; a = 3; b = a;")
                     },
                     includeInstrumentation: false),
-                correlationId: "TestRun"
+                requestId: "TestRun"
             ).ToJson();
 
             var response = await CallRun(requestJson);

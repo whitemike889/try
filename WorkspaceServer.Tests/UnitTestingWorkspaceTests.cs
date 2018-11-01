@@ -51,7 +51,7 @@ namespace MyUnitTestNamespace
                                 new WorkspaceRequest(
                                     workspace,
                                     "MyUnitTestClass.cs",
-                                    correlationId: "TestRun"));
+                                    requestId: "TestRun"));
 
             Log.Info("Output: {output}", runResult.Output);
 

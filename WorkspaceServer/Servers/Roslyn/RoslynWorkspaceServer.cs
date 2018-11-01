@@ -92,7 +92,7 @@ namespace WorkspaceServer.Servers.Roslyn
 
             if (completionList == null)
             {
-                return new CompletionResult(correlationId: request.CorrelationId);
+                return new CompletionResult(requestId: request.RequestId);
             }
 
             var completionItems = completionList.Items
@@ -102,7 +102,7 @@ namespace WorkspaceServer.Servers.Roslyn
             return new CompletionResult(completionItems
                                         .Deduplicate()
                                         .ToArray(),
-                correlationId: request.CorrelationId);
+                requestId: request.RequestId);
         }
 
         public async Task<SignatureHelpResult> GetSignatureHelp(WorkspaceRequest request, Budget budget)
@@ -122,7 +122,7 @@ namespace WorkspaceServer.Servers.Roslyn
 
             if (document == null)
             {
-                return new SignatureHelpResult(correlationId: request.CorrelationId);
+                return new SignatureHelpResult(requestId: request.RequestId);
             }
 
             var tree = await document.GetSyntaxTreeAsync();
@@ -135,7 +135,7 @@ namespace WorkspaceServer.Servers.Roslyn
                        () => Task.FromResult(compilation.GetSemanticModel(tree)),
                        syntaxNode,
                        absolutePosition);
-            result.CorrelationId = request.CorrelationId;
+            result.RequestId = request.RequestId;
             return result;
         }
 
@@ -155,7 +155,7 @@ namespace WorkspaceServer.Servers.Roslyn
                         succeeded: false,
                         base64assembly: null,
                         diagnostics,
-                        correlationId: request.CorrelationId);
+                        requestId: request.RequestId);
                 }
 
                 using (var stream = new MemoryStream())
@@ -165,7 +165,7 @@ namespace WorkspaceServer.Servers.Roslyn
                     return new CompileResult(
                         succeeded: true,
                         base64assembly: encodedAssembly,
-                        correlationId: request.CorrelationId);
+                        requestId: request.RequestId);
                 }
             }
         }
@@ -191,22 +191,22 @@ namespace WorkspaceServer.Servers.Roslyn
                         false,
                         compileErrorMessages,
                         diagnostics: diagnostics,
-                        correlationId: request.CorrelationId);
+                        requestId: request.RequestId);
                 }
 
                 await EmitCompilationAsync(compilation, build);
 
                 if (build.IsWebProject)
                 {
-                    return RunWebRequest(build, request.CorrelationId);
+                    return RunWebRequest(build, request.RequestId);
                 }
 
                 if (build.IsUnitTestProject)
                 {
-                    return await RunUnitTestsAsync(build, diagnostics, budget, request.CorrelationId);
+                    return await RunUnitTestsAsync(build, diagnostics, budget, request.RequestId);
                 }
 
-                return await RunConsoleAsync(workspace, build, diagnostics, budget, request.CorrelationId);
+                return await RunConsoleAsync(workspace, build, diagnostics, budget, request.RequestId);
             }
         }
 
@@ -236,7 +236,7 @@ namespace WorkspaceServer.Servers.Roslyn
             }
         }
 
-        private static async Task<RunResult> RunConsoleAsync(Workspace workspace, WorkspaceBuild build, SerializableDiagnostic[] diagnostics, Budget budget, string correlationId)
+        private static async Task<RunResult> RunConsoleAsync(Workspace workspace, WorkspaceBuild build, SerializableDiagnostic[] diagnostics, Budget budget, string requestId)
         {
             var dotnet = new Dotnet(build.Directory);
 
@@ -265,7 +265,7 @@ namespace WorkspaceServer.Servers.Roslyn
                 output: output.StdOut,
                 exception: exceptionMessage,
                 diagnostics: diagnostics,
-                correlationId: correlationId);
+                requestId: requestId);
 
             if (workspace.IncludeInstrumentation)
             {
@@ -276,7 +276,7 @@ namespace WorkspaceServer.Servers.Roslyn
             return runResult;
         }
 
-        private static async Task<RunResult> RunUnitTestsAsync(WorkspaceBuild build, SerializableDiagnostic[] diagnostics, Budget budget, string correlationId)
+        private static async Task<RunResult> RunUnitTestsAsync(WorkspaceBuild build, SerializableDiagnostic[] diagnostics, Budget budget, string requestId)
         {
             var dotnet = new Dotnet(build.Directory);
 
@@ -312,7 +312,7 @@ namespace WorkspaceServer.Servers.Roslyn
                 commandLineResult.ExitCode == 0,
                 tRexResult.Output,
                 diagnostics: diagnostics,
-                correlationId: correlationId);
+                requestId: requestId);
 
             result.AddFeature(new UnitTestRun(new[]
             {
@@ -322,9 +322,9 @@ namespace WorkspaceServer.Servers.Roslyn
             return result;
         }
 
-        private static RunResult RunWebRequest(WorkspaceBuild build, string correlationId)
+        private static RunResult RunWebRequest(WorkspaceBuild build, string requestId)
         {
-            var runResult = new RunResult(succeeded: true, correlationId: correlationId);
+            var runResult = new RunResult(succeeded: true, requestId: requestId);
             runResult.AddFeature(new WebServer(build));
             return runResult;
         }

@@ -17,21 +17,21 @@ namespace MLS.Protocol.Execution
             bool succeeded,
             IReadOnlyCollection<string> output = null,
             string exception = null,
-            IEnumerable<SerializableDiagnostic> diagnostics = null, string correlationId = null)
+            IEnumerable<SerializableDiagnostic> diagnostics = null, string requestId = null)
         {
             if (output != null)
             {
                 _output.AddRange(output);
             }
 
-            CorrelationId = correlationId;
+            RequestId = requestId;
             Succeeded = succeeded;
             Exception = exception;
             AddFeature(new Diagnostics(diagnostics?.ToList() ??
                                        Array.Empty<SerializableDiagnostic>().ToList()));
         }
 
-        public string CorrelationId { get; }
+        public string RequestId { get; }
         public bool Succeeded { get; }
 
         public IReadOnlyCollection<string> Output => _output;
@@ -49,7 +49,7 @@ namespace MLS.Protocol.Execution
         {
             protected override void AddProperties(RunResult result, JObject o)
             {
-                o.Add(new JProperty("correlationId", result.CorrelationId));
+                o.Add(new JProperty("requestId", result.RequestId));
                 o.Add(new JProperty("succeeded", result.Succeeded));
                 o.Add(new JProperty("output", result.Output));
                 o.Add(new JProperty("exception", result.Exception));

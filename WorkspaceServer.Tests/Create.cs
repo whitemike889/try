@@ -42,7 +42,7 @@ namespace WorkspaceServer.Tests
                 "Program.cs"
             );
 
-            return new WorkspaceRequest(workspace, correlationId: "TestRun").ToJson();
+            return new WorkspaceRequest(workspace, requestId: "TestRun").ToJson();
         }
 
         public static string SimpleConsoleAppCodeWithoutNamespaces(string consoleOutput)

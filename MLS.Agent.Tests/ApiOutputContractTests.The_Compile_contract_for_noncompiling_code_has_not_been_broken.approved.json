@@ -1,5 +1,5 @@
 {
-  "correlationId": "TestRun",
+  "requestId": "TestRun",
   "base64assembly": null,
   "succeeded": false,
   "diagnostics": [

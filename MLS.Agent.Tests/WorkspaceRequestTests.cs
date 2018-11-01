@@ -39,7 +39,7 @@ namespace MLS.Agent.Tests
                     {
                         new Workspace.Buffer("the.only.buffer.cs", "its content", 123)
                     }),
-                correlationId: "TestRun");
+                requestId: "TestRun");
 
             request.ActiveBufferId.Should().Be(BufferId.Parse("the.only.buffer.cs"));
         }
@@ -55,7 +55,7 @@ namespace MLS.Agent.Tests
                     processed,
                     "script",
                     id: "default.cs",
-                    position: position), correlationId: "TestRun");
+                    position: position), requestId: "TestRun");
 
             var json = original.ToJson();
 

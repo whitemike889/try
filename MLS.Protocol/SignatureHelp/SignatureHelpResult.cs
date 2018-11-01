@@ -17,13 +17,13 @@ namespace MLS.Protocol.SignatureHelp
 
         public int ActiveParameter { get; set; }
 
-        public string CorrelationId { get; set; }
+        public string RequestId { get; set; }
         public IEnumerable<SerializableDiagnostic> Diagnostics { get; }
 
 
-        public SignatureHelpResult(IEnumerable<SignatureHelpItem> signatures = null, IEnumerable<SerializableDiagnostic> diagnostics = null, string correlationId = null)
+        public SignatureHelpResult(IEnumerable<SignatureHelpItem> signatures = null, IEnumerable<SerializableDiagnostic> diagnostics = null, string requestId = null)
         {
-            CorrelationId = correlationId;
+            RequestId = requestId;
             Signatures = signatures;
             Diagnostics = diagnostics;
         }

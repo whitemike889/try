@@ -106,7 +106,7 @@ namespace WorkspaceServer.Servers.Scripting
                     output: output,
                     exception: (userException ?? state?.Exception).ToDisplayString(),
                     diagnostics: diagnostics, 
-                    correlationId: request.CorrelationId);
+                    requestId: request.RequestId);
 
                 operation.Complete(budget);
 
@@ -203,7 +203,7 @@ namespace WorkspaceServer.Servers.Scripting
             {
                 var (document, position) = await GenerateDocumentAndPosition(request, budget);
                 var response = await SignatureHelpService.GetSignatureHelp(document, position, budget);
-                response.CorrelationId = request.CorrelationId;
+                response.RequestId = request.RequestId;
                 return response;
             }
         }

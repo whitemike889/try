@@ -38,7 +38,7 @@ namespace MLS.Agent.Tests
                     source: $@"Console.WriteLine(""{output}"");".EnforceLF(),
                     workspaceType: "script"
                 ),
-                correlationId: "TestRun").ToJson();
+                requestId: "TestRun").ToJson();
 
             var response = await CallRun(requestJson);
 
@@ -61,7 +61,7 @@ namespace MLS.Agent.Tests
                     source: $@"Console.WriteLine(""{output}"");".EnforceLF(),
                     workspaceType: "script"
                 ), 
-                correlationId: "TestRun").ToJson();
+                requestId: "TestRun").ToJson();
 
             var response = await CallCompile(requestJson);
 
@@ -132,7 +132,7 @@ namespace MLS.Agent.Tests
                             Workspace.FromSource(
                                 $@"Console.WriteLine(""{output}""".EnforceLF(),
                                 workspaceType: "script"),
-                            correlationId: "TestRun")
+                            requestId: "TestRun")
                         .ToJson();
 
                 var request = new HttpRequestMessage(
@@ -195,7 +195,7 @@ namespace MLS.Agent.Tests
             using (var agent = new AgentService())
             {
                 var json = new WorkspaceRequest(
-                        correlationId: "TestRun",
+                        requestId: "TestRun",
                         activeBufferId: "default.cs",
                         workspace: Workspace.FromSource(
                             processed,
@@ -233,7 +233,7 @@ namespace MLS.Agent.Tests
             using (var agent = new AgentService())
             {
                 var json = new WorkspaceRequest(
-                        correlationId: "TestRun",
+                        requestId: "TestRun",
                         activeBufferId: "default.cs",
                         workspace: Workspace.FromSource(
                             processed,
@@ -308,7 +308,7 @@ namespace FibonacciTest
             {
                 var json =
                     new WorkspaceRequest(activeBufferId: "generators/FibonacciGenerator.cs",
-                                         correlationId: "TestRun",
+                                         requestId: "TestRun",
                                          workspace: Workspace.FromSources(
                                              "console",
                                              ("Program.cs", program, 0),
@@ -385,7 +385,7 @@ namespace FibonacciTest
             {
                 var json =
                     new WorkspaceRequest(activeBufferId: "generators/FibonacciGenerator.cs",
-                                        correlationId: "TestRun",
+                                        requestId: "TestRun",
                                          workspace: Workspace.FromSources(
                                              "console",
                                              ("Program.cs", program, 0),
@@ -420,7 +420,7 @@ namespace FibonacciTest
                 workspaceType.Directory, 
                 workspaceType.Directory.Name);
 
-            var request = new WorkspaceRequest(workspace, httpRequest: new HttpRequest("/api/values", "get"), correlationId: "TestRun");
+            var request = new WorkspaceRequest(workspace, httpRequest: new HttpRequest("/api/values", "get"), requestId: "TestRun");
 
             var json = request.ToJson();
 
@@ -453,7 +453,7 @@ namespace FibonacciTest
             var workspaceType = await WorkspaceBuild.Copy(await Default.WebApiWorkspace);
             var workspace = WorkspaceFactory.CreateWorkspaceFromDirectory(workspaceType.Directory, workspaceType.Directory.Name);
 
-            var request = new WorkspaceRequest(workspace, httpRequest: new HttpRequest("/api/values", "get"), correlationId: "TestRun");
+            var request = new WorkspaceRequest(workspace, httpRequest: new HttpRequest("/api/values", "get"), requestId: "TestRun");
 
             var response = await CallRun(request.ToJson(), 30000);
 
@@ -478,7 +478,7 @@ namespace FibonacciTest
                 files: workspace.Files.ToArray(),
                 workspaceType: workspace.WorkspaceType);
 
-            var request = new WorkspaceRequest(workspace, httpRequest: new HttpRequest("/api/values", "get"), correlationId: "TestRun");
+            var request = new WorkspaceRequest(workspace, httpRequest: new HttpRequest("/api/values", "get"), requestId: "TestRun");
 
             var response = await CallRun(request.ToJson(), null);
 

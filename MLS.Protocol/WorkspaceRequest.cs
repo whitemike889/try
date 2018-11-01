@@ -5,7 +5,7 @@ namespace MLS.Protocol
 {
     public class WorkspaceRequest
     {
-        public string CorrelationId { get; }
+        public string RequestId { get; }
 
         public Workspace Workspace { get; }
 
@@ -18,11 +18,11 @@ namespace MLS.Protocol
             BufferId activeBufferId = null,
             HttpRequest httpRequest = null,
             int? position = null,
-            string correlationId = null)
+            string requestId = null)
         {
             Workspace = workspace ?? throw new ArgumentNullException(nameof(workspace));
 
-            CorrelationId = correlationId;
+            RequestId = requestId;
 
             HttpRequest = httpRequest;
 
