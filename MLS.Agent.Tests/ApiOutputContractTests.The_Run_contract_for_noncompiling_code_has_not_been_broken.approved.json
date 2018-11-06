@@ -1,4 +1,5 @@
 {
+  "requestId": "TestRun",
   "succeeded": false,
   "output": [
     "(1,18): error CS1002: ; expected",

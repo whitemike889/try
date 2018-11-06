@@ -38,7 +38,8 @@ namespace MLS.Agent.Tests
                     buffers: new[]
                     {
                         new Workspace.Buffer("the.only.buffer.cs", "its content", 123)
-                    }));
+                    }),
+                requestId: "TestRun");
 
             request.ActiveBufferId.Should().Be(BufferId.Parse("the.only.buffer.cs"));
         }
@@ -54,7 +55,7 @@ namespace MLS.Agent.Tests
                     processed,
                     "script",
                     id: "default.cs",
-                    position: position));
+                    position: position), requestId: "TestRun");
 
             var json = original.ToJson();
 

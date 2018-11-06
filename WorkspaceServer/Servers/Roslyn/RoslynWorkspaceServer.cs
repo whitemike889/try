@@ -70,7 +70,7 @@ namespace WorkspaceServer.Servers.Roslyn
 
             var file = processed.GetFileFromBufferId(request.ActiveBufferId);
             var (line, column, absolutePosition) = processed.GetTextLocation(request.ActiveBufferId);
-            Document selectedDocument = documents.First(doc => doc.Name == file.Name);
+            var selectedDocument = documents.First(doc => doc.Name == file.Name);
 
             var service = CompletionService.GetService(selectedDocument);
             var completionList = await service.GetCompletionsAsync(selectedDocument, absolutePosition);
@@ -92,7 +92,7 @@ namespace WorkspaceServer.Servers.Roslyn
 
             if (completionList == null)
             {
-                return new CompletionResult();
+                return new CompletionResult(requestId: request.RequestId);
             }
 
             var completionItems = completionList.Items
@@ -101,7 +101,8 @@ namespace WorkspaceServer.Servers.Roslyn
 
             return new CompletionResult(completionItems
                                         .Deduplicate()
-                                        .ToArray());
+                                        .ToArray(),
+                requestId: request.RequestId);
         }
 
         public async Task<SignatureHelpResult> GetSignatureHelp(WorkspaceRequest request, Budget budget)
@@ -110,7 +111,7 @@ namespace WorkspaceServer.Servers.Roslyn
 
             var build = await getWorkspaceBuildByName(request.Workspace.WorkspaceType);
 
-            Workspace processed = await _transformer.TransformAsync(request.Workspace, budget);
+            var processed = await _transformer.TransformAsync(request.Workspace, budget);
 
             var sourceFiles = processed.GetSourceFiles();
             var (compilation, documents) = await build.GetCompilation(sourceFiles, budget);
@@ -121,7 +122,7 @@ namespace WorkspaceServer.Servers.Roslyn
 
             if (document == null)
             {
-                return new SignatureHelpResult();
+                return new SignatureHelpResult(requestId: request.RequestId);
             }
 
             var tree = await document.GetSyntaxTreeAsync();
@@ -130,10 +131,12 @@ namespace WorkspaceServer.Servers.Roslyn
 
             var syntaxNode = tree.GetRoot().FindToken(absolutePosition).Parent;
 
-            return await SignatureHelpService.GetSignatureHelp(
+            var result = await SignatureHelpService.GetSignatureHelp(
                        () => Task.FromResult(compilation.GetSemanticModel(tree)),
                        syntaxNode,
                        absolutePosition);
+            result.RequestId = request.RequestId;
+            return result;
         }
 
         public async Task<CompileResult> Compile(WorkspaceRequest request, Budget budget = null)
@@ -145,13 +148,14 @@ namespace WorkspaceServer.Servers.Roslyn
             using (await locks.GetOrAdd(workspace.WorkspaceType, s => new AsyncLock()).LockAsync())
             {
                 var (compilation, diagnostics) = await CompileWorker(request.Workspace, request.ActiveBufferId, budget);
-              
+
                 if (diagnostics.ContainsError())
                 {
                     return new CompileResult(
                         succeeded: false,
                         base64assembly: null,
-                        diagnostics);
+                        diagnostics,
+                        requestId: request.RequestId);
                 }
 
                 using (var stream = new MemoryStream())
@@ -160,7 +164,8 @@ namespace WorkspaceServer.Servers.Roslyn
                     var encodedAssembly = System.Convert.ToBase64String(stream.ToArray());
                     return new CompileResult(
                         succeeded: true,
-                        base64assembly: encodedAssembly);
+                        base64assembly: encodedAssembly,
+                        requestId: request.RequestId);
                 }
             }
         }
@@ -185,22 +190,23 @@ namespace WorkspaceServer.Servers.Roslyn
                     return new RunResult(
                         false,
                         compileErrorMessages,
-                        diagnostics: diagnostics);
+                        diagnostics: diagnostics,
+                        requestId: request.RequestId);
                 }
 
                 await EmitCompilationAsync(compilation, build);
 
                 if (build.IsWebProject)
                 {
-                    return RunWebRequest(build);
+                    return RunWebRequest(build, request.RequestId);
                 }
 
                 if (build.IsUnitTestProject)
                 {
-                    return await RunUnitTestsAsync(build, diagnostics, budget);
+                    return await RunUnitTestsAsync(build, diagnostics, budget, request.RequestId);
                 }
 
-                return await RunConsoleAsync(workspace, build, diagnostics, budget);
+                return await RunConsoleAsync(workspace, build, diagnostics, budget, request.RequestId);
             }
         }
 
@@ -230,7 +236,7 @@ namespace WorkspaceServer.Servers.Roslyn
             }
         }
 
-        private static async Task<RunResult> RunConsoleAsync(Workspace workspace, WorkspaceBuild build, SerializableDiagnostic[] diagnostics, Budget budget)
+        private static async Task<RunResult> RunConsoleAsync(Workspace workspace, WorkspaceBuild build, SerializableDiagnostic[] diagnostics, Budget budget, string requestId)
         {
             var dotnet = new Dotnet(build.Directory);
 
@@ -258,7 +264,8 @@ namespace WorkspaceServer.Servers.Roslyn
                 succeeded: true,
                 output: output.StdOut,
                 exception: exceptionMessage,
-                diagnostics: diagnostics);
+                diagnostics: diagnostics,
+                requestId: requestId);
 
             if (workspace.IncludeInstrumentation)
             {
@@ -269,7 +276,7 @@ namespace WorkspaceServer.Servers.Roslyn
             return runResult;
         }
 
-        private static async Task<RunResult> RunUnitTestsAsync(WorkspaceBuild build, SerializableDiagnostic[] diagnostics, Budget budget)
+        private static async Task<RunResult> RunUnitTestsAsync(WorkspaceBuild build, SerializableDiagnostic[] diagnostics, Budget budget, string requestId)
         {
             var dotnet = new Dotnet(build.Directory);
 
@@ -304,7 +311,8 @@ namespace WorkspaceServer.Servers.Roslyn
             var result = new RunResult(
                 commandLineResult.ExitCode == 0,
                 tRexResult.Output,
-                diagnostics: diagnostics);
+                diagnostics: diagnostics,
+                requestId: requestId);
 
             result.AddFeature(new UnitTestRun(new[]
             {
@@ -314,9 +322,9 @@ namespace WorkspaceServer.Servers.Roslyn
             return result;
         }
 
-        private static RunResult RunWebRequest(WorkspaceBuild build)
+        private static RunResult RunWebRequest(WorkspaceBuild build, string requestId)
         {
-            var runResult = new RunResult(succeeded: true);
+            var runResult = new RunResult(succeeded: true, requestId: requestId);
             runResult.AddFeature(new WebServer(build));
             return runResult;
         }

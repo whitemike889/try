@@ -105,7 +105,8 @@ namespace WorkspaceServer.Servers.Scripting
                     succeeded: !userException.IsConsideredRunFailure(),
                     output: output,
                     exception: (userException ?? state?.Exception).ToDisplayString(),
-                    diagnostics: diagnostics);
+                    diagnostics: diagnostics, 
+                    requestId: request.RequestId);
 
                 operation.Complete(budget);
 
@@ -202,6 +203,7 @@ namespace WorkspaceServer.Servers.Scripting
             {
                 var (document, position) = await GenerateDocumentAndPosition(request, budget);
                 var response = await SignatureHelpService.GetSignatureHelp(document, position, budget);
+                response.RequestId = request.RequestId;
                 return response;
             }
         }

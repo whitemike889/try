@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Pocket;
 
 namespace MLS.Protocol.Execution
 {
@@ -17,18 +16,21 @@ namespace MLS.Protocol.Execution
             bool succeeded,
             IReadOnlyCollection<string> output = null,
             string exception = null,
-            IReadOnlyCollection<SerializableDiagnostic> diagnostics = null)
+            IEnumerable<SerializableDiagnostic> diagnostics = null, string requestId = null)
         {
             if (output != null)
             {
                 _output.AddRange(output);
             }
+
+            RequestId = requestId;
             Succeeded = succeeded;
             Exception = exception;
             AddFeature(new Diagnostics(diagnostics?.ToList() ??
                                        Array.Empty<SerializableDiagnostic>().ToList()));
         }
 
+        public string RequestId { get; }
         public bool Succeeded { get; }
 
         public IReadOnlyCollection<string> Output => _output;
@@ -46,6 +48,10 @@ namespace MLS.Protocol.Execution
         {
             protected override void AddProperties(RunResult result, JObject o)
             {
+                if (result.RequestId != null)
+                {
+                    o.Add(new JProperty("requestId", result.RequestId));
+                }
                 o.Add(new JProperty("succeeded", result.Succeeded));
                 o.Add(new JProperty("output", result.Output));
                 o.Add(new JProperty("exception", result.Exception));

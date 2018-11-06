@@ -1,10 +1,14 @@
 ﻿using System;
 using MLS.Protocol.Execution;
+using Newtonsoft.Json;
 
 namespace MLS.Protocol
 {
     public class WorkspaceRequest
     {
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string RequestId { get; }
+
         public Workspace Workspace { get; }
 
         public HttpRequest HttpRequest { get; }
@@ -15,9 +19,12 @@ namespace MLS.Protocol
             Workspace workspace,
             BufferId activeBufferId = null,
             HttpRequest httpRequest = null,
-            int? position = null)
+            int? position = null,
+            string requestId = null)
         {
             Workspace = workspace ?? throw new ArgumentNullException(nameof(workspace));
+
+            RequestId = requestId;
 
             HttpRequest = httpRequest;
 

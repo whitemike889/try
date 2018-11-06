@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace MLS.Protocol.SignatureHelp
 {
@@ -16,5 +17,17 @@ namespace MLS.Protocol.SignatureHelp
         public int ActiveSignature { get; set; }
 
         public int ActiveParameter { get; set; }
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string RequestId { get; set; }
+        public IEnumerable<SerializableDiagnostic> Diagnostics { get; }
+
+
+        public SignatureHelpResult(IEnumerable<SignatureHelpItem> signatures = null, IEnumerable<SerializableDiagnostic> diagnostics = null, string requestId = null)
+        {
+            RequestId = requestId;
+            Signatures = signatures;
+            Diagnostics = diagnostics;
+        }
     }
 }

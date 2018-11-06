@@ -50,7 +50,8 @@ namespace MyUnitTestNamespace
             var runResult = await runner.Run(
                                 new WorkspaceRequest(
                                     workspace,
-                                    "MyUnitTestClass.cs"));
+                                    "MyUnitTestClass.cs",
+                                    requestId: "TestRun"));
 
             Log.Info("Output: {output}", runResult.Output);
 
