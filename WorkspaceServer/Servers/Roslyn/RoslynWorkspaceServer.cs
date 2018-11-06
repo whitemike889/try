@@ -95,10 +95,9 @@ namespace WorkspaceServer.Servers.Roslyn
                 return new CompletionResult();
             }
 
-            var completionItems = await Task.WhenAll(
-                                      completionList.Items
-                                                    .Where(i => i != null)
-                                                    .Select(item => item.ToModel(symbolToSymbolKey, selectedDocument)));
+            var completionItems = completionList.Items
+                .Where(i => i != null)
+                .Select(item => item.ToModel(symbolToSymbolKey, selectedDocument));
 
             return new CompletionResult(completionItems
                                         .Deduplicate()

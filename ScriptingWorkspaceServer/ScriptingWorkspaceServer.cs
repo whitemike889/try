@@ -189,9 +189,9 @@ namespace WorkspaceServer.Servers.Scripting
                     }
                 }
 
-                var items = completionList.Items.Select(item => item.ToModel(symbolToSymbolKey, document));
+                var items = completionList.Items.Select(item => item.ToModel(symbolToSymbolKey, document)).ToArray();
 
-                return new CompletionResult(items: await Task.WhenAll(items));
+                return new CompletionResult(items);
             }
         }
 

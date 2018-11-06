@@ -65,6 +65,7 @@ namespace WorkspaceServer
         {
             _afterCreateActions.Add(async (workspace, budget) =>
             {
+                await Task.Yield();
                 var filePath = Path.Combine(workspace.Directory.FullName, relativePath);
                 File.Delete(filePath);
             });

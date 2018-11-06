@@ -10,5 +10,10 @@
             Value = value ?? "";
             IsTrusted = isTrusted;
         }
+
+        public static implicit operator MarkdownString(string  value)  
+        {
+            return new MarkdownString(value);
+        }
     }
 }

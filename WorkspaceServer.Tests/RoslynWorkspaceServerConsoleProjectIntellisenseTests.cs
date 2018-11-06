@@ -199,14 +199,16 @@ namespace FibonacciTest
             var server = GetLanguageService();
             var result = await server.GetCompletionList(request);
 
+            result.Should().NotBeNull();
+            result.Items.Should().NotBeNullOrEmpty();
+
             result.Items
-                  .Select(i => i.Documentation.Value)
-                  .Where(d => !string.IsNullOrWhiteSpace(d))
-                  .Should()
-                  .Contain(d => d ==
-                                "Plays the sound of a beep through the console speaker.");
+                .Where(i => i.Documentation != null && !string.IsNullOrWhiteSpace(i.Documentation.Value))
+                .Select(i => i.Documentation.Value)
+                .Should()
+                .Contain(d => d == "Writes the text representation of the specified Boolean value to the standard output stream.");
         }
-        
+
         [Fact]
         public async Task Get_autocompletion_for_jtoken()
         {
