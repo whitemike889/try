@@ -54,10 +54,10 @@ namespace WorkspaceServer.Servers.Scripting
             return null;
         }
 
-        public static async Task<MLS.Protocol.Completion.CompletionItem> ToModel(this CompletionItem item, Dictionary<(string, int), ISymbol> recommendedSymbols,
+        public static MLS.Protocol.Completion.CompletionItem ToModel(this CompletionItem item, Dictionary<(string, int), ISymbol> recommendedSymbols,
             Document document)
         {
-            var documentation = await GetDocumentation(item, recommendedSymbols, document);
+            var documentation =  GetDocumentation(item, recommendedSymbols, document);
 
             return new MLS.Protocol.Completion.CompletionItem(
                 displayText: item.DisplayText,
@@ -68,10 +68,10 @@ namespace WorkspaceServer.Servers.Scripting
                 documentation: documentation);
         }
 
-        public static async Task<MarkdownString> GetDocumentation(this CompletionItem item, Dictionary<(string, int), ISymbol> recommendedSymbols,
+        public static MarkdownString GetDocumentation(this CompletionItem item, Dictionary<(string, int), ISymbol> recommendedSymbols,
         Document document)
         {
-            var symbol = await GetCompletionSymbolAsync(item, recommendedSymbols, document);
+            var symbol = GetCompletionSymbolAsync(item, recommendedSymbols, document);
             if (symbol != null)
             {
                 var xmlDocumentation = symbol.GetDocumentationCommentXml();
@@ -81,11 +81,10 @@ namespace WorkspaceServer.Servers.Scripting
             return null;
         }
 
-        public static async Task<ISymbol> GetCompletionSymbolAsync(
+        public static  ISymbol GetCompletionSymbolAsync(
             CompletionItem completionItem, Dictionary<(string, int), ISymbol> recommendedSymbols,
             Document document)
         {
-            await Task.Yield();
             var properties = completionItem.Properties;
 
             if (properties.TryGetValue(Provider, out var provider) && provider == SymbolCompletionProvider)
