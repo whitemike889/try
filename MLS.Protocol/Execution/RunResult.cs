@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Pocket;
 
 namespace MLS.Protocol.Execution
 {
@@ -49,7 +48,10 @@ namespace MLS.Protocol.Execution
         {
             protected override void AddProperties(RunResult result, JObject o)
             {
-                o.Add(new JProperty("requestId", result.RequestId));
+                if (result.RequestId != null)
+                {
+                    o.Add(new JProperty("requestId", result.RequestId));
+                }
                 o.Add(new JProperty("succeeded", result.Succeeded));
                 o.Add(new JProperty("output", result.Output));
                 o.Add(new JProperty("exception", result.Exception));

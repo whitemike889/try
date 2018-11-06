@@ -1,10 +1,12 @@
 ﻿using System;
 using MLS.Protocol.Execution;
+using Newtonsoft.Json;
 
 namespace MLS.Protocol
 {
     public class WorkspaceRequest
     {
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string RequestId { get; }
 
         public Workspace Workspace { get; }

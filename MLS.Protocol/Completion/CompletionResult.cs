@@ -1,12 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace MLS.Protocol.Completion
 {
+
     public class CompletionResult
     {
         public CompletionItem[] Items { get; }
 
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string RequestId { get; }
 
         public IEnumerable<SerializableDiagnostic> Diagnostics { get; }
