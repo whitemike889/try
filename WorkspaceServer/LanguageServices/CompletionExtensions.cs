@@ -85,6 +85,7 @@ namespace WorkspaceServer.Servers.Scripting
             CompletionItem completionItem, Dictionary<(string, int), ISymbol> recommendedSymbols,
             Document document)
         {
+            await Task.Yield();
             var properties = completionItem.Properties;
 
             if (properties.TryGetValue(Provider, out var provider) && provider == SymbolCompletionProvider)

@@ -27,8 +27,6 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task A_workspace_is_not_initialized_more_than_once()
         {
-            var callCount = 0;
-
             var initializer = new TestWorkspaceInitializer(
                 "console",
                 "MyProject");
@@ -49,7 +47,11 @@ namespace WorkspaceServer.Tests
             var initializer = new WorkspaceInitializer(
                 "console",
                 "test",
-                async (_, __) => afterCreateCallCount++);
+                async (_, __) =>
+                {
+                    await Task.Yield();
+                    afterCreateCallCount++;
+                });
 
             var workspace = Create.EmptyWorkspace(initializer: initializer);
 
