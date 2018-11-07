@@ -7,6 +7,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using MLS.Protocol;
 using MLS.Protocol.Execution;
+using MLS.Protocol.Extensions;
 using MLS.Protocol.Transformations;
 using Workspace = MLS.Protocol.Execution.Workspace;
 
@@ -36,10 +37,8 @@ namespace WorkspaceServer.Transformations
             }
 
             budget = budget ?? new Budget();
-
-            var processor = new BufferInliningTransformer();
-
-            var viewPorts = processor.ExtractViewPorts(workspace);
+            
+            var viewPorts = workspace.ExtractViewPorts().ToList();
 
             var diagnostics = compilation.GetDiagnostics()
                                          .Where(d => d.Id != "CS7022")

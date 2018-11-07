@@ -28,7 +28,7 @@ namespace WorkspaceServer.Servers.Roslyn
 
             var (compilation, documents) = await build.GetCompilation(sourceFiles, budget);
 
-            var viewports = new BufferInliningTransformer().ExtractViewPorts(workspace);
+            var viewports = workspace.ExtractViewPorts();
 
             var diagnostics = compilation.GetDiagnostics();
 

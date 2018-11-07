@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using MLS.Protocol.Execution;
@@ -8,6 +9,18 @@ namespace MLS.Protocol.Generators
    
     public static class BufferGenerator
     {
+        public static IEnumerable<Workspace.Buffer> CreateFromFile(Workspace.File file, bool processViewPorts = false)
+        {
+            if (!processViewPorts)
+            {
+                yield return CreateBuffer(file.Text, file.Name);
+            }
+            else
+            {
+
+
+            }
+        }
 
         public static Workspace.Buffer CreateBuffer(string content, BufferId id)
         {

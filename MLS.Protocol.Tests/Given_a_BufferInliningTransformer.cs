@@ -3,58 +3,14 @@ using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using MLS.Protocol.Execution;
+using MLS.Protocol.Generators;
 using MLS.Protocol.Transformations;
 using Xunit;
 
-namespace WorkspaceServer.Tests
+namespace MLS.Protocol.Tests
 {
     public class Given_a_BufferInliningTransformer
     {
-        [Fact]
-        public void It_extracts_viewPorts_when_files_declare_region()
-        {
-            var ws = new Workspace(files: new[]
-            {
-                new Workspace.File("Program.cs", CodeSamples.SourceCodeProvider.ConsoleProgramSingleRegion)
-            });
-            var processor = new BufferInliningTransformer();
-            var viewPorts = processor.ExtractViewPorts(ws);
-            viewPorts.Should().NotBeEmpty();
-            viewPorts.Select(p => p.BufferId.ToString()).Should().BeEquivalentTo("Program.cs@alpha");
-        }
-
-        [Fact]
-        public void ViewPort_ids_must_be_uinique_within_a_file()
-        {
-            var ws = new Workspace(files: new[]
-            {
-                new Workspace.File("Program.cs", CodeSamples.SourceCodeProvider.ConsoleProgramCollidingRegions)
-            });
-            var processor = new BufferInliningTransformer();
-            Action extraction = () => processor.ExtractViewPorts(ws);
-            extraction.Should().Throw<ArgumentException>();
-        }
-
-        [Fact]
-        public void ViewPort_ids_must_be_uinique_inside_the_workspace()
-        {
-            var ws = new Workspace(files: new[]
-            {
-                new Workspace.File("ProgramA.cs", CodeSamples.SourceCodeProvider.ConsoleProgramSingleRegion),
-                new Workspace.File("ProgramB.cs", CodeSamples.SourceCodeProvider.ConsoleProgramSingleRegion)
-            });
-            var processor = new BufferInliningTransformer();
-            Action extraction = () => processor.ExtractViewPorts(ws);
-            extraction.Should().NotThrow<ArgumentException>();
-        }
-
-        [Fact]
-        public void ViewPort_extraction_fails_with_null_workspace()
-        {
-            var processor = new BufferInliningTransformer();
-            Action extraction = () => processor.ExtractViewPorts(null);
-            extraction.Should().Throw<ArgumentNullException>();
-        }
 
         [Fact]
         public void Processing_fails_with_null_workspace()
