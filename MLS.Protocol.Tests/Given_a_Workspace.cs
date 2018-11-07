@@ -46,9 +46,7 @@ namespace MLS.Protocol.Tests
             Action extraction = () => ws.ExtractViewPorts();
             extraction.Should().NotThrow<InvalidOperationException>();
         }
-
-
-
+        
         [Fact]
         public void ViewPort_extraction_fails_with_null_workspace()
         {
