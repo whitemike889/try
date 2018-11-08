@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.CodeAnalysis;
+﻿
 using Newtonsoft.Json;
 
 namespace MLS.Protocol
@@ -14,15 +13,6 @@ namespace MLS.Protocol
             Message = message;
             Severity = severity;
             Id = id;
-        }
-
-        public SerializableDiagnostic(Diagnostic d, string message = null)
-            : this(d.Location?.SourceSpan.Start ?? throw new ArgumentException(nameof(d.Location)),
-                   d.Location.SourceSpan.End,
-                   message ?? d.GetMessage(),
-                   d.Severity,
-                   d.Descriptor.Id)
-        {
         }
 
         public int Start { get; }

@@ -1,12 +1,38 @@
-﻿using FluentAssertions;
+﻿using System.Linq;
+using FluentAssertions;
+using MLS.Project.Generators;
 using MLS.Protocol.Execution;
-using MLS.Protocol.Generators;
 using Xunit;
 
 namespace MLS.Protocol.Tests
 {
     public class BufferCreationTests
     {
+        [Fact]
+        public void can_create_buffers_from_file_with_regions()
+        {
+            var file = FileGenerator.Create("Program.cs", CodeSamples.SourceCodeProvider.ConsoleProgramMultipleRegions);
+
+            var buffers = BufferGenerator.CreateFromFile(file).ToList();
+
+            buffers.Should().NotBeNullOrEmpty();
+            buffers.Count.Should().Be(2);
+            buffers.Should().Contain(b => b.Id == "Program.cs@alpha");
+            buffers.Should().Contain(b => b.Id == "Program.cs@beta");
+        }
+
+        [Fact]
+        public void can_create_buffers_from_file_without_regions()
+        {
+            var file = FileGenerator.Create("Program.cs", CodeSamples.SourceCodeProvider.ConsoleProgramNoRegion);
+
+            var buffers = BufferGenerator.CreateFromFile(file).ToList();
+
+            buffers.Should().NotBeNullOrEmpty();
+            buffers.Count.Should().Be(1);
+            buffers.Should().Contain(b => b.Id == "Program.cs");
+        }
+
         [Fact]
         public void can_create_buffer_from_code_and_bufferId()
         {

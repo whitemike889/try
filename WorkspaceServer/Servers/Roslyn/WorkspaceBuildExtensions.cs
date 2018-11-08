@@ -4,9 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.CodeAnalysis;
+using MLS.Project.Execution;
+using MLS.Project.Extensions;
 using MLS.Protocol.Execution;
-using MLS.Protocol.Extensions;
-using MLS.Protocol.Transformations;
 using WorkspaceServer.Servers.Roslyn.Instrumentation;
 using WorkspaceServer.Workspaces;
 using static System.Environment;
@@ -28,7 +28,7 @@ namespace WorkspaceServer.Servers.Roslyn
 
             var (compilation, documents) = await build.GetCompilation(sourceFiles, budget);
 
-            var viewports = new BufferInliningTransformer().ExtractViewPorts(workspace);
+            var viewports = workspace.ExtractViewPorts();
 
             var diagnostics = compilation.GetDiagnostics();
 

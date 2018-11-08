@@ -9,6 +9,8 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Completion;
 using Microsoft.CodeAnalysis.Recommendations;
 using MLS.Agent.Tools;
+using MLS.Project.Extensions;
+using MLS.Project.Transformations;
 using MLS.Protocol.Completion;
 using Pocket;
 using Recipes;
@@ -23,8 +25,6 @@ using static Pocket.Logger<WorkspaceServer.Servers.Roslyn.RoslynWorkspaceServer>
 using Workspace = MLS.Protocol.Execution.Workspace;
 using MLS.Protocol.Execution;
 using MLS.Protocol;
-using MLS.Protocol.Extensions;
-using MLS.Protocol.Transformations;
 
 namespace WorkspaceServer.Servers.Roslyn
 {

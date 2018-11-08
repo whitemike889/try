@@ -1,13 +1,30 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using MLS.Project.Extensions;
 using MLS.Protocol.Execution;
 
-namespace MLS.Protocol.Generators
+namespace MLS.Project.Generators
 {
-   
     public static class BufferGenerator
     {
+        public static IEnumerable<Workspace.Buffer> CreateFromFile(Workspace.File file)
+        {
+            var viewPorts = file.ExtractViewPorts().ToList();
+            if (viewPorts.Count > 0)
+            {
+                foreach (var viewport in viewPorts)
+                {
+                    yield return CreateBuffer(viewport.Region.ToString(), viewport.BufferId);
+                }
+
+            }
+            else
+            {
+                yield return CreateBuffer(file.Text, file.Name);
+            }
+        }
 
         public static Workspace.Buffer CreateBuffer(string content, BufferId id)
         {
@@ -38,7 +55,7 @@ $$")
         }
 
         public static Workspace.Buffer EntryPointCode(string mainContent = @"Console.WriteLine(Sample.Method());
-$$", string bufferId= "EntrypointCode.cs")
+$$", string bufferId = "EntrypointCode.cs")
         {
             var input = $@"
 using System;

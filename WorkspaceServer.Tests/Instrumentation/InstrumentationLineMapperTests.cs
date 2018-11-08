@@ -2,8 +2,9 @@
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.CodeAnalysis.Text;
+using MLS.Project.Execution;
+using MLS.Project.Extensions;
 using MLS.Protocol.Execution;
-using MLS.Protocol.Transformations;
 using WorkspaceServer.Servers.Roslyn.Instrumentation;
 using Xunit;
 using SpanDictionary = System.Collections.Generic.IDictionary<string, System.Collections.Generic.IEnumerable<Microsoft.CodeAnalysis.Text.LinePositionSpan>>;
@@ -47,7 +48,7 @@ namespace RoslynRecorder
             var document = Sources.GetDocument(withLF);
             var workspace = new Workspace(files: new[] { new Workspace.File("test.cs", withLF) });
             var visitor = new InstrumentationSyntaxVisitor(document, await document.GetSemanticModelAsync());
-            var viewport = new BufferInliningTransformer().ExtractViewPorts(workspace).DefaultIfEmpty(null).First();
+            var viewport = workspace.ExtractViewPorts().DefaultIfEmpty(null).First();
 
             return (visitor.Augmentations, visitor.VariableLocations, document, viewport, linePositionSpans);
         }
@@ -157,7 +158,7 @@ namespace RoslynRecorder
 }".EnforceLF();
             MarkupTestFile.GetNamedSpans(text, out var code, out var spans);
             var workspace = new Workspace(files: new[] { new Workspace.File("testFile.cs", code) });
-            var viewports = new BufferInliningTransformer().ExtractViewPorts(workspace);
+            var viewports = workspace.ExtractViewPorts();
             var activeViewport = InstrumentationLineMapper.FilterActiveViewport(viewports, BufferId.Parse("testFile.cs@test")).First();
             activeViewport.Region.Start.Should().Be(spans["regionStart"].First().End);
             activeViewport.Region.End.Should().Be(spans["regionEnd"].First().Start);
@@ -168,7 +169,7 @@ namespace RoslynRecorder
         {
             var text = Sources.simple.EnforceLF();
             var workspace = new Workspace(files: new[] { new Workspace.File("testFile.cs", text) });
-            var viewports = new BufferInliningTransformer().ExtractViewPorts(workspace);
+            var viewports = workspace.ExtractViewPorts();
             var activeViewport = InstrumentationLineMapper.FilterActiveViewport(viewports, BufferId.Parse("testFile.cs@test"));
             activeViewport.Should().BeEmpty();
         }
