@@ -5,10 +5,11 @@ using System.Linq;
 using Clockwise;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
+using MLS.Project.Execution;
+using MLS.Project.Extensions;
+using MLS.Project.Transformations;
 using MLS.Protocol;
 using MLS.Protocol.Execution;
-using MLS.Protocol.Extensions;
-using MLS.Protocol.Transformations;
 using Workspace = MLS.Protocol.Execution.Workspace;
 
 namespace WorkspaceServer.Transformations
@@ -72,7 +73,7 @@ namespace WorkspaceServer.Transformations
                     {
                         var errorMessage = RelativizeDiagnosticMessage();
 
-                        yield return new SerializableDiagnostic(diagnostic, errorMessage);
+                        yield return diagnostic.ToSerializableDiagnostic(errorMessage);
                     }
                     else
                     {
@@ -150,7 +151,7 @@ namespace WorkspaceServer.Transformations
                         start,
                         end,
                         errorMessage,
-                        diagnostic.Severity,
+                        diagnostic.ConvertSeverity(),
                         diagnostic.Id);
                 }
 

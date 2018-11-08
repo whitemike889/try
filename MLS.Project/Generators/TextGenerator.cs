@@ -1,6 +1,6 @@
 using System;
 
-namespace MLS.Protocol.Generators
+namespace MLS.Project.Generators
 {
     public static  class TextGenerator
     {

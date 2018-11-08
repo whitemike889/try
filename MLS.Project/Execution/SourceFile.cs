@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.CodeAnalysis.Text;
 
-namespace MLS.Protocol.Execution
+namespace MLS.Project.Execution
 {
     public class SourceFile
     {

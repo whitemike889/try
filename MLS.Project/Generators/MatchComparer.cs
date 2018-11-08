@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace MLS.Protocol.Generators
+namespace MLS.Project.Generators
 {
     internal class MatchComparer : IComparer<Tuple<int, string>>
     {

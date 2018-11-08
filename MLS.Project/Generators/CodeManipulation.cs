@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace MLS.Protocol.Generators
+namespace MLS.Project.Generators
 {
     public static class CodeManipulation
     {

@@ -1,4 +1,4 @@
-﻿using MLS.Protocol.Generators;
+﻿using MLS.Project.Generators;
 
 namespace MLS.Protocol.Tests.CodeSamples
 {

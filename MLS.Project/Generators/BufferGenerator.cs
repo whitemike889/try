@@ -2,12 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using MLS.Project.Extensions;
 using MLS.Protocol.Execution;
-using MLS.Protocol.Extensions;
 
-namespace MLS.Protocol.Generators
+namespace MLS.Project.Generators
 {
-
     public static class BufferGenerator
     {
         public static IEnumerable<Workspace.Buffer> CreateFromFile(Workspace.File file)

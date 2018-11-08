@@ -2,8 +2,9 @@
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.CodeAnalysis.Text;
+using MLS.Project.Execution;
+using MLS.Project.Extensions;
 using MLS.Protocol.Execution;
-using MLS.Protocol.Extensions;
 using WorkspaceServer.Servers.Roslyn.Instrumentation;
 using Xunit;
 using SpanDictionary = System.Collections.Generic.IDictionary<string, System.Collections.Generic.IEnumerable<Microsoft.CodeAnalysis.Text.LinePositionSpan>>;

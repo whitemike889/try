@@ -3,14 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Clockwise;
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
-using MLS.Protocol.Execution;
-using MLS.Protocol.Extensions;
+using MLS.Project.Execution;
+using MLS.Project.Extensions;
 using Workspace = MLS.Protocol.Execution.Workspace;
 
-namespace MLS.Protocol.Transformations
+namespace MLS.Project.Transformations
 {
     public class BufferInliningTransformer : IWorkspaceTransformer
     {

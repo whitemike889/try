@@ -1,6 +1,6 @@
 using MLS.Protocol.Execution;
 
-namespace MLS.Protocol.Generators
+namespace MLS.Project.Generators
 {
     public static class FileGenerator
     {

@@ -2,9 +2,9 @@
 using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
+using MLS.Project.Generators;
+using MLS.Project.Transformations;
 using MLS.Protocol.Execution;
-using MLS.Protocol.Generators;
-using MLS.Protocol.Transformations;
 using Xunit;
 
 namespace MLS.Protocol.Tests

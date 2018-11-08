@@ -4,9 +4,10 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
+using MLS.Project.Execution;
 using MLS.Protocol.Execution;
 
-namespace MLS.Protocol.Extensions
+namespace MLS.Project.Extensions
 {
     public static class FileExtensions
     {

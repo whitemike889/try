@@ -46,6 +46,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\MLS.Project\MLS.Project.csproj" />
     <ProjectReference Include="..\MLS.Protocol\MLS.Protocol.csproj" />
   </ItemGroup>
 

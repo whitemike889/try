@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using FluentAssertions;
+using MLS.Project.Generators;
 using MLS.Protocol.Execution;
-using MLS.Protocol.Generators;
 using Xunit;
 
 namespace MLS.Protocol.Tests

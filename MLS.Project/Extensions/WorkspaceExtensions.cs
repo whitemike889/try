@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using MLS.Project.Execution;
 using MLS.Protocol.Execution;
 
-namespace MLS.Protocol.Extensions
+namespace MLS.Project.Extensions
 {
     public static class WorkspaceExtensions
     {

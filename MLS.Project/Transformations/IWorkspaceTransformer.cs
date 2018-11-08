@@ -2,7 +2,7 @@
 using Clockwise;
 using MLS.Protocol.Execution;
 
-namespace MLS.Protocol.Transformations
+namespace MLS.Project.Transformations
 {
     public interface IWorkspaceTransformer
     {

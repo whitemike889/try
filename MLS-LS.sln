@@ -30,6 +30,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MLS.Protocol", "MLS.Protoco
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MLS.Protocol.Tests", "MLS.Protocol.Tests\MLS.Protocol.Tests.csproj", "{0119749C-0DF0-4CC0-8FE3-FCDBDF2B8865}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MLS.Project", "MLS.Project\MLS.Project.csproj", "{5D86DF93-2ACA-44D7-9D39-DAD6B129EAFD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -68,6 +70,10 @@ Global
 		{0119749C-0DF0-4CC0-8FE3-FCDBDF2B8865}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0119749C-0DF0-4CC0-8FE3-FCDBDF2B8865}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0119749C-0DF0-4CC0-8FE3-FCDBDF2B8865}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5D86DF93-2ACA-44D7-9D39-DAD6B129EAFD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5D86DF93-2ACA-44D7-9D39-DAD6B129EAFD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5D86DF93-2ACA-44D7-9D39-DAD6B129EAFD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5D86DF93-2ACA-44D7-9D39-DAD6B129EAFD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -82,6 +88,7 @@ Global
 		{0E9B079F-01B9-4AE5-B69D-C6ACF9741688} = {6EE8F484-DFA2-4F0F-939F-400CE78DFAC2}
 		{02049503-05DA-4898-B45C-E314832734A3} = {6EE8F484-DFA2-4F0F-939F-400CE78DFAC2}
 		{0119749C-0DF0-4CC0-8FE3-FCDBDF2B8865} = {8192FEAD-BCE6-4E62-97E5-2E9EA884BD71}
+		{5D86DF93-2ACA-44D7-9D39-DAD6B129EAFD} = {6EE8F484-DFA2-4F0F-939F-400CE78DFAC2}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D6CD99BA-B16B-4570-8910-225CBDFFA3AD}
