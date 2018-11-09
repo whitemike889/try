@@ -7,11 +7,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Clockwise;
 using FluentAssertions;
+using MLS.Project.Transformations;
 using MLS.Protocol;
 using MLS.Protocol.Completion;
 using MLS.Protocol.Execution;
 using MLS.Protocol.SignatureHelp;
-using MLS.Protocol.Transformations;
 using Pocket;
 using Recipes;
 using WorkspaceServer.Models.Execution;
@@ -530,10 +530,7 @@ namespace FibonacciTest
             {
                 Log.Info("Budget entry created: {entry}", entry);
 
-                // if (budget.Entries.Any(e => e.Name == ScriptingWorkspaceServer.UserCodeCompletedBudgetEntryName))
-                {
-                    budget.Cancel();
-                }
+                budget.Cancel();
             });
 
             var response = await CallRun(requestJson);
@@ -542,42 +539,52 @@ namespace FibonacciTest
         }
 
         [Theory]
-        [InlineData("console", @"
-            public class Program 
-            { 
-                public static void Main()
-                {
-                    // block here until released by the test
-                    System.Threading.EventWaitHandle.OpenExisting(""wait"").WaitOne();
-                }  
-            }")]
-        [InlineData("script", @"
-            System.Threading.EventWaitHandle.OpenExisting(""wait"").WaitOne();")]
-        [InlineData("script", @"
-            public class Program 
-            { 
-                public static void Main()
-                {
-                    // block here until released by the test
-                    System.Threading.EventWaitHandle.OpenExisting(""wait"").WaitOne();
-                }  
-            }")]
-        public async Task When_Run_times_out_in_user_code_then_the_response_code_is_417(string workspaceType, string code)
+        [InlineData(
+            "console",
+            @"  using System;
+                using System.Threading;
+                public class Program 
+                { 
+                    public static void Main()
+                    {
+                        Console.WriteLine(""start user code."");
+                        Thread.Sleep(30000);  
+                        Console.WriteLine(""end user code."");
+                    }  
+                }")]
+        [InlineData(
+            "script",
+            @"Console.WriteLine(""start user code."");
+              System.Threading.Thread.Sleep(30000);
+              Console.WriteLine(""end user code."");")]
+        [InlineData(
+            "script",
+            @"  public class Program 
+                { 
+                    public static void Main()
+                    {
+                        Console.WriteLine(""start user code."");
+                        System.Threading.Thread.Sleep(30000);  
+                        Console.WriteLine(""end user code."");
+                    }  
+                }")]
+        public async Task When_Run_times_out_in_user_code_then_the_response_code_is_417(
+            string workspaceType,
+            string code)
         {
             Clock.Reset();
 
-            using (new EventWaitHandle(false, EventResetMode.ManualReset, "wait"))
-            {
-                var workspace =
-                    workspaceType == "script"
-                        ? Workspace.FromSource(code, "script")
-                        : Workspace.FromSource(code, (await Create.ConsoleWorkspaceCopy()).Name);
+            var workspace =
+                workspaceType == "script"
+                    ? Workspace.FromSource(code, "script")
+                    : Workspace.FromSource(code, (await Create.ConsoleWorkspaceCopy()).Name);
 
-                var requestJson = new WorkspaceRequest(workspace).ToJson();
-                var response = await CallRun(requestJson, 5000);
+            var requestJson = new WorkspaceRequest(workspace).ToJson();
+            var response = await CallRun(requestJson, 10000);
 
-                response.StatusCode.Should().Be(HttpStatusCode.ExpectationFailed);
-            }
+            Log.Info("{response}", await response.Content.ReadAsStringAsync());
+
+            response.StatusCode.Should().Be(HttpStatusCode.ExpectationFailed);
         }
 
         private class FailedRunResult : Exception
