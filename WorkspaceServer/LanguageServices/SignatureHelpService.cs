@@ -11,7 +11,7 @@ using WorkspaceServer.Models.SignatureHelp;
 
 // Adapted from https://github.com/OmniSharp/omnisharp-roslyn/blob/master/src/OmniSharp.Roslyn.CSharp/Services/Signatures/SignatureHelpService.cs
 
-namespace WorkspaceServer.Servers.Scripting
+namespace WorkspaceServer.LanguageServices
 {
     public class SignatureHelpService
     {

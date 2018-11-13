@@ -20,7 +20,7 @@ namespace MLS.Protocol.SignatureHelp
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string RequestId { get; set; }
-        public IEnumerable<SerializableDiagnostic> Diagnostics { get; }
+        public IEnumerable<SerializableDiagnostic> Diagnostics { get; set; }
 
 
         public SignatureHelpResult(IEnumerable<SignatureHelpItem> signatures = null, IEnumerable<SerializableDiagnostic> diagnostics = null, string requestId = null)
