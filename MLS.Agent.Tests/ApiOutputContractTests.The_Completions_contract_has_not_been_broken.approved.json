@@ -540,5 +540,21 @@
       }
     }
   ],
-  "requestId": "TestRun"
+  "requestId": "TestRun",
+  "diagnostics": [
+    {
+      "start": 22,
+      "end": 22,
+      "message": "(1,1): error CS1002: ; expected",
+      "severity": 3,
+      "id": "CS1002"
+    },
+    {
+      "start": 20,
+      "end": 22,
+      "message": "(1,21): error CS0117: 'Console' does not contain a definition for 'Ou'",
+      "severity": 3,
+      "id": "CS0117"
+    }
+  ]
 }
