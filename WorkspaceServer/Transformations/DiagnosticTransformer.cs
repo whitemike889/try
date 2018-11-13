@@ -22,6 +22,24 @@ namespace WorkspaceServer.Transformations
             Compilation compilation,
             Budget budget = null)
         {
+            if (compilation == null)
+            {
+                throw new ArgumentNullException(nameof(compilation));
+            }
+            var diagnostics = compilation.GetDiagnostics()
+                .Where(d => d.Id != "CS7022")
+                .ToArray();
+
+            return workspace.MapDiagnostics(activeBufferId, diagnostics, budget);
+        }
+
+
+        public static SerializableDiagnostic[] MapDiagnostics(
+            this Workspace workspace,
+            BufferId activeBufferId,
+            Diagnostic[] diagnostics,
+            Budget budget = null)
+        {
             if (workspace == null)
             {
                 throw new ArgumentNullException(nameof(workspace));
@@ -32,18 +50,15 @@ namespace WorkspaceServer.Transformations
                 throw new ArgumentNullException(nameof(activeBufferId));
             }
 
-            if (compilation == null)
+            if (diagnostics == null  || diagnostics.Length ==0)
             {
-                throw new ArgumentNullException(nameof(compilation));
+                return null;
             }
 
             budget = budget ?? new Budget();
             
             var viewPorts = workspace.ExtractViewPorts().ToList();
 
-            var diagnostics = compilation.GetDiagnostics()
-                                         .Where(d => d.Id != "CS7022")
-                                         .ToArray();
             budget.RecordEntry();
 
             var paddingSize = BufferInliningTransformer.PaddingSize;
@@ -52,7 +67,7 @@ namespace WorkspaceServer.Transformations
 
             IEnumerable<SerializableDiagnostic> ReconstructDiagnosticLocations()
             {
-                foreach (var diagnostic in diagnostics)
+                foreach (var diagnostic in diagnostics.Where(d => d.Id != "CS7022"))
                 {
                     var filePath = diagnostic.Location.SourceTree?.FilePath;
 

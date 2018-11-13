@@ -381,5 +381,14 @@
   ],
   "activeSignature": 0,
   "activeParameter": 0,
-  "requestId": "TestRun"
+  "requestId": "TestRun",
+  "diagnostics": [
+    {
+      "start": 20,
+      "end": 25,
+      "message": "(1,21): error CS1501: No overload for method 'Write' takes 0 arguments",
+      "severity": 3,
+      "id": "CS1501"
+    }
+  ]
 }

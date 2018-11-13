@@ -145,7 +145,7 @@ namespace MLS.Agent.Tests
         [Fact]
         public async Task The_signature_help_contract_has_not_been_broken()
         {
-            var viewport = ViewportCode("Console.Write($$");
+            var viewport = ViewportCode("Console.Write($$);");
 
             var requestJson = new WorkspaceRequest(
                 new Workspace(

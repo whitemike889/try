@@ -24,6 +24,7 @@ using WorkspaceServer.Servers.Roslyn;
 using Recipes;
 using MLS.Protocol.Execution;
 using MLS.Protocol;
+using WorkspaceServer.LanguageServices;
 
 namespace WorkspaceServer.Servers.Scripting
 {

@@ -8,6 +8,7 @@ using Clockwise;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Completion;
 using Microsoft.CodeAnalysis.Recommendations;
+using Microsoft.CodeAnalysis.Text;
 using MLS.Agent.Tools;
 using MLS.Project.Extensions;
 using MLS.Project.Transformations;
@@ -25,6 +26,7 @@ using static Pocket.Logger<WorkspaceServer.Servers.Roslyn.RoslynWorkspaceServer>
 using Workspace = MLS.Protocol.Execution.Workspace;
 using MLS.Protocol.Execution;
 using MLS.Protocol;
+using WorkspaceServer.LanguageServices;
 
 namespace WorkspaceServer.Servers.Roslyn
 {
@@ -66,15 +68,17 @@ namespace WorkspaceServer.Servers.Roslyn
 
             var processed = await _transformer.TransformAsync(request.Workspace, budget);
             var sourceFiles = processed.GetSourceFiles();
-            var (compilation, documents) = await build.GetCompilation(sourceFiles, budget);
+            var (_, documents) = await build.GetCompilation(sourceFiles, budget);
 
             var file = processed.GetFileFromBufferId(request.ActiveBufferId);
-            var (line, column, absolutePosition) = processed.GetTextLocation(request.ActiveBufferId);
+            var (_, _, absolutePosition) = processed.GetTextLocation(request.ActiveBufferId);
             var selectedDocument = documents.First(doc => doc.Name == file.Name);
 
             var service = CompletionService.GetService(selectedDocument);
+            
             var completionList = await service.GetCompletionsAsync(selectedDocument, absolutePosition);
             var semanticModel = await selectedDocument.GetSemanticModelAsync();
+            var diagnostics = processed.MapDiagnostics(request.ActiveBufferId,  semanticModel.GetDiagnostics().ToArray(), budget);
             var symbols = await Recommender.GetRecommendedSymbolsAtPositionAsync(
                               semanticModel,
                               absolutePosition,
@@ -92,7 +96,7 @@ namespace WorkspaceServer.Servers.Roslyn
 
             if (completionList == null)
             {
-                return new CompletionResult(requestId: request.RequestId);
+                return new CompletionResult(requestId: request.RequestId, diagnostics: diagnostics);
             }
 
             var completionItems = completionList.Items
@@ -102,7 +106,8 @@ namespace WorkspaceServer.Servers.Roslyn
             return new CompletionResult(completionItems
                                         .Deduplicate()
                                         .ToArray(),
-                requestId: request.RequestId);
+                requestId: request.RequestId,
+                diagnostics: diagnostics);
         }
 
         public async Task<SignatureHelpResult> GetSignatureHelp(WorkspaceRequest request, Budget budget)
@@ -116,16 +121,19 @@ namespace WorkspaceServer.Servers.Roslyn
             var sourceFiles = processed.GetSourceFiles();
             var (compilation, documents) = await build.GetCompilation(sourceFiles, budget);
 
-            var document = documents.FirstOrDefault(doc => doc.Name == request.ActiveBufferId.FileName)
+            var selectedDocument = documents.FirstOrDefault(doc => doc.Name == request.ActiveBufferId.FileName)
                            ??
                            (documents.Count == 1 ? documents.Single() : null);
 
-            if (document == null)
+            if (selectedDocument == null)
             {
                 return new SignatureHelpResult(requestId: request.RequestId);
             }
 
-            var tree = await document.GetSyntaxTreeAsync();
+            var semanticModel = await selectedDocument.GetSemanticModelAsync();
+            var diagnostics = processed.MapDiagnostics(request.ActiveBufferId, semanticModel.GetDiagnostics().ToArray(), budget);
+
+            var tree = await selectedDocument.GetSyntaxTreeAsync();
 
             var absolutePosition = processed.GetAbsolutePositionForGetBufferWithSpecifiedIdOrSingleBufferIfThereIsOnlyOne(request.ActiveBufferId);
 
@@ -136,6 +144,10 @@ namespace WorkspaceServer.Servers.Roslyn
                        syntaxNode,
                        absolutePosition);
             result.RequestId = request.RequestId;
+            if (diagnostics?.Count() > 0)
+            {
+                result.Diagnostics = diagnostics;
+            }
             return result;
         }
 
