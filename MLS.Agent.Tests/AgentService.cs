@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
-using MLS.Agent.Controllers;
 using Pocket;
 using Recipes;
 
@@ -19,7 +18,6 @@ namespace MLS.Agent.Tests
 
         public AgentService() : this(null)
         {
-
         }
 
         public AgentService(CommandLineOptions options)

@@ -14,9 +14,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\WorkspaceServer\WorkspaceServer.csproj" />
-    <PackageReference Include="clockwise" Version="1.0.254-beta" />
-    <PackageReference Include="pocket.disposable" Version="1.0.4">
+    <PackageReference Include="clockwise" Version="1.0.261-beta" />
+    <PackageReference Include="pocket.disposable" Version="1.0.5">
       <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
     <PackageReference Include="pocketlogger" Version="0.3.0">
       <PrivateAssets>all</PrivateAssets>

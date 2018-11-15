@@ -20,7 +20,7 @@
     <PackageReference Include="AsyncLock" Version="0.1.5650001" />
     <PackageReference Include="AsyncSemaphore" Version="0.1.5650001" />
     <PackageReference Include="CdpxBuildProps" Version="0.1.6040001" />
-    <PackageReference Include="Clockwise" Version="1.0.254-beta" />
+    <PackageReference Include="Clockwise" Version="1.0.261-beta" />
     <PackageReference Include="DictionaryExtensions" Version="0.1.5650001" />
     <PackageReference Include="JsonSerializationExtensions" Version="0.1.5650001" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="2.8.2" />
@@ -33,8 +33,9 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="2.1.1" />
     <PackageReference Include="NewtonSoft.Json" Version="11.0.2" />
     <PackageReference Include="System.Reactive" Version="4.0.0" />
-    <PackageReference Include="pocket.disposable" Version="1.0.4">
+    <PackageReference Include="pocket.disposable" Version="1.0.5">
       <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
     <PackageReference Include="ConfirmationLoggerExtensions" Version="0.1.5980001">
       <PrivateAssets>all</PrivateAssets>
