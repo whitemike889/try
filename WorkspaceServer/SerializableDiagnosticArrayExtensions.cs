@@ -1,7 +1,8 @@
 ﻿using System;
 using MLS.Protocol;
 using System.Linq;
-using DiagnosticSeverity = MLS.Protocol.DiagnosticSeverity;
+using MLS.Protocol.Diagnostics;
+using DiagnosticSeverity = MLS.Protocol.Diagnostics.DiagnosticSeverity;
 
 namespace WorkspaceServer
 {

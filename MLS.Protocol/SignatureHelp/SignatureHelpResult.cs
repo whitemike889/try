@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using MLS.Protocol.Diagnostics;
 using Newtonsoft.Json;
 
 namespace MLS.Protocol.SignatureHelp

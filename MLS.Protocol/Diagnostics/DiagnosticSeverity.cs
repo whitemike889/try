@@ -1,4 +1,4 @@
-﻿namespace MLS.Protocol
+﻿namespace MLS.Protocol.Diagnostics
 {
     public enum DiagnosticSeverity
     {
