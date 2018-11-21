@@ -20,7 +20,7 @@ namespace WorkspaceServer.Tests
 
         protected void RegisterForDisposal(IDisposable disposable) => _disposables.Add(disposable);
 
-        protected abstract Task<(ICodeRunner runner, WorkspaceBuild workspace)> GetRunnerAndWorkpaceBuild(
+        protected abstract Task<(ICodeRunner runner, WorkspaceBuild workspace)> GetRunnerAndWorkspaceBuild(
             [CallerMemberName] string testName = null);
 
         protected abstract ILanguageService GetLanguageService(

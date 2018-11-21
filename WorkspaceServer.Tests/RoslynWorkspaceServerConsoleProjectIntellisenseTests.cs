@@ -6,8 +6,6 @@ using FluentAssertions;
 using MLS.Protocol;
 using MLS.Protocol.Completion;
 using MLS.Protocol.Execution;
-using WorkspaceServer.Models;
-using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Servers.Roslyn;
 using WorkspaceServer.Workspaces;
 using Xunit;
@@ -459,7 +457,7 @@ namespace FibonacciTest
             result.Signatures.Should().NotBeNullOrEmpty();
             result.Signatures.Should().Contain(signature => signature.Label == "void Console.WriteLine(string format, params object[] arg)");
         }
-
+        
         [Fact]
         public async Task Get_signature_help_for_invalid_location_return_empty()
         {
@@ -720,7 +718,7 @@ namespace FibonacciTest
             sample.Parameters.ElementAt(1).Documentation.Value.Should().Contain("An array of objects to write using format.");
         }
 
-        protected override Task<(ICodeRunner runner, WorkspaceBuild workspace)> GetRunnerAndWorkpaceBuild(
+        protected override Task<(ICodeRunner runner, WorkspaceBuild workspace)> GetRunnerAndWorkspaceBuild(
             [CallerMemberName] string testName = null)
         {
             throw new NotImplementedException();
