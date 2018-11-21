@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using MLS.Protocol.Diagnostics;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 
 namespace MLS.Protocol.Completion
 {

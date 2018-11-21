@@ -37,7 +37,7 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task When_run_fails_to_compile_then_diagnostics_are_aligned_with_buffer_span()
         {
-            var (server, build) = await GetRunnerAndWorkpaceBuild();
+            var (server, build) = await GetRunnerAndWorkspaceBuild();
 
             var workspace = new Workspace(
                 workspaceType: build.Name,
@@ -58,7 +58,7 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task When_run_fails_to_compile_then_diagnostics_are_aligned_with_buffer_span_when_code_is_multi_line()
         {
-            var (server, build) = await GetRunnerAndWorkpaceBuild();
+            var (server, build) = await GetRunnerAndWorkspaceBuild();
 
             var workspace = new Workspace(
                 workspaceType: build.Name,
@@ -78,7 +78,7 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task When_diagnostics_are_outside_of_viewport_then_they_are_omitted()
         {
-            var (server, build) = await GetRunnerAndWorkpaceBuild();
+            var (server, build) = await GetRunnerAndWorkspaceBuild();
 
             var workspace = new Workspace(
                 workspaceType: build.Name,
@@ -250,7 +250,7 @@ namespace FibonacciTest
 }";
             #endregion
 
-            var (server, build) = await GetRunnerAndWorkpaceBuild();
+            var (server, build) = await GetRunnerAndWorkspaceBuild();
 
             var request = new WorkspaceRequest(
                 new Workspace(
@@ -309,7 +309,7 @@ namespace FibonacciTest
 
             #endregion
 
-            var (server, build) = await GetRunnerAndWorkpaceBuild();
+            var (server, build) = await GetRunnerAndWorkspaceBuild();
 
             var request = new WorkspaceRequest(
                 new Workspace(
@@ -350,7 +350,7 @@ namespace ConsoleProgram
 
             var linePositionSpans = ToLinePositionSpan(spans, code);
 
-            var (server, build) = await GetRunnerAndWorkpaceBuild();
+            var (server, build) = await GetRunnerAndWorkspaceBuild();
 
             var workspace = new Workspace(
                 workspaceType: build.Name,
@@ -389,7 +389,7 @@ namespace ConsoleProgram
 
             var linePositionSpans = ToLinePositionSpan(spans, code);
 
-            var (server, build) = await GetRunnerAndWorkpaceBuild();
+            var (server, build) = await GetRunnerAndWorkspaceBuild();
 
             var workspace = new Workspace(
                 workspaceType: build.Name,
@@ -432,7 +432,7 @@ namespace ConsoleProgram
             MarkupTestFile.GetNamedSpans(regionCodeWithMarkup, out var regionCode, out var spans);
             var linePositionSpans = ToLinePositionSpan(spans, regionCode);
 
-            var (server, build) = await GetRunnerAndWorkpaceBuild();
+            var (server, build) = await GetRunnerAndWorkspaceBuild();
 
             var workspace = new Workspace(
                 workspaceType: build.Name,
@@ -477,7 +477,7 @@ namespace ConsoleProgram
             MarkupTestFile.GetNamedSpans(regionCodeWithMarkup, out var regionCode, out var spans);
             var linePositionSpans = ToLinePositionSpan(spans, regionCode);
 
-            var (server, build) = await GetRunnerAndWorkpaceBuild();
+            var (server, build) = await GetRunnerAndWorkspaceBuild();
 
             var workspace = new Workspace(
                 workspaceType: build.Name,
@@ -537,7 +537,7 @@ namespace FibonacciTest
 }";
             #endregion
 
-            var (server, build) = await GetRunnerAndWorkpaceBuild();
+            var (server, build) = await GetRunnerAndWorkspaceBuild();
 
             var workspace = new Workspace(workspaceType: build.Name, buffers: new[]
             {
@@ -592,7 +592,7 @@ namespace FibonacciTest
 }";
             #endregion
 
-            var (server, build) = await GetRunnerAndWorkpaceBuild();
+            var (server, build) = await GetRunnerAndWorkspaceBuild();
 
             var workspace = new Workspace(workspaceType: build.Name, buffers: new[]
             {
@@ -685,7 +685,7 @@ namespace FibonacciTest
                 kv => kv.Key,
                 kv => kv.Value.Select(span => span.ToLinePositionSpan(SourceText.From(code))));
 
-        protected override async Task<(ICodeRunner runner, WorkspaceBuild workspace)> GetRunnerAndWorkpaceBuild(
+        protected override async Task<(ICodeRunner runner, WorkspaceBuild workspace)> GetRunnerAndWorkspaceBuild(
             [CallerMemberName] string testName = null)
         {
             var workspace = await Create.ConsoleWorkspaceCopy(testName);

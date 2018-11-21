@@ -23,6 +23,7 @@ using WorkspaceServer.Servers.Roslyn;
 using Recipes;
 using MLS.Protocol.Execution;
 using MLS.Protocol;
+using MLS.Protocol.Diagnostics;
 using WorkspaceServer.LanguageServices;
 
 namespace WorkspaceServer.Servers.Scripting
@@ -67,7 +68,7 @@ namespace WorkspaceServer.Servers.Scripting
                 {
                     state = await Run(buffer, options, budget);
 
-                    if (state != null && 
+                    if (state != null &&
                         console.IsEmpty())
                     {
                         state = await EmulateConsoleMainInvocation(state, buffer, options, budget);
@@ -82,10 +83,10 @@ namespace WorkspaceServer.Servers.Scripting
 
                 budget.RecordEntryAndThrowIfBudgetExceeded();
 
-                var diagnostics = await GetDiagnostics(
-                                      workspace, 
+                var diagnostics = await ExtractDiagnostics(
+                                      workspace,
                                       request.ActiveBufferId,
-                                      options, 
+                                      options,
                                       budget);
 
                 var output =
@@ -102,7 +103,7 @@ namespace WorkspaceServer.Servers.Scripting
                     succeeded: !userException.IsConsideredRunFailure(),
                     output: output,
                     exception: (userException ?? state?.Exception).ToDisplayString(),
-                    diagnostics: diagnostics, 
+                    diagnostics: diagnostics,
                     requestId: request.RequestId);
 
                 operation.Complete(budget);
@@ -111,7 +112,7 @@ namespace WorkspaceServer.Servers.Scripting
             }
         }
 
-        private string[] ProcessOutputLines(string[]  output, string[]  errormessages)
+        private string[] ProcessOutputLines(string[] output, string[] errormessages)
         {
             output = output.Where(IsNotDiagnostic).ToArray();
 
@@ -130,7 +131,7 @@ namespace WorkspaceServer.Servers.Scripting
                          .AddReferences(GetReferenceAssemblies())
                          .AddImports(WorkspaceUtilities.DefaultUsings.Concat(request.Usings));
 
-        private async Task<SerializableDiagnostic[]> GetDiagnostics(
+        private async Task<SerializableDiagnostic[]> ExtractDiagnostics(
             Workspace workspace,
             BufferId activeBufferId,
             ScriptOptions options,
@@ -170,7 +171,10 @@ namespace WorkspaceServer.Servers.Scripting
             budget = budget ?? new Budget();
             using (Log.OnExit())
             {
-                var (document, absolutePosition) = await GenerateDocumentAndPosition(request, budget);
+                var processor = new BufferInliningTransformer();
+                var workspace = await processor.TransformAsync(request.Workspace, budget);
+
+                var (document, absolutePosition) = GenerateDocumentAndPosition(request.ActiveBufferId, workspace);
                 var service = CompletionService.GetService(document);
 
                 var completionList = await service.GetCompletionsAsync(document, absolutePosition);
@@ -180,16 +184,17 @@ namespace WorkspaceServer.Servers.Scripting
                 var symbolToSymbolKey = new Dictionary<(string, int), ISymbol>();
                 foreach (var symbol in symbols)
                 {
-                    var key = (symbol.Name, (int) symbol.Kind);
+                    var key = (symbol.Name, (int)symbol.Kind);
                     if (!symbolToSymbolKey.ContainsKey(key))
                     {
                         symbolToSymbolKey[key] = symbol;
                     }
                 }
 
+                var diagnostics = DiagnosticsExtractor.ExtractSerializableDiagnosticsFromSemanticModel(request.ActiveBufferId, budget, semanticModel, workspace);
                 var items = completionList.Items.Select(item => item.ToModel(symbolToSymbolKey, document)).ToArray();
 
-                return new CompletionResult(items);
+                return new CompletionResult(items, requestId: request.RequestId, diagnostics: diagnostics);
             }
         }
 
@@ -198,9 +203,29 @@ namespace WorkspaceServer.Servers.Scripting
             budget = budget ?? new Budget();
             using (Log.OnExit())
             {
-                var (document, position) = await GenerateDocumentAndPosition(request, budget);
-                var response = await SignatureHelpService.GetSignatureHelp(document, position, budget);
+                var processor = new BufferInliningTransformer();
+                var workspace = await processor.TransformAsync(request.Workspace, budget);
+
+                var (document, absolutePosition) = GenerateDocumentAndPosition(request.ActiveBufferId, workspace);
+                var diagnostics = await DiagnosticsExtractor.ExtractSerializableDiagnosticsFromDocument(request.ActiveBufferId, budget, document, workspace);
+                var response = await SignatureHelpService.GetSignatureHelp(document, absolutePosition, budget);
                 response.RequestId = request.RequestId;
+                response.Diagnostics = diagnostics;
+                return response;
+            }
+        }
+
+        public async Task<DiagnosticResult> GetDiagnostics(WorkspaceRequest request, Budget budget = null)
+        {
+            budget = budget ?? new Budget();
+            using (Log.OnExit())
+            {
+                var processor = new BufferInliningTransformer();
+                var workspace = await processor.TransformAsync(request.Workspace, budget);
+
+                var (document, _) = GenerateDocumentAndPosition(request.ActiveBufferId, workspace);
+                var diagnostics = await DiagnosticsExtractor.ExtractSerializableDiagnosticsFromDocument(request.ActiveBufferId, budget, document, workspace);
+                var response = new DiagnosticResult(diagnostics, request.RequestId);
                 return response;
             }
         }
@@ -210,13 +235,18 @@ namespace WorkspaceServer.Servers.Scripting
             var processor = new BufferInliningTransformer();
             var workspace = await processor.TransformAsync(request.Workspace, budget);
 
+            return GenerateDocumentAndPosition(request.ActiveBufferId, workspace);
+        }
+
+        private (Document document, int position) GenerateDocumentAndPosition(BufferId activeBufferId, Workspace workspace)
+        {
             if (workspace.Files.Length != 1)
             {
-                throw new ArgumentException($"{nameof(request)} should have exactly one source file.");
+                throw new ArgumentException($"{nameof(workspace)} should have exactly one source file.");
             }
 
             var code = workspace.Files.Single().Text;
-            var absolutePosition = workspace.Buffers.Single(b => b.Id == request.ActiveBufferId).AbsolutePosition;
+            var absolutePosition = workspace.Buffers.Single(b => b.Id == activeBufferId).AbsolutePosition;
 
             var document = _fixture.ForkDocument(code);
             return (document, absolutePosition);

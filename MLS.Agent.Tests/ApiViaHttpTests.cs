@@ -10,6 +10,7 @@ using FluentAssertions;
 using MLS.Project.Transformations;
 using MLS.Protocol;
 using MLS.Protocol.Completion;
+using MLS.Protocol.Diagnostics;
 using MLS.Protocol.Execution;
 using MLS.Protocol.SignatureHelp;
 using Pocket;
@@ -263,6 +264,42 @@ namespace MLS.Agent.Tests
         }
 
         [Fact]
+        public async Task A_script_snippet_workspace_can_be_used_to_get_diagnostics()
+        {
+            var log = new LogEntryList();
+            var (processed, position) = CodeManipulation.ProcessMarkup("adddd");
+            using (LogEvents.Subscribe(log.Add))
+            using (var agent = new AgentService())
+            {
+                var json = new WorkspaceRequest(
+                        requestId: "TestRun",
+                        activeBufferId: "default.cs",
+                        workspace: Workspace.FromSource(
+                            processed,
+                            "script",
+                            id: "default.cs",
+                            position: position))
+                    .ToJson();
+
+                var request = new HttpRequestMessage(HttpMethod.Post, @"/workspace/diagnostics")
+                {
+                    Content = new StringContent(
+                        json,
+                        Encoding.UTF8,
+                        "application/json")
+                };
+
+                var response = await agent.SendAsync(request);
+
+                var result = await response
+                    .EnsureSuccess()
+                    .DeserializeAs<DiagnosticResult>();
+                result.Diagnostics.Should().NotBeNullOrEmpty();
+                result.Diagnostics.Should().Contain(signature => signature.Message == "(1,1): error CS0103: The name \'adddd\' does not exist in the current context");
+            }
+        }
+
+        [Fact]
         public async Task A_console_workspace_can_be_used_to_get_signature_help()
         {
             #region bufferSources
@@ -333,7 +370,7 @@ namespace FibonacciTest
                                    .EnsureSuccess()
                                    .DeserializeAs<SignatureHelpResult>();
                 result.Signatures.Should().NotBeNullOrEmpty();
-                result.Signatures.Should().Contain(signature => signature.Label == "void Console.WriteLine(string format, params object[] arg)");
+                result.Signatures.Should().Contain(diagnostic => diagnostic.Label == "void Console.WriteLine(string format, params object[] arg)");
             }
         }
 
@@ -411,6 +448,84 @@ namespace FibonacciTest
                     .DeserializeAs<CompletionResult>();
                 result.Items.Should().NotBeNullOrEmpty();
                 result.Items.Should().Contain(completion => completion.SortText == "Console");
+            }
+        }
+
+        [Fact]
+        public async Task A_console_project_can_be_used_to_get_diagnostics()
+        {
+            #region bufferSources
+
+            var program = @"using System;
+using System.Linq;
+
+namespace FibonacciTest
+{
+    public class Program
+    {
+        public static void Main()
+        {
+            foreach (var i in FibonacciGenerator.Fibonacci().Take(20))
+            {
+                Console.WriteLine(i);
+            }
+        }       
+    }
+}".EnforceLF();
+
+            var generator = @"using System.Collections.Generic;
+using System;
+namespace FibonacciTest
+{
+    public static class FibonacciGenerator
+    {
+        public static IEnumerable<int> Fibonacci()
+        {
+            int current = 1, next = 1;
+            while (true)
+            {   
+                adddd
+                yield return current;
+                next = current + (current = next);
+                Cons$$
+            }
+        }
+    }
+}".EnforceLF();
+
+            #endregion
+
+            var (processed, position) = CodeManipulation.ProcessMarkup(generator);
+            var log = new LogEntryList();
+            using (LogEvents.Subscribe(log.Add))
+            using (var agent = new AgentService())
+            {
+                var json =
+                    new WorkspaceRequest(activeBufferId: "generators/FibonacciGenerator.cs",
+                                        requestId: "TestRun",
+                                         workspace: Workspace.FromSources(
+                                             "console",
+                                             ("Program.cs", program, 0),
+                                             ("generators/FibonacciGenerator.cs", processed, position)
+                                         )).ToJson();
+
+                var request = new HttpRequestMessage(
+                    HttpMethod.Post,
+                    @"/workspace/diagnostics")
+                {
+                    Content = new StringContent(
+                        json,
+                        Encoding.UTF8,
+                        "application/json")
+                };
+
+                var response = await agent.SendAsync(request);
+
+                var result = await response
+                    .EnsureSuccess()
+                    .DeserializeAs<DiagnosticResult>();
+                result.Diagnostics.Should().NotBeNullOrEmpty();
+                result.Diagnostics.Should().Contain(diagnostic => diagnostic.Message == "generators/FibonacciGenerator.cs(12,17): error CS0246: The type or namespace name \'adddd\' could not be found (are you missing a using directive or an assembly reference?)");
             }
         }
 

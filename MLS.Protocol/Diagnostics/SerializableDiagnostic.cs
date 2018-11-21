@@ -1,7 +1,6 @@
-﻿
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 
-namespace MLS.Protocol
+namespace MLS.Protocol.Diagnostics
 {
     public class SerializableDiagnostic
     {

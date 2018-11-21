@@ -90,6 +90,36 @@ namespace MLS.Agent.Controllers
             }
         }
 
+        [HttpPost]
+        [Route("/workspace/diagnostics")]
+        public async Task<IActionResult> Diagnostics(
+            [FromBody] WorkspaceRequest request,
+            [FromHeader(Name = "Timeout")] string timeoutInMilliseconds = "15000")
+        {
+            if (Debugger.IsAttached && !(Clock.Current is VirtualClock))
+            {
+                _disposables.Add(VirtualClock.Start());
+            }
+
+            using (var operation = Log.OnEnterAndConfirmOnExit())
+            {
+                operation.Info("Processing workspaceType {workspaceType}", request.Workspace.WorkspaceType);
+                if (!int.TryParse(timeoutInMilliseconds, out var timeoutMs))
+                {
+                    return BadRequest();
+                }
+
+                var runTimeout = TimeSpan.FromMilliseconds(timeoutMs);
+                var budget = new TimeBudget(runTimeout);
+                var server = GetServerForWorkspace(request.Workspace);
+                var result = await server.GetDiagnostics(request, budget);
+                budget.RecordEntry();
+                operation.Succeed();
+
+                return Ok(result);
+            }
+        }
+
         private ILanguageService GetServerForWorkspace(Workspace workspace)
         {
             if (string.Equals(workspace.WorkspaceType, "script", StringComparison.OrdinalIgnoreCase))

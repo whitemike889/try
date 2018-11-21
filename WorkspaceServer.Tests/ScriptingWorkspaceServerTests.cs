@@ -26,7 +26,7 @@ namespace WorkspaceServer.Tests
         protected override Workspace CreateWorkspaceWithMainContaining(string text, WorkspaceBuild workspaceBuild) => 
             Workspace.FromSource(text, workspaceType: "script");
 
-        protected override Task<(ICodeRunner runner, WorkspaceBuild workspace)> GetRunnerAndWorkpaceBuild(
+        protected override Task<(ICodeRunner runner, WorkspaceBuild workspace)> GetRunnerAndWorkspaceBuild(
             [CallerMemberName] string testName = null) =>
             Task.FromResult<(ICodeRunner , WorkspaceBuild )>((new ScriptingWorkspaceServer(), new WorkspaceBuild("script", buildArtifactLocator: null)));
 
@@ -41,7 +41,7 @@ namespace WorkspaceServer.Tests
 var person = new { Name = ""Jeff"", Age = 20 };
 $""{person.Name} is {person.Age} year(s) old""", "script");
 
-            var (server, build) = await GetRunnerAndWorkpaceBuild();
+            var (server, build) = await GetRunnerAndWorkspaceBuild();
 
             var result = await server.Run(new WorkspaceRequest(workspace));
 
@@ -61,7 +61,7 @@ $""{person.Name} is {person.Age} year(s) old""", "script");
         {
             var workspace = Workspace.FromSource(@"
 Console.WriteLine(banana);", "script");
-            var (server, build) = await GetRunnerAndWorkpaceBuild();
+            var (server, build) = await GetRunnerAndWorkspaceBuild();
 
             var result = await server.Run(new WorkspaceRequest(workspace));
 
@@ -120,7 +120,7 @@ public static class Hello
                 workspaceType: "script",
                 usings: new[] { "System.Threading" });
 
-            var (server, build) = await GetRunnerAndWorkpaceBuild();
+            var (server, build) = await GetRunnerAndWorkspaceBuild();
 
             var result = await server.Run(new WorkspaceRequest(workspace));
 
@@ -145,7 +145,7 @@ public static class Hello
         Console.WriteLine(""Hello there!"");
     }
 }", workspaceType: "script");
-            var (server, build) = await GetRunnerAndWorkpaceBuild();
+            var (server, build) = await GetRunnerAndWorkspaceBuild();
 
             var result = await server.Run(new WorkspaceRequest(workspace));
 
@@ -165,7 +165,7 @@ public static class Hello
         Console.WriteLine(""Hello there!"");
     }
 }", workspaceType: "script");
-            var (server, build) = await GetRunnerAndWorkpaceBuild();
+            var (server, build) = await GetRunnerAndWorkspaceBuild();
 
             var result = await server.Run(new WorkspaceRequest(workspace));
 
@@ -192,7 +192,7 @@ public static class Hello
                 workspaceType: "script",
                 files: new[] { new Workspace.File("Main.cs", fileCode) },
                 buffers: new[] { new Workspace.Buffer(@"Main.cs@toReplace", @"Console.WriteLine(""Hello there!"");", 0) });
-            var (server, build) = await GetRunnerAndWorkpaceBuild();
+            var (server, build) = await GetRunnerAndWorkspaceBuild();
 
             var result = await server.Run(new WorkspaceRequest(workspace));
 
@@ -218,7 +218,7 @@ public static class Hello
                 files: new[] { new Workspace.File("Main.cs", fileCode) },
                 buffers: new[] { new Workspace.Buffer(@"Main.cs@toReplace", @"Console.WriteLine(banana);", 0) });
 
-            var (server, build) = await GetRunnerAndWorkpaceBuild();
+            var (server, build) = await GetRunnerAndWorkspaceBuild();
             var result = await server.Run(new WorkspaceRequest(workspace));
 
             result.Should().BeEquivalentTo(new

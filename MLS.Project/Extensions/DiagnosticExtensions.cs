@@ -1,8 +1,9 @@
 ﻿using System;
 using Microsoft.CodeAnalysis;
 using MLS.Protocol;
+using MLS.Protocol.Diagnostics;
 using DiagnosticSeverity = Microsoft.CodeAnalysis.DiagnosticSeverity;
-using MLSDiagnosticSeverity = MLS.Protocol.DiagnosticSeverity;
+using MLSDiagnosticSeverity = MLS.Protocol.Diagnostics.DiagnosticSeverity;
 
 namespace MLS.Project.Extensions
 {

@@ -9,6 +9,7 @@ using MLS.Project.Execution;
 using MLS.Project.Extensions;
 using MLS.Project.Transformations;
 using MLS.Protocol;
+using MLS.Protocol.Diagnostics;
 using MLS.Protocol.Execution;
 using Workspace = MLS.Protocol.Execution.Workspace;
 

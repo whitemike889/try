@@ -8,7 +8,6 @@ using Clockwise;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Completion;
 using Microsoft.CodeAnalysis.Recommendations;
-using Microsoft.CodeAnalysis.Text;
 using MLS.Agent.Tools;
 using MLS.Project.Extensions;
 using MLS.Project.Transformations;
@@ -26,6 +25,7 @@ using static Pocket.Logger<WorkspaceServer.Servers.Roslyn.RoslynWorkspaceServer>
 using Workspace = MLS.Protocol.Execution.Workspace;
 using MLS.Protocol.Execution;
 using MLS.Protocol;
+using MLS.Protocol.Diagnostics;
 using WorkspaceServer.LanguageServices;
 
 namespace WorkspaceServer.Servers.Roslyn
@@ -78,7 +78,8 @@ namespace WorkspaceServer.Servers.Roslyn
             
             var completionList = await service.GetCompletionsAsync(selectedDocument, absolutePosition);
             var semanticModel = await selectedDocument.GetSemanticModelAsync();
-            var diagnostics = processed.MapDiagnostics(request.ActiveBufferId,  semanticModel.GetDiagnostics().ToArray(), budget);
+            var diagnostics = DiagnosticsExtractor.ExtractSerializableDiagnosticsFromSemanticModel(request.ActiveBufferId, budget, semanticModel, processed);
+
             var symbols = await Recommender.GetRecommendedSymbolsAtPositionAsync(
                               semanticModel,
                               absolutePosition,
@@ -110,6 +111,8 @@ namespace WorkspaceServer.Servers.Roslyn
                 diagnostics: diagnostics);
         }
 
+        
+
         public async Task<SignatureHelpResult> GetSignatureHelp(WorkspaceRequest request, Budget budget)
         {
             budget = budget ?? new TimeBudget(TimeSpan.FromSeconds(defaultBudgetInSeconds));
@@ -130,8 +133,7 @@ namespace WorkspaceServer.Servers.Roslyn
                 return new SignatureHelpResult(requestId: request.RequestId);
             }
 
-            var semanticModel = await selectedDocument.GetSemanticModelAsync();
-            var diagnostics = processed.MapDiagnostics(request.ActiveBufferId, semanticModel.GetDiagnostics().ToArray(), budget);
+            var diagnostics = await DiagnosticsExtractor.ExtractSerializableDiagnosticsFromDocument(request.ActiveBufferId, budget, selectedDocument, processed);
 
             var tree = await selectedDocument.GetSyntaxTreeAsync();
 
@@ -150,6 +152,34 @@ namespace WorkspaceServer.Servers.Roslyn
             }
             return result;
         }
+
+        public async Task<DiagnosticResult> GetDiagnostics(WorkspaceRequest request, Budget budget)
+        {
+            budget = budget ?? new TimeBudget(TimeSpan.FromSeconds(defaultBudgetInSeconds));
+
+            var build = await getWorkspaceBuildByName(request.Workspace.WorkspaceType);
+
+            var processed = await _transformer.TransformAsync(request.Workspace, budget);
+
+            var sourceFiles = processed.GetSourceFiles();
+            var (_, documents) = await build.GetCompilation(sourceFiles, budget);
+
+            var selectedDocument = documents.FirstOrDefault(doc => doc.Name == request.ActiveBufferId.FileName)
+                                   ??
+                                   (documents.Count == 1 ? documents.Single() : null);
+
+            if (selectedDocument == null)
+            {
+                return new DiagnosticResult(requestId: request.RequestId);
+            }
+
+            var diagnostics = await DiagnosticsExtractor.ExtractSerializableDiagnosticsFromDocument(request.ActiveBufferId, budget, selectedDocument, processed);
+  
+            var result = new DiagnosticResult(diagnostics, request.RequestId);
+            return result;
+        }
+
+      
 
         public async Task<CompileResult> Compile(WorkspaceRequest request, Budget budget = null)
         {
