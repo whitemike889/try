@@ -1,4 +1,5 @@
 ﻿using System;
+using System.CommandLine.Invocation;
 using System.IO;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
@@ -20,6 +21,13 @@ namespace MLS.Agent
 {
     public class Program
     {
+        public static async Task<int> Main(string[] args)
+        {
+            var parser = CommandLineOptions.CreateParser((options, console) => ConstructWebHost(options).Run());
+
+            return await parser.InvokeAsync(args);
+        }
+
         public static X509Certificate2 ParseKey(string base64EncodedKey)
         {
             var bytes = Convert.FromBase64String(base64EncodedKey);
@@ -34,7 +42,7 @@ namespace MLS.Agent
 
         private static void StartLogging(CompositeDisposable disposables, CommandLineOptions options)
         {
-            if (options.IsProduction)
+            if (options.Production)
             {
                 var applicationVersion = VersionSensor.Version().AssemblyInformationalVersion;
                 var websiteSiteName = Environment.GetEnvironmentVariable("WEBSITE_SITE_NAME") ?? "UNKNOWN-AGENT";
@@ -116,34 +124,15 @@ namespace MLS.Agent
                         c.AddApplicationInsightsTelemetry(options.ApplicationInsightsKey);
                     }
                     c.AddSingleton(options);
-                    c.AddSingleton(new AgentOptions(options.IsLanguageService));
+                    c.AddSingleton(new AgentOptions(options.LanguageService));
                 })
-                .UseEnvironment(options.IsProduction
+                .UseEnvironment(options.Production
                                       ? EnvironmentName.Production
                                       : EnvironmentName.Development)
                 .UseStartup<Startup>()
                 .Build();
 
             return webHost;
-        }
-
-        public static int Main(string[] args)
-        {
-            var options = CommandLineOptions.Parse(args);
-            if (options.HelpRequested)
-            {
-                Console.WriteLine(options.HelpText);
-                return 0;
-            }
-
-            if (!options.WasSuccess)
-            {
-                Console.WriteLine(options.HelpText);
-                return 1;
-            }
-
-            ConstructWebHost(options).Run();
-            return 0;
         }
     }
 }

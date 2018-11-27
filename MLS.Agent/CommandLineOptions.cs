@@ -1,17 +1,17 @@
 using System;
-using Microsoft.DotNet.Cli.CommandLine;
-using static Microsoft.DotNet.Cli.CommandLine.Accept;
+using System.CommandLine;
+using System.CommandLine.Builder;
+using System.CommandLine.Invocation;
 
 namespace MLS.Agent
 {
     public class CommandLineOptions
     {
+        private static readonly TypeBinder _typeBinder = new TypeBinder(typeof(CommandLineOptions));
+
         public CommandLineOptions(
-            bool wasSuccess,
-            bool helpRequested,
-            string helpText,
-            bool isProduction,
-            bool isLanguageService,
+            bool production,
+            bool languageService,
             string key,
             string applicationInsightsKey = null,
             bool logToFile = false,
@@ -19,75 +19,65 @@ namespace MLS.Agent
             string regionId = null)
         {
             LogToFile = logToFile;
-            WasSuccess = wasSuccess;
             Id = id;
-            IsProduction = isProduction;
-            IsLanguageService = isLanguageService;
-            HelpRequested = helpRequested;
-            HelpText = helpText;
+            Production = production;
+            LanguageService = languageService;
             Key = key;
             ApplicationInsightsKey = applicationInsightsKey;
             RegionId = regionId;
         }
 
-        public bool WasSuccess { get; }
-        public string Id { get; }
-        public string RegionId { get; }
-        public bool IsProduction { get; }
-        public bool IsLanguageService { get; }
-        public bool HelpRequested { get; }
-        public string HelpText { get; }
-        public string Key { get; }
-        public string ApplicationInsightsKey { get; }
-        public bool LogToFile { get; }
+        public string Id { get; set; }
+        public string RegionId { get; set; }
+        public bool Production { get; set; }
+        public bool LanguageService { get; set; }
+        public string Key { get; set; }
+        public string ApplicationInsightsKey { get; set; }
+        public bool LogToFile { get; set; }
 
-        public static CommandLineOptions Parse(string[] args)
+        public static Parser CreateParser(Action<CommandLineOptions, InvocationContext> invoke)
         {
-            var parser = new Parser(
-                Create.Option("-h|--help", "Shows this help text"),
-                Create.Option("--id", "A unique id for the agent instance (e.g. its development environment id)", ExactlyOneArgument()),
-                Create.Option("--production", "Specifies if the agent is being run using production resources or not"),
-                Create.Option("--language-service", "Specifies if the agent is being run as language service or not"),
-                Create.Option("-k|--key", "The encryption key", ExactlyOneArgument()),
-                Create.Option("--ai-key", "Application Insights key", ExactlyOneArgument()),
-                Create.Option("--region-id", "A unique id for the agent region", ZeroOrOneArgument()),
-                Create.Option("--log-to-file", "Writes a log file", NoArguments()));
+            var command = new RootCommand();
 
-            var parseResult = parser.Parse(args);
-            var wasSuccess = true;
-            string errorText = null;
+            command.AddOption(new Option(
+                                  "--id",
+                                  "A unique id for the agent instance (e.g. its development environment id)",
+                                  new Argument<string>()));
+            command.AddOption(new Option(
+                                  "--production",
+                                  "Specifies whether the agent is being run using production resources",
+                                  new Argument<bool>()));
+            command.AddOption(new Option(
+                                  "--language-service",
+                                  "Specifies whether the agent is being run as language service",
+                                  new Argument<bool>()));
+            command.AddOption(new Option(
+                                  new[] { "-k", "--key" },
+                                  "The encryption key",
+                                  new Argument<string>()));
+            command.AddOption(new Option(
+                                  new[] { "--ai-key", "--application-insights-key" },
+                                  "Application Insights key",
+                                  new Argument<string>()));
+            command.AddOption(new Option(
+                                  "--region-id",
+                                  "A unique id for the agent region",
+                                  new Argument<string>()));
+            command.AddOption(new Option(
+                                  "--log-to-file",
+                                  "Writes a log file",
+                                  new Argument<bool>()));
 
-            foreach (var error in parseResult.Errors)
+            command.Handler = CommandHandler.Create<InvocationContext>(context =>
             {
-                wasSuccess = false;
-                if (errorText is null)
-                {
-                    errorText = error.Message;
-                }
-                else
-                {
-                    errorText += $"{Environment.NewLine}{error.Message}";
-                }
-            }
+                var options = (CommandLineOptions) _typeBinder.CreateInstance(context);
 
-            var helpRequested = parseResult.HasOption("help");
+                invoke(options, context);
+            });
 
-            return new CommandLineOptions(
-                wasSuccess,
-                helpRequested,
-                helpText: helpRequested
-                              ? parseResult.Command().HelpView()
-                              : errorText,
-                id: parseResult.HasOption("id")
-                        ? parseResult["id"].Value<string>()
-                        : null,
-                isProduction: parseResult.HasOption("production"),
-                isLanguageService : parseResult.HasOption("language-service"),
-                logToFile: parseResult.HasOption("log-to-file"),
-                key: parseResult.HasOption("key")
-                         ? parseResult["key"].Value<string>()
-                         : null,
-                applicationInsightsKey: parseResult.HasOption("ai-key") ? parseResult["ai-key"].Value<string>() : null);
+            return new CommandLineBuilder(command)
+                   .UseDefaults()
+                   .Build();
         }
     }
 }
