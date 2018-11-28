@@ -15,7 +15,10 @@
     <PackageReference Include="Assent" Version="1.3.0" />
     <PackageReference Include="clockwise" Version="1.0.261-beta" />
     <PackageReference Include="fluentassertions" Version="5.4.1" />
-    <PackageReference Include="HttpResponseMessageAssertions" Version="0.1.5650001" />
+    <PackageReference Include="HttpResponseMessageAssertions" Version="0.1.5720001">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="HttpResponseMessageExtensions" Version="0.1.5650001" />
     <PackageReference Include="JsonSerializationExtensions" Version="0.1.5650001" />
     <PackageReference Include="Microsoft.CodeAnalysis" Version="2.8.2" />

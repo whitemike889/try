@@ -94,10 +94,9 @@ namespace MLS.Agent.Tests
             var output = Guid.NewGuid().ToString();
             var requestJson = Create.SimpleWorkspaceRequestAsJson(output, "console");
 
-            var response = await CallRun(requestJson, options: new CommandLineOptions(true, false, string.Empty, false, true, string.Empty));
-
-            var result = response;
-            result.Should().BeNotFound();
+            var response = await CallRun(requestJson, options: new CommandLineOptions(true, true, string.Empty));
+          
+            response.Should().BeNotFound();
         }
 
         [Fact]
