@@ -13,6 +13,7 @@ export NUGET_XMLDOC_MODE=none
 apk update
 apk add xmlstarlet
 apk add shadow
+apk add --update nodejs
 
 # Add dotnet tools
 dotnet tool install -g --version 1.0.87 t-rex

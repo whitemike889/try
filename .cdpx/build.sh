@@ -22,3 +22,14 @@ cp -r $NUGET_PACKAGES/. $DOCKER_NUGET_PACKAGES
 # create packages
 mkdir $PACKAGE_ROOT
 dotnet pack $REPO_ROOT/MLS-LS.sln  -c Release --no-build -o $PACKAGE_ROOT /p:NoPackageAnalysis=true
+
+noLeadingZeros=$(echo $CDP_BUILD_NUMBER | sed 's/^0*//')
+finalVersion="$CDP_MAJOR_NUMBER_ONLY.$CDP_MINOR_NUMBER_ONLY.$noLeadingZeros"
+echo "Creating npm package mls-agent-results with version" $finalVersion
+cd $REPO_ROOT/MLS.Agent.Tests
+npm install
+npm install typescript -g
+npm run build
+npm version $finalVersion
+npm pack
+cp $REPO_ROOT/MLS.Agent.Tests/mls-agent-results-*.tgz $REPO_ROOT/.package
