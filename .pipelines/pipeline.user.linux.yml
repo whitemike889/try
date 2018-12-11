@@ -93,8 +93,11 @@ build:
         - from: '.package'
           to: '.'
           include:
-            - '**/*.nupkg' 
-            - '**/*.tgz'
+            - '**/*.nupkg'
+        - from: '.package/package'
+          to: './mls-agent-results'
+          include:
+            - '**/*'
                                                                         # We always preserve the root relative path for every matched file.
                                                                         # Sometimes that's OK and sometimes it's not. The from, to options
                                                                         # (both are optional and either of them can be used independently)
