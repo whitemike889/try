@@ -32,4 +32,4 @@ npm install typescript -g
 npm run build
 npm version $finalVersion
 npm pack
-cp $REPO_ROOT/MLS.Agent.Tests/mls-agent-results-*.tgz $REPO_ROOT/.package
+cp $REPO_ROOT/MLS.Agent.Tests/mls-agent-results-$finalVersion.tgz $REPO_ROOT/.package/mls-agent-results.tgz
