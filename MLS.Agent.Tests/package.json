@@ -18,9 +18,5 @@
   "license": "ISC",
   "dependencies": {
     "@types/node": "^10.12.12"
-  },
-  "publishConfig": {
-    "registry": "https://msazure.pkgs.visualstudio.com/_packaging/MLS/npm/registry/",
-    "always-auth": true
   }
 }
