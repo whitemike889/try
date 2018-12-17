@@ -37,7 +37,6 @@ namespace MLS.Agent
 
         protected IHostingEnvironment Environment { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
             using (var operation = Log.OnEnterAndConfirmOnExit())
@@ -58,6 +57,7 @@ namespace MLS.Agent
                 services.AddSingleton(Configuration);
 
                 services.AddSingleton(_ => WorkspaceRegistry.CreateDefault());
+
                 services.AddSingleton(c => new RoslynWorkspaceServer(c.GetRequiredService<WorkspaceRegistry>()));
 
                 services.AddSingleton<IHostedService, Warmup>();
@@ -66,12 +66,9 @@ namespace MLS.Agent
             }
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(
             IApplicationBuilder app,
-            IApplicationLifetime lifetime,
-            IHostingEnvironment env,
-            IServiceProvider serviceProvider)
+            IApplicationLifetime lifetime)
         {
             using (var operation = Log.OnEnterAndConfirmOnExit())
             {

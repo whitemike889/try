@@ -7,8 +7,6 @@ using MLS.Protocol;
 using MLS.Protocol.Execution;
 using Newtonsoft.Json;
 using Pocket;
-using WorkspaceServer.Models;
-using WorkspaceServer.Models.Execution;
 using static Pocket.Logger<MLS.Agent.Warmup>;
 
 namespace MLS.Agent
@@ -29,12 +27,12 @@ namespace MLS.Agent
         {
             using (var operation = Log.OnEnterAndExit())
             {
-                await WarmpUpRoute("/workspace/run");
-                await WarmpUpRoute("/workspace/completion");
-                await WarmpUpRoute("/workspace/diagnostics");
-                await WarmpUpRoute("/workspace/signaturehelp");
+                await WarmUpRoute("/workspace/run");
+                await WarmUpRoute("/workspace/completion");
+                await WarmUpRoute("/workspace/diagnostics");
+                await WarmUpRoute("/workspace/signaturehelp");
 
-                async Task WarmpUpRoute(string relativeUri)
+                async Task WarmUpRoute(string relativeUri)
                 {
                     const string code = "Console.WriteLine(42);";
 
