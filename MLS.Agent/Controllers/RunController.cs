@@ -17,13 +17,13 @@ namespace MLS.Agent.Controllers
 {
     public class RunController : Controller
     {
-        private readonly AgentOptions _options;
+        private readonly CommandLineOptions _options;
         private readonly RoslynWorkspaceServer _workspaceServer;
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
 
         public RunController(
             WorkspaceRegistry workspaceRegistry,
-            AgentOptions options,
+            CommandLineOptions options,
             RoslynWorkspaceServer workspaceServer)
         {
             _options = options ?? throw new ArgumentNullException(nameof(options));
@@ -37,7 +37,7 @@ namespace MLS.Agent.Controllers
             [FromBody] WorkspaceRequest request,
             [FromHeader(Name = "Timeout")] string timeoutInMilliseconds = "15000")
         {
-            if (_options.IsLanguageServiceMode)
+            if (_options.LanguageService)
             {
                 return NotFound();
             }

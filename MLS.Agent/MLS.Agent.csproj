@@ -24,9 +24,9 @@
     <PackageReference Include="ConfigurationExtensions" Version="0.1.5650001" />
     <PackageReference Include="EnvironmentExtensions" Version="0.1.5650001" />
     <PackageReference Include="LoggerExtensions" Version="0.1.5650001" />
+    <PackageReference Include="markdig" Version="0.15.5" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.3.0" />
     <PackageReference Include="Microsoft.AspNetCore.App" Version="2.1.1" />
-    <PackageReference Include="Microsoft.DotNet.Cli.CommandLine" Version="0.1.1-alpha-201" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="2.1.1" />
     <PackageReference Include="nodatime" Version="2.3.0" />
     <PackageReference Include="nodatime.testing" Version="2.3.0" />
@@ -49,7 +49,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="system.commandline.experimental" Version="0.1.0-alpha-63527-01" />
+    <PackageReference Include="system.commandline.experimental" Version="0.1.0-alpha-63615-01" />
     <PackageReference Include="System.Reactive" Version="4.0.0" />
     <PackageReference Include="TaskExtensions" Version="0.1.5650001" />
     <PackageReference Include="VersionSensor" Version="0.1.5650001" />

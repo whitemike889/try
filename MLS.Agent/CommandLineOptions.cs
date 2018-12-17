@@ -12,7 +12,7 @@ namespace MLS.Agent
         public CommandLineOptions(
             bool production,
             bool languageService,
-            string key,
+            string key = null,
             string applicationInsightsKey = null,
             bool logToFile = false,
             string id = null,
@@ -37,45 +37,45 @@ namespace MLS.Agent
 
         public static Parser CreateParser(Action<CommandLineOptions, InvocationContext> invoke)
         {
-            var command = new RootCommand();
+            var rootCommand = new RootCommand();
 
-            command.AddOption(new Option(
+            rootCommand.AddOption(new Option(
                                   "--id",
-                                  "A unique id for the agent instance (e.g. its development environment id)",
-                                  new Argument<string>()));
-            command.AddOption(new Option(
+                                  "A unique id for the agent instance (e.g. its development environment id).",
+                                  new Argument<string>(defaultValue: () => Environment.MachineName)));
+            rootCommand.AddOption(new Option(
                                   "--production",
                                   "Specifies whether the agent is being run using production resources",
                                   new Argument<bool>()));
-            command.AddOption(new Option(
+            rootCommand.AddOption(new Option(
                                   "--language-service",
-                                  "Specifies whether the agent is being run as language service",
+                                  "Specifies whether the agent is being run in language service-only mode",
                                   new Argument<bool>()));
-            command.AddOption(new Option(
+            rootCommand.AddOption(new Option(
                                   new[] { "-k", "--key" },
                                   "The encryption key",
                                   new Argument<string>()));
-            command.AddOption(new Option(
+            rootCommand.AddOption(new Option(
                                   new[] { "--ai-key", "--application-insights-key" },
-                                  "Application Insights key",
+                                  "Application Insights key.",
                                   new Argument<string>()));
-            command.AddOption(new Option(
+            rootCommand.AddOption(new Option(
                                   "--region-id",
                                   "A unique id for the agent region",
                                   new Argument<string>()));
-            command.AddOption(new Option(
+            rootCommand.AddOption(new Option(
                                   "--log-to-file",
                                   "Writes a log file",
                                   new Argument<bool>()));
 
-            command.Handler = CommandHandler.Create<InvocationContext>(context =>
+            rootCommand.Handler = CommandHandler.Create<InvocationContext>(context =>
             {
                 var options = (CommandLineOptions) _typeBinder.CreateInstance(context);
 
                 invoke(options, context);
             });
 
-            return new CommandLineBuilder(command)
+            return new CommandLineBuilder(rootCommand)
                    .UseDefaults()
                    .Build();
         }

@@ -107,30 +107,30 @@ namespace MLS.Agent
 
             if (options.Key is null)
             {
-                Log.Info("No Key Provided");
+                Log.Trace("No Key Provided");
             }
             else
             {
-                Log.Info("Received Key: {key}", options.Key);
+                Log.Trace("Received Key: {key}", options.Key);
             }
-          
+
             var webHost = new WebHostBuilder()
-                .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .ConfigureServices(c =>
-                {
-                    if (options.ApplicationInsightsKey != null)
-                    {
-                        c.AddApplicationInsightsTelemetry(options.ApplicationInsightsKey);
-                    }
-                    c.AddSingleton(options);
-                    c.AddSingleton(new AgentOptions(options.LanguageService));
-                })
-                .UseEnvironment(options.Production
-                                      ? EnvironmentName.Production
-                                      : EnvironmentName.Development)
-                .UseStartup<Startup>()
-                .Build();
+                          .UseKestrel()
+                          .UseContentRoot(Directory.GetCurrentDirectory())
+                          .ConfigureServices(c =>
+                          {
+                              if (!string.IsNullOrEmpty(options.ApplicationInsightsKey))
+                              {
+                                  c.AddApplicationInsightsTelemetry(options.ApplicationInsightsKey);
+                              }
+
+                              c.AddSingleton(options);
+                          })
+                          .UseEnvironment(options.Production
+                                              ? EnvironmentName.Production
+                                              : EnvironmentName.Development)
+                          .UseStartup<Startup>()
+                          .Build();
 
             return webHost;
         }
