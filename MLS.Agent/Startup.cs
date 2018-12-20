@@ -23,9 +23,12 @@ namespace MLS.Agent
             () => Logger<Program>.Log.Event("AgentStopping")
         };
 
-        public Startup(IHostingEnvironment env)
+        public Startup(
+            IHostingEnvironment env,
+            StartupOptions startupOptions)
         {
             Environment = env;
+            StartupOptions = startupOptions;
 
             var configurationBuilder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath);
@@ -36,6 +39,8 @@ namespace MLS.Agent
         protected IConfigurationRoot Configuration { get; }
 
         protected IHostingEnvironment Environment { get; }
+
+        public StartupOptions StartupOptions { get; }
 
         public void ConfigureServices(IServiceCollection services)
         {
@@ -76,6 +81,7 @@ namespace MLS.Agent
 
                 app.UseDefaultFiles()
                    .UseStaticFiles()
+                   .UseRouter(new StaticFilesProxyRouter())
                    .UseMvc();
 
                 var budget = new Budget();

@@ -3,7 +3,6 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Clockwise;
 using FluentAssertions;
@@ -55,7 +54,7 @@ namespace MLS.Agent.Tests
         }
 
         [Fact]
-        public async Task The_compile_endpoint_returns_badrequest_if_workspace_type_is_scripting()
+        public async Task The_compile_endpoint_returns_bad_request_if_workspace_type_is_scripting()
         {
             var output = Guid.NewGuid().ToString();
 
@@ -94,7 +93,7 @@ namespace MLS.Agent.Tests
             var output = Guid.NewGuid().ToString();
             var requestJson = Create.SimpleWorkspaceRequestAsJson(output, "console");
 
-            var response = await CallRun(requestJson, options: new CommandLineOptions(true, true, string.Empty));
+            var response = await CallRun(requestJson, options: new StartupOptions(true, true, string.Empty));
           
             response.Should().BeNotFound();
         }

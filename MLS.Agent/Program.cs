@@ -1,4 +1,6 @@
 ﻿using System;
+using System.CommandLine;
+using System.CommandLine.Builder;
 using System.CommandLine.Invocation;
 using System.IO;
 using System.Reflection;
@@ -16,6 +18,7 @@ using Serilog.Sinks.RollingFileAlternate;
 using WorkspaceServer.Servers.Roslyn;
 using SerilogLoggerConfiguration = Serilog.LoggerConfiguration;
 using MLS.Agent.Tools;
+using WorkspaceServer;
 
 namespace MLS.Agent
 {
@@ -23,7 +26,7 @@ namespace MLS.Agent
     {
         public static async Task<int> Main(string[] args)
         {
-            var parser = CommandLineOptions.CreateParser((options, console) => ConstructWebHost(options).Run());
+            var parser = CreateParser(startServer: (options, console) => ConstructWebHost(options).Run());
 
             return await parser.InvokeAsync(args);
         }
@@ -40,7 +43,7 @@ namespace MLS.Agent
             typeof(RoslynWorkspaceServer).Assembly
         };
 
-        private static void StartLogging(CompositeDisposable disposables, CommandLineOptions options)
+        private static void StartLogging(CompositeDisposable disposables, StartupOptions options)
         {
             if (options.Production)
             {
@@ -100,7 +103,7 @@ namespace MLS.Agent
             Log.Event("AgentStarting");
         }
 
-        public static IWebHost ConstructWebHost(CommandLineOptions options)
+        public static IWebHost ConstructWebHost(StartupOptions options)
         {
             var disposables = new CompositeDisposable();
             StartLogging(disposables, options);
@@ -119,7 +122,7 @@ namespace MLS.Agent
                           .UseContentRoot(Directory.GetCurrentDirectory())
                           .ConfigureServices(c =>
                           {
-                              if (!string.IsNullOrEmpty(options.ApplicationInsightsKey))
+                              if (!String.IsNullOrEmpty(options.ApplicationInsightsKey))
                               {
                                   c.AddApplicationInsightsTelemetry(options.ApplicationInsightsKey);
                               }
@@ -133,6 +136,82 @@ namespace MLS.Agent
                           .Build();
 
             return webHost;
+        }
+
+        private static readonly TypeBinder _typeBinder = new TypeBinder(typeof(StartupOptions));
+
+        public static Parser CreateParser(Action<StartupOptions, InvocationContext> startServer)
+        {
+            var rootCommand = StartServer();
+
+            rootCommand.AddCommand(ListWorkspaces());
+
+            return new CommandLineBuilder(rootCommand)
+                   .UseDefaults()
+                   .Build();
+
+            RootCommand StartServer()
+            {
+                var startServerCommand = new RootCommand
+                                         {
+                                             Description = "Starts the Try .NET agent."
+                                         };
+
+                startServerCommand.AddOption(new Option(
+                                                 "--id",
+                                                 "A unique id for the agent instance (e.g. its development environment id).",
+                                                 new Argument<string>(defaultValue: () => Environment.MachineName)));
+                startServerCommand.AddOption(new Option(
+                                                 "--production",
+                                                 "Specifies whether the agent is being run using production resources",
+                                                 new Argument<bool>()));
+                startServerCommand.AddOption(new Option(
+                                                 "--language-service",
+                                                 "Specifies whether the agent is being run in language service-only mode",
+                                                 new Argument<bool>()));
+                startServerCommand.AddOption(new Option(
+                                                 new[] { "-k", "--key" },
+                                                 "The encryption key",
+                                                 new Argument<string>()));
+                startServerCommand.AddOption(new Option(
+                                                 new[] { "--ai-key", "--application-insights-key" },
+                                                 "Application Insights key.",
+                                                 new Argument<string>()));
+                startServerCommand.AddOption(new Option(
+                                                 "--region-id",
+                                                 "A unique id for the agent region",
+                                                 new Argument<string>()));
+                startServerCommand.AddOption(new Option(
+                                                 "--log-to-file",
+                                                 "Writes a log file",
+                                                 new Argument<bool>()));
+
+                startServerCommand.Handler = CommandHandler.Create<InvocationContext>(context =>
+                {
+                    var options = (StartupOptions) _typeBinder.CreateInstance(context);
+
+                    startServer(options, context);
+                });
+
+                return startServerCommand;
+            }
+
+            Command ListWorkspaces()
+            {
+                var run = new Command("list-packages", "Lists the available Try .NET packages");
+
+                run.Handler = CommandHandler.Create((IConsole console) =>
+                {
+                    var registry = WorkspaceRegistry.CreateDefault();
+
+                    foreach (var workspace in registry)
+                    {
+                        console.Out.WriteLine(workspace.WorkspaceName);
+                    }
+                });
+
+                return run;
+            }
         }
     }
 }

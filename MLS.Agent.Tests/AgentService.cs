@@ -11,14 +11,14 @@ namespace MLS.Agent.Tests
 {
     public class AgentService : IDisposable
     {
-        private readonly CommandLineOptions _options;
+        private readonly StartupOptions _options;
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
 
         private readonly HttpClient _client;
 
-        public AgentService(CommandLineOptions options = null)
+        public AgentService(StartupOptions options = null)
         {
-            _options = options ?? new CommandLineOptions(
+            _options = options ?? new StartupOptions(
                            production: false,
                            languageService: false);
 
