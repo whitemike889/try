@@ -7,18 +7,23 @@ using MLS.Protocol;
 using MLS.Protocol.Execution;
 using Newtonsoft.Json;
 using Pocket;
-using WorkspaceServer.Models;
-using WorkspaceServer.Models.Execution;
 using static Pocket.Logger<MLS.Agent.Warmup>;
 
 namespace MLS.Agent
 {
     public class Warmup : HostedService
     {
+        private readonly StartupOptions _options;
+
         private readonly HttpClient _httpClient = new HttpClient
         {
             BaseAddress = new Uri("http://localhost:4242")
         };
+
+        public Warmup(StartupOptions options)
+        {
+            _options = options;
+        }
 
         protected override async Task ExecuteAsync(Budget budget)
         {
@@ -29,12 +34,12 @@ namespace MLS.Agent
         {
             using (var operation = Log.OnEnterAndExit())
             {
-                await WarmpUpRoute("/workspace/run");
-                await WarmpUpRoute("/workspace/completion");
-                await WarmpUpRoute("/workspace/diagnostics");
-                await WarmpUpRoute("/workspace/signaturehelp");
+                await WarmUpRoute("/workspace/run");
+                await WarmUpRoute("/workspace/completion");
+                await WarmUpRoute("/workspace/diagnostics");
+                await WarmUpRoute("/workspace/signaturehelp");
 
-                async Task WarmpUpRoute(string relativeUri)
+                async Task WarmUpRoute(string relativeUri)
                 {
                     const string code = "Console.WriteLine(42);";
 

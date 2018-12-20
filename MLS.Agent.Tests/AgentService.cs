@@ -11,18 +11,17 @@ namespace MLS.Agent.Tests
 {
     public class AgentService : IDisposable
     {
-        private readonly CommandLineOptions _options;
+        private readonly StartupOptions _options;
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
 
         private readonly HttpClient _client;
 
-        public AgentService() : this(null)
+        public AgentService(StartupOptions options = null)
         {
-        }
+            _options = options ?? new StartupOptions(
+                           production: false,
+                           languageService: false);
 
-        public AgentService(CommandLineOptions options)
-        {
-            _options = options;
             var testServer = CreateTestServer();
 
             _client = testServer.CreateClient();
@@ -38,13 +37,9 @@ namespace MLS.Agent.Tests
         private IWebHostBuilder CreateWebHostBuilder()
         {
             var builder = new WebHostBuilder()
-                .ConfigureServices(c =>
-                {
-                    c.AddSingleton(new AgentOptions(_options?.LanguageService == true));
-                })
-                .UseTestEnvironment()
-                .UseStartup<Startup>();
-
+                          .ConfigureServices(c => { c.AddSingleton(_options); })
+                          .UseTestEnvironment()
+                          .UseStartup<Startup>();
 
             return builder;
         }

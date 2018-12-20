@@ -1,0 +1,43 @@
+﻿using System;
+using System.Net.Http;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Routing;
+
+namespace MLS.Agent
+{
+    public class StaticFilesProxyRouter : IRouter
+    {
+        // TODO: (StaticFilesProxyRouter) remove this class and move these resources into the agent repo so they can be served locally without need for an internet connection
+        private readonly HttpClient _httpClient = new HttpClient
+                                                  {
+                                                      BaseAddress = new Uri("https://trydotnet.microsoft.com/")
+                                                  };
+
+        public async Task RouteAsync(RouteContext context)
+        {
+            var path = context.HttpContext.Request.Path;
+
+            if (path.Value.EndsWith(".js") ||
+                path.Value.EndsWith(".css") ||
+                path.Value.EndsWith(".ico"))
+            {
+                var response = await _httpClient.GetAsync(path.Value);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    context.Handler = async httpContext =>
+                    {
+                        var responseFromTryDotNet = await response.Content.ReadAsStreamAsync();
+
+                        await responseFromTryDotNet.CopyToAsync(httpContext.Response.Body);
+                    };
+                }
+            }
+        }
+
+        public VirtualPathData GetVirtualPath(VirtualPathContext context)
+        {
+            return null;
+        }
+    }
+}

@@ -28,7 +28,7 @@
     <PackageReference Include="trydotnet-references">
       <Version>1.0.1</Version>
     </PackageReference>
-    <PackageReference Include="ConfirmationLoggerExtensions" Version="0.1.5980001">
+    <PackageReference Include="ConfirmationLoggerExtensions" Version="0.1.6040001">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="CdpxBuildProps" Version="0.1.6040001" />

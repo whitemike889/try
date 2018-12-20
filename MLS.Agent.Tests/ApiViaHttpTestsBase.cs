@@ -30,7 +30,7 @@ namespace MLS.Agent.Tests
         protected static Task<HttpResponseMessage> CallRun(
             string requestBody,
             int? timeoutMs = null,
-            CommandLineOptions options = null) =>
+            StartupOptions options = null) =>
             Call("/workspace/run",
                  requestBody,
                  timeoutMs,
@@ -39,7 +39,7 @@ namespace MLS.Agent.Tests
         protected static Task<HttpResponseMessage> CallCompile(
             string requestBody,
             int? timeoutMs = null,
-            CommandLineOptions options = null) =>
+            StartupOptions options = null) =>
             Call("/workspace/compile",
                  requestBody,
                  timeoutMs,
@@ -56,7 +56,7 @@ namespace MLS.Agent.Tests
             string relativeUrl,
             string requestBody,
             int? timeoutMs = null,
-            CommandLineOptions options = null)
+            StartupOptions options = null)
         {
             HttpResponseMessage response;
             using (var agent = new AgentService(options))

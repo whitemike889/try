@@ -23,9 +23,12 @@ namespace MLS.Agent
             () => Logger<Program>.Log.Event("AgentStopping")
         };
 
-        public Startup(IHostingEnvironment env)
+        public Startup(
+            IHostingEnvironment env,
+            StartupOptions startupOptions)
         {
             Environment = env;
+            StartupOptions = startupOptions;
 
             var configurationBuilder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath);
@@ -37,7 +40,8 @@ namespace MLS.Agent
 
         protected IHostingEnvironment Environment { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
+        public StartupOptions StartupOptions { get; }
+
         public void ConfigureServices(IServiceCollection services)
         {
             using (var operation = Log.OnEnterAndConfirmOnExit())
@@ -58,6 +62,7 @@ namespace MLS.Agent
                 services.AddSingleton(Configuration);
 
                 services.AddSingleton(_ => WorkspaceRegistry.CreateDefault());
+
                 services.AddSingleton(c => new RoslynWorkspaceServer(c.GetRequiredService<WorkspaceRegistry>()));
 
                 services.AddSingleton<IHostedService, Warmup>();
@@ -66,12 +71,9 @@ namespace MLS.Agent
             }
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(
             IApplicationBuilder app,
-            IApplicationLifetime lifetime,
-            IHostingEnvironment env,
-            IServiceProvider serviceProvider)
+            IApplicationLifetime lifetime)
         {
             using (var operation = Log.OnEnterAndConfirmOnExit())
             {
@@ -79,6 +81,7 @@ namespace MLS.Agent
 
                 app.UseDefaultFiles()
                    .UseStaticFiles()
+                   .UseRouter(new StaticFilesProxyRouter())
                    .UseMvc();
 
                 var budget = new Budget();

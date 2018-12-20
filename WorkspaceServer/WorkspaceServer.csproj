@@ -32,13 +32,13 @@
     <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="2.8.2" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="2.1.1" />
     <PackageReference Include="NewtonSoft.Json" Version="11.0.2" />
-    <PackageReference Include="system.commandline.experimental" Version="0.1.0-alpha-63527-01" />
+    <PackageReference Include="system.commandline.experimental" Version="0.1.0-alpha-63619-02" />
     <PackageReference Include="System.Reactive" Version="4.0.0" />
     <PackageReference Include="pocket.disposable" Version="1.0.5">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="ConfirmationLoggerExtensions" Version="0.1.5980001">
+    <PackageReference Include="ConfirmationLoggerExtensions" Version="0.1.6040001">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="AsyncLock" Version="0.1.5650001">

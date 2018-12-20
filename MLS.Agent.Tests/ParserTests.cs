@@ -12,13 +12,13 @@ namespace MLS.Agent.Tests
     {
         private readonly ITestOutputHelper _output;
         private readonly TestConsole _console = new TestConsole();
-        private CommandLineOptions _options;
+        private StartupOptions _options;
         private readonly Parser _parser;
 
         public CommandLineParserTests(ITestOutputHelper output)
         {
             _output = output;
-            _parser = CommandLineOptions.CreateParser((options, invocationContext) =>
+            _parser = Program.CreateParser((options, invocationContext) =>
             {
                 _options = options;
             });
@@ -44,7 +44,7 @@ namespace MLS.Agent.Tests
         public async Task Parse_language_service_mode_flag_switches_option_to_language_service()
         {
             await _parser.InvokeAsync("--language-service", _console);
-            _options.LanguageService.Should().BeTrue();
+            _options.IsLanguageService.Should().BeTrue();
         }
 
         [Fact]
