@@ -28,7 +28,7 @@ namespace MLS.Agent
     {
         public static async Task<int> Main(string[] args)
         {
-            var parser = CreateParser(startServer: (options, console) => ConstructWebHost(options).Run(), GithubHandler);
+            var parser = CreateParser(startServer: (options, console) => ConstructWebHost(options).Run(), (r, c) => GithubHandler(r, c, new RepoLocator()));
 
             return await parser.InvokeAsync(args);
         }
@@ -142,26 +142,35 @@ namespace MLS.Agent
 
         private static readonly TypeBinder _typeBinder = new TypeBinder(typeof(StartupOptions));
 
-        private static async Task GithubHandler(string repo, IConsole console)
+        public static async Task GithubHandler(string repo, IConsole console, IRepoLocator locator)
         {
-            var repos = (await RepoLocator.LocateRepo(repo)).ToArray();
+            var repos = (await locator.LocateRepo(repo)).ToArray();
 
             if (repos.Length == 0)
             {
-                Console.WriteLine($"Didn't find any repos called {repo}");
+                console.Out.WriteLine($"Didn't find any repos called `{repo}`");
             }
             else if (repos[0].Name == repo)
             {
-                Console.WriteLine(GenerateCommandExample(repos[0].Name, repos[0].CloneUrl));
+                console.Out.WriteLine(GenerateCommandExample(repos[0].Name, repos[0].CloneUrl));
 
             }
             else
             {
-                Console.WriteLine("Which of the following did you mean?");
+                console.Out.WriteLine("Which of the following did you mean?");
                 foreach (var instance in repos)
                 {
-                    Console.WriteLine($"\t{instance.Name}");
+                    console.Out.WriteLine($"\t{instance.Name}");
                 }
+            }
+
+            string GenerateCommandExample(string name, string cloneUrl)
+            {
+                string text = $"Found repo `{name}`\n";
+                text += $"To try `{name}`, cd to your desired directory and run the following command:\n\n";
+                text += $"\tgit clone {cloneUrl} && dotnet try .";
+
+                return text;
             }
         }
 
@@ -257,13 +266,6 @@ namespace MLS.Agent
             }
         }
 
-        private static string GenerateCommandExample(string name, string cloneUrl)
-        {
-            string text = $"Found repo `{name}`\n";
-            text += $"To try `{name}`, cd to your desired directory and run the following command:\n\n";
-            text += $"\tgit clone {cloneUrl} && dotnet try .";
-
-            return text;
-        }
+    
     }
 }
