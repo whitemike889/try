@@ -19,6 +19,7 @@ using WorkspaceServer.Servers.Roslyn;
 using SerilogLoggerConfiguration = Serilog.LoggerConfiguration;
 using MLS.Agent.Tools;
 using WorkspaceServer;
+using System.Linq;
 
 namespace MLS.Agent
 {
@@ -145,6 +146,8 @@ namespace MLS.Agent
             var rootCommand = StartServer();
 
             rootCommand.AddCommand(ListWorkspaces());
+            rootCommand.AddCommand(GitHub());
+            rootCommand.AddCommand(Bar());
 
             return new CommandLineBuilder(rootCommand)
                    .UseDefaults()
@@ -213,6 +216,46 @@ namespace MLS.Agent
                     {
                         console.Out.WriteLine(workspace.WorkspaceName);
                     }
+                });
+
+                return run;
+            }
+
+            Command Bar()
+            {
+                var run = new Command("bar", "Lists the available Try .NET packages", argument: new Argument<string>());
+
+                run.Handler = CommandHandler.Create((string thing, IConsole console) =>
+                {
+                    Console.Out.WriteLine($"thing: {thing}");
+                });
+
+                return run;
+            }
+
+            Command GitHub()
+            {
+
+                var run = new Command("github", "Try a GitHub repo", argument: new Argument<string>());
+
+                //run.Handler = CommandHandler.Create(typeof(Handler).GetMethod("HandleAsync"), new Handler());
+
+                //run.Handler = CommandHandler.Create<string>((string repo) =>
+                //{
+                //    if (string.IsNullOrEmpty(repo))
+                //    {
+                //        Console.Out.WriteLine("Falling back to roslyn");
+                //        repo = "roslyn";
+                //    }
+
+                //    //console.Out.WriteLine(repo);
+                //    var things = RepoLocator.LocateRepo(repo).Result;
+                //    Console.Out.WriteLine(things.First());
+                //});
+
+                run.Handler = CommandHandler.Create((string thing) =>
+                {
+                    Console.WriteLine($"thing: {thing}");
                 });
 
                 return run;

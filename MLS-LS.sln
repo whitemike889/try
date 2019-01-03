@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26228.9
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28502.204
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MLS.Agent", "MLS.Agent\MLS.Agent.csproj", "{5D63B3BA-9C25-4F06-91F0-6B0E1091FCD3}"
 EndProject
@@ -30,7 +30,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MLS.Protocol", "MLS.Protoco
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MLS.Protocol.Tests", "MLS.Protocol.Tests\MLS.Protocol.Tests.csproj", "{0119749C-0DF0-4CC0-8FE3-FCDBDF2B8865}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MLS.Project", "MLS.Project\MLS.Project.csproj", "{5D86DF93-2ACA-44D7-9D39-DAD6B129EAFD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MLS.Project", "MLS.Project\MLS.Project.csproj", "{5D86DF93-2ACA-44D7-9D39-DAD6B129EAFD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MLS.Repositories", "MLS.Repositories\MLS.Repositories.csproj", "{1464572C-C78C-4E40-87B8-2130684749F3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -74,6 +76,10 @@ Global
 		{5D86DF93-2ACA-44D7-9D39-DAD6B129EAFD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5D86DF93-2ACA-44D7-9D39-DAD6B129EAFD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5D86DF93-2ACA-44D7-9D39-DAD6B129EAFD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1464572C-C78C-4E40-87B8-2130684749F3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1464572C-C78C-4E40-87B8-2130684749F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1464572C-C78C-4E40-87B8-2130684749F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1464572C-C78C-4E40-87B8-2130684749F3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -89,6 +95,7 @@ Global
 		{02049503-05DA-4898-B45C-E314832734A3} = {6EE8F484-DFA2-4F0F-939F-400CE78DFAC2}
 		{0119749C-0DF0-4CC0-8FE3-FCDBDF2B8865} = {8192FEAD-BCE6-4E62-97E5-2E9EA884BD71}
 		{5D86DF93-2ACA-44D7-9D39-DAD6B129EAFD} = {6EE8F484-DFA2-4F0F-939F-400CE78DFAC2}
+		{1464572C-C78C-4E40-87B8-2130684749F3} = {6EE8F484-DFA2-4F0F-939F-400CE78DFAC2}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D6CD99BA-B16B-4570-8910-225CBDFFA3AD}
