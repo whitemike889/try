@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace MLS.Agent
 {
-    public class GithubHandler
+    public static class GithubHandler
     {
         public static async Task Handler(string repo, IConsole console, IRepoLocator locator)
         {

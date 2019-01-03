@@ -77,7 +77,7 @@ namespace MLS.Agent.Tests
         }
 
         [Fact]
-        public async Task Parse_key_without_parameter_fails_the_parse()
+        public void Parse_key_without_parameter_fails_the_parse()
         {
             _parser.Parse("-k")
                    .Errors
