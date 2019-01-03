@@ -20,6 +20,7 @@ using SerilogLoggerConfiguration = Serilog.LoggerConfiguration;
 using MLS.Agent.Tools;
 using WorkspaceServer;
 using System.Linq;
+using MLS.Repositories;
 
 namespace MLS.Agent
 {
@@ -27,7 +28,7 @@ namespace MLS.Agent
     {
         public static async Task<int> Main(string[] args)
         {
-            var parser = CreateParser(startServer: (options, console) => ConstructWebHost(options).Run());
+            var parser = CreateParser(startServer: (options, console) => ConstructWebHost(options).Run(), GithubHandler);
 
             return await parser.InvokeAsync(args);
         }
@@ -141,13 +142,35 @@ namespace MLS.Agent
 
         private static readonly TypeBinder _typeBinder = new TypeBinder(typeof(StartupOptions));
 
-        public static Parser CreateParser(Action<StartupOptions, InvocationContext> startServer)
+        private static async Task GithubHandler(string repo, IConsole console)
+        {
+            var repos = (await RepoLocator.LocateRepo(repo)).ToArray();
+
+            if (repos.Length == 0)
+            {
+                Console.WriteLine($"Didn't find any repos called {repo}");
+            }
+            else if (repos[0].Name == repo)
+            {
+                Console.WriteLine(GenerateCommandExample(repos[0].Name, repos[0].CloneUrl));
+
+            }
+            else
+            {
+                Console.WriteLine("Which of the following did you mean?");
+                foreach (var instance in repos)
+                {
+                    Console.WriteLine($"\t{instance.Name}");
+                }
+            }
+        }
+
+        public static Parser CreateParser(Action<StartupOptions, InvocationContext> startServer, Func<string, IConsole, Task> githubHandler)
         {
             var rootCommand = StartServer();
 
             rootCommand.AddCommand(ListWorkspaces());
             rootCommand.AddCommand(GitHub());
-            rootCommand.AddCommand(Bar());
 
             return new CommandLineBuilder(rootCommand)
                    .UseDefaults()
@@ -192,7 +215,7 @@ namespace MLS.Agent
                 startServerCommand.AddOption(new Option(
                                                  "--root-directory",
                                                  "Specify the path to the root directory",
-                                                 new Argument<DirectoryInfo>(new DirectoryInfo(Directory.GetCurrentDirectory())).ExistingFilesOnly()));
+                                                 new Argument<DirectoryInfo>(new DirectoryInfo(Directory.GetCurrentDirectory())).ExistingOnly()));
 
                 startServerCommand.Handler = CommandHandler.Create<InvocationContext>(context =>
                 {
@@ -221,45 +244,26 @@ namespace MLS.Agent
                 return run;
             }
 
-            Command Bar()
-            {
-                var run = new Command("bar", "Lists the available Try .NET packages", argument: new Argument<string>());
-
-                run.Handler = CommandHandler.Create((string thing, IConsole console) =>
-                {
-                    Console.Out.WriteLine($"thing: {thing}");
-                });
-
-                return run;
-            }
-
             Command GitHub()
             {
 
-                var run = new Command("github", "Try a GitHub repo", argument: new Argument<string>());
+                var argument = new Argument<string>();
+                argument.Name = "repo";
+                var run = new Command("github", "Try a GitHub repo", argument: argument);
 
-                //run.Handler = CommandHandler.Create(typeof(Handler).GetMethod("HandleAsync"), new Handler());
-
-                //run.Handler = CommandHandler.Create<string>((string repo) =>
-                //{
-                //    if (string.IsNullOrEmpty(repo))
-                //    {
-                //        Console.Out.WriteLine("Falling back to roslyn");
-                //        repo = "roslyn";
-                //    }
-
-                //    //console.Out.WriteLine(repo);
-                //    var things = RepoLocator.LocateRepo(repo).Result;
-                //    Console.Out.WriteLine(things.First());
-                //});
-
-                run.Handler = CommandHandler.Create((string thing) =>
-                {
-                    Console.WriteLine($"thing: {thing}");
-                });
+                run.Handler = CommandHandler.Create(githubHandler);
 
                 return run;
             }
+        }
+
+        private static string GenerateCommandExample(string name, string cloneUrl)
+        {
+            string text = $"Found repo `{name}`\n";
+            text += $"To try `{name}`, cd to your desired directory and run the following command:\n\n";
+            text += $"\tgit clone {cloneUrl} && dotnet try .";
+
+            return text;
         }
     }
 }
