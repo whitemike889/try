@@ -255,7 +255,6 @@ namespace MLS.Agent
 
             Command GitHub()
             {
-
                 var argument = new Argument<string>();
                 argument.Name = "repo";
                 var run = new Command("github", "Try a GitHub repo", argument: argument);
@@ -265,7 +264,5 @@ namespace MLS.Agent
                 return run;
             }
         }
-
-    
     }
 }
