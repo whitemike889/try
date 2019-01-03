@@ -6,6 +6,7 @@ using System.CommandLine;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
+using static MLS.Agent.GithubHandler;
 
 namespace MLS.Agent.Tests
 {
@@ -37,7 +38,7 @@ namespace MLS.Agent.Tests
         public async Task It_reports_no_matches()
         {
             var console = new TestConsole();
-            await Program.GithubHandler("foo", console, new TestRepoLocator(new Repo[] { }));
+            await Handler("foo", console, new TestRepoLocator(new Repo[] { }));
             console.Out.ToString().Replace("\r\n", "\n")
                 .Should().Be("Didn't find any repos called `foo`\n");
 
@@ -47,7 +48,7 @@ namespace MLS.Agent.Tests
         public async Task It_finds_the_requested_repo()
         {
             var console = new TestConsole();
-            await Program.GithubHandler("foo", console, _locator);
+            await Handler("foo", console, _locator);
             console.Out.ToString().Replace("\r\n", "\n").
                 Should().Be("Found repo `foo`\nTo try `foo`, cd to your desired directory and run the following command:\n\n\tgit clone http://github.com/foo.git && dotnet try .\n");
 
@@ -57,7 +58,7 @@ namespace MLS.Agent.Tests
         public async Task It_asks_for_disambiguation()
         {
             var console = new TestConsole();
-            await Program.GithubHandler("something", console, _locator);
+            await Handler("something", console, _locator);
             console.Out.ToString().Replace("\r\n", "\n").Should().Be("Which of the following did you mean?\n\tfoo\n\tbar\n");
         }
     }
