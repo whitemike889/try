@@ -28,7 +28,8 @@ namespace MLS.Agent
     {
         public static async Task<int> Main(string[] args)
         {
-            var parser = CreateParser(startServer: (options, console) => ConstructWebHost(options).Run(), (r, c) => GithubHandler.Handler(r, c, new RepoLocator()));
+            var parser = CreateParser(startServer: (options, console) => ConstructWebHost(options).Run(), 
+                (repo, console) => GithubHandler.Handler(repo, console, new RepoLocator()));
 
             return await parser.InvokeAsync(args);
         }
@@ -142,9 +143,8 @@ namespace MLS.Agent
 
         private static readonly TypeBinder _typeBinder = new TypeBinder(typeof(StartupOptions));
 
-        
-
-        public static Parser CreateParser(Action<StartupOptions, InvocationContext> startServer, Func<string, IConsole, Task> githubHandler)
+        public static Parser CreateParser(Action<StartupOptions, InvocationContext> startServer, 
+            Func<string, IConsole, Task> githubCommand)
         {
             var rootCommand = StartServer();
 
@@ -229,7 +229,7 @@ namespace MLS.Agent
                 argument.Name = "repo";
                 var run = new Command("github", "Try a GitHub repo", argument: argument);
 
-                run.Handler = CommandHandler.Create(githubHandler);
+                run.Handler = CommandHandler.Create(githubCommand);
 
                 return run;
             }
