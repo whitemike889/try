@@ -108,7 +108,7 @@ namespace MLS.Agent.Tests
         }
 
         [Fact]
-        public async Task Parse_application_insights_key_without_parameter_fails_the_parse()
+        public void Parse_application_insights_key_without_parameter_fails_the_parse()
         {
             var result = _parser.Parse("--ai-key");
 
