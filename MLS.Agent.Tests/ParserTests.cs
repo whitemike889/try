@@ -1,6 +1,7 @@
 using System;
 using System.CommandLine;
 using System.CommandLine.Invocation;
+using System.IO;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Xunit;
@@ -38,6 +39,28 @@ namespace MLS.Agent.Tests
             await _parser.InvokeAsync("--production", _console);
 
             _options.Production.Should().BeTrue();
+        }
+
+        [Fact]
+        public async Task Parse_root_directory_with_a_valid_path_succeeds()
+        {
+            var path = TestAssets.BasicConsole.FullName;
+            await _parser.InvokeAsync(new[] { "--root-directory", path }, _console);
+            _options.RootDirectory.FullName.Should().Be(path);
+        }
+
+        [Fact]
+        public async Task Parse_empty_command_line_has_current_directory_as_root_directory()
+        {
+            await _parser.InvokeAsync("", _console);
+            _options.RootDirectory.FullName.Should().Be(Directory.GetCurrentDirectory());
+        }
+
+        [Fact]
+        public async Task Parse_root_directory_with_a_non_existing_path_fails()
+        {
+            await _parser.InvokeAsync(new[] { "--root-directory", "INVALIDPATH" }, _console);
+            _options.Should().BeNull();
         }
 
         [Fact]

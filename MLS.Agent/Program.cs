@@ -185,6 +185,11 @@ namespace MLS.Agent
                                                  "--log-to-file",
                                                  "Writes a log file",
                                                  new Argument<bool>()));
+                
+                startServerCommand.AddOption(new Option(
+                                                 "--root-directory",
+                                                 "Specify the path to the root directory",
+                                                 new Argument<DirectoryInfo>(new DirectoryInfo(Directory.GetCurrentDirectory())).ExistingFilesOnly()));
 
                 startServerCommand.Handler = CommandHandler.Create<InvocationContext>(context =>
                 {

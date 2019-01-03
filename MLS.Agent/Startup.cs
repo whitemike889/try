@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using Clockwise;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
@@ -66,6 +67,8 @@ namespace MLS.Agent
                 services.AddSingleton(c => new RoslynWorkspaceServer(c.GetRequiredService<WorkspaceRegistry>()));
 
                 services.AddSingleton<IHostedService, Warmup>();
+
+                services.AddSingleton<IMarkdownProject, MarkdownProject>();
 
                 operation.Succeed();
             }

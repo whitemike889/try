@@ -1,4 +1,4 @@
-using System;
+using System.IO;
 
 namespace MLS.Agent
 {
@@ -11,7 +11,8 @@ namespace MLS.Agent
             string applicationInsightsKey = null,
             bool logToFile = false,
             string id = null,
-            string regionId = null)
+            string regionId = null,
+            DirectoryInfo rootDirectory = null)
         {
             LogToFile = logToFile;
             Id = id;
@@ -20,10 +21,12 @@ namespace MLS.Agent
             Key = key;
             ApplicationInsightsKey = applicationInsightsKey;
             RegionId = regionId;
+            RootDirectory = rootDirectory;
         }
 
         public string Id { get; set; }
         public string RegionId { get; set; }
+        public DirectoryInfo RootDirectory { get; set; }
         public bool Production { get; set; }
         public bool IsLanguageService { get; set; }
         public string Key { get; set; }
