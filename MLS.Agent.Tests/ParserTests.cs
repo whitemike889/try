@@ -15,6 +15,7 @@ namespace MLS.Agent.Tests
         private readonly TestConsole _console = new TestConsole();
         private StartupOptions _options;
         private readonly Parser _parser;
+        private string _repo;
 
         public CommandLineParserTests(ITestOutputHelper output)
         {
@@ -22,6 +23,11 @@ namespace MLS.Agent.Tests
             _parser = Program.CreateParser((options, invocationContext) =>
             {
                 _options = options;
+            },
+            (repo, c) =>
+            {
+                _repo = repo;
+                return Task.CompletedTask;
             });
         }
 
@@ -71,7 +77,7 @@ namespace MLS.Agent.Tests
         }
 
         [Fact]
-        public async Task Parse_key_without_parameter_fails_the_parse()
+        public void Parse_key_without_parameter_fails_the_parse()
         {
             _parser.Parse("-k")
                    .Errors
@@ -102,7 +108,7 @@ namespace MLS.Agent.Tests
         }
 
         [Fact]
-        public async Task Parse_application_insights_key_without_parameter_fails_the_parse()
+        public void Parse_application_insights_key_without_parameter_fails_the_parse()
         {
             var result = _parser.Parse("--ai-key");
 
@@ -116,6 +122,22 @@ namespace MLS.Agent.Tests
         {
             await _parser.InvokeAsync(new[] { "--ai-key", "abc123" }, _console);
             _options.ApplicationInsightsKey.Should().Be("abc123");
+        }
+
+        [Fact]
+        public async Task GitHub_handler_not_run_if_argument_is_missing()
+        {
+            _repo = "value";
+            await _parser.InvokeAsync("github");
+            _repo.Should().Be("value");
+        }
+
+        [Fact]
+        public async Task GitHub_handler_run_if_argument_is_present()
+        {
+            _repo = "value";
+            await _parser.InvokeAsync("github roslyn");
+            _repo.Should().Be("roslyn");
         }
     }
 }

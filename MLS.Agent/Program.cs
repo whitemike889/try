@@ -1,24 +1,26 @@
-﻿using System;
+﻿using Microsoft.ApplicationInsights;
+using Microsoft.ApplicationInsights.Extensibility;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+using MLS.Agent.Tools;
+using MLS.Repositories;
+using Pocket;
+using Pocket.For.ApplicationInsights;
+using Recipes;
+using Serilog.Sinks.RollingFileAlternate;
+using System;
 using System.CommandLine;
 using System.CommandLine.Builder;
 using System.CommandLine.Invocation;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
-using static Pocket.Logger<MLS.Agent.Program>;
-using Pocket;
 using System.Threading.Tasks;
-using Microsoft.ApplicationInsights;
-using Microsoft.ApplicationInsights.Extensibility;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.DependencyInjection;
-using Pocket.For.ApplicationInsights;
-using Recipes;
-using Serilog.Sinks.RollingFileAlternate;
-using WorkspaceServer.Servers.Roslyn;
-using SerilogLoggerConfiguration = Serilog.LoggerConfiguration;
-using MLS.Agent.Tools;
 using WorkspaceServer;
+using WorkspaceServer.Servers.Roslyn;
+using static Pocket.Logger<MLS.Agent.Program>;
+using SerilogLoggerConfiguration = Serilog.LoggerConfiguration;
 
 namespace MLS.Agent
 {
@@ -26,7 +28,9 @@ namespace MLS.Agent
     {
         public static async Task<int> Main(string[] args)
         {
-            var parser = CreateParser(startServer: (options, console) => ConstructWebHost(options).Run());
+            var parser = CreateParser(
+                startServer: (options, console) => ConstructWebHost(options).Run(),
+                (repo, console) => GithubHandler.Handler(repo, console, new GithubRepoLocator()));
 
             return await parser.InvokeAsync(args);
         }
@@ -140,11 +144,14 @@ namespace MLS.Agent
 
         private static readonly TypeBinder _typeBinder = new TypeBinder(typeof(StartupOptions));
 
-        public static Parser CreateParser(Action<StartupOptions, InvocationContext> startServer)
+        public static Parser CreateParser(
+            Action<StartupOptions, InvocationContext> startServer,
+            Func<string, IConsole, Task> tryGithub)
         {
             var rootCommand = StartServer();
 
             rootCommand.AddCommand(ListWorkspaces());
+            rootCommand.AddCommand(GitHub());
 
             return new CommandLineBuilder(rootCommand)
                    .UseDefaults()
@@ -153,9 +160,9 @@ namespace MLS.Agent
             RootCommand StartServer()
             {
                 var startServerCommand = new RootCommand
-                                         {
-                                             Description = "Starts the Try .NET agent."
-                                         };
+                {
+                    Description = "Starts the Try .NET agent."
+                };
 
                 startServerCommand.AddOption(new Option(
                                                  "--id",
@@ -185,15 +192,15 @@ namespace MLS.Agent
                                                  "--log-to-file",
                                                  "Writes a log file",
                                                  new Argument<bool>()));
-                
+
                 startServerCommand.AddOption(new Option(
                                                  "--root-directory",
                                                  "Specify the path to the root directory",
-                                                 new Argument<DirectoryInfo>(new DirectoryInfo(Directory.GetCurrentDirectory())).ExistingFilesOnly()));
+                                                 new Argument<DirectoryInfo>(new DirectoryInfo(Directory.GetCurrentDirectory())).ExistingOnly()));
 
                 startServerCommand.Handler = CommandHandler.Create<InvocationContext>(context =>
                 {
-                    var options = (StartupOptions) _typeBinder.CreateInstance(context);
+                    var options = (StartupOptions)_typeBinder.CreateInstance(context);
 
                     startServer(options, context);
                 });
@@ -214,6 +221,23 @@ namespace MLS.Agent
                         console.Out.WriteLine(workspace.WorkspaceName);
                     }
                 });
+
+                return run;
+            }
+
+            Command GitHub()
+            {
+                var argument = new Argument<string>();
+
+                // System.CommandLine parameter binding does lookup by name,
+                // so name the argument after the github command's string param
+                argument.Name = tryGithub.Method.GetParameters()
+                    .First(p => p.ParameterType == typeof(string))
+                    .Name;
+
+                var run = new Command("github", "Try a GitHub repo", argument: argument);
+
+                run.Handler = CommandHandler.Create(tryGithub);
 
                 return run;
             }
