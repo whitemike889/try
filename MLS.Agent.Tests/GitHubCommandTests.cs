@@ -13,11 +13,6 @@ namespace MLS.Agent.Tests
     public class GitHubCommandTests
     {
         IRepoLocator _locator = new RepoLocatorSimulator();
-        //IRepoLocator _locator = new TestRepoLocator(new[]
-        //    {
-        //        new Repo("foo", "http://github.com/foo.git"),
-        //        new Repo("bar", "http://github.com/bar.git")
-        //    });
 
         class TestRepoLocator : IRepoLocator
         {
@@ -49,9 +44,9 @@ namespace MLS.Agent.Tests
         public async Task It_finds_the_requested_repo()
         {
             var console = new TestConsole();
-            await Handler("2660eaec-6af8-452d-b70d-41227d616cd9", console, _locator);
+            await Handler("rchande/2660eaec-6af8-452d-b70d-41227d616cd9", console, _locator);
             console.Out.ToString().Replace("\r\n", "\n").
-                Should().Be("Found repo `2660eaec-6af8-452d-b70d-41227d616cd`\nTo try `2660eaec-6af8-452d-b70d-41227d616cd, cd to your desired directory and run the following command:\n\n\tgit clone http://github.com/2660eaec-6af8-452d-b70d-41227d616cd.git && dotnet try .\n");
+                Should().Be("Found repo `rchande/2660eaec-6af8-452d-b70d-41227d616cd9`\nTo try `rchande/2660eaec-6af8-452d-b70d-41227d616cd9`, cd to your desired directory and run the following command:\n\n\tgit clone https://github.com/rchande/2660eaec-6af8-452d-b70d-41227d616cd9.git && dotnet try .\n");
 
         }
 
@@ -60,7 +55,8 @@ namespace MLS.Agent.Tests
         {
             var console = new TestConsole();
             await Handler("rchande/tribble", console, _locator);
-            console.Out.ToString().Replace("\r\n", "\n").Should().Be("Which of the following did you mean?\n\t\n\tbar\n");
+            console.Out.ToString().Replace("\r\n", "\n").Should()
+                .Be("Which of the following did you mean?\n\trchande/upgraded-octo-tribble.\n\trchande/downgraded-octo-tribble.\n");
         }
     }
 }
