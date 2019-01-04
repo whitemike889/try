@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace MLS.Repositories.Tests
 {
-    public class SimulatorTests : RepoSearchSimulatorTests
+    public class SimulatorTests : IRepoLocatorTests
     {
         protected override IRepoLocator GetLocator()
         {
-            return new Simulator();
+            return new RepoLocatorSimulator();
         }
     }
 }

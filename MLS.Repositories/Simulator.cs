@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace MLS.Repositories
 {
-    public class Simulator : IRepoLocator
+    public class RepoLocatorSimulator : IRepoLocator
     {
         public Task<IEnumerable<Repo>> LocateRepo(string repo)
         {

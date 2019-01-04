@@ -6,7 +6,7 @@ using Xunit;
 
 namespace MLS.Repositories.Tests
 {
-    public abstract class RepoSearchSimulatorTests
+    public abstract class IRepoLocatorTests
     {
         protected abstract IRepoLocator GetLocator();
 

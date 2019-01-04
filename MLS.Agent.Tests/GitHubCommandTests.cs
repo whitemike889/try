@@ -12,7 +12,7 @@ namespace MLS.Agent.Tests
 {
     public class GitHubCommandTests
     {
-        IRepoLocator _locator = new Simulator();
+        IRepoLocator _locator = new RepoLocatorSimulator();
         //IRepoLocator _locator = new TestRepoLocator(new[]
         //    {
         //        new Repo("foo", "http://github.com/foo.git"),
