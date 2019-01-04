@@ -30,7 +30,7 @@ namespace MLS.Agent
         {
             var parser = CreateParser(
                 startServer: (options, console) => ConstructWebHost(options).Run(),
-                (repo, console) => GithubHandler.Handler(repo, console, new RepoLocator()));
+                (repo, console) => GithubHandler.Handler(repo, console, new GithubRepoLocator()));
 
             return await parser.InvokeAsync(args);
         }
