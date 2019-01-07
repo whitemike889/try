@@ -32,7 +32,7 @@ namespace MLS.Agent
             }
 
             var markdownfile = new MarkdownFile(new FileInfo(files.First()));
-            if (markdownfile.TryGetContent(out string content))
+            if (markdownfile.TryGetContent(out var content))
             {
                 html = ConvertToHtml(content);
                 return true;

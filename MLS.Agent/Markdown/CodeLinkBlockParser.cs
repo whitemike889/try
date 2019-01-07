@@ -3,6 +3,7 @@ using Markdig.Parsers;
 using Markdig.Syntax;
 using System;
 using System.IO;
+using System.Text.RegularExpressions;
 
 namespace MLS.Agent.Markdown
 {
@@ -23,7 +24,7 @@ namespace MLS.Agent.Markdown
             return block;
         }
 
-        public bool InfoStringParser(BlockProcessor state, ref StringSlice line, IFencedBlock fenced)
+        private bool InfoStringParser(BlockProcessor state, ref StringSlice line, IFencedBlock fenced)
         {
             // line.Text contains the entire string of the document
             // In the ParseBlock method we parse the first line of the fenced block which will be given by line.toString()
@@ -35,8 +36,8 @@ namespace MLS.Agent.Markdown
                 return false;
             }
 
-            string langString = slices[0];
-            string argString = slices[1];
+            var langString = slices[0];
+            var argString = slices[1];
 
             if (!IsCSharp(langString))
             {
@@ -46,7 +47,7 @@ namespace MLS.Agent.Markdown
             fenced.Info = HtmlHelper.Unescape(langString);
             var codeLinkBlock = fenced as CodeLinkBlock;
 
-            if (TryGetCodeFromFile(argString, out string code))
+            if (TryGetCodeFromFile(argString, out var code))
             {
                 codeLinkBlock.CodeLines = new StringSlice(HtmlHelper.Unescape(code));
             }
@@ -58,10 +59,7 @@ namespace MLS.Agent.Markdown
             return true;
         }
 
-        private bool IsCSharp(string language) =>
-                string.Compare(language, "cs", true) == 0
-                || string.Compare(language, "csharp", true) == 0
-                || string.Compare(language, "c#", true) == 0;
+        private bool IsCSharp(string language) => Regex.Match(language, @"cs|csharp|c#", RegexOptions.IgnoreCase).Success;
 
 
         private bool TryGetCodeFromFile(string filename, out string code)
@@ -89,10 +87,9 @@ namespace MLS.Agent.Markdown
 
         private string GetFullyQualifiedPath(string filePath)
         {
-            if (Path.IsPathRooted(filePath.ToString()))
-                return filePath;
-
-            return Path.Combine(_config.RootDirectory.FullName, filePath);
+            return Path.IsPathRooted(filePath) 
+                ? filePath 
+                : Path.Combine(_config.RootDirectory.FullName, filePath);
         }
     }
 }

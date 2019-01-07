@@ -7,9 +7,7 @@ namespace MLS.Agent.Markdown
     {
         public static MarkdownPipelineBuilder UseCodeLinks(this MarkdownPipelineBuilder pipeline, Configuration config)
         {
-            OrderedList<IMarkdownExtension> extensions;
-
-            extensions = pipeline.Extensions;
+            var extensions = pipeline.Extensions;
 
             if (!extensions.Contains<CodeLinkExtension>())
             {

@@ -31,7 +31,7 @@ namespace MLS.Agent
 
             string GenerateCommandExample(string name, string cloneUrl)
             {
-                string text = $"Found repo `{name}`\n";
+                var text = $"Found repo `{name}`\n";
                 text += $"To try `{name}`, cd to your desired directory and run the following command:\n\n";
                 text += $"\tgit clone {cloneUrl} && dotnet try .";
 
