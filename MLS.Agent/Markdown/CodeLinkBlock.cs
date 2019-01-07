@@ -1,4 +1,5 @@
 ﻿using Markdig.Helpers;
+using Markdig.Parsers;
 using Markdig.Syntax;
 
 namespace MLS.Agent.Markdown
@@ -8,7 +9,7 @@ namespace MLS.Agent.Markdown
         public StringSlice CodeLines { get; set; }
         public string ExceptionMessage { get; set; }
 
-        public CodeLinkBlock(CodeLinkBlockParser parser): base(parser)
+        public CodeLinkBlock(BlockParser parser): base(parser)
         {
         }
     }

@@ -1,9 +1,7 @@
 ﻿using FluentAssertions;
 using MLS.Repositories;
-using System;
 using System.Collections.Generic;
 using System.CommandLine;
-using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 using static MLS.Agent.GithubHandler;
@@ -19,7 +17,7 @@ namespace MLS.Agent.Tests
             private readonly IEnumerable<Repo> _repos;
 
 
-            public TestRepoLocator(Repo[] repos)
+            public TestRepoLocator(IEnumerable<Repo> repos)
             {
                 _repos = repos;
             }
