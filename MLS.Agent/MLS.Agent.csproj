@@ -37,7 +37,9 @@
     <PackageReference Include="LoggerExtensions" Version="0.1.5650001" />
     <PackageReference Include="markdig" Version="0.15.5" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.3.0" />
-    <PackageReference Include="Microsoft.AspNetCore.App" Version="2.1.1" />
+    <PackageReference Include="Microsoft.AspNetCore.App" Version="2.1.7" />
+    <PackageReference Include="Microsoft.AspNetCore.WebSockets" Version="2.1.7" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Core" Version="2.1.7" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="2.1.1" />
     <PackageReference Include="nodatime" Version="2.3.0" />
     <PackageReference Include="nodatime.testing" Version="2.3.0" />
