@@ -4,10 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Pocket;
 using Recipes;
-using WorkspaceServer.Models;
-using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Servers.Scripting;
-using WorkspaceServer.WorkspaceFeatures;
 using WorkspaceServer.Workspaces;
 using Xunit;
 using Xunit.Abstractions;
@@ -28,7 +25,7 @@ namespace WorkspaceServer.Tests
 
         protected override Task<(ICodeRunner runner, WorkspaceBuild workspace)> GetRunnerAndWorkspaceBuild(
             [CallerMemberName] string testName = null) =>
-            Task.FromResult<(ICodeRunner , WorkspaceBuild )>((new ScriptingWorkspaceServer(), new WorkspaceBuild("script", buildArtifactLocator: null)));
+            Task.FromResult<(ICodeRunner , WorkspaceBuild )>((new ScriptingWorkspaceServer(), new WorkspaceBuild("script")));
 
         protected override ILanguageService GetLanguageService([CallerMemberName] string testName = null) =>
             new ScriptingWorkspaceServer();

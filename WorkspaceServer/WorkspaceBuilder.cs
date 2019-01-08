@@ -10,20 +10,16 @@ namespace WorkspaceServer
 {
     public class WorkspaceBuilder
     {
-        private readonly WorkspaceRegistry _registry;
-
         private WorkspaceBuild workspaceBuild;
 
         private readonly List<Func<WorkspaceBuild, Budget, Task>> _afterCreateActions = new List<Func<WorkspaceBuild, Budget, Task>>();
 
-        public WorkspaceBuilder(WorkspaceRegistry registry, string workspaceName)
+        public WorkspaceBuilder(string workspaceName)
         {
             if (string.IsNullOrWhiteSpace(workspaceName))
             {
                 throw new ArgumentException("Value cannot be null or whitespace.", nameof(workspaceName));
             }
-
-            _registry = registry ?? throw new ArgumentNullException(nameof(registry));
 
             WorkspaceName = workspaceName;
         }
@@ -33,22 +29,20 @@ namespace WorkspaceServer
         internal IWorkspaceInitializer WorkspaceInitializer { get; private set; }
 
         public bool RequiresPublish { get; set; }
-        public IBuildArtifactLocator BuildArtifactLocator { get; private set; }
+
+        public DirectoryInfo Directory { get; set; }
 
         public void AfterCreate(Func<WorkspaceBuild, Budget, Task> action)
         {
             _afterCreateActions.Add(action);
         }
-            
 
-        public void CreateUsingDotnet(string template, IBuildArtifactLocator buildArtifactLocator, string projectName = null)
+        public void CreateUsingDotnet(string template, string projectName = null)
         {
             WorkspaceInitializer = new WorkspaceInitializer(
                template,
                projectName ?? WorkspaceName,
                AfterCreate);
-
-            BuildArtifactLocator = buildArtifactLocator;
         }
            
 
@@ -106,9 +100,9 @@ namespace WorkspaceServer
 
             workspaceBuild = new WorkspaceBuild(
                 WorkspaceName,
-                BuildArtifactLocator,
                 WorkspaceInitializer,
-                requiresPublish: RequiresPublish);
+                RequiresPublish,
+                Directory);
 
             await workspaceBuild.EnsureReady(budget);
 

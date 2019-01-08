@@ -26,7 +26,7 @@ namespace WorkspaceServer
                 throw new ArgumentException("Value cannot be null or whitespace.", nameof(name));
             }
 
-            var options = new WorkspaceBuilder(this, name);
+            var options = new WorkspaceBuilder(name);
             configure(options);
             _workspaceBuilders.TryAdd(name, options);
         }
@@ -43,7 +43,7 @@ namespace WorkspaceServer
 
                                     if (directory.Exists)
                                     {
-                                        return new WorkspaceBuilder(this, name);
+                                        return new WorkspaceBuilder(name);
                                     }
 
                                     throw new ArgumentException($"Workspace named \"{name}\" not found.");
@@ -61,21 +61,33 @@ namespace WorkspaceServer
             return workspaceInfos;
         }
 
-        public static WorkspaceRegistry CreateDefault()
+        public static WorkspaceRegistry CreateForTryMode(DirectoryInfo project)
+        {
+            var registry = new WorkspaceRegistry();
+
+            registry.Add(project.Name, builder =>
+            {
+                builder.Directory = project;
+            });
+
+            return registry;
+        }
+
+        public static WorkspaceRegistry CreateForHostedMode()
         {
             var registry = new WorkspaceRegistry();
 
             registry.Add("console",
                          workspace =>
                          {
-                             workspace.CreateUsingDotnet("console", NetCoreAppBuildArtifactLocator.Instance);
+                             workspace.CreateUsingDotnet("console");
                              workspace.AddPackageReference("Newtonsoft.Json");
                          });
 
             registry.Add("nodatime.api",
                          workspace =>
                          {
-                             workspace.CreateUsingDotnet("console", NetCoreAppBuildArtifactLocator.Instance);
+                             workspace.CreateUsingDotnet("console");
                              workspace.AddPackageReference("NodaTime", "2.3.0");
                              workspace.AddPackageReference("NodaTime.Testing", "2.3.0");
                              workspace.AddPackageReference("Newtonsoft.Json");
@@ -84,33 +96,33 @@ namespace WorkspaceServer
             registry.Add("aspnet.webapi",
                          workspace =>
                          {
-                             workspace.CreateUsingDotnet("webapi", NetCoreAppBuildArtifactLocator.Instance);
+                             workspace.CreateUsingDotnet("webapi");
                              workspace.RequiresPublish = true;
                          });
 
             registry.Add("xunit",
                          workspace =>
                          {
-                             workspace.CreateUsingDotnet("xunit", NetCoreAppBuildArtifactLocator.Instance, "tests");
+                             workspace.CreateUsingDotnet("xunit", "tests");
                              workspace.AddPackageReference("Newtonsoft.Json");
                              workspace.DeleteFile("UnitTest1.cs");
                          });
 
-        registry.Add("blazor-console",
-                                  workspace =>
-                                  {
-                                      workspace.CreateUsingDotnet("classlib", new NetstandardBuildArtifactLocator());
-                                      workspace.AddPackageReference("Newtonsoft.Json");
-                                  });
+            registry.Add("blazor-console",
+                         workspace =>
+                         {
+                             workspace.CreateUsingDotnet("classlib");
+                             workspace.AddPackageReference("Newtonsoft.Json");
+                         });
 
-        registry.Add("blazor-nodatime",
-                        workspace =>
-                        {
-                            workspace.CreateUsingDotnet("classlib", new NetstandardBuildArtifactLocator());
-                            workspace.AddPackageReference("NodaTime", "2.3.0");
-                            workspace.AddPackageReference("NodaTime.Testing", "2.3.0");
-                            workspace.AddPackageReference("Newtonsoft.Json");
-                        });
+            registry.Add("blazor-nodatime",
+                         workspace =>
+                         {
+                             workspace.CreateUsingDotnet("classlib");
+                             workspace.AddPackageReference("NodaTime", "2.3.0");
+                             workspace.AddPackageReference("NodaTime.Testing", "2.3.0");
+                             workspace.AddPackageReference("Newtonsoft.Json");
+                         });
 
             return registry;
         }

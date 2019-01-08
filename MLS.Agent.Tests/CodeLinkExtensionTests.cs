@@ -42,7 +42,7 @@ $@"```{language} Program.cs
         }
 
         [Fact]
-        public void Doesnot_replace_filename_if_specified_language_is_not_csharp()
+        public void Does_not_replace_filename_if_specified_language_is_not_csharp()
         {
             string expectedValue =
 @"<pre><code class=""language-js"">console.log(&quot;Hello World&quot;);
@@ -62,7 +62,7 @@ console.log(""Hello World"");
         }
 
         [Fact]
-        public void Doesnot_replace_filename_if_the_file_doesnot_exist()
+        public void Does_not_replace_filename_if_the_file_does_not_exist()
         {
             //todo: what is the expected output in cases where there is unexpected input like below
             var testDir = TestAssets.BasicConsole;

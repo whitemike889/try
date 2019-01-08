@@ -2,19 +2,25 @@
 using Markdig.Parsers;
 using Markdig.Syntax;
 using System;
+using System.CommandLine;
+using System.CommandLine.Builder;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
+using MLS.Protocol.Execution;
 
 namespace MLS.Agent.Markdown
 {
     public class CodeLinkBlockParser : FencedBlockParserBase<CodeLinkBlock>
     {
+        private static readonly Parser _csharpLinkParser = CreateLineParser();
+
         private readonly Configuration _config;
 
         public CodeLinkBlockParser(Configuration config)
         {
             OpeningCharacters = new[] { '`' };
-            InfoParser = InfoStringParser;
+            InfoParser = ParseCodeOptions;
             _config = config ?? throw new ArgumentNullException(nameof(config));
         }
 
@@ -24,17 +30,45 @@ namespace MLS.Agent.Markdown
             return block;
         }
 
-        private bool InfoStringParser(BlockProcessor state, ref StringSlice line, IFencedBlock fenced)
+        private static Parser CreateLineParser()
+        {
+            var bufferIdArg = new Argument<BufferId>(
+                               result =>
+                               {
+                                   return ArgumentParseResult.Success(BufferId.Parse(result.Arguments.Single()));
+                               })
+                           {
+                               Name = "bufferId",
+                               Arity = ArgumentArity.ExactlyOne
+                           };
+
+            var language = new Command("csharp", argument: bufferIdArg)
+                          {
+                              new Option("--project", 
+                                         argument: new Argument<DirectoryInfo>().ExistingOnly())
+                          };
+            
+            return new Parser(language);
+        }
+
+        private bool ParseCodeOptions(
+            BlockProcessor state, 
+            ref StringSlice line, 
+            IFencedBlock fenced)
         {
             // line.Text contains the entire string of the document
             // In the ParseBlock method we parse the first line of the fenced block which will be given by line.toString()
             // This is the line that will contain the filename and all the other trydotnet related config
 
-            var slices = line.ToString().Split();
-            if (slices.Length < 2) //We should have atleast two parts - the language string and the name of the file
+            var codeLinkBlock = fenced as CodeLinkBlock;
+
+            if (fenced == null)
             {
                 return false;
             }
+
+            var slices = line.ToString().Split(
+                new[] { ' ' }, 2, StringSplitOptions.RemoveEmptyEntries);
 
             var langString = slices[0];
             var argString = slices[1];
@@ -42,10 +76,18 @@ namespace MLS.Agent.Markdown
             if (!IsCSharp(langString))
             {
                 return false;
-            } 
+            }
+
+            var parseResult = _csharpLinkParser.Parse(argString);
+
+            if (parseResult.Errors.Any())
+            {
+                codeLinkBlock.ErrorMessage =
+                    string.Join("\n", parseResult.Errors.Select(e => e.ToString()));
+                return true;
+            }
 
             fenced.Info = HtmlHelper.Unescape(langString);
-            var codeLinkBlock = fenced as CodeLinkBlock;
 
             if (TryGetCodeFromFile(argString, out var code))
             {
@@ -53,7 +95,7 @@ namespace MLS.Agent.Markdown
             }
             else
             {
-                codeLinkBlock.ExceptionMessage = $"Error reading the file {argString}";
+                codeLinkBlock.ErrorMessage = $"Error reading the file {argString}";
             }
 
             return true;
