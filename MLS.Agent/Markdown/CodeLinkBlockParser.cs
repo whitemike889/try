@@ -1,6 +1,7 @@
 ﻿using Markdig.Helpers;
 using Markdig.Parsers;
 using Markdig.Syntax;
+using Markdig.Renderers.Html;
 using System;
 using System.CommandLine;
 using System.CommandLine.Builder;
@@ -37,23 +38,23 @@ namespace MLS.Agent.Markdown
                                {
                                    return ArgumentParseResult.Success(BufferId.Parse(result.Arguments.Single()));
                                })
-                           {
-                               Name = "bufferId",
-                               Arity = ArgumentArity.ExactlyOne
-                           };
+            {
+                Name = "bufferId",
+                Arity = ArgumentArity.ExactlyOne
+            };
 
             var language = new Command("csharp", argument: bufferIdArg)
                           {
-                              new Option("--project", 
+                              new Option("--project",
                                          argument: new Argument<DirectoryInfo>().ExistingOnly())
                           };
-            
+
             return new Parser(language);
         }
 
         private bool ParseCodeOptions(
-            BlockProcessor state, 
-            ref StringSlice line, 
+            BlockProcessor state,
+            ref StringSlice line,
             IFencedBlock fenced)
         {
             // line.Text contains the entire string of the document
@@ -98,7 +99,16 @@ namespace MLS.Agent.Markdown
                 codeLinkBlock.ErrorMessage = $"Error reading the file {argString}";
             }
 
+            AddAttribute(codeLinkBlock, "data-trydotnet-mode", "editor");
+            AddAttribute(codeLinkBlock, "data-trydotnet-project-template", "console");
+            AddAttribute(codeLinkBlock, "data-trydotnet-session-id", "a");
+
             return true;
+        }
+
+        private void AddAttribute(CodeLinkBlock block, string key, string value)
+        {
+            block.GetAttributes().AddProperty(key, value);
         }
 
         private bool IsCSharp(string language) => Regex.Match(language, @"cs|csharp|c#", RegexOptions.IgnoreCase).Success;
@@ -129,8 +139,8 @@ namespace MLS.Agent.Markdown
 
         private string GetFullyQualifiedPath(string filePath)
         {
-            return Path.IsPathRooted(filePath) 
-                ? filePath 
+            return Path.IsPathRooted(filePath)
+                ? filePath
                 : Path.Combine(_config.RootDirectory.FullName, filePath);
         }
     }
