@@ -1,5 +1,6 @@
 using System;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
@@ -46,5 +47,13 @@ namespace MLS.Agent.Tests
 
         public Task<HttpResponseMessage> SendAsync(HttpRequestMessage request) =>
             _client.SendAsync(request);
+    }
+
+    public static class AgentServiceExtensions
+    {
+        public static Task<HttpResponseMessage> GetAsync(
+            this AgentService service,
+            string uri) =>
+            service.SendAsync(new HttpRequestMessage(HttpMethod.Get, uri));
     }
 }

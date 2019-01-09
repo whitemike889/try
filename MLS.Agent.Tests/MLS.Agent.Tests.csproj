@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <PackageReference Include="FluentAssertions" Version="5.4.1" />
+    <PackageReference Include="htmlagilitypack" Version="1.8.11" />
     <PackageReference Include="HttpResponseMessageAssertions" Version="0.1.5720001" />
     <PackageReference Include="HttpResponseMessageExtensions" Version="0.1.5650001" />
     <PackageReference Include="JsonSerializationExtensions" Version="0.1.5650001" />
