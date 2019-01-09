@@ -19,7 +19,7 @@ namespace MLS.Agent.Tests
         public CommandLineParserTests(ITestOutputHelper output)
         {
             _output = output;
-            _parser = Program.CreateParser(
+            _parser = CommandLineParser.Create(
                 start: (options, invocationContext) => { _options = options; },
                 tryGithub: (repo, c) =>
                 {

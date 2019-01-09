@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System;
+using Microsoft.ApplicationInsights.AspNetCore.Extensions;
+using Microsoft.AspNetCore.Mvc;
 
 namespace MLS.Agent.Controllers
 {
@@ -8,7 +10,8 @@ namespace MLS.Agent.Controllers
 
         public DocumentationController(IMarkdownProject markdownProject)
         {
-            _markdownProject = markdownProject;
+            _markdownProject = markdownProject ?? 
+                               throw new ArgumentNullException(nameof(markdownProject));
         }
 
         [HttpGet]
@@ -17,14 +20,19 @@ namespace MLS.Agent.Controllers
         {
             if (!_markdownProject.TryGetHtmlContent(path, out string htmlBody))
             {
-                return NotFound();
+                return NotFound("No markdowns here...");
             }
 
-            return Content(Scaffold(htmlBody), "text/html");
+            var hostUrl = Request.GetUri();
+
+            return Content(
+                Scaffold(htmlBody,
+                         $"{hostUrl.Scheme}://{hostUrl.Authority}"), "text/html");
         }
 
-        private string Scaffold(string html) =>
-            $@"
+        private string Scaffold(string html, string hostUrl)
+        {
+            return $@"
 <!DOCTYPE html>
 <html lang=""en"">
 
@@ -36,9 +44,10 @@ namespace MLS.Agent.Controllers
 <body>
     {html}
 
-    <script>trydotnet.autoEnable(new URL(""http://localhost:5000/""));</script>
+    <script>trydotnet.autoEnable(new URL(""{hostUrl}""));</script>
 </body>
 
 </html>";
+        }
     }
 }
