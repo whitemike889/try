@@ -27,6 +27,7 @@ using MLS.Protocol.Execution;
 using MLS.Protocol;
 using MLS.Protocol.Diagnostics;
 using WorkspaceServer.LanguageServices;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace WorkspaceServer.Servers.Roslyn
 {
@@ -68,7 +69,7 @@ namespace WorkspaceServer.Servers.Roslyn
 
             var processed = await _transformer.TransformAsync(request.Workspace, budget);
             var sourceFiles = processed.GetSourceFiles();
-            var (_, documents) = await build.GetCompilation(sourceFiles, budget);
+            var (_, documents) = await build.GetCompilation(sourceFiles, GetSourceCodeKind(request), budget);
 
             var file = processed.GetFileFromBufferId(request.ActiveBufferId);
             var (_, _, absolutePosition) = processed.GetTextLocation(request.ActiveBufferId);
@@ -111,7 +112,12 @@ namespace WorkspaceServer.Servers.Roslyn
                 diagnostics: diagnostics);
         }
 
-        
+        private SourceCodeKind GetSourceCodeKind(WorkspaceRequest request)
+        {
+            return request.Workspace.WorkspaceType == "script"
+                ? SourceCodeKind.Script
+                : SourceCodeKind.Script;
+        }
 
         public async Task<SignatureHelpResult> GetSignatureHelp(WorkspaceRequest request, Budget budget)
         {
@@ -122,7 +128,7 @@ namespace WorkspaceServer.Servers.Roslyn
             var processed = await _transformer.TransformAsync(request.Workspace, budget);
 
             var sourceFiles = processed.GetSourceFiles();
-            var (compilation, documents) = await build.GetCompilation(sourceFiles, budget);
+            var (compilation, documents) = await build.GetCompilation(sourceFiles, GetSourceCodeKind(request), budget);
 
             var selectedDocument = documents.FirstOrDefault(doc => doc.Name == request.ActiveBufferId.FileName)
                            ??
@@ -162,7 +168,7 @@ namespace WorkspaceServer.Servers.Roslyn
             var processed = await _transformer.TransformAsync(request.Workspace, budget);
 
             var sourceFiles = processed.GetSourceFiles();
-            var (_, documents) = await build.GetCompilation(sourceFiles, budget);
+            var (_, documents) = await build.GetCompilation(sourceFiles, GetSourceCodeKind(request), budget);
 
             var selectedDocument = documents.FirstOrDefault(doc => doc.Name == request.ActiveBufferId.FileName)
                                    ??
