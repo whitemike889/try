@@ -36,6 +36,7 @@ namespace MLS.Agent
             rootCommand.AddCommand(startInHostedMode);
             rootCommand.AddCommand(ListPackages());
             rootCommand.AddCommand(GitHub());
+            rootCommand.AddCommand(Package());
 
             return new CommandLineBuilder(rootCommand)
                    .UseDefaults()
@@ -127,6 +128,13 @@ namespace MLS.Agent
 
                 run.Handler = CommandHandler.Create<string, IConsole>((repo, console) => tryGithub(repo, console));
 
+                return run;
+            }
+
+            Command Package()
+            {
+                var run = new Command("package", "create a package");
+                run.Handler = CommandHandler.Create(PackageCommand.Do);
                 return run;
             }
         }
