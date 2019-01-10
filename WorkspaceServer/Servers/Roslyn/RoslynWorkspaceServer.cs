@@ -69,7 +69,7 @@ namespace WorkspaceServer.Servers.Roslyn
 
             var processed = await _transformer.TransformAsync(request.Workspace, budget);
             var sourceFiles = processed.GetSourceFiles();
-            var (_, documents) = await build.GetCompilation(sourceFiles, GetSourceCodeKind(request), budget);
+            var (_, documents) = await build.GetCompilation(sourceFiles, GetSourceCodeKind(request), GetUsings(request.Workspace), budget);
 
             var file = processed.GetFileFromBufferId(request.ActiveBufferId);
             var (_, _, absolutePosition) = processed.GetTextLocation(request.ActiveBufferId);
@@ -116,7 +116,14 @@ namespace WorkspaceServer.Servers.Roslyn
         {
             return request.Workspace.WorkspaceType == "script"
                 ? SourceCodeKind.Script
-                : SourceCodeKind.Script;
+                : SourceCodeKind.Regular;
+        }
+
+        private IEnumerable<string> GetUsings(Workspace workspace)
+        {
+            return workspace.WorkspaceType == "script"
+                ? workspace.Usings.Concat(WorkspaceUtilities.DefaultUsings).Distinct()
+                : workspace.Usings;
         }
 
         public async Task<SignatureHelpResult> GetSignatureHelp(WorkspaceRequest request, Budget budget)
@@ -128,7 +135,7 @@ namespace WorkspaceServer.Servers.Roslyn
             var processed = await _transformer.TransformAsync(request.Workspace, budget);
 
             var sourceFiles = processed.GetSourceFiles();
-            var (compilation, documents) = await build.GetCompilation(sourceFiles, GetSourceCodeKind(request), budget);
+            var (compilation, documents) = await build.GetCompilation(sourceFiles, GetSourceCodeKind(request), GetUsings(request.Workspace), budget);
 
             var selectedDocument = documents.FirstOrDefault(doc => doc.Name == request.ActiveBufferId.FileName)
                            ??
@@ -168,7 +175,7 @@ namespace WorkspaceServer.Servers.Roslyn
             var processed = await _transformer.TransformAsync(request.Workspace, budget);
 
             var sourceFiles = processed.GetSourceFiles();
-            var (_, documents) = await build.GetCompilation(sourceFiles, GetSourceCodeKind(request), budget);
+            var (_, documents) = await build.GetCompilation(sourceFiles, GetSourceCodeKind(request), GetUsings(request.Workspace), budget);
 
             var selectedDocument = documents.FirstOrDefault(doc => doc.Name == request.ActiveBufferId.FileName)
                                    ??

@@ -34,7 +34,9 @@ namespace WorkspaceServer
         public async Task<Package> Get(string workspaceName,  Budget budget = null)
         {
             if (workspaceName == "script")
+            {
                 workspaceName = "console";
+            }
 
             var build = await _workspaceBuilders.GetOrAdd(
                                 workspaceName,

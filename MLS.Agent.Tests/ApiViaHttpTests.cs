@@ -293,7 +293,7 @@ namespace MLS.Agent.Tests
                     .EnsureSuccess()
                     .DeserializeAs<DiagnosticResult>();
                 result.Diagnostics.Should().NotBeNullOrEmpty();
-                result.Diagnostics.Should().Contain(signature => signature.Message == "(1,1): error CS0103: The name \'adddd\' does not exist in the current context");
+                result.Diagnostics.Should().Contain(signature => signature.Message == "default.cs(1,1): error CS0103: The name \'adddd\' does not exist in the current context");
             }
         }
 
