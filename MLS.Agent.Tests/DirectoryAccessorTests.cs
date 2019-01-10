@@ -32,11 +32,17 @@ namespace MLS.Agent.Tests
         }
 
         [Fact]
-        public void When_the_filepath_contains_invalid_path_characters_FileExists_returns_false()
+        public void When_the_filepath_contains_invalid_path_characters_FileExists_throws_exception()
         {
             var testDir = TestAssets.SampleConsole;
-            var characters = Path.GetInvalidPathChars();
-            GetDirectory(testDir).Invoking(d => d.FileExists($"{characters[0]}")).Should().Throw<ArgumentException>();
+            GetDirectory(testDir).Invoking(d => d.FileExists($"abc|def")).Should().Throw<ArgumentException>();
+        }
+
+        [Fact]
+        public void When_the_filepath_contains_invalid_filename_characters_FileExists_throws_exception()
+        {
+            var testDir = TestAssets.SampleConsole;
+            GetDirectory(testDir).Invoking(d => d.FileExists($"abc*def")).Should().Throw<ArgumentException>();
         }
 
         [Theory]

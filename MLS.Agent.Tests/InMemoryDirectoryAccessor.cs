@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using MLS.Agent.Markdown;
@@ -37,10 +38,18 @@ namespace MLS.Agent.Tests
 
         private string ResolveFilePath(string fileName)
         {
+            if (fileName == null)
+            {
+                throw new ArgumentNullException();
+            }
+
             var path = Path.IsPathRooted(fileName) ?
                 fileName :
                 Path.Combine(_workingDirectory.FullName, fileName);
-            return path.NormalizePath();
+
+            var normalizedPath = path.NormalizePath();
+            FileSystemDirectoryAccessor.ThrowIfContainsDisallowedCharacters(normalizedPath);
+            return normalizedPath;
         }
 
         public IEnumerator GetEnumerator()
