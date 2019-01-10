@@ -38,9 +38,10 @@ namespace MLS.PackageTool
                        {
                            Handler = CommandHandler.Create(async (IConsole console) =>
                            {
-                               var zipFilePath = Path.Combine(AssemblyLocation(), "project.zip");
+                           var directory = Path.GetDirectoryName(AssemblyLocation());
+                               var zipFilePath = Path.Combine(directory, "project.zip");
 
-                               using (var stream = typeof(Program).Assembly.GetManifestResourceStream("project"))
+                               using (var stream = typeof(Program).Assembly.GetManifestResourceStream("MLS.PackageTool.packagey.zip"))
                                {
                                    using (var zipFileStream = File.OpenWrite(zipFilePath))
                                    {
@@ -49,7 +50,7 @@ namespace MLS.PackageTool
                                    }
                                }
 
-                               ZipFile.ExtractToDirectory(zipFilePath, Path.Combine(AssemblyLocation(), "project"));
+                               ZipFile.ExtractToDirectory(zipFilePath, Path.Combine(directory, "project"));
                            })
                        };
             }
