@@ -49,9 +49,15 @@ namespace WorkspaceServer
 
         public Task<CommandLineResult> Publish(string args, Budget budget = null) =>
             Execute("publish".AppendArgs(args), budget);
-            
+
         public Task<CommandLineResult> VSTest(string args, Budget budget = null) =>
             Execute("vstest".AppendArgs(args), budget);
+
+        public Task<CommandLineResult> ToolInstall(string args = null, Budget budget = null) =>
+            Execute("tool install".AppendArgs(args), budget);
+
+        public Task<CommandLineResult> Pack(string args = null, Budget budget = null) =>
+            Execute("pack".AppendArgs(args), budget);
 
         private static readonly Lazy<FileInfo> _getPath = new Lazy<FileInfo>(() =>
                                                                                  FindDotnetFromAppContext() ??

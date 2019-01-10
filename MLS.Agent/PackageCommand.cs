@@ -11,19 +11,23 @@ namespace MLS.Agent
 {
     public class PackageCommand
     {
-        public static async Task Do()
+        public static async Task Do(DirectoryInfo directory)
         {
             //var dir = Environment.CurrentDirectory;
-            var dir = "C:\\temp"; // to do get the right working directory
+            Console.WriteLine($"Creating package-tool from {directory.FullName}");
             var tempDir = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), Path.GetRandomFileName()));
 
             var archiveName = "packagey.zip";
             var archivePath = Path.Combine(tempDir.FullName, archiveName);
 
-            ZipFile.CreateFromDirectory(dir, archivePath);
+            ZipFile.CreateFromDirectory(directory.FullName, archivePath);
             Console.WriteLine(archivePath);
 
-            var projectFilePath = Path.Combine(tempDir.FullName, "package-tool.csproj");
+            var csproj = directory.GetFiles().Single(f => f.Extension == "csproj");
+
+            const string name = "package-tool";
+            string csprojName = $"{name}.csproj";
+            var projectFilePath = Path.Combine(tempDir.FullName, csprojName);
             await File.WriteAllTextAsync(projectFilePath, Resource.MLS_PackageTool);
 
             var contentFilePath = Path.Combine(tempDir.FullName, "program.cs");
@@ -32,6 +36,8 @@ namespace MLS.Agent
             var dotnet = new Dotnet(tempDir);
             var result = await dotnet.Build();
             Console.WriteLine(string.Join("\n", result.Output.Concat(result.Error)));
+
+            dotnet.Pack($"/p:PackageId={} {projectFilePath}")
             
 
         }

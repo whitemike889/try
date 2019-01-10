@@ -37,6 +37,7 @@ namespace MLS.Agent
             rootCommand.AddCommand(ListPackages());
             rootCommand.AddCommand(GitHub());
             rootCommand.AddCommand(Package());
+            rootCommand.AddCommand(Install());
 
             return new CommandLineBuilder(rootCommand)
                    .UseDefaults()
@@ -124,18 +125,39 @@ namespace MLS.Agent
                                          .First(p => p.ParameterType == typeof(string))
                                          .Name;
 
-                var run = new Command("github", "Try a GitHub repo", argument: argument);
+                var github = new Command("github", "Try a GitHub repo", argument: argument);
 
-                run.Handler = CommandHandler.Create<string, IConsole>((repo, console) => tryGithub(repo, console));
+                github.Handler = CommandHandler.Create<string, IConsole>((repo, console) => tryGithub(repo, console));
 
-                return run;
+                return github;
             }
 
             Command Package()
             {
-                var run = new Command("package", "create a package");
-                run.Handler = CommandHandler.Create(PackageCommand.Do);
-                return run;
+                var package = new Command("package", "create a package");
+                package.Argument = new Argument<string>();
+                package.Argument.Name = typeof(PackageCommand).GetMethod(nameof(PackageCommand.Do)).GetParameters()
+                                         .First(p => p.ParameterType == typeof(string))
+                                         .Name;
+
+                package.Handler = CommandHandler.Create<DirectoryInfo>(PackageCommand.Do);
+                return package;
+            }
+
+            Command Install()
+            {
+                var install = new Command("install", "install a package");
+                install.Argument = new Argument<string>();
+                install.Argument.Name = typeof(InstallCommand).GetMethod(nameof(InstallCommand.Do)).GetParameters()
+                                         .First(p => p.ParameterType == typeof(string))
+                                         .Name;
+
+                var option = new Option("--package-source", argument: new Argument<string>());
+
+                install.AddOption(option);
+
+                install.Handler = CommandHandler.Create<string, string>(InstallCommand.Do);
+                return install;
             }
         }
     }
