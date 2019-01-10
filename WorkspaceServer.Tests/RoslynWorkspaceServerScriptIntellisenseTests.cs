@@ -1,8 +1,11 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using FluentAssertions;
 using MLS.Protocol;
 using MLS.Protocol.Execution;
+using WorkspaceServer.Servers.Roslyn;
 using WorkspaceServer.Servers.Scripting;
 using WorkspaceServer.Packaging;
 using Xunit;
@@ -10,14 +13,17 @@ using Xunit.Abstractions;
 
 namespace WorkspaceServer.Tests
 {
-    public class ScriptingWorkspaceServerIntellisenseTests : WorkspaceServerTestsCore
+    public class RoslynWorkspaceServerScriptIntellisenseTests : WorkspaceServerTestsCore
     {
-        public ScriptingWorkspaceServerIntellisenseTests(ITestOutputHelper output) : base(output)
+        public RoslynWorkspaceServerScriptIntellisenseTests(ITestOutputHelper output) : base(output)
         {
         }
 
-        protected override ILanguageService GetLanguageService(string testName = null) =>
-            new ScriptingWorkspaceServer();
+        protected override Task<(ICodeRunner runner, WorkspaceBuild workspace)> GetRunnerAndWorkspaceBuild(
+            [CallerMemberName] string testName = null)
+        {
+            throw new NotImplementedException();
+        }
 
         protected override  Task<(ICodeRunner runner, Package workspace)> GetRunnerAndWorkspaceBuild(string testName = null)
         {
@@ -190,6 +196,35 @@ public class Program
             taskCompletionItem.FilterText.Should().Be("Task");
             taskCompletionItem.Kind.Should().Be("Class");
             taskCompletionItem.SortText.Should().Be("Task");
+        }
+
+        [Fact]
+        public async Task Get_completion_for_console()
+        {
+            var ws = new Workspace(workspaceType: "script", buffers: new[] { new Workspace.Buffer("program.cs", "Console.", 8) });
+
+            var request = new WorkspaceRequest(ws, activeBufferId: "program.cs");
+
+            var server = GetLanguageService();
+
+            var result = await server.GetCompletionList(request);
+
+            result.Items.Should().ContainSingle(item => item.DisplayText == "WriteLine");
+        }
+
+        [Fact]
+        public async Task Get_signature_help_for_console_writeline()
+        {
+            var ws = new Workspace(workspaceType: "script", buffers: new[] { new Workspace.Buffer("program.cs", "Console.WriteLine()", 18) });
+
+            var request = new WorkspaceRequest(ws, activeBufferId: "program.cs");
+
+            var server = GetLanguageService();
+
+            var result = await server.GetSignatureHelp(request);
+
+            result.Signatures.Should().NotBeNullOrEmpty();
+            result.Signatures.Should().Contain(signature => signature.Label == "void Console.WriteLine(string format, params object[] arg)");
         }
     }
 }

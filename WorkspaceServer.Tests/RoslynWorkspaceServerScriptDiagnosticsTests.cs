@@ -1,7 +1,10 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using FluentAssertions;
 using MLS.Protocol;
 using MLS.Protocol.Execution;
+using WorkspaceServer.Servers.Roslyn;
 using WorkspaceServer.Servers.Scripting;
 using WorkspaceServer.Packaging;
 using Xunit;
@@ -9,14 +12,17 @@ using Xunit.Abstractions;
 
 namespace WorkspaceServer.Tests
 {
-    public class ScriptingWorkspaceServerDiagnosticsTests : WorkspaceServerTestsCore
+    public class RoslynWorkspaceServerScriptDiagnosticsTests : WorkspaceServerTestsCore
     {
-        public ScriptingWorkspaceServerDiagnosticsTests(ITestOutputHelper output) : base(output)
+        public RoslynWorkspaceServerScriptDiagnosticsTests(ITestOutputHelper output) : base(output)
         {
         }
 
-        protected override ILanguageService GetLanguageService(string testName = null) =>
-            new ScriptingWorkspaceServer();
+        protected override Task<(ICodeRunner runner, WorkspaceBuild workspace)> GetRunnerAndWorkspaceBuild(
+            [CallerMemberName] string testName = null)
+        {
+            throw new NotImplementedException();
+        }
 
         protected override Task<(ICodeRunner runner, Package workspace)> GetRunnerAndWorkspaceBuild(string testName = null)
         {
