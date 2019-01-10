@@ -12,17 +12,17 @@ namespace WorkspaceServer.Packaging
 
         private readonly List<Func<Package, Budget, Task>> _afterCreateActions = new List<Func<Package, Budget, Task>>();
 
-        public PackageBuilder(string workspaceName)
+        public PackageBuilder(string packageName)
         {
-            if (string.IsNullOrWhiteSpace(workspaceName))
+            if (string.IsNullOrWhiteSpace(packageName))
             {
-                throw new ArgumentException("Value cannot be null or whitespace.", nameof(workspaceName));
+                throw new ArgumentException("Value cannot be null or whitespace.", nameof(packageName));
             }
 
-            WorkspaceName = workspaceName;
+            PackageName = packageName;
         }
 
-        public string WorkspaceName { get; }
+        public string PackageName { get; }
 
         internal IPackageInitializer PackageInitializer { get; private set; }
 
@@ -39,10 +39,9 @@ namespace WorkspaceServer.Packaging
         {
             PackageInitializer = new PackageInitializer(
                template,
-               projectName ?? WorkspaceName,
+               projectName ?? PackageName,
                AfterCreate);
         }
-           
 
         public void AddPackageReference(string packageId, string version = null)
         {
@@ -63,18 +62,18 @@ namespace WorkspaceServer.Packaging
             });
         }
 
-        public async Task<Package> GetWorkspaceBuild(Budget budget = null)
+        public async Task<Package> GetPackage(Budget budget = null)
         {
             if (package == null)
             {
-                await PrepareWorkspace(budget);
+                await PreparePackage(budget);
             }
 
             budget?.RecordEntry();
             return package;
         }
 
-        public PackageInfo GetWorkpaceInfo()
+        public PackageInfo GetPackageInfo()
         {
             PackageInfo info = null;
             if (package != null)
@@ -92,12 +91,12 @@ namespace WorkspaceServer.Packaging
             return info;
         }
 
-        private async Task PrepareWorkspace(Budget budget = null)
+        private async Task PreparePackage(Budget budget = null)
         {
             budget = budget ?? new Budget();
 
             package = new Package(
-                WorkspaceName,
+                PackageName,
                 PackageInitializer,
                 RequiresPublish,
                 Directory);

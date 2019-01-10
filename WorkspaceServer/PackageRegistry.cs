@@ -12,7 +12,7 @@ namespace WorkspaceServer
 {
     public class PackageRegistry : IEnumerable<PackageBuilder>
     {
-        private readonly ConcurrentDictionary<string, PackageBuilder> _workspaceBuilders = new ConcurrentDictionary<string, PackageBuilder>();
+        private readonly ConcurrentDictionary<string, PackageBuilder> _packageBuilders = new ConcurrentDictionary<string, PackageBuilder>();
 
         public void Add(string name, Action<PackageBuilder> configure)
         {
@@ -28,7 +28,7 @@ namespace WorkspaceServer
 
             var options = new PackageBuilder(name);
             configure(options);
-            _workspaceBuilders.TryAdd(name, options);
+            _packageBuilders.TryAdd(name, options);
         }
 
         public async Task<Package> Get(string workspaceName,  Budget budget = null)
@@ -38,13 +38,13 @@ namespace WorkspaceServer
                 workspaceName = "console";
             }
 
-            var build = await _workspaceBuilders.GetOrAdd(
+            var build = await _packageBuilders.GetOrAdd(
                                 workspaceName,
                                 name =>
                                 {
                                     var directory = new DirectoryInfo(
                                         Path.Combine(
-                                            Package.DefaultWorkspacesDirectory.FullName, workspaceName));
+                                            Package.DefaultPackagesDirectory.FullName, workspaceName));
 
                                     if (directory.Exists)
                                     {
@@ -52,16 +52,16 @@ namespace WorkspaceServer
                                     }
 
                                     throw new ArgumentException($"Workspace named \"{name}\" not found.");
-                                }).GetWorkspaceBuild(budget);
+                                }).GetPackage(budget);
 
             await build.EnsureReady(budget);
             
             return build;
         }
 
-        public IEnumerable<PackageInfo> GetRegisteredWorkspaceInfos()
+        public IEnumerable<PackageInfo> GetRegisteredPackageInfos()
         {
-            var workspaceInfos = _workspaceBuilders?.Values.Select(wb => wb.GetWorkpaceInfo()).Where(info => info != null).ToArray() ?? Array.Empty<PackageInfo>();
+            var workspaceInfos = _packageBuilders?.Values.Select(wb => wb.GetPackageInfo()).Where(info => info != null).ToArray() ?? Array.Empty<PackageInfo>();
 
             return workspaceInfos;
         }
@@ -133,7 +133,7 @@ namespace WorkspaceServer
         }
 
         public IEnumerator<PackageBuilder> GetEnumerator() =>
-            _workspaceBuilders.Values.GetEnumerator();
+            _packageBuilders.Values.GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() =>
             GetEnumerator();

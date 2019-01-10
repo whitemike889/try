@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Completion;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.Recommendations;
 using MLS.Agent.Tools;
 using MLS.Project.Extensions;
@@ -216,7 +218,7 @@ namespace WorkspaceServer.Servers.Roslyn
                 using (var stream = new MemoryStream())
                 {
                     compilation.Emit(peStream: stream);
-                    var encodedAssembly = System.Convert.ToBase64String(stream.ToArray());
+                    var encodedAssembly = Convert.ToBase64String(stream.ToArray());
                     return new CompileResult(
                         succeeded: true,
                         base64assembly: encodedAssembly,
@@ -312,7 +314,7 @@ namespace WorkspaceServer.Servers.Roslyn
 
             if (commandLineResult.Error.Count > 0)
             {
-                exceptionMessage = string.Join(Environment.NewLine, commandLineResult.Error);
+                exceptionMessage = String.Join(Environment.NewLine, commandLineResult.Error);
             }
 
             var runResult = new RunResult(

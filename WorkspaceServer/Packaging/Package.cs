@@ -23,25 +23,25 @@ namespace WorkspaceServer.Packaging
 
         static Package()
         {
-            var workspacesPathEnvironmentVariableName = "TRYDOTNET_WORKSPACES_PATH";
+            var workspacesPathEnvironmentVariableName = "TRYDOTNET_PACKAGES_PATH";
 
             var environmentVariable = Environment.GetEnvironmentVariable(workspacesPathEnvironmentVariableName);
 
-            DefaultWorkspacesDirectory =
+            DefaultPackagesDirectory =
                 environmentVariable != null
                     ? new DirectoryInfo(environmentVariable)
                     : new DirectoryInfo(
                         Path.Combine(
                             Paths.UserProfile,
                             ".trydotnet",
-                            "workspaces"));
+                            "packages"));
 
-            if (!DefaultWorkspacesDirectory.Exists)
+            if (!DefaultPackagesDirectory.Exists)
             {
-                DefaultWorkspacesDirectory.Create();
+                DefaultPackagesDirectory.Create();
             }
 
-            Log.Info("Workspaces path is {DefaultWorkspacesDirectory}", DefaultWorkspacesDirectory);
+            Log.Info("Workspaces path is {DefaultWorkspacesDirectory}", DefaultPackagesDirectory);
         }
 
         private readonly IPackageInitializer _initializer;
@@ -67,7 +67,7 @@ namespace WorkspaceServer.Packaging
             Name = name ?? directory?.Name ?? throw new ArgumentException($"You must specify {nameof(name)}, {nameof(directory)}, or both.");
             _initializer = initializer ?? new PackageInitializer("console", Name);
             ConstructionTime = Clock.Current.Now();
-            Directory = directory ?? new DirectoryInfo(Path.Combine(DefaultWorkspacesDirectory.FullName, Name));
+            Directory = directory ?? new DirectoryInfo(Path.Combine(DefaultPackagesDirectory.FullName, Name));
             RequiresPublish = requiresPublish;
             _csharpCommandLineArguments = new AsyncLazy<CSharpCommandLineArguments>(CreateCSharpCommandLineArguments);
             _instrumentationEmitterSyntaxTree = new AsyncLazy<SyntaxTree>(CreateInstrumentationEmitterSyntaxTree);
@@ -105,7 +105,7 @@ namespace WorkspaceServer.Packaging
 
         public string Name { get; }
 
-        public static DirectoryInfo DefaultWorkspacesDirectory { get; }
+        public static DirectoryInfo DefaultPackagesDirectory { get; }
 
         public async Task<PackageConfiguration> GetConfigurationAsync()
         {
@@ -392,7 +392,7 @@ namespace WorkspaceServer.Packaging
                 throw new ArgumentException("Value cannot be null or whitespace.", nameof(folderNameStartsWith));
             }
 
-            parentDirectory = parentDirectory ?? DefaultWorkspacesDirectory;
+            parentDirectory = parentDirectory ?? DefaultPackagesDirectory;
 
             DirectoryInfo created;
 
@@ -409,25 +409,6 @@ namespace WorkspaceServer.Packaging
         public override string ToString()
         {
             return $"{Name} ({Directory.FullName}) ({new { IsCreated, CreationTime, IsBuilt, BuildTime, IsPublished, PublicationTime, IsReady }})";
-        }
-
-        public async Task<AdhocWorkspace> CreateRoslynWorkspace(ProjectId projectId = null)
-        {
-            projectId = projectId ?? ProjectId.CreateNewId(Name);
-            CSharpCommandLineArguments csharpCommandLineArguments = await GetCommandLineArguments();
-
-            var projectInfo = CommandLineProject.CreateProjectInfo(
-                projectId,
-                Name,
-                csharpCommandLineArguments.CompilationOptions.Language,
-                csharpCommandLineArguments,
-                Directory.FullName);
-
-            var workspace = new AdhocWorkspace(MefHostServices.DefaultHost);
-
-            workspace.AddProject(projectInfo);
-
-            return workspace;
         }
 
         private async Task<CSharpCommandLineArguments> CreateCSharpCommandLineArguments()

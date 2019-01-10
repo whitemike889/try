@@ -106,7 +106,7 @@ namespace MLS.Agent
 
                     foreach (var workspace in registry)
                     {
-                        console.Out.WriteLine(workspace.WorkspaceName);
+                        console.Out.WriteLine(workspace.PackageName);
                     }
                 });
 

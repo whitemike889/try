@@ -3,7 +3,11 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Host.Mef;
+using WorkspaceServer.Packaging;
 
 namespace WorkspaceServer.Servers.Roslyn
 {
@@ -168,5 +172,27 @@ namespace WorkspaceServer.Servers.Roslyn
             "NodaTime",
             "NodaTime.Testing",
         };
+
+        public static async Task<AdhocWorkspace> CreateRoslynWorkspace(this Package package, ProjectId projectId = null)
+        {
+            if (package == null)
+            {
+                throw new ArgumentNullException(nameof(package));
+            }
+
+            projectId = projectId ?? ProjectId.CreateNewId(package.Name);
+            CSharpCommandLineArguments csharpCommandLineArguments = await package.GetCommandLineArguments();
+
+            var projectInfo = CommandLineProject.CreateProjectInfo(
+                projectId, package.Name,
+                csharpCommandLineArguments.CompilationOptions.Language,
+                csharpCommandLineArguments, package.Directory.FullName);
+
+            var workspace = new AdhocWorkspace(MefHostServices.DefaultHost);
+
+            workspace.AddProject(projectInfo);
+
+            return workspace;
+        }
     }
 }
