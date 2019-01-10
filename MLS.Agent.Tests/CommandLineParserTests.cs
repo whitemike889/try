@@ -47,7 +47,7 @@ namespace MLS.Agent.Tests
         [Fact]
         public async Task Parse_root_directory_with_a_valid_path_succeeds()
         {
-            var path = TestAssets.BasicConsole.FullName;
+            var path = TestAssets.SampleConsole.FullName;
             await _parser.InvokeAsync(new[] { "--root-directory", path }, _console);
             _options.RootDirectory.FullName.Should().Be(path);
         }

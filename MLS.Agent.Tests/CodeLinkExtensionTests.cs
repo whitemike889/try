@@ -8,20 +8,6 @@ namespace MLS.Agent.Tests
 {
     public class CodeLinkExtensionTests
     {
-        private readonly string ProgramContent =
-@"using System;
-
-namespace BasicConsoleApp
-{
-    class Program
-    {
-        static void MyProgram(string[] args)
-        {
-            Console.WriteLine(&quot;Hello World!&quot;);
-        }
-    }
-}".EnforceLF();
-
         [Theory]
         [InlineData("cs")]
         [InlineData("csharp")]
@@ -29,50 +15,63 @@ namespace BasicConsoleApp
         [InlineData("CS")]
         [InlineData("CSHARP")]
         [InlineData("C#")]
-        public void Replaces_filename_in_a_fenced_code_block_with_code_present_in_that_file(string language)
+        public void Inserts_code_when_an_existing_file_is_linked(string language)
         {
-            var testDir = TestAssets.BasicConsole;
-            var options = new Configuration(testDir);
+            var testDir = TestAssets.SampleConsole;
+            var fileContent = @"using System;
+
+namespace BasicConsoleApp
+    {
+        class Program
+        {
+            static void MyProgram(string[] args)
+            {
+                Console.WriteLine(""Hello World!"");
+            }
+        }
+    }".EnforceLF();
+            var options = new InMemoryDirectoryAccessor(testDir)
+            {
+                 ("Program.cs", fileContent)
+            };
             var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(options).Build();
             var document = 
 $@"```{language} Program.cs
 ```";
             string html = Markdig.Markdown.ToHtml(document, pipeline).EnforceLF();
-            html.Should().Contain(ProgramContent);
+            html.Should().Contain(fileContent.HtmlEncode());
         }
 
         [Fact]
-        public void Does_not_replace_filename_if_specified_language_is_not_csharp()
+        public void Does_not_insert_code_when_specified_language_is_not_csharp()
         {
             string expectedValue =
 @"<pre><code class=""language-js"">console.log(&quot;Hello World&quot;);
 </code></pre>
 ".EnforceLF();
 
-            var testDir = TestAssets.BasicConsole;
-            var options = new Configuration(testDir);
+            var testDir = TestAssets.SampleConsole;
+            var options = new InMemoryDirectoryAccessor(testDir);
             var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(options).Build();
             var document = @"
 ```js Program.cs
 console.log(""Hello World"");
 ```";
             var html = Markdig.Markdown.ToHtml(document, pipeline).EnforceLF();
-            html.Should().NotContain(ProgramContent);
             html.Should().Contain(expectedValue);
         }
 
         [Fact]
-        public void Does_not_replace_filename_if_the_file_does_not_exist()
+        public void Does_not_insert_code_when_a_linked_file_does_not_exist()
         {
-            //todo: what is the expected output in cases where there is unexpected input like below
-            var testDir = TestAssets.BasicConsole;
-            var options = new Configuration(testDir);
+            var testDir = TestAssets.SampleConsole;
+            var options = new InMemoryDirectoryAccessor(testDir);
             var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(options).Build();
             var document = 
 @"```cs DOESNOTEXIST
 ```";
             var html = Markdig.Markdown.ToHtml(document, pipeline).EnforceLF();
-            html.Should().Contain("Error reading the file DOESNOTEXIST");
+            html.Should().Contain("File not found: DOESNOTEXIST");
         }
     }
 }

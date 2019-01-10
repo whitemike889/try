@@ -18,7 +18,7 @@ namespace MLS.Agent.Tests
         [Fact]
         public void Should_return_file_content()
         {
-            var directoryInfo = TestAssets.BasicConsole;
+            var directoryInfo = TestAssets.SampleConsole;
             var file = new MarkdownFile(TestAssets.GetFileAtPath(directoryInfo, "Readme.md"));
             file.TryGetContent(out string content).Should().BeTrue();
             content.Should().Contain("*markdown file*");

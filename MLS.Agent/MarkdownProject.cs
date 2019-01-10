@@ -44,7 +44,7 @@ namespace MLS.Agent
         private string ConvertToHtml(string content)
         {
             var pipeline = new MarkdownPipelineBuilder()
-               .UseCodeLinks(new Configuration(_startupOptions.RootDirectory))
+               .UseCodeLinks(new FileSystemDirectoryAccessor(_startupOptions.RootDirectory))
                .Build();
 
             return Markdig.Markdown.ToHtml(content, pipeline);

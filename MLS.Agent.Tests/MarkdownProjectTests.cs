@@ -10,7 +10,7 @@ namespace MLS.Agent.Tests
         [Fact]
         public void Should_return_list_of_all_markdown_files()
         {
-            var rootDir = TestAssets.BasicConsole;
+            var rootDir = TestAssets.SampleConsole;
             var project = new MarkdownProject(new StartupOptions(rootDirectory: rootDir));
             var file1 = TestAssets.GetFileAtPath(rootDir, "Readme.md");
             var file2 = TestAssets.GetFileAtPath(rootDir, "Subdirectory", "Tutorial.md");
@@ -25,7 +25,7 @@ namespace MLS.Agent.Tests
         [Fact]
         public void Should_return_false_for_nonexistent_file()
         {
-            var rootDir = TestAssets.BasicConsole;
+            var rootDir = TestAssets.SampleConsole;
             var project = new MarkdownProject(new StartupOptions(rootDirectory: rootDir));
             var path = "DOESNOTEXIST";
 
@@ -35,7 +35,7 @@ namespace MLS.Agent.Tests
         [Fact]
         public void Should_return_true_and_get_html_content_for_the_passed_path()
         {
-            var rootDir = TestAssets.BasicConsole;
+            var rootDir = TestAssets.SampleConsole;
             var project = new MarkdownProject(new StartupOptions(rootDirectory: rootDir));
             var path = "Readme.md";
 
@@ -46,7 +46,7 @@ namespace MLS.Agent.Tests
         [Fact]
         public void Should_return_true_and_get_html_content_for_subdirectory_paths()
         {
-            var rootDir = TestAssets.BasicConsole;
+            var rootDir = TestAssets.SampleConsole;
             var project = new MarkdownProject(new StartupOptions(rootDirectory: rootDir));
             var path = Path.Combine("Subdirectory", "Tutorial.md");
 
@@ -57,7 +57,7 @@ namespace MLS.Agent.Tests
         [Fact]
         public void Should_parse_the_file_and_replace_paths_inside_code_section_with_code_inside_trydotnet_config_pre_tag()
         {
-            var rootDir = TestAssets.BasicConsole;
+            var rootDir = TestAssets.SampleConsole;
             var project = new MarkdownProject(new StartupOptions(rootDirectory: rootDir));
             var path = "Readme.md";
             var expectedValue =

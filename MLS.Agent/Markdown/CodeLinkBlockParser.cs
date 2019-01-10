@@ -14,15 +14,16 @@ namespace MLS.Agent.Markdown
 {
     public class CodeLinkBlockParser : FencedBlockParserBase<CodeLinkBlock>
     {
-        private static readonly Parser _csharpLinkParser = CreateLineParser();
+        private readonly Parser _csharpLinkParser;
 
-        private readonly Configuration _config;
+        private readonly IDirectoryAccessor _directoryAccessor;
 
-        public CodeLinkBlockParser(Configuration config)
+        public CodeLinkBlockParser(IDirectoryAccessor directoryAccessor)
         {
             OpeningCharacters = new[] { '`' };
             InfoParser = ParseCodeOptions;
-            _config = config ?? throw new ArgumentNullException(nameof(config));
+            _directoryAccessor = directoryAccessor ?? throw new ArgumentNullException(nameof(directoryAccessor));
+            _csharpLinkParser = CreateLineParser();
         }
 
         protected override CodeLinkBlock CreateFencedBlock(BlockProcessor processor)
@@ -31,23 +32,28 @@ namespace MLS.Agent.Markdown
             return block;
         }
 
-        private static Parser CreateLineParser()
+        private Parser CreateLineParser()
         {
             var bufferIdArg = new Argument<BufferId>(
-                               result =>
-                               {
-                                   return ArgumentParseResult.Success(BufferId.Parse(result.Arguments.Single()));
-                               })
-            {
-                Name = "bufferId",
-                Arity = ArgumentArity.ExactlyOne
-            };
+                              result =>
+                              {
+                                   BufferId bufferId = BufferId.Parse(result.Arguments.Single());
+                                   if (_directoryAccessor.FileExists(bufferId.FileName))
+                                   {
+                                       return ArgumentParseResult.Success(bufferId);
+                                   }
+
+                                   return ArgumentParseResult.Failure($"File not found: {bufferId.FileName}");
+                              })
+                              {
+                                    Name = "bufferId",
+                                    Arity = ArgumentArity.ExactlyOne
+                              };
 
             var language = new Command("csharp", argument: bufferIdArg)
                           {
-                              new Option("--project",
-                                         argument: new Argument<DirectoryInfo>().ExistingOnly())
-                          };
+                              new Option("--project", argument: new Argument<DirectoryInfo>().ExistingOnly())
+            };
 
             return new Parser(language);
         }
@@ -85,18 +91,12 @@ namespace MLS.Agent.Markdown
             {
                 codeLinkBlock.ErrorMessage =
                     string.Join("\n", parseResult.Errors.Select(e => e.ToString()));
-                return true;
-            }
-
-            fenced.Info = HtmlHelper.Unescape(langString);
-
-            if (TryGetCodeFromFile(argString, out var code))
-            {
-                codeLinkBlock.CodeLines = new StringSlice(HtmlHelper.Unescape(code));
             }
             else
             {
-                codeLinkBlock.ErrorMessage = $"Error reading the file {argString}";
+                fenced.Info = langString;
+                var bufferId = parseResult.CommandResult.GetValueOrDefault<BufferId>();
+                codeLinkBlock.CodeLines = new StringSlice(HtmlHelper.Unescape(_directoryAccessor.ReadAllText(bufferId.FileName)));
             }
 
             AddAttribute(codeLinkBlock, "data-trydotnet-mode", "editor");
@@ -112,36 +112,5 @@ namespace MLS.Agent.Markdown
         }
 
         private bool IsCSharp(string language) => Regex.Match(language, @"cs|csharp|c#", RegexOptions.IgnoreCase).Success;
-
-
-        private bool TryGetCodeFromFile(string filename, out string code)
-        {
-            code = null;
-            var filePath = HtmlHelper.Unescape(filename).Trim();
-
-            if (IsValidFilePath(filePath))
-            {
-                var fullPath = GetFullyQualifiedPath(filePath);
-                if (File.Exists(fullPath))
-                {
-                    code = File.ReadAllText(fullPath);
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        private bool IsValidFilePath(string filePath)
-        {
-            return filePath.IndexOfAny(Path.GetInvalidPathChars()) == -1;
-        }
-
-        private string GetFullyQualifiedPath(string filePath)
-        {
-            return Path.IsPathRooted(filePath)
-                ? filePath
-                : Path.Combine(_config.RootDirectory.FullName, filePath);
-        }
     }
 }

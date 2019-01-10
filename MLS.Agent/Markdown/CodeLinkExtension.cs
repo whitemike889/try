@@ -5,11 +5,11 @@ namespace MLS.Agent.Markdown
 {
     public class CodeLinkExtension : IMarkdownExtension
     {
-        private readonly Configuration _config;
+        private readonly IDirectoryAccessor _directoryAccessor;
 
-        public CodeLinkExtension(Configuration config)
+        public CodeLinkExtension(IDirectoryAccessor directoryAccessor)
         {
-            _config = config;
+            _directoryAccessor = directoryAccessor;
         }
 
         public void Setup(MarkdownPipelineBuilder pipeline)
@@ -17,7 +17,7 @@ namespace MLS.Agent.Markdown
             if (!pipeline.BlockParsers.Contains<CodeLinkBlockParser>())
             {
                 // It should execute before the FencedCodeBlockParser
-                pipeline.BlockParsers.Insert(0, new CodeLinkBlockParser(_config));
+                pipeline.BlockParsers.Insert(0, new CodeLinkBlockParser(_directoryAccessor));
             }
         }
 

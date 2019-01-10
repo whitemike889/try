@@ -60,7 +60,7 @@
   </ItemGroup>
   
   <ItemGroup>
-    <Folder Include="TestProjects\BasicConsoleApp\Subdirectory\" />
+    <Compile Remove="TestProjects\SampleConsole\Subdirectory\AnotherProgram.cs" />
   </ItemGroup>
 </Project>
 

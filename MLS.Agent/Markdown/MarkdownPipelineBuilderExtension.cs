@@ -5,7 +5,7 @@ namespace MLS.Agent.Markdown
 {
     public static class MarkdownPipelineBuilderExtension
     {
-        public static MarkdownPipelineBuilder UseCodeLinks(this MarkdownPipelineBuilder pipeline, Configuration config)
+        public static MarkdownPipelineBuilder UseCodeLinks(this MarkdownPipelineBuilder pipeline, IDirectoryAccessor config)
         {
             var extensions = pipeline.Extensions;
 
