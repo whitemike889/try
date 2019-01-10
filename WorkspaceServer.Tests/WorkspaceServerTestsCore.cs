@@ -2,7 +2,7 @@
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Pocket;
-using WorkspaceServer.Workspaces;
+using WorkspaceServer.Packaging;
 using Xunit.Abstractions;
 
 namespace WorkspaceServer.Tests
@@ -20,7 +20,7 @@ namespace WorkspaceServer.Tests
 
         protected void RegisterForDisposal(IDisposable disposable) => _disposables.Add(disposable);
 
-        protected abstract Task<(ICodeRunner runner, WorkspaceBuild workspace)> GetRunnerAndWorkspaceBuild(
+        protected abstract Task<(ICodeRunner runner, Package workspace)> GetRunnerAndWorkspaceBuild(
             [CallerMemberName] string testName = null);
 
         protected abstract ILanguageService GetLanguageService(

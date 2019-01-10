@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 
-namespace WorkspaceServer.Workspaces
+namespace WorkspaceServer.Packaging
 {
-    public class WorkspaceConfiguration
+    public class PackageConfiguration
     {
         public IReadOnlyCollection<string> CompilerArgs { get; set; }
     }

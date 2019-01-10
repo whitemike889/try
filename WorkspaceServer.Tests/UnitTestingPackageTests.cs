@@ -7,18 +7,18 @@ using MLS.Protocol;
 using Pocket;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Servers.Roslyn;
-using WorkspaceServer.Workspaces;
+using WorkspaceServer.Packaging;
 using Xunit;
 using Xunit.Abstractions;
 using static Pocket.Logger;
 
 namespace WorkspaceServer.Tests
 {
-    public class UnitTestingWorkspaceTests : IDisposable
+    public class UnitTestingPackageTests : IDisposable
     {
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
 
-        public UnitTestingWorkspaceTests(ITestOutputHelper output)
+        public UnitTestingPackageTests(ITestOutputHelper output)
         {
             _disposables.Add(output.SubscribeToPocketLogger());
             _disposables.Add(VirtualClock.Start());
@@ -172,7 +172,7 @@ namespace MyUnitTestNamespace
             runResult.Exception.Should().BeNullOrEmpty();
         }
 
-        protected async Task<(ICodeRunner server, WorkspaceBuild workspace)> GetRunnerAndWorkspace(
+        protected async Task<(ICodeRunner server, Package workspace)> GetRunnerAndWorkspace(
             [CallerMemberName] string testName = null)
         {
             var workspace = await Create.XunitWorkspaceCopy(testName);

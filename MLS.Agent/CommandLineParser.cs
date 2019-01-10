@@ -34,7 +34,7 @@ namespace MLS.Agent
             startInHostedMode.Handler = startHandler;
 
             rootCommand.AddCommand(startInHostedMode);
-            rootCommand.AddCommand(ListWorkspaces());
+            rootCommand.AddCommand(ListPackages());
             rootCommand.AddCommand(GitHub());
 
             return new CommandLineBuilder(rootCommand)
@@ -96,13 +96,13 @@ namespace MLS.Agent
                 return command;
             }
 
-            Command ListWorkspaces()
+            Command ListPackages()
             {
-                var run = new Command("list-packages", "Lists the available Try .NET packages");
+                var run = new Command("list-packages", "Lists the installed Try .NET packages");
 
                 run.Handler = CommandHandler.Create((IConsole console) =>
                 {
-                    var registry = WorkspaceRegistry.CreateForHostedMode();
+                    var registry = PackageRegistry.CreateForHostedMode();
 
                     foreach (var workspace in registry)
                     {
@@ -129,6 +129,8 @@ namespace MLS.Agent
 
                 return run;
             }
+
+
         }
     }
 }

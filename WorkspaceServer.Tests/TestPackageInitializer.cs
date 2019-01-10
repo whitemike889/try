@@ -2,15 +2,15 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using Clockwise;
-using WorkspaceServer.Workspaces;
+using WorkspaceServer.Packaging;
 
 namespace WorkspaceServer.Tests
 {
-    public class TestWorkspaceInitializer : WorkspaceInitializer
+    public class TestPackageInitializer : PackageInitializer
     {
         public int InitializeCount { get; private set; }
 
-        public TestWorkspaceInitializer(
+        public TestPackageInitializer(
             string template, 
             string projectName, 
             Func<DirectoryInfo, Budget, Task> afterCreate = null) : 

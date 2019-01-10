@@ -1,16 +1,16 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
 using Clockwise;
-using WorkspaceServer.Workspaces;
+using WorkspaceServer.Packaging;
 
 namespace WorkspaceServer
 {
-    public class WorkspaceCopyInitializer : IWorkspaceInitializer
+    public class PackageCopyInitializer : IPackageInitializer
     {
-        private readonly WorkspaceRegistry registry;
+        private readonly PackageRegistry registry;
         private readonly string workspaceName;
 
-        public WorkspaceCopyInitializer(WorkspaceRegistry registry, string workspaceName)
+        public PackageCopyInitializer(PackageRegistry registry, string workspaceName)
         {
             this.registry = registry;
             this.workspaceName = workspaceName;
@@ -19,7 +19,7 @@ namespace WorkspaceServer
         public async Task Initialize(DirectoryInfo directory, Budget budget = null)
         {
             var original = await registry.Get(workspaceName);
-            await WorkspaceBuild.Copy(original, directory);
+            await Package.Copy(original, directory);
         }
     }
 }

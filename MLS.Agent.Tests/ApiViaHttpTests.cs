@@ -16,7 +16,7 @@ using Pocket;
 using Recipes;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Tests;
-using WorkspaceServer.Workspaces;
+using WorkspaceServer.Packaging;
 using Xunit;
 using Xunit.Abstractions;
 using static Pocket.Logger<MLS.Agent.Tests.ApiViaHttpTests>;
@@ -530,7 +530,7 @@ namespace FibonacciTest
         [Fact]
         public async Task When_aspnet_webapi_workspace_request_succeeds_then_output_shows_web_response()
         {
-            var workspaceType = await WorkspaceBuild.Copy(await Default.WebApiWorkspace);
+            var workspaceType = await Package.Copy(await Default.WebApiWorkspace);
             var workspace = WorkspaceFactory.CreateWorkspaceFromDirectory(
                 workspaceType.Directory, 
                 workspaceType.Directory.Name);
@@ -565,7 +565,7 @@ namespace FibonacciTest
         [Fact(Skip = "WIP")]
         public async Task When_aspnet_webapi_workspace_request_succeeds_then_standard_out_is_available_on_response()
         {
-            var workspaceType = await WorkspaceBuild.Copy(await Default.WebApiWorkspace);
+            var workspaceType = await Package.Copy(await Default.WebApiWorkspace);
             var workspace = WorkspaceFactory.CreateWorkspaceFromDirectory(workspaceType.Directory, workspaceType.Directory.Name);
 
             var request = new WorkspaceRequest(workspace, httpRequest: new HttpRequest("/api/values", "get"), requestId: "TestRun");
@@ -585,7 +585,7 @@ namespace FibonacciTest
         [Fact]
         public async Task When_aspnet_webapi_workspace_request_fails_then_diagnostics_are_returned()
         {
-            var workspaceType = await WorkspaceBuild.Copy(await Default.WebApiWorkspace);
+            var workspaceType = await Package.Copy(await Default.WebApiWorkspace);
             var workspace = WorkspaceFactory.CreateWorkspaceFromDirectory(workspaceType.Directory, workspaceType.Directory.Name);
             var nonCompilingBuffer = new Workspace.Buffer("broken.cs", "this does not compile", 0);
             workspace = new Workspace(

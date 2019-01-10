@@ -8,7 +8,7 @@ using Clockwise;
 using Pocket;
 using Xunit;
 using Xunit.Abstractions;
-using WorkspaceServer.Workspaces;
+using WorkspaceServer.Packaging;
 
 namespace WorkspaceServer.Tests
 {
@@ -27,7 +27,7 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task A_workspace_is_not_initialized_more_than_once()
         {
-            var initializer = new TestWorkspaceInitializer(
+            var initializer = new TestPackageInitializer(
                 "console",
                 "MyProject");
 
@@ -44,7 +44,7 @@ namespace WorkspaceServer.Tests
         {
             var afterCreateCallCount = 0;
 
-            var initializer = new WorkspaceInitializer(
+            var initializer = new PackageInitializer(
                 "console",
                 "test",
                 async (_, __) =>
@@ -64,7 +64,7 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task A_workspace_copy_is_not_reinitialized_if_the_source_was_already_built()
         {
-            var initializer = new TestWorkspaceInitializer(
+            var initializer = new TestPackageInitializer(
                 "console", 
                 "MyProject");
 
@@ -72,7 +72,7 @@ namespace WorkspaceServer.Tests
 
             await original.EnsureCreated();
 
-            var copy = await WorkspaceBuild.Copy(original);
+            var copy = await Package.Copy(original);
 
             await copy.EnsureCreated();
 

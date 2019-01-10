@@ -3,34 +3,34 @@ using System.Threading.Tasks;
 using MLS.Protocol;
 using MLS.Protocol.Execution;
 using Recipes;
-using WorkspaceServer.Workspaces;
+using WorkspaceServer.Packaging;
 
 namespace WorkspaceServer.Tests
 {
     public static class Create
     {
-        public static async Task<WorkspaceBuild> ConsoleWorkspaceCopy([CallerMemberName] string testName = null) =>
-            await WorkspaceBuild.Copy(
+        public static async Task<Package> ConsoleWorkspaceCopy([CallerMemberName] string testName = null) =>
+            await Package.Copy(
                 await Default.ConsoleWorkspace,
                 testName);
 
-        public static async Task<WorkspaceBuild> WebApiWorkspaceCopy([CallerMemberName] string testName = null) =>
-            await WorkspaceBuild.Copy(
+        public static async Task<Package> WebApiWorkspaceCopy([CallerMemberName] string testName = null) =>
+            await Package.Copy(
                 await Default.WebApiWorkspace,
                 testName);
 
-        public static async Task<WorkspaceBuild> XunitWorkspaceCopy([CallerMemberName] string testName = null) =>
-            await WorkspaceBuild.Copy(
+        public static async Task<Package> XunitWorkspaceCopy([CallerMemberName] string testName = null) =>
+            await Package.Copy(
                 await Default.XunitWorkspace,
                 testName);
 
-        public static async Task<WorkspaceBuild> NetstandardWorkspaceCopy([CallerMemberName] string testName = null) =>
-            await WorkspaceBuild.Copy(
+        public static async Task<Package> NetstandardWorkspaceCopy([CallerMemberName] string testName = null) =>
+            await Package.Copy(
                 await Default.NetstandardWorkspace,
                 testName);
 
-        public static WorkspaceBuild EmptyWorkspace([CallerMemberName] string testName = null, IWorkspaceInitializer initializer = null) =>
-            new WorkspaceBuild(directory: WorkspaceBuild.CreateDirectory(testName), initializer: initializer);
+        public static Package EmptyWorkspace([CallerMemberName] string testName = null, IPackageInitializer initializer = null) =>
+            new Package(directory: Package.CreateDirectory(testName), initializer: initializer);
 
         public static string SimpleWorkspaceRequestAsJson(
             string consoleOutput = "Hello!",

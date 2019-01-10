@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.CommandLine;
 using System.IO;
 using System.Linq;
-using System.CommandLine;
 
-namespace WorkspaceServer
+namespace WorkspaceServer.Packaging
 {
     public static class BuildLogParser
     {
@@ -22,7 +22,7 @@ namespace WorkspaceServer
 
         private static IEnumerable<string> GetCompilerCommandLine(this FileInfo logFile)
         {
-            var dotnetPath = DotnetMuxer.Path.FullName;
+            var dotnetPath = Dotnet.Path.FullName;
 
             using (var reader = logFile.OpenText())
             {

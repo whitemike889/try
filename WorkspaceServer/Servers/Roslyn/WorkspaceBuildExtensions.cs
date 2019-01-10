@@ -8,7 +8,7 @@ using MLS.Project.Execution;
 using MLS.Project.Extensions;
 using MLS.Protocol.Execution;
 using WorkspaceServer.Servers.Roslyn.Instrumentation;
-using WorkspaceServer.Workspaces;
+using WorkspaceServer.Packaging;
 using static System.Environment;
 using Workspace = MLS.Protocol.Execution.Workspace;
 
@@ -17,7 +17,7 @@ namespace WorkspaceServer.Servers.Roslyn
     public static class WorkspaceBuildExtensions
     {
         public static async Task<Compilation> Compile(
-            this WorkspaceBuild build, 
+            this Package build, 
             Workspace workspace, 
             Budget budget, 
             BufferId activeBufferId)
@@ -46,7 +46,7 @@ namespace WorkspaceServer.Servers.Roslyn
             Compilation compilation,
             Document document,
             BufferId activeBufferId,
-            WorkspaceBuild build)
+            Package build)
         {
             var regions = InstrumentationLineMapper.FilterActiveViewport(viewports, activeBufferId)
                 .Where(v => v.Destination?.Name != null)
@@ -108,7 +108,7 @@ Source
         
 
         public static async Task<(Compilation compilation, IReadOnlyCollection<Document> documents)> GetCompilation(
-            this WorkspaceBuild build,
+            this Package build,
             IReadOnlyCollection<SourceFile> sources,
             Budget budget)
         {

@@ -11,12 +11,13 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.Text;
 using MLS.Agent.Tools;
+using WorkspaceServer.Servers.Roslyn;
 
 // adapted from https://github.com/dotnet/roslyn/blob/master/src/Workspaces/Core/Desktop/Workspace/CommandLineProject.cs
 
-namespace WorkspaceServer.Servers.Roslyn
+namespace WorkspaceServer.Packaging
 {
-    public static class CommandLineProject
+    internal static class CommandLineProject
     {
         /// <summary>
         /// Create a <see cref="ProjectInfo"/> structure initialized from a compilers command line arguments.

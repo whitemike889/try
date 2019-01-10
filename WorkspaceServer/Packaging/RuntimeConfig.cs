@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using Newtonsoft.Json.Linq;
 
-namespace WorkspaceServer.Workspaces
+namespace WorkspaceServer.Packaging
 {
     public static class RuntimeConfig
     {

@@ -61,16 +61,16 @@ namespace MLS.Agent
 
                 services.AddSingleton(Configuration);
 
-                services.AddSingleton(c => new RoslynWorkspaceServer(c.GetRequiredService<WorkspaceRegistry>()));
+                services.AddSingleton(c => new RoslynWorkspaceServer(c.GetRequiredService<PackageRegistry>()));
 
                 if (StartupOptions.IsInHostedMode)
                 {
-                    services.AddSingleton(_ => WorkspaceRegistry.CreateForHostedMode());
+                    services.AddSingleton(_ => PackageRegistry.CreateForHostedMode());
                     services.AddSingleton<IHostedService, Warmup>();
                 }
                 else
                 {
-                    services.AddSingleton(_ => WorkspaceRegistry.CreateForTryMode(StartupOptions.Project));
+                    services.AddSingleton(_ => PackageRegistry.CreateForTryMode(StartupOptions.Project));
                     services.AddSingleton<IMarkdownProject, MarkdownProject>();
                 }
 

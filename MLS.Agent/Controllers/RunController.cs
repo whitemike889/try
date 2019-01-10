@@ -10,7 +10,7 @@ using WorkspaceServer;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Servers.Roslyn;
 using WorkspaceServer.Servers.Scripting;
-using WorkspaceServer.WorkspaceFeatures;
+using WorkspaceServer.Features;
 using static Pocket.Logger<MLS.Agent.Controllers.RunController>;
 
 namespace MLS.Agent.Controllers
@@ -22,7 +22,7 @@ namespace MLS.Agent.Controllers
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
 
         public RunController(
-            WorkspaceRegistry workspaceRegistry,
+            PackageRegistry packageRegistry,
             StartupOptions options,
             RoslynWorkspaceServer workspaceServer)
         {

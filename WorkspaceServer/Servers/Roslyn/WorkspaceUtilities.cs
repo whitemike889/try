@@ -9,8 +9,6 @@ namespace WorkspaceServer.Servers.Roslyn
 {
     public static class WorkspaceUtilities
     {
-        private static readonly string _baseDir = Path.GetDirectoryName(typeof(WorkspaceUtilities).Assembly.Location);
-
         public static readonly ImmutableArray<string> DefaultUsings = new[]
         {
             "System",
@@ -20,17 +18,6 @@ namespace WorkspaceServer.Servers.Roslyn
             "System.Threading.Tasks"
         }.ToImmutableArray();
 
-        public static ImmutableArray<MetadataReference> DefaultReferencedAssemblies =
-            AssembliesNamesToReference()
-                .Select(assemblyName =>
-                            new FileInfo(Path.Combine(_baseDir, "completion", "references", $"{assemblyName}.dll")))
-                .Where(assembly => assembly.Exists)
-                .Select(assembly => MetadataReference.CreateFromFile(
-                            assembly.FullName,
-                            documentation: XmlDocumentationProvider.CreateFromFile(Path.Combine(_baseDir, "completion", "references", $"{assembly.Name}.xml")))
-                )
-                .Cast<MetadataReference>()
-                .ToImmutableArray();
 
         public static IEnumerable<MetadataReference> GetMetadataReferences(this IEnumerable<string> filePaths)
         {
@@ -39,7 +26,7 @@ namespace WorkspaceServer.Servers.Roslyn
                 var expectedXmlFile =
                     filePath.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
                         ? ReplaceCaseInsensitive(filePath, ".dll", ".xml")
-                        : Path.Combine(_baseDir,
+                        : Path.Combine(Paths.InstallDirectory,
                                        "completion",
                                        "references",
                                        $"{Path.GetFileName(filePath)}.xml");
@@ -50,7 +37,7 @@ namespace WorkspaceServer.Servers.Roslyn
             }
         }
 
-        static string ReplaceCaseInsensitive(string str, string toReplace, string replacement)
+        private static string ReplaceCaseInsensitive(string str, string toReplace, string replacement)
         {
             var index = str.IndexOf(toReplace, StringComparison.OrdinalIgnoreCase);
             if (index >= 0)
@@ -62,7 +49,7 @@ namespace WorkspaceServer.Servers.Roslyn
             return str;
         }
 
-        private static string[] AssembliesNamesToReference() => new[]
+        internal static string[] AssembliesNamesToReference() => new[]
         {
             "mscorlib",
             "netstandard",

@@ -11,8 +11,8 @@ using Pocket;
 using Recipes;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Servers.Roslyn;
-using WorkspaceServer.WorkspaceFeatures;
-using WorkspaceServer.Workspaces;
+using WorkspaceServer.Features;
+using WorkspaceServer.Packaging;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -50,7 +50,7 @@ namespace WorkspaceServer.Tests
             }
         }
 
-        protected async Task<(ICodeRunner server, WorkspaceBuild workspace)> GetRunnerAndWorkspace(
+        protected async Task<(ICodeRunner server, Package workspace)> GetRunnerAndWorkspace(
             [CallerMemberName] string testName = null)
         {
             var workspace = await Create.WebApiWorkspaceCopy(testName);

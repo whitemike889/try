@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis.Text;
 
 namespace WorkspaceServer.Servers.Scripting
 {
-    public class WorkspaceFixture
+    internal class WorkspaceFixture
     {
         private readonly AdhocWorkspace _workspace = new AdhocWorkspace(MefHostServices.DefaultHost);
         private readonly DocumentId _documentId;

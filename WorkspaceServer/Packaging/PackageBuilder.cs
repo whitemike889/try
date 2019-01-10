@@ -1,20 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Clockwise;
-using WorkspaceServer.Workspaces;
 
-namespace WorkspaceServer
+namespace WorkspaceServer.Packaging
 {
-    public class WorkspaceBuilder
+    public class PackageBuilder
     {
-        private WorkspaceBuild workspaceBuild;
+        private Package package;
 
-        private readonly List<Func<WorkspaceBuild, Budget, Task>> _afterCreateActions = new List<Func<WorkspaceBuild, Budget, Task>>();
+        private readonly List<Func<Package, Budget, Task>> _afterCreateActions = new List<Func<Package, Budget, Task>>();
 
-        public WorkspaceBuilder(string workspaceName)
+        public PackageBuilder(string workspaceName)
         {
             if (string.IsNullOrWhiteSpace(workspaceName))
             {
@@ -26,20 +24,20 @@ namespace WorkspaceServer
 
         public string WorkspaceName { get; }
 
-        internal IWorkspaceInitializer WorkspaceInitializer { get; private set; }
+        internal IPackageInitializer PackageInitializer { get; private set; }
 
         public bool RequiresPublish { get; set; }
 
         public DirectoryInfo Directory { get; set; }
 
-        public void AfterCreate(Func<WorkspaceBuild, Budget, Task> action)
+        public void AfterCreate(Func<Package, Budget, Task> action)
         {
             _afterCreateActions.Add(action);
         }
 
         public void CreateUsingDotnet(string template, string projectName = null)
         {
-            WorkspaceInitializer = new WorkspaceInitializer(
+            PackageInitializer = new PackageInitializer(
                template,
                projectName ?? WorkspaceName,
                AfterCreate);
@@ -65,29 +63,29 @@ namespace WorkspaceServer
             });
         }
 
-        public async Task<WorkspaceBuild> GetWorkspaceBuild(Budget budget = null)
+        public async Task<Package> GetWorkspaceBuild(Budget budget = null)
         {
-            if (workspaceBuild == null)
+            if (package == null)
             {
                 await PrepareWorkspace(budget);
             }
 
             budget?.RecordEntry();
-            return workspaceBuild;
+            return package;
         }
 
-        public WorkspaceInfo GetWorkpaceInfo()
+        public PackageInfo GetWorkpaceInfo()
         {
-            WorkspaceInfo info = null;
-            if (workspaceBuild != null)
+            PackageInfo info = null;
+            if (package != null)
             {
-                info = new WorkspaceInfo(
-                    workspaceBuild.Name,
-                    workspaceBuild.BuildTime,
-                    workspaceBuild.ConstructionTime,
-                    workspaceBuild.PublicationTime,
-                    workspaceBuild.CreationTime,
-                    workspaceBuild.ReadyTime
+                info = new PackageInfo(
+                    package.Name,
+                    package.BuildTime,
+                    package.ConstructionTime,
+                    package.PublicationTime,
+                    package.CreationTime,
+                    package.ReadyTime
                 );
             }
 
@@ -98,13 +96,13 @@ namespace WorkspaceServer
         {
             budget = budget ?? new Budget();
 
-            workspaceBuild = new WorkspaceBuild(
+            package = new Package(
                 WorkspaceName,
-                WorkspaceInitializer,
+                PackageInitializer,
                 RequiresPublish,
                 Directory);
 
-            await workspaceBuild.EnsureReady(budget);
+            await package.EnsureReady(budget);
 
             budget.RecordEntry();
         }
@@ -113,7 +111,7 @@ namespace WorkspaceServer
         {
             foreach (var action in _afterCreateActions)
             {
-                await action(workspaceBuild, budget);
+                await action(package, budget);
             }
         }
     }

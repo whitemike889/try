@@ -2,9 +2,9 @@
 
 namespace WorkspaceServer
 {
-    public class WorkspaceInfo
+    public class PackageInfo
     {
-        public WorkspaceInfo(string type, DateTimeOffset? buildTime, DateTimeOffset? constructionTime, DateTimeOffset? publicationTime, DateTimeOffset? creationTime,
+        public PackageInfo(string type, DateTimeOffset? buildTime, DateTimeOffset? constructionTime, DateTimeOffset? publicationTime, DateTimeOffset? creationTime,
             DateTimeOffset? readyTime)
         {
             Type = type;

@@ -2,9 +2,9 @@
 using System.Threading.Tasks;
 using Clockwise;
 
-namespace WorkspaceServer.Workspaces
+namespace WorkspaceServer.Packaging
 {
-    public interface IWorkspaceInitializer
+    public interface IPackageInitializer
     {
         Task Initialize(
             DirectoryInfo directory,

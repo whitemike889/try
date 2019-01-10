@@ -4,7 +4,7 @@ using System.Linq;
 using MLS.Agent.Tools;
 using Newtonsoft.Json.Linq;
 
-namespace WorkspaceServer.Workspaces
+namespace WorkspaceServer.Packaging
 {
     public static class DepsFileParser
     {

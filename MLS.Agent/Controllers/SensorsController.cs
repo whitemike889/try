@@ -7,11 +7,11 @@ namespace MLS.Agent.Controllers
 {
     public class SensorsController : Controller
     {
-        private readonly WorkspaceRegistry workspaceRegistry;
+        private readonly PackageRegistry packageRegistry;
 
-        public SensorsController(WorkspaceRegistry workspaceRegistry)
+        public SensorsController(PackageRegistry packageRegistry)
         {
-            this.workspaceRegistry = workspaceRegistry ?? throw new ArgumentNullException(nameof(workspaceRegistry));
+            this.packageRegistry = packageRegistry ?? throw new ArgumentNullException(nameof(packageRegistry));
         }
 
         [Route("/sensors/version")]
@@ -20,7 +20,7 @@ namespace MLS.Agent.Controllers
         [Route("/sensors/workspaceInfo")]
         public IActionResult GetWorkspaceInfo()
         {
-            var info = workspaceRegistry.GetRegisteredWorkspaceInfos();
+            var info = packageRegistry.GetRegisteredWorkspaceInfos();
             return Ok(info);
         }
     }

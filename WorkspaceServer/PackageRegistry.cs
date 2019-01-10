@@ -6,15 +6,15 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Clockwise;
-using WorkspaceServer.Workspaces;
+using WorkspaceServer.Packaging;
 
 namespace WorkspaceServer
 {
-    public class WorkspaceRegistry : IEnumerable<WorkspaceBuilder>
+    public class PackageRegistry : IEnumerable<PackageBuilder>
     {
-        private readonly ConcurrentDictionary<string, WorkspaceBuilder> _workspaceBuilders = new ConcurrentDictionary<string, WorkspaceBuilder>();
+        private readonly ConcurrentDictionary<string, PackageBuilder> _workspaceBuilders = new ConcurrentDictionary<string, PackageBuilder>();
 
-        public void Add(string name, Action<WorkspaceBuilder> configure)
+        public void Add(string name, Action<PackageBuilder> configure)
         {
             if (configure == null)
             {
@@ -26,12 +26,12 @@ namespace WorkspaceServer
                 throw new ArgumentException("Value cannot be null or whitespace.", nameof(name));
             }
 
-            var options = new WorkspaceBuilder(name);
+            var options = new PackageBuilder(name);
             configure(options);
             _workspaceBuilders.TryAdd(name, options);
         }
 
-        public async Task<WorkspaceBuild> Get(string workspaceName,  Budget budget = null)
+        public async Task<Package> Get(string workspaceName,  Budget budget = null)
         {
             var build = await _workspaceBuilders.GetOrAdd(
                                 workspaceName,
@@ -39,11 +39,11 @@ namespace WorkspaceServer
                                 {
                                     var directory = new DirectoryInfo(
                                         Path.Combine(
-                                            WorkspaceBuild.DefaultWorkspacesDirectory.FullName, workspaceName));
+                                            Package.DefaultWorkspacesDirectory.FullName, workspaceName));
 
                                     if (directory.Exists)
                                     {
-                                        return new WorkspaceBuilder(name);
+                                        return new PackageBuilder(name);
                                     }
 
                                     throw new ArgumentException($"Workspace named \"{name}\" not found.");
@@ -54,16 +54,16 @@ namespace WorkspaceServer
             return build;
         }
 
-        public IEnumerable<WorkspaceInfo> GetRegisteredWorkspaceInfos()
+        public IEnumerable<PackageInfo> GetRegisteredWorkspaceInfos()
         {
-            var workspaceInfos = _workspaceBuilders?.Values.Select(wb => wb.GetWorkpaceInfo()).Where(info => info != null).ToArray() ?? Array.Empty<WorkspaceInfo>();
+            var workspaceInfos = _workspaceBuilders?.Values.Select(wb => wb.GetWorkpaceInfo()).Where(info => info != null).ToArray() ?? Array.Empty<PackageInfo>();
 
             return workspaceInfos;
         }
 
-        public static WorkspaceRegistry CreateForTryMode(DirectoryInfo project)
+        public static PackageRegistry CreateForTryMode(DirectoryInfo project)
         {
-            var registry = new WorkspaceRegistry();
+            var registry = new PackageRegistry();
 
             registry.Add(project.Name, builder =>
             {
@@ -73,9 +73,9 @@ namespace WorkspaceServer
             return registry;
         }
 
-        public static WorkspaceRegistry CreateForHostedMode()
+        public static PackageRegistry CreateForHostedMode()
         {
-            var registry = new WorkspaceRegistry();
+            var registry = new PackageRegistry();
 
             registry.Add("console",
                          workspace =>
@@ -127,7 +127,7 @@ namespace WorkspaceServer
             return registry;
         }
 
-        public IEnumerator<WorkspaceBuilder> GetEnumerator() =>
+        public IEnumerator<PackageBuilder> GetEnumerator() =>
             _workspaceBuilders.Values.GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() =>

@@ -4,14 +4,10 @@ using System.Threading.Tasks;
 using Clockwise;
 using FluentAssertions;
 using FluentAssertions.Extensions;
-using Microsoft.CodeAnalysis;
 using MLS.Protocol;
 using MLS.Protocol.Execution;
 using Pocket;
-using WorkspaceServer.Models;
-using WorkspaceServer.Models.Execution;
-using WorkspaceServer.WorkspaceFeatures;
-using WorkspaceServer.Workspaces;
+using WorkspaceServer.Packaging;
 using Xunit;
 using Xunit.Abstractions;
 using static Pocket.Logger<WorkspaceServer.Tests.WorkspaceServerTests>;
@@ -24,7 +20,7 @@ namespace WorkspaceServer.Tests
     {
         protected abstract Workspace CreateWorkspaceWithMainContaining(
             string text,
-            WorkspaceBuild workspaceBuild);
+            Package package);
 
         [Fact]
         public async Task Diagnostic_logs_do_not_show_up_in_captured_console_output()

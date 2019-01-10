@@ -19,8 +19,8 @@ using MLS.Protocol.SignatureHelp;
 using WorkspaceServer.Servers.Roslyn.Instrumentation;
 using WorkspaceServer.Servers.Scripting;
 using WorkspaceServer.Transformations;
-using WorkspaceServer.WorkspaceFeatures;
-using WorkspaceServer.Workspaces;
+using WorkspaceServer.Features;
+using WorkspaceServer.Packaging;
 using static Pocket.Logger<WorkspaceServer.Servers.Roslyn.RoslynWorkspaceServer>;
 using Workspace = MLS.Protocol.Execution.Workspace;
 using MLS.Protocol.Execution;
@@ -39,19 +39,19 @@ namespace WorkspaceServer.Servers.Roslyn
 
         private static readonly string UserCodeCompleted = nameof(UserCodeCompleted);
 
-        private delegate Task<WorkspaceBuild> GetWorkspaceBuildByName(string name);
+        private delegate Task<Package> GetWorkspaceBuildByName(string name);
 
-        public RoslynWorkspaceServer(WorkspaceBuild workspaceBuild)
+        public RoslynWorkspaceServer(Package package)
         {
-            if (workspaceBuild == null)
+            if (package == null)
             {
-                throw new ArgumentNullException(nameof(workspaceBuild));
+                throw new ArgumentNullException(nameof(package));
             }
 
-            getWorkspaceBuildByName = s => Task.FromResult(workspaceBuild);
+            getWorkspaceBuildByName = s => Task.FromResult(package);
         }
 
-        public RoslynWorkspaceServer(WorkspaceRegistry registry)
+        public RoslynWorkspaceServer(PackageRegistry registry)
         {
             if (registry == null)
             {
@@ -252,7 +252,7 @@ namespace WorkspaceServer.Servers.Roslyn
             }
         }
 
-        private static async Task EmitCompilationAsync(Compilation compilation, WorkspaceBuild build)
+        private static async Task EmitCompilationAsync(Compilation compilation, Package build)
         {
             using (var operation = Log.OnEnterAndExit())
             {
@@ -278,7 +278,7 @@ namespace WorkspaceServer.Servers.Roslyn
             }
         }
 
-        private static async Task<RunResult> RunConsoleAsync(Workspace workspace, WorkspaceBuild build, SerializableDiagnostic[] diagnostics, Budget budget, string requestId)
+        private static async Task<RunResult> RunConsoleAsync(Workspace workspace, Package build, SerializableDiagnostic[] diagnostics, Budget budget, string requestId)
         {
             var dotnet = new Dotnet(build.Directory);
 
@@ -318,7 +318,7 @@ namespace WorkspaceServer.Servers.Roslyn
             return runResult;
         }
 
-        private static async Task<RunResult> RunUnitTestsAsync(WorkspaceBuild build, SerializableDiagnostic[] diagnostics, Budget budget, string requestId)
+        private static async Task<RunResult> RunUnitTestsAsync(Package build, SerializableDiagnostic[] diagnostics, Budget budget, string requestId)
         {
             var dotnet = new Dotnet(build.Directory);
 
@@ -364,7 +364,7 @@ namespace WorkspaceServer.Servers.Roslyn
             return result;
         }
 
-        private static RunResult RunWebRequest(WorkspaceBuild build, string requestId)
+        private static RunResult RunWebRequest(Package build, string requestId)
         {
             var runResult = new RunResult(succeeded: true, requestId: requestId);
             runResult.AddFeature(new WebServer(build));

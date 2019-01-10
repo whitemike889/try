@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Pocket;
 using Recipes;
 using WorkspaceServer.Servers.Scripting;
-using WorkspaceServer.Workspaces;
+using WorkspaceServer.Packaging;
 using Xunit;
 using Xunit.Abstractions;
 using static Pocket.Logger<WorkspaceServer.Tests.WorkspaceServerTests>;
@@ -20,12 +20,12 @@ namespace WorkspaceServer.Tests
         {
         }
 
-        protected override Workspace CreateWorkspaceWithMainContaining(string text, WorkspaceBuild workspaceBuild) => 
+        protected override Workspace CreateWorkspaceWithMainContaining(string text, Package package) => 
             Workspace.FromSource(text, workspaceType: "script");
 
-        protected override Task<(ICodeRunner runner, WorkspaceBuild workspace)> GetRunnerAndWorkspaceBuild(
+        protected override Task<(ICodeRunner runner, Package workspace)> GetRunnerAndWorkspaceBuild(
             [CallerMemberName] string testName = null) =>
-            Task.FromResult<(ICodeRunner , WorkspaceBuild )>((new ScriptingWorkspaceServer(), new WorkspaceBuild("script")));
+            Task.FromResult<(ICodeRunner , Package )>((new ScriptingWorkspaceServer(), new Package("script")));
 
         protected override ILanguageService GetLanguageService([CallerMemberName] string testName = null) =>
             new ScriptingWorkspaceServer();

@@ -13,15 +13,15 @@ using MLS.Agent.Tools;
 using Pocket;
 using Recipes;
 using WorkspaceServer.Servers.Roslyn;
-using static Pocket.Logger<WorkspaceServer.Workspaces.WorkspaceBuild>;
+using static Pocket.Logger<WorkspaceServer.Packaging.Package>;
 
-namespace WorkspaceServer.Workspaces
+namespace WorkspaceServer.Packaging
 {
-    public class WorkspaceBuild
+    public class Package
     {
         const string csharpLanguageVersion = "7.3";
 
-        static WorkspaceBuild()
+        static Package()
         {
             var workspacesPathEnvironmentVariableName = "TRYDOTNET_WORKSPACES_PATH";
 
@@ -44,7 +44,7 @@ namespace WorkspaceServer.Workspaces
             Log.Info("Workspaces path is {DefaultWorkspacesDirectory}", DefaultWorkspacesDirectory);
         }
 
-        private readonly IWorkspaceInitializer _initializer;
+        private readonly IPackageInitializer _initializer;
         private static readonly object _lockObj = new object();
         private readonly AsyncLazy<bool> _created;
         private readonly AsyncLazy<bool> _built;
@@ -55,17 +55,17 @@ namespace WorkspaceServer.Workspaces
         private FileInfo _entryPointAssemblyPath;
         private static string _targetFramework;
         private readonly Logger _log;
-        private WorkspaceConfiguration _configuration;
+        private PackageConfiguration _configuration;
         private readonly AsyncLazy<SyntaxTree> _instrumentationEmitterSyntaxTree;
 
-        public WorkspaceBuild(
+        public Package(
             string name = null,
-            IWorkspaceInitializer initializer = null,
+            IPackageInitializer initializer = null,
             bool requiresPublish = false,
             DirectoryInfo directory = null)
         {
             Name = name ?? directory?.Name ?? throw new ArgumentException($"You must specify {nameof(name)}, {nameof(directory)}, or both.");
-            _initializer = initializer ?? new WorkspaceInitializer("console", Name);
+            _initializer = initializer ?? new PackageInitializer("console", Name);
             ConstructionTime = Clock.Current.Now();
             Directory = directory ?? new DirectoryInfo(Path.Combine(DefaultWorkspacesDirectory.FullName, Name));
             RequiresPublish = requiresPublish;
@@ -74,7 +74,7 @@ namespace WorkspaceServer.Workspaces
             _created = new AsyncLazy<bool>(VerifyOrCreate);
             _built = new AsyncLazy<bool>(VerifyOrBuild);
             _published = new AsyncLazy<bool>(VerifyOrPublish);
-            _log = new Logger($"{nameof(WorkspaceBuild)}:{Name}");
+            _log = new Logger($"{nameof(Package)}:{Name}");
         }
 
         private bool IsDirectoryCreated { get; set; }
@@ -107,7 +107,7 @@ namespace WorkspaceServer.Workspaces
 
         public static DirectoryInfo DefaultWorkspacesDirectory { get; }
 
-        public async Task<WorkspaceConfiguration> GetConfigurationAsync()
+        public async Task<PackageConfiguration> GetConfigurationAsync()
         {
             if (_configuration == null)
             {
@@ -119,7 +119,7 @@ namespace WorkspaceServer.Workspaces
                 {
                     var json = await workspaceConfigFile.ReadAsync();
 
-                    _configuration = json.FromJsonTo<WorkspaceConfiguration>();
+                    _configuration = json.FromJsonTo<PackageConfiguration>();
                 }
                 else
                 {
@@ -132,7 +132,7 @@ namespace WorkspaceServer.Workspaces
 
                     var compilerCommandLine = buildLog.FindCompilerCommandLineAndSetLanguageversion(csharpLanguageVersion);
 
-                    _configuration = new WorkspaceConfiguration
+                    _configuration = new PackageConfiguration
                     {
                         CompilerArgs = compilerCommandLine
                     };
@@ -334,50 +334,50 @@ namespace WorkspaceServer.Workspaces
             return true;
         }
 
-        public static async Task<WorkspaceBuild> Copy(
-            WorkspaceBuild fromWorkspaceBuild,
+        public static async Task<Package> Copy(
+            Package fromPackage,
             string folderNameStartsWith = null)
         {
-            if (fromWorkspaceBuild == null)
+            if (fromPackage == null)
             {
-                throw new ArgumentNullException(nameof(fromWorkspaceBuild));
+                throw new ArgumentNullException(nameof(fromPackage));
             }
 
-            await fromWorkspaceBuild.EnsureReady(new Budget());
+            await fromPackage.EnsureReady(new Budget());
 
-            folderNameStartsWith = folderNameStartsWith ?? fromWorkspaceBuild.Name;
-            var parentDirectory = fromWorkspaceBuild.Directory.Parent;
+            folderNameStartsWith = folderNameStartsWith ?? fromPackage.Name;
+            var parentDirectory = fromPackage.Directory.Parent;
 
             var destination = CreateDirectory(folderNameStartsWith, parentDirectory);
 
-            return await Copy(fromWorkspaceBuild, destination);
+            return await Copy(fromPackage, destination);
         }
 
-        public static async Task<WorkspaceBuild> Copy(
-            WorkspaceBuild fromWorkspaceBuild,
+        public static async Task<Package> Copy(
+            Package fromPackage,
             DirectoryInfo destination)
         {
-            if (fromWorkspaceBuild == null)
+            if (fromPackage == null)
             {
-                throw new ArgumentNullException(nameof(fromWorkspaceBuild));
+                throw new ArgumentNullException(nameof(fromPackage));
             }
 
-            await fromWorkspaceBuild.EnsureReady(new Budget());
+            await fromPackage.EnsureReady(new Budget());
 
-            fromWorkspaceBuild.Directory.CopyTo(destination);
+            fromPackage.Directory.CopyTo(destination);
 
-            var copy = new WorkspaceBuild(directory: destination, name: destination.Name)
+            var copy = new Package(directory: destination, name: destination.Name)
             {
-                IsCreated = fromWorkspaceBuild.IsCreated,
-                IsPublished = fromWorkspaceBuild.IsPublished,
-                IsBuilt = fromWorkspaceBuild.IsBuilt,
-                IsReady = fromWorkspaceBuild.IsReady,
+                IsCreated = fromPackage.IsCreated,
+                IsPublished = fromPackage.IsPublished,
+                IsBuilt = fromPackage.IsBuilt,
+                IsReady = fromPackage.IsReady,
                 IsDirectoryCreated = true
             };
 
             Log.Info(
                 "Copied workspace {from} to {to}",
-                fromWorkspaceBuild,
+                fromPackage,
                 copy);
 
             return copy;

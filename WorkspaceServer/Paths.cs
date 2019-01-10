@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using WorkspaceServer.Servers.Roslyn;
 
 namespace WorkspaceServer
 {
@@ -17,7 +18,7 @@ namespace WorkspaceServer
 
             var nugetPackagesEnvironmentVariable = Environment.GetEnvironmentVariable("NUGET_PACKAGES");
 
-            NugetCache = string.IsNullOrWhiteSpace(nugetPackagesEnvironmentVariable)
+            NugetCache = String.IsNullOrWhiteSpace(nugetPackagesEnvironmentVariable)
                              ? Path.Combine(UserProfile, ".nuget", "packages")
                              : nugetPackagesEnvironmentVariable;
         }
@@ -32,5 +33,7 @@ namespace WorkspaceServer
             RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
                 ? withoutExtension + ".exe"
                 : withoutExtension;
+
+        public static readonly string InstallDirectory = Path.GetDirectoryName(typeof(WorkspaceUtilities).Assembly.Location);
     }
 }

@@ -4,9 +4,9 @@ using System.Threading.Tasks;
 using Clockwise;
 using MLS.Agent.Tools;
 
-namespace WorkspaceServer.Workspaces
+namespace WorkspaceServer.Packaging
 {
-    public class WorkspaceInitializer : IWorkspaceInitializer
+    public class PackageInitializer : IPackageInitializer
     {
         private readonly Func<DirectoryInfo, Budget, Task> afterCreate;
 
@@ -14,7 +14,7 @@ namespace WorkspaceServer.Workspaces
 
         public string ProjectName { get; }
 
-        public WorkspaceInitializer(
+        public PackageInitializer(
             string template, 
             string projectName,
             Func<DirectoryInfo, Budget, Task> afterCreate = null)
