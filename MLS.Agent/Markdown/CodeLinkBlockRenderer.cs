@@ -26,7 +26,7 @@ namespace MLS.Agent.Markdown
             //to do: ask what are the config objects that will be required here like projectTemplate, trydotnet mode, the url to do auto enable, etc
             renderer
                 .WriteLine(
-                    @"<pre style=""border: none"" height=""300px"" width=""800px"" data-trydotnet-mode=""editor"" data-trydotnet-project-template=""ravitemp"" data-trydotnet-session-id=""a"" height=""300px"" width=""800px"">")
+                    @"<pre style=""border: none"" height=""300px"" width=""800px"" data-trydotnet-mode=""editor"" data-trydotnet-project-template=""testmagic"" data-trydotnet-session-id=""a"" height=""300px"" width=""800px"">")
                 .WriteEscape(codeLinkBlock.CodeLines)
                 .WriteLine()
                 .WriteLine(@"</pre>")
