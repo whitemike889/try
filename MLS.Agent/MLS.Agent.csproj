@@ -76,7 +76,6 @@
   <ItemGroup>
     <ProjectReference Include="..\MLS.Agent.Tools\MLS.Agent.Tools.csproj" />
     <ProjectReference Include="..\MLS.Repositories\MLS.Repositories.csproj" />
-    <ProjectReference Include="..\ScriptingWorkspaceServer\ScriptingWorkspaceServer.csproj" />
     <ProjectReference Include="..\WorkspaceServer\WorkspaceServer.csproj" />
   </ItemGroup>
   <ItemGroup>
