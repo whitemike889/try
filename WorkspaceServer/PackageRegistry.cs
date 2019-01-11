@@ -11,15 +11,15 @@ using WorkspaceServer.Packaging;
 
 namespace WorkspaceServer
 {
-    public class PackageRegistry : IEnumerable<PackageBuilder>
+    public class PackageRegistry : IEnumerable<Task<PackageBuilder>>
     {
         private class CustomPackageLocator
         {
-            public async Task<Package> LocatePackage(string name, Budget budget)
+            public async Task<Package> LocatePackageAsync(string name, Budget budget)
             {
                 var result = await CommandLine.Execute(name, "locate-assembly", budget: budget);
                 var output = result.Output.FirstOrDefault();
-                if (output != null || !File.Exists(output))
+                if (output == null || !File.Exists(output))
                 {
                     return null;
                 }
@@ -33,7 +33,7 @@ namespace WorkspaceServer
         }
 
         private readonly CustomPackageLocator _locator = new CustomPackageLocator();
-        private readonly ConcurrentDictionary<string, PackageBuilder> _packageBuilders = new ConcurrentDictionary<string, PackageBuilder>();
+        private readonly ConcurrentDictionary<string, Task<PackageBuilder>> _packageBuilders = new ConcurrentDictionary<string, Task<PackageBuilder>>();
 
         public void Add(string name, Action<PackageBuilder> configure)
         {
@@ -49,7 +49,7 @@ namespace WorkspaceServer
 
             var options = new PackageBuilder(name);
             configure(options);
-            _packageBuilders.TryAdd(name, options);
+            _packageBuilders.TryAdd(name, Task.FromResult(options));
         }
 
         public async Task<Package> Get(string workspaceName, Budget budget = null)
@@ -59,37 +59,55 @@ namespace WorkspaceServer
                 workspaceName = "console";
             }
 
-            var build = await _locator.LocatePackage(workspaceName, budget);
-            if (build == null)
-            {
-                build = await _packageBuilders.GetOrAdd(
-                               workspaceName,
-                               name =>
-                               {
-                                   var directory = new DirectoryInfo(
-                                       Path.Combine(
-                                           Package.DefaultPackagesDirectory.FullName, workspaceName));
+            var build = await (await _packageBuilders.GetOrAdd(
+                            workspaceName,
+                            async name =>
+                            {
+                                var directory = new DirectoryInfo(
+                                    Path.Combine(
+                                        Package.DefaultPackagesDirectory.FullName, workspaceName));
 
-                                   if (directory.Exists)
-                                   {
-                                       return new PackageBuilder(name);
-                                   }
+                                if (directory.Exists)
+                                {
+                                    return new PackageBuilder(name);
+                                }
+
+                                var locatedPackage = await _locator.LocatePackageAsync(name, budget);
+                                if (locatedPackage != null)
+                                {
+                                    var pb = new PackageBuilder(name, new GlobalToolInitializer(name));
+                                    pb.Directory = locatedPackage.Directory;
+                                    return pb;
+                                }
 
 
+                                throw new ArgumentException($"Workspace named \"{name}\" not found.");
+                            })).GetPackage(budget);
 
-                                   throw new ArgumentException($"Workspace named \"{name}\" not found.");
-                               }).GetPackage(budget);
-
-            }
 
             await build.EnsureReady(budget);
             
             return build;
         }
 
-        public IEnumerable<PackageInfo> GetRegisteredPackageInfos()
+        class GlobalToolInitializer : IPackageInitializer
         {
-            var workspaceInfos = _packageBuilders?.Values.Select(wb => wb.GetPackageInfo()).Where(info => info != null).ToArray() ?? Array.Empty<PackageInfo>();
+            private readonly string _toolName;
+
+            public GlobalToolInitializer(string toolName)
+            {
+                _toolName = toolName;
+            }
+
+            public Task Initialize(DirectoryInfo directory, Budget budget = null)
+            {
+                return CommandLine.Execute(_toolName, "extract-package", budget: budget);
+            }
+        }
+
+        public IEnumerable<Task<PackageInfo>> GetRegisteredPackageInfos()
+        {
+            var workspaceInfos = _packageBuilders?.Values.Select(async wb => (await wb).GetPackageInfo()).Where(info => info != null).ToArray() ?? Array.Empty<Task<PackageInfo>>();
 
             return workspaceInfos;
         }
@@ -160,7 +178,7 @@ namespace WorkspaceServer
             return registry;
         }
 
-        public IEnumerator<PackageBuilder> GetEnumerator() =>
+        public IEnumerator<Task<PackageBuilder>> GetEnumerator() =>
             _packageBuilders.Values.GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() =>

@@ -134,39 +134,5 @@ namespace MLS.Agent.Markdown
         }
 
         private bool IsCSharp(string language) => Regex.Match(language, @"cs|csharp|c#", RegexOptions.IgnoreCase).Success;
-<<<<<<< HEAD
-=======
-
-
-        private bool TryGetCodeFromFile(string filename, out string code)
-        {
-            code = null;
-            var filePath = HtmlHelper.Unescape(filename).Trim();
-
-            if (IsValidFilePath(filePath))
-            {
-                var fullPath = GetFullyQualifiedPath(filePath);
-                if (File.Exists(fullPath))
-                {
-                    code = File.ReadAllText(fullPath);
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        private bool IsValidFilePath(string filePath)
-        {
-            return filePath.IndexOfAny(Path.GetInvalidPathChars()) == -1;
-        }
-
-        private string GetFullyQualifiedPath(string filePath)
-        {
-            return Path.IsPathRooted(filePath) 
-                ? filePath 
-                : Path.Combine(_config.RootDirectory.FullName, filePath);
-        }
->>>>>>> parent of 95d6c8c... Merged PR 1337754: Pass the try dot net parameters in code snippet
     }
 }

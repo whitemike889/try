@@ -12,7 +12,7 @@ namespace WorkspaceServer.Packaging
 
         private readonly List<Func<Package, Budget, Task>> _afterCreateActions = new List<Func<Package, Budget, Task>>();
 
-        public PackageBuilder(string packageName)
+        public PackageBuilder(string packageName, IPackageInitializer packageInitializer = null)
         {
             if (string.IsNullOrWhiteSpace(packageName))
             {
@@ -20,6 +20,7 @@ namespace WorkspaceServer.Packaging
             }
 
             PackageName = packageName;
+            PackageInitializer = packageInitializer;
         }
 
         public string PackageName { get; }

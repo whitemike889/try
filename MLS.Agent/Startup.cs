@@ -75,7 +75,11 @@ namespace MLS.Agent
                 }
                 else
                 {
-                    services.AddSingleton(_ => PackageRegistry.CreateForTryMode(StartupOptions.RootDirectory));
+                    if (StartupOptions.RootDirectory != null)
+                    {
+                        services.AddSingleton(_ => PackageRegistry.CreateForTryMode(StartupOptions.RootDirectory));
+                    }
+
                     services.AddSingleton<IMarkdownProject, MarkdownProject>();
                     services.AddSingleton<IDirectoryAccessor>(_=> new FileSystemDirectoryAccessor(StartupOptions.RootDirectory));
                 }

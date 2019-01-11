@@ -102,13 +102,13 @@ namespace MLS.Agent
             {
                 var run = new Command("list-packages", "Lists the installed Try .NET packages");
 
-                run.Handler = CommandHandler.Create((IConsole console) =>
+                run.Handler = CommandHandler.Create(async (IConsole console) =>
                 {
                     var registry = PackageRegistry.CreateForHostedMode();
 
                     foreach (var workspace in registry)
                     {
-                        console.Out.WriteLine(workspace.PackageName);
+                        console.Out.WriteLine((await workspace).PackageName);
                     }
                 });
 
