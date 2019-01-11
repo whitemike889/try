@@ -34,7 +34,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MLS.Repositories", "MLS.Rep
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MLS.Repositories.Tests", "MLS.Repositories.Tests\MLS.Repositories.Tests.csproj", "{3D4B1B5F-9350-48F7-ABBA-8ED38E8AB2EE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MLS.PackageTool", "MLS.PackageTool\MLS.PackageTool.csproj", "{6E6591D0-BE84-4EEE-B428-54ABC59CCFE1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MLS.PackageTool", "MLS.PackageTool\MLS.PackageTool.csproj", "{6E6591D0-BE84-4EEE-B428-54ABC59CCFE1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PackageToolTests", "PackageToolTests\PackageToolTests.csproj", "{F55B97B5-00B7-4E1B-AA60-37052C2A3AA7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -86,6 +88,10 @@ Global
 		{6E6591D0-BE84-4EEE-B428-54ABC59CCFE1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6E6591D0-BE84-4EEE-B428-54ABC59CCFE1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6E6591D0-BE84-4EEE-B428-54ABC59CCFE1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F55B97B5-00B7-4E1B-AA60-37052C2A3AA7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F55B97B5-00B7-4E1B-AA60-37052C2A3AA7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F55B97B5-00B7-4E1B-AA60-37052C2A3AA7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F55B97B5-00B7-4E1B-AA60-37052C2A3AA7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -103,6 +109,7 @@ Global
 		{1464572C-C78C-4E40-87B8-2130684749F3} = {6EE8F484-DFA2-4F0F-939F-400CE78DFAC2}
 		{3D4B1B5F-9350-48F7-ABBA-8ED38E8AB2EE} = {8192FEAD-BCE6-4E62-97E5-2E9EA884BD71}
 		{6E6591D0-BE84-4EEE-B428-54ABC59CCFE1} = {6EE8F484-DFA2-4F0F-939F-400CE78DFAC2}
+		{F55B97B5-00B7-4E1B-AA60-37052C2A3AA7} = {8192FEAD-BCE6-4E62-97E5-2E9EA884BD71}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D6CD99BA-B16B-4570-8910-225CBDFFA3AD}

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace MLS.PackageTool
 {
-    class Program
+    public class Program
     {
         static async Task Main(string[] args)
         {
@@ -27,40 +27,99 @@ namespace MLS.PackageTool
             Command LocateAssembly()
             {
                 return new Command("locate-assembly")
-                       {
-                           Handler = CommandHandler.Create((IConsole console) => console.Out.WriteLine(AssemblyLocation()))
-                       };
+                {
+                    Handler = CommandHandler.Create<IConsole>((console) => LocateAssemblyHandler(console))
+                };
             }
 
             Command ExtractPackage()
             {
                 return new Command("extract-package", "Extracts the project package zip thingz0rz.")
-                       {
-                           Handler = CommandHandler.Create(async (IConsole console) =>
-                           {
-                           var directory = Path.GetDirectoryName(AssemblyLocation());
-                               var zipFilePath = Path.Combine(directory, "project.zip");
-
-                               var resource = typeof(Program).Assembly.GetManifestResourceNames()[0];
-
-                               using (var stream = typeof(Program).Assembly.GetManifestResourceStream(resource))
-                               {
-                                   using (var zipFileStream = File.OpenWrite(zipFilePath))
-                                   {
-                                       await stream.CopyToAsync(zipFileStream);
-                                       await zipFileStream.FlushAsync();
-                                   }
-                               }
-
-                               ZipFile.ExtractToDirectory(zipFilePath, Path.Combine(directory, "project"));
-                           })
-                       };
+                {
+                    Handler = CommandHandler.Create<IConsole>((console) => ExtractPackageHandler(console))
+                };
             }
         }
 
-        private static string AssemblyLocation()
+        public static async Task ExtractPackageHandler(IConsole console)
+        { 
+            var directory = AssemblyDirectory();
+            var zipFilePath = Path.Combine(directory, "project.zip");
+
+            File.Delete(zipFilePath);
+
+            string targetDirectory = Path.Combine(directory, "project");
+            try
+            {
+                Directory.Delete(targetDirectory, recursive: true);
+            }
+            catch (DirectoryNotFoundException)
+            {
+            }
+
+            var resource = typeof(Program).Assembly.GetManifestResourceNames()[0];
+
+            using (var stream = typeof(Program).Assembly.GetManifestResourceStream(resource))
+            {
+                using (var zipFileStream = File.OpenWrite(zipFilePath))
+                {
+                    await stream.CopyToAsync(zipFileStream);
+                    await zipFileStream.FlushAsync();
+                }
+            }
+
+            ZipFile.ExtractToDirectory(zipFilePath, targetDirectory);
+            File.Delete(zipFilePath);
+        }
+
+        public static void LocateAssemblyHandler(IConsole console)
+        {
+            console.Out.WriteLine(AssemblyLocation());
+        }
+
+        public static string AssemblyLocation()
         {
             return typeof(Program).Assembly.Location;
+        }
+
+        public static string AssemblyDirectory()
+        {
+            return Path.GetDirectoryName(AssemblyLocation());
+        }
+    }
+
+
+    public class CommandLineParser
+    {
+        public static Parser Create(Action<IConsole> getAssembly, Func<IConsole, Task> extract)
+        {
+            var rootCommand = new RootCommand
+                              {
+                                  LocateAssembly(),
+                                  ExtractPackage(),
+                              };
+
+            var parser = new CommandLineBuilder(rootCommand)
+                         .UseDefaults()
+                         .Build();
+
+            Command LocateAssembly()
+            {
+                return new Command("locate-assembly")
+                {
+                    Handler = CommandHandler.Create(getAssembly)
+                };
+            }
+
+            Command ExtractPackage()
+            {
+                return new Command("extract-package", "Extracts the project package zip thingz0rz.")
+                {
+                    Handler = CommandHandler.Create(extract)
+                };
+            }
+
+            return parser;
         }
     }
 }
