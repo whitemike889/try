@@ -6,12 +6,33 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Clockwise;
+using MLS.Agent.Tools;
 using WorkspaceServer.Packaging;
 
 namespace WorkspaceServer
 {
     public class PackageRegistry : IEnumerable<PackageBuilder>
     {
+        private class CustomPackageLocator
+        {
+            public async Task<Package> LocatePackage(string name, Budget budget)
+            {
+                var result = await CommandLine.Execute(name, "locate-assembly", budget: budget);
+                var output = result.Output.FirstOrDefault();
+                if (output != null || !File.Exists(output))
+                {
+                    return null;
+                }
+
+                var directory = Path.GetDirectoryName(output);
+                var projectDirectory = Path.Combine(directory, "project");
+                Console.WriteLine($"Project: {projectDirectory}");
+                var package = new Package(name, directory: new DirectoryInfo(projectDirectory));
+                return package;
+            }
+        }
+
+        private readonly CustomPackageLocator _locator = new CustomPackageLocator();
         private readonly ConcurrentDictionary<string, PackageBuilder> _packageBuilders = new ConcurrentDictionary<string, PackageBuilder>();
 
         public void Add(string name, Action<PackageBuilder> configure)
@@ -31,28 +52,35 @@ namespace WorkspaceServer
             _packageBuilders.TryAdd(name, options);
         }
 
-        public async Task<Package> Get(string workspaceName,  Budget budget = null)
+        public async Task<Package> Get(string workspaceName, Budget budget = null)
         {
             if (workspaceName == "script")
             {
                 workspaceName = "console";
             }
 
-            var build = await _packageBuilders.GetOrAdd(
-                                workspaceName,
-                                name =>
-                                {
-                                    var directory = new DirectoryInfo(
-                                        Path.Combine(
-                                            Package.DefaultPackagesDirectory.FullName, workspaceName));
+            var build = await _locator.LocatePackage(workspaceName, budget);
+            if (build == null)
+            {
+                build = await _packageBuilders.GetOrAdd(
+                               workspaceName,
+                               name =>
+                               {
+                                   var directory = new DirectoryInfo(
+                                       Path.Combine(
+                                           Package.DefaultPackagesDirectory.FullName, workspaceName));
 
-                                    if (directory.Exists)
-                                    {
-                                        return new PackageBuilder(name);
-                                    }
+                                   if (directory.Exists)
+                                   {
+                                       return new PackageBuilder(name);
+                                   }
 
-                                    throw new ArgumentException($"Workspace named \"{name}\" not found.");
-                                }).GetPackage(budget);
+
+
+                                   throw new ArgumentException($"Workspace named \"{name}\" not found.");
+                               }).GetPackage(budget);
+
+            }
 
             await build.EnsureReady(budget);
             
