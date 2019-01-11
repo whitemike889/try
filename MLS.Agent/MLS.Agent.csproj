@@ -25,10 +25,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Remove="Resources\Program.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="BadRequestOnInvalidModelFilter" Version="0.1.5650001" />
     <PackageReference Include="CdpxBuildProps" Version="0.1.6040001" />
     <PackageReference Include="clockwise" Version="1.0.261-beta" />
@@ -88,21 +84,7 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\MLS.PackageTool.csproj" />
-    <None Include="Resources\Program.cs" />
+    <EmbeddedResource Include="..\MLS.PackageTool\MLS.PackageTool.csproj" />
+    <EmbeddedResource Include="..\MLS.PackageTool\Program.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Compile Update="Resource.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resource.resx</DependentUpon>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Update="Resource.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resource.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-  </ItemGroup>
-
 </Project>

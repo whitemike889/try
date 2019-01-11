@@ -135,9 +135,9 @@ namespace MLS.Agent
             Command Package()
             {
                 var package = new Command("package", "create a package");
-                package.Argument = new Argument<string>();
+                package.Argument = new Argument<DirectoryInfo>();
                 package.Argument.Name = typeof(PackageCommand).GetMethod(nameof(PackageCommand.Do)).GetParameters()
-                                         .First(p => p.ParameterType == typeof(string))
+                                         .First(p => p.ParameterType == typeof(DirectoryInfo))
                                          .Name;
 
                 package.Handler = CommandHandler.Create<DirectoryInfo>(PackageCommand.Do);

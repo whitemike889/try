@@ -13,7 +13,11 @@ namespace MLS.Agent
             
 
             var dotnet = new Dotnet();
-            await dotnet.ToolInstall($"-g --add-source \"{packageSource}\" {packageName}");
+            string args = $"-g --add-source \"{packageSource}\" {packageName}";
+            Console.WriteLine($"executing dotnet tool install {args}");
+            var result = await dotnet.ToolInstall(args);
+            Console.WriteLine(string.Join("\n", result.Output.Concat(result.Error)));
+
 
         }
     }
