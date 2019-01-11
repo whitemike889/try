@@ -12,33 +12,11 @@ namespace MLS.PackageTool
     {
         static async Task Main(string[] args)
         {
-            var rootCommand = new RootCommand
-                              {
-                                  LocateAssembly(),
-                                  ExtractPackage(),
-                              };
-
-            var parser = new CommandLineBuilder(rootCommand)
-                         .UseDefaults()
-                         .Build();
+            var parser = CommandLineParser.Create(
+                (console) => LocateAssemblyHandler(console),
+                (console) => ExtractPackageHandler(console));
 
             await parser.InvokeAsync(args);
-
-            Command LocateAssembly()
-            {
-                return new Command("locate-assembly")
-                {
-                    Handler = CommandHandler.Create<IConsole>((console) => LocateAssemblyHandler(console))
-                };
-            }
-
-            Command ExtractPackage()
-            {
-                return new Command("extract-package", "Extracts the project package zip thingz0rz.")
-                {
-                    Handler = CommandHandler.Create<IConsole>((console) => ExtractPackageHandler(console))
-                };
-            }
         }
 
         public static async Task ExtractPackageHandler(IConsole console)
