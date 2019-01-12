@@ -87,6 +87,15 @@ namespace MLS.Agent.Tests
             var testDir = new DirectoryInfo(Path.Combine(TestAssets.SampleConsole.FullName, "Subdirectory"));
             GetDirectory(testDir).ReadAllText(filePath).Should().Contain("Hello World!");
         }
+
+        [Fact]
+        public void Should_return_a_directory_accessor_for_a_relative_path()
+        {
+            var rootDir = TestAssets.SampleConsole;
+            var outerDirAccessor = GetDirectory(rootDir);
+            var inner = outerDirAccessor.GetDirectoryAccessorForRelativePath("Subdirectory");
+            inner.FileExists("AnotherProgram.cs").Should().BeTrue();
+        }
     }
 
     public class FileSystemDirectoryAccessorTests : DirectoryAccessorTests

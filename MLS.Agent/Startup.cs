@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using MLS.Agent.Markdown;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Pocket;
@@ -72,6 +73,7 @@ namespace MLS.Agent
                 {
                     services.AddSingleton(_ => PackageRegistry.CreateForTryMode(StartupOptions.Project));
                     services.AddSingleton<IMarkdownProject, MarkdownProject>();
+                    services.AddSingleton<IDirectoryAccessor>(_=> new FileSystemDirectoryAccessor(StartupOptions.RootDirectory));
                 }
 
                 operation.Succeed();

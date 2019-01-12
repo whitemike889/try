@@ -4,7 +4,6 @@ using Markdig.Syntax;
 using Markdig.Renderers.Html;
 using System;
 using System.CommandLine;
-using System.CommandLine.Builder;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -50,10 +49,36 @@ namespace MLS.Agent.Markdown
                                     Arity = ArgumentArity.ExactlyOne
                               };
 
+            var projectArgument = new Argument<FileInfo>(result =>
+            {
+                var projectPath = result.Arguments.Single();
+                if (_directoryAccessor.FileExists(projectPath))
+                {
+                    return ArgumentParseResult.Success(_directoryAccessor.GetFullyQualifiedPath(projectPath));
+                }
+
+                return ArgumentParseResult.Failure($"Project not found: {projectPath}");
+            })
+            {
+                Name = "project",
+                Arity = ArgumentArity.ExactlyOne
+            };
+
+            projectArgument.SetDefaultValue(()=>
+            {
+                var projectFiles = _directoryAccessor.GetAllFilesRecursively().Where(file => file.Extension == ".csproj");
+                if(projectFiles.Count() == 1)
+                {
+                    return projectFiles.Single();
+                }
+
+                return null;
+            });
+
             var language = new Command("csharp", argument: bufferIdArg)
                           {
-                              new Option("--project", argument: new Argument<DirectoryInfo>().ExistingOnly())
-            };
+                              new Option("--project", argument: projectArgument)
+                          };
 
             return new Parser(language);
         }
@@ -92,16 +117,19 @@ namespace MLS.Agent.Markdown
                 codeLinkBlock.ErrorMessage =
                     string.Join("\n", parseResult.Errors.Select(e => e.ToString()));
             }
-            else
+            else if ((parseResult.ValueForOption<FileInfo>("project") is FileInfo fileInfo))
             {
                 fenced.Info = langString;
                 var bufferId = parseResult.CommandResult.GetValueOrDefault<BufferId>();
                 codeLinkBlock.CodeLines = new StringSlice(HtmlHelper.Unescape(_directoryAccessor.ReadAllText(bufferId.FileName)));
+                AddAttribute(codeLinkBlock, "data-trydotnet-mode", "editor");
+                AddAttribute(codeLinkBlock, "data-trydotnet-project-template", fileInfo.FullName);
+                AddAttribute(codeLinkBlock, "data-trydotnet-session-id", "a");
             }
-
-            AddAttribute(codeLinkBlock, "data-trydotnet-mode", "editor");
-            AddAttribute(codeLinkBlock, "data-trydotnet-project-template", "console");
-            AddAttribute(codeLinkBlock, "data-trydotnet-session-id", "a");
+            else
+            {
+                codeLinkBlock.ErrorMessage = $"No project file could be found at path {_directoryAccessor.GetFullyQualifiedPath(".")}";   
+            }
 
             return true;
         }

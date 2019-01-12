@@ -4,7 +4,7 @@ namespace MLS.Agent
 {
     public interface IMarkdownProject
     {
-        IEnumerable<MarkdownFile> GetAllFiles();
+        IEnumerable<MarkdownFile> GetAllMarkdownFiles();
         bool TryGetHtmlContent(string path, out string html);
     }
 }

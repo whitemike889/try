@@ -1,6 +1,7 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace MLS.Agent.Markdown
 {
@@ -94,13 +95,15 @@ namespace MLS.Agent.Markdown
         {
             return File.Exists(GetFullyQualifiedPath(filePath));
         }
+        
+        
 
         public string ReadAllText(string filePath)
         {
             return File.ReadAllText(GetFullyQualifiedPath(filePath));
         }
 
-        private string GetFullyQualifiedPath(string filePath)
+        public string GetFullyQualifiedPath(string filePath)
         {
             if (filePath == null)
             {
@@ -134,6 +137,16 @@ namespace MLS.Agent.Markdown
                     throw new ArgumentException($"The character {ch} is not allowed in the path");
                 }
             }
+        }
+
+        public IDirectoryAccessor GetDirectoryAccessorForRelativePath(string relativePath)
+        {   
+            return new FileSystemDirectoryAccessor(new DirectoryInfo(Path.Combine(_rootDirectory.FullName, relativePath)));
+        }
+
+        public IEnumerable<FileInfo> GetAllFilesRecursively()
+        {
+            return _rootDirectory.GetFiles("*", SearchOption.AllDirectories);
         }
     }
 }
