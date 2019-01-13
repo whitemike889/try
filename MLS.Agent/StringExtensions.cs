@@ -10,6 +10,11 @@ namespace MLS.Agent
             return HttpUtility.HtmlEncode(content);
         }
 
+        public static string HtmlAttributeEncode(this string content)
+        {
+            return HttpUtility.HtmlAttributeEncode(content);
+        }
+
         public static string NormalizePath(this string path)
         {
             return Path.GetFullPath(path.Replace('\\', Path.DirectorySeparatorChar));

@@ -20,7 +20,10 @@ namespace MLS.Agent.Tests
         {
             _output = output;
             _parser = CommandLineParser.Create(
-                start: (options, invocationContext) => { _options = options; },
+                start: (options, invocationContext) =>
+                {
+                    _options = options;
+                },
                 tryGithub: (repo, c) =>
                 {
                     _repo = repo;

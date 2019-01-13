@@ -21,7 +21,7 @@ namespace MLS.Agent.Tests
         }
 
         [Fact]
-        public async Task Return_html_for_existing_markdown_files()
+        public async Task Return_html_for_an_existing_markdown_file()
         {
             using (var agent = new AgentService(new StartupOptions(rootDirectory: TestAssets.SampleConsole)))
             {
@@ -35,7 +35,7 @@ namespace MLS.Agent.Tests
         }
 
         [Fact]
-        public async Task Return_html_for_existing_markdown_files_in_subdirectories()
+        public async Task Return_html_for_existing_markdown_files_in_a_subdirectory()
         {
             using (var agent = new AgentService(new StartupOptions(rootDirectory: TestAssets.SampleConsole)))
             {
@@ -45,6 +45,30 @@ namespace MLS.Agent.Tests
 
                 var result = await response.Content.ReadAsStringAsync();
                 result.Should().Contain("<em>tutorial file</em>");
+            }
+        }
+
+        [Fact]
+        public async Task Lists_markdown_files_when_a_folder_is_requested()
+        {
+            using (var agent = new AgentService(new StartupOptions(rootDirectory: TestAssets.SampleConsole)))
+            {
+                var response = await agent.GetAsync(@"/");
+
+                response.Should().BeSuccessful();
+
+                var html = await response.Content.ReadAsStringAsync();
+
+                var htmlDoc = new HtmlDocument();
+                htmlDoc.LoadHtml(html);
+
+                var links = htmlDoc.DocumentNode
+                                   .SelectNodes("//a")
+                                   .Select(a => a.Attributes["href"].Value)
+                                   .ToArray();
+
+                links.Should().Contain("Readme.md");
+                links.Should().Contain("Subdirectory/Tutorial.md");
             }
         }
 
@@ -68,7 +92,7 @@ namespace MLS.Agent.Tests
                                      .Descendants("script")
                                      .FirstOrDefault();
 
-                script.Attributes["src"].Value.Should().Be("//trydotnet.microsoft.com/api/trydotnet.min.js");
+                script.Attributes["src"].Value.Should().Be("//trydotnet-eastus.azurewebsites.net/api/trydotnet.min.js");
             }
         }
 

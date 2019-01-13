@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
@@ -14,6 +17,7 @@ using WorkspaceServer.Servers.Roslyn;
 using static Pocket.Logger<MLS.Agent.Startup>;
 using IApplicationLifetime = Microsoft.Extensions.Hosting.IApplicationLifetime;
 using IHostingEnvironment = Microsoft.Extensions.Hosting.IHostingEnvironment;
+using Process = System.Diagnostics.Process;
 
 namespace MLS.Agent
 {
@@ -71,7 +75,7 @@ namespace MLS.Agent
                 }
                 else
                 {
-                    services.AddSingleton(_ => PackageRegistry.CreateForTryMode(StartupOptions.Project));
+                    services.AddSingleton(_ => PackageRegistry.CreateForTryMode(StartupOptions.RootDirectory));
                     services.AddSingleton<IMarkdownProject, MarkdownProject>();
                     services.AddSingleton<IDirectoryAccessor>(_=> new FileSystemDirectoryAccessor(StartupOptions.RootDirectory));
                 }
@@ -98,6 +102,30 @@ namespace MLS.Agent
                 _disposables.Add(() => budget.Cancel());
 
                 operation.Succeed();
+
+                if (!StartupOptions.IsInHostedMode && 
+                    Environment.EnvironmentName != "test" &&
+                    !Debugger.IsAttached)
+                {
+                    Task.Delay(TimeSpan.FromSeconds(1))
+                        .ContinueWith(task =>
+                        {
+                            var url = "http://localhost:4242";
+
+                            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                            {
+                                Process.Start(new ProcessStartInfo("cmd", $"/c start {url}"));
+                            }
+                            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                            {
+                                Process.Start("xdg-open", url);
+                            }
+                            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                            {
+                                Process.Start("open", url);
+                            }
+                        });
+                }
             }
         }
     }

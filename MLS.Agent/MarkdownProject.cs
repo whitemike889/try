@@ -1,15 +1,14 @@
-﻿using Markdig;
-using MLS.Agent.Markdown;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
+using Markdig;
+using MLS.Agent.Markdown;
 
 namespace MLS.Agent
 {
     public class MarkdownProject : IMarkdownProject
     {
-        private IDirectoryAccessor _directoryAccessor;
+        private readonly IDirectoryAccessor _directoryAccessor;
 
         public MarkdownProject(IDirectoryAccessor directoryAccessor)
         {
