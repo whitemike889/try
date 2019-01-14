@@ -14,7 +14,6 @@ namespace MLS.Agent
     {
         public static async Task Do(DirectoryInfo directory)
         {
-            //var dir = Environment.CurrentDirectory;
             Console.WriteLine($"Creating package-tool from {directory.FullName}");
             var tempDir = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), Path.GetRandomFileName()));
 
@@ -29,32 +28,30 @@ namespace MLS.Agent
 
             string csprojName = $"package-tool.csproj";
             var projectFilePath = Path.Combine(tempDir.FullName, csprojName);
-
-            var assembly = typeof(PackageCommand).Assembly;
-            var names = assembly.GetManifestResourceNames();
-
-            Console.WriteLine(string.Join("\n", names));
-
-            await File.WriteAllTextAsync(projectFilePath, ReadStream(assembly, "MLS.Agent.MLS.PackageTool.csproj"));
-
             var contentFilePath = Path.Combine(tempDir.FullName, "program.cs");
-            await File.WriteAllTextAsync(contentFilePath, ReadStream(assembly, "MLS.Agent.Program.cs"));
 
-
-
+            await File.WriteAllTextAsync(projectFilePath, ReadManifestResource("MLS.Agent.MLS.PackageTool.csproj"));
+            await File.WriteAllTextAsync(contentFilePath, ReadManifestResource("MLS.Agent.Program.cs"));
 
             var dotnet = new Dotnet(tempDir);
             var result = await dotnet.Build();
-            Console.WriteLine(string.Join("\n", result.Output.Concat(result.Error)));
+            if (result.ExitCode != 0)
+            {
+                throw new Exception("Failed to build intermediate project");
+            }
 
-            result = await dotnet.Pack($"/p:PackageId={name} /p:ToolCommandName={name} {projectFilePath}");
-            Console.WriteLine(string.Join("\n", result.Output.Concat(result.Error)));
-
+            var outputLocation = directory.FullName;
+            result = await dotnet.Pack($"/p:PackageId={name} /p:ToolCommandName={name} {projectFilePath} -o {outputLocation}");
+            if (result.ExitCode != 0)
+            {
+                throw new Exception("Package build failed");
+            }
         }
 
-        private static string ReadStream(Assembly a, string resourceName)
+        private static string ReadManifestResource(string resourceName)
         {
-            using (var reader = new StreamReader(a.GetManifestResourceStream(resourceName)))
+            var assembly = typeof(Program).Assembly;
+            using (var reader = new StreamReader(assembly.GetManifestResourceStream(resourceName)))
             { 
                 return reader.ReadToEnd();
             }
