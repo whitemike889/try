@@ -1,10 +1,7 @@
-﻿using Microsoft.ApplicationInsights.AspNetCore;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using WorkspaceServer;
 
