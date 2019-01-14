@@ -65,9 +65,6 @@
     </PackageReference>
     <PackageReference Include="System.Runtime.Loader" Version="4.3.0" />
     <PackageReference Include="TaskExtensions" Version="0.1.5650001" />
-     <PackageReference Include="trydotnet-references">
-      <Version>1.0.1</Version>
-    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
