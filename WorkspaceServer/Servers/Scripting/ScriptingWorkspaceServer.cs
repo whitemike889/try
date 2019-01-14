@@ -28,7 +28,6 @@ namespace WorkspaceServer.Servers.Scripting
     public class ScriptingWorkspaceServer : ICodeRunner
     {
         private readonly BufferInliningTransformer _transformer = new BufferInliningTransformer();
-        private readonly WorkspaceFixture _fixture;
 
         private static readonly Regex _diagnosticFilter = new Regex(@"^(?<location>\(\d+,\d+\):)\s*(?<level>\S+)\s*(?<code>[A-Z]{2}\d+:)(?<message>.+)", RegexOptions.Compiled);
 
@@ -47,9 +46,6 @@ namespace WorkspaceServer.Servers.Scripting
 
         public ScriptingWorkspaceServer()
         {
-            _fixture = new WorkspaceFixture(
-                WorkspaceUtilities.DefaultUsings,
-                DefaultReferencedAssemblies);
         }
 
         public async Task<RunResult> Run(WorkspaceRequest request, Budget budget = null)
@@ -175,20 +171,6 @@ namespace WorkspaceServer.Servers.Scripting
                 typeof(Enumerable).GetTypeInfo().Assembly,
                 typeof(Console).GetTypeInfo().Assembly
             };
-
-        private (Document document, int position) GenerateDocumentAndPosition(BufferId activeBufferId, Workspace workspace)
-        {
-            if (workspace.Files.Length != 1)
-            {
-                throw new ArgumentException($"{nameof(workspace)} should have exactly one source file.");
-            }
-
-            var code = workspace.Files.Single().Text;
-            var absolutePosition = workspace.Buffers.Single(b => b.Id == activeBufferId).AbsolutePosition;
-
-            var document = _fixture.ForkDocument(code);
-            return (document, absolutePosition);
-        }
 
         private static async Task<ScriptState<object>> EmulateConsoleMainInvocation(
             ScriptState<object> state,
