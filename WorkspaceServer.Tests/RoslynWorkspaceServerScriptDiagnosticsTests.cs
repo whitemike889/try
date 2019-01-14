@@ -18,12 +18,6 @@ namespace WorkspaceServer.Tests
         {
         }
 
-        protected override Task<(ICodeRunner runner, WorkspaceBuild workspace)> GetRunnerAndWorkspaceBuild(
-            [CallerMemberName] string testName = null)
-        {
-            throw new NotImplementedException();
-        }
-
         protected override Task<(ICodeRunner runner, Package workspace)> GetRunnerAndWorkspaceBuild(string testName = null)
         {
             return Task.FromResult(((ICodeRunner)new ScriptingWorkspaceServer(), new Package("script")));
@@ -42,5 +36,9 @@ namespace WorkspaceServer.Tests
             result.Diagnostics.Should().NotBeEmpty();
             result.Diagnostics.Should().Contain(diagnostics => diagnostics.Message == "(1,1): error CS0103: The name \'addd\' does not exist in the current context");
         }
+
+        protected override ILanguageService GetLanguageService(
+            [CallerMemberName] string testName = null) => new RoslynWorkspaceServer(
+            PackageRegistry.CreateForHostedMode());
     }
 }
