@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.IO;
 using System.Reflection;
 using System.Linq;
 using System.Text;
@@ -28,21 +25,7 @@ namespace WorkspaceServer.Servers.Scripting
     public class ScriptingWorkspaceServer : ICodeRunner
     {
         private readonly BufferInliningTransformer _transformer = new BufferInliningTransformer();
-
         private static readonly Regex _diagnosticFilter = new Regex(@"^(?<location>\(\d+,\d+\):)\s*(?<level>\S+)\s*(?<code>[A-Z]{2}\d+:)(?<message>.+)", RegexOptions.Compiled);
-
-        public static ImmutableArray<MetadataReference> DefaultReferencedAssemblies =
-            WorkspaceUtilities.AssembliesNamesToReference()
-                              .Select(assemblyName =>
-                                          new FileInfo(Path.Combine(Paths.InstallDirectory, "completion", "references", $"{assemblyName}.dll")))
-                              .Where(assembly => assembly.Exists)
-                              .Select(assembly => MetadataReference.CreateFromFile(
-                                          assembly.FullName,
-                                          documentation: XmlDocumentationProvider.CreateFromFile(
-                                              Path.Combine(Paths.InstallDirectory, "completion", "references", $"{assembly.Name}.xml")))
-                              )
-                              .Cast<MetadataReference>()
-                              .ToImmutableArray();
 
         public ScriptingWorkspaceServer()
         {
