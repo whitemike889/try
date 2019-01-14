@@ -28,7 +28,7 @@ namespace WorkspaceServer.Tests
             Task.FromResult<(ICodeRunner , Package )>((new ScriptingWorkspaceServer(), new Package("script")));
 
         protected override ILanguageService GetLanguageService([CallerMemberName] string testName = null) =>
-            new ScriptingWorkspaceServer();
+            throw new NotImplementedException();
 
         [Fact]
         public async Task Response_shows_fragment_return_value()
@@ -68,35 +68,6 @@ Console.WriteLine(banana);", "script");
                 Output = new[] { "(2,19): error CS0103: The name \'banana\' does not exist in the current context" },
                 Exception = (string)null, // we already display the error in Output
             }, config => config.ExcludingMissingMembers());
-        }
-
-        [Fact]
-        public async Task Get_completion_for_console()
-        {
-            var ws = new Workspace(workspaceType: "script", buffers: new[] { new Workspace.Buffer("program.cs", "Console.", 8) });
-
-            var request = new WorkspaceRequest(ws, activeBufferId: "program.cs");
-
-            var server = GetLanguageService();
-
-            var result = await server.GetCompletionList(request);
-
-            result.Items.Should().ContainSingle(item => item.DisplayText == "WriteLine");
-        }
-
-        [Fact]
-        public async Task Get_signature_help_for_console_writeline()
-        {
-            var ws = new Workspace(workspaceType: "script", buffers: new[] { new Workspace.Buffer("program.cs", "Console.WriteLine()", 18) });
-
-            var request = new WorkspaceRequest(ws, activeBufferId: "program.cs");
-
-            var server = GetLanguageService();
-
-            var result = await server.GetSignatureHelp(request);
-
-            result.Signatures.Should().NotBeNullOrEmpty();
-            result.Signatures.Should().Contain(signature => signature.Label == "void Console.WriteLine(string format, params object[] arg)");
         }
 
         [Fact]

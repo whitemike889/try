@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using MLS.Project.Execution;
 using MLS.Project.Extensions;
 using MLS.Protocol.Execution;
@@ -26,7 +27,7 @@ namespace WorkspaceServer.Servers.Roslyn
 
             var sourceFiles = workspace.GetSourceFiles().ToArray();
 
-            var (compilation, documents) = await build.GetCompilation(sourceFiles, budget);
+            var (compilation, documents) = await build.GetCompilation(sourceFiles, SourceCodeKind.Regular, workspace.Usings, budget);
 
             var viewports = workspace.ExtractViewPorts();
 
@@ -105,11 +106,11 @@ Source
             return newCompilation;
         }
 
-        
-
         public static async Task<(Compilation compilation, IReadOnlyCollection<Document> documents)> GetCompilation(
             this Package build,
             IReadOnlyCollection<SourceFile> sources,
+            SourceCodeKind sourceCodeKind,
+            IEnumerable<string> defaultUsings,
             Budget budget)
         {
             var projectId = ProjectId.CreateNewId();
@@ -126,6 +127,7 @@ Source
                 {
                     // there's a pre-existing document, so overwrite its contents
                     document = document.WithText(source.Text);
+                    document = document.WithSourceCodeKind(sourceCodeKind);
                     currentSolution = document.Project.Solution;
                 }
                 else
@@ -133,10 +135,13 @@ Source
                     var docId = DocumentId.CreateNewId(projectId, $"{build.Name}.Document");
 
                     currentSolution = currentSolution.AddDocument(docId, source.Name, source.Text);
+                    currentSolution = currentSolution.WithDocumentSourceCodeKind(docId, sourceCodeKind);
                 }
             }
 
             var project = currentSolution.GetProject(projectId);
+            var options = (CSharpCompilationOptions)project.CompilationOptions;
+            project = project.WithCompilationOptions(options.WithUsings(defaultUsings));
 
             var compilation = await project.GetCompilationAsync().CancelIfExceeds(budget);
 

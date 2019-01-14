@@ -122,14 +122,7 @@ namespace MLS.Agent.Controllers
 
         private ILanguageService GetServerForWorkspace(Workspace workspace)
         {
-            if (string.Equals(workspace.WorkspaceType, "script", StringComparison.OrdinalIgnoreCase))
-            {
-                return new ScriptingWorkspaceServer();
-            }
-            else
-            {
-                return workspaceServer;
-            }
+            return workspaceServer;
         }
     }
 }

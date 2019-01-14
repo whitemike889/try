@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.IO;
 using System.Reflection;
 using System.Linq;
 using System.Text;
@@ -9,15 +6,11 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Completion;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
-using Microsoft.CodeAnalysis.Recommendations;
 using Microsoft.CodeAnalysis.Scripting;
 using MLS.Project.Extensions;
 using MLS.Project.Transformations;
 using Pocket;
-using MLS.Protocol.Completion;
-using MLS.Protocol.SignatureHelp;
 using WorkspaceServer.Transformations;
 using static Pocket.Logger<WorkspaceServer.Servers.Scripting.ScriptingWorkspaceServer>;
 using Workspace = MLS.Protocol.Execution.Workspace;
@@ -26,35 +19,16 @@ using Recipes;
 using MLS.Protocol.Execution;
 using MLS.Protocol;
 using MLS.Protocol.Diagnostics;
-using WorkspaceServer.LanguageServices;
 
 namespace WorkspaceServer.Servers.Scripting
 {
-    public class ScriptingWorkspaceServer : ICodeRunner, ILanguageService
+    public class ScriptingWorkspaceServer : ICodeRunner
     {
         private readonly BufferInliningTransformer _transformer = new BufferInliningTransformer();
-        private readonly WorkspaceFixture _fixture;
-
         private static readonly Regex _diagnosticFilter = new Regex(@"^(?<location>\(\d+,\d+\):)\s*(?<level>\S+)\s*(?<code>[A-Z]{2}\d+:)(?<message>.+)", RegexOptions.Compiled);
-
-        public static ImmutableArray<MetadataReference> DefaultReferencedAssemblies =
-            WorkspaceUtilities.AssembliesNamesToReference()
-                              .Select(assemblyName =>
-                                          new FileInfo(Path.Combine(Paths.InstallDirectory, "completion", "references", $"{assemblyName}.dll")))
-                              .Where(assembly => assembly.Exists)
-                              .Select(assembly => MetadataReference.CreateFromFile(
-                                          assembly.FullName,
-                                          documentation: XmlDocumentationProvider.CreateFromFile(
-                                              Path.Combine(Paths.InstallDirectory, "completion", "references", $"{assembly.Name}.xml")))
-                              )
-                              .Cast<MetadataReference>()
-                              .ToImmutableArray();
 
         public ScriptingWorkspaceServer()
         {
-            _fixture = new WorkspaceFixture(
-                WorkspaceUtilities.DefaultUsings,
-                DefaultReferencedAssemblies);
         }
 
         public async Task<RunResult> Run(WorkspaceRequest request, Budget budget = null)
@@ -181,92 +155,6 @@ namespace WorkspaceServer.Servers.Scripting
                 typeof(Console).GetTypeInfo().Assembly
             };
 
-        public async Task<CompletionResult> GetCompletionList(WorkspaceRequest request, Budget budget = null)
-        {
-            budget = budget ?? new Budget();
-            using (Log.OnExit())
-            {
-                var processor = new BufferInliningTransformer();
-                var workspace = await processor.TransformAsync(request.Workspace, budget);
-
-                var (document, absolutePosition) = GenerateDocumentAndPosition(request.ActiveBufferId, workspace);
-                var service = CompletionService.GetService(document);
-
-                var completionList = await service.GetCompletionsAsync(document, absolutePosition);
-                var semanticModel = await document.GetSemanticModelAsync();
-                var symbols = await Recommender.GetRecommendedSymbolsAtPositionAsync(semanticModel, absolutePosition, document.Project.Solution.Workspace);
-
-                var symbolToSymbolKey = new Dictionary<(string, int), ISymbol>();
-                foreach (var symbol in symbols)
-                {
-                    var key = (symbol.Name, (int)symbol.Kind);
-                    if (!symbolToSymbolKey.ContainsKey(key))
-                    {
-                        symbolToSymbolKey[key] = symbol;
-                    }
-                }
-
-                var diagnostics = DiagnosticsExtractor.ExtractSerializableDiagnosticsFromSemanticModel(request.ActiveBufferId, budget, semanticModel, workspace);
-                var items = completionList.Items.Select(item => item.ToModel(symbolToSymbolKey, document)).ToArray();
-
-                return new CompletionResult(items, requestId: request.RequestId, diagnostics: diagnostics);
-            }
-        }
-
-        public async Task<SignatureHelpResult> GetSignatureHelp(WorkspaceRequest request, Budget budget = null)
-        {
-            budget = budget ?? new Budget();
-            using (Log.OnExit())
-            {
-                var processor = new BufferInliningTransformer();
-                var workspace = await processor.TransformAsync(request.Workspace, budget);
-
-                var (document, absolutePosition) = GenerateDocumentAndPosition(request.ActiveBufferId, workspace);
-                var diagnostics = await DiagnosticsExtractor.ExtractSerializableDiagnosticsFromDocument(request.ActiveBufferId, budget, document, workspace);
-                var response = await SignatureHelpService.GetSignatureHelp(document, absolutePosition, budget);
-                response.RequestId = request.RequestId;
-                response.Diagnostics = diagnostics;
-                return response;
-            }
-        }
-
-        public async Task<DiagnosticResult> GetDiagnostics(WorkspaceRequest request, Budget budget = null)
-        {
-            budget = budget ?? new Budget();
-            using (Log.OnExit())
-            {
-                var processor = new BufferInliningTransformer();
-                var workspace = await processor.TransformAsync(request.Workspace, budget);
-
-                var (document, _) = GenerateDocumentAndPosition(request.ActiveBufferId, workspace);
-                var diagnostics = await DiagnosticsExtractor.ExtractSerializableDiagnosticsFromDocument(request.ActiveBufferId, budget, document, workspace);
-                var response = new DiagnosticResult(diagnostics, request.RequestId);
-                return response;
-            }
-        }
-
-        private async Task<(Document document, int position)> GenerateDocumentAndPosition(WorkspaceRequest request, Budget budget)
-        {
-            var processor = new BufferInliningTransformer();
-            var workspace = await processor.TransformAsync(request.Workspace, budget);
-
-            return GenerateDocumentAndPosition(request.ActiveBufferId, workspace);
-        }
-
-        private (Document document, int position) GenerateDocumentAndPosition(BufferId activeBufferId, Workspace workspace)
-        {
-            if (workspace.Files.Length != 1)
-            {
-                throw new ArgumentException($"{nameof(workspace)} should have exactly one source file.");
-            }
-
-            var code = workspace.Files.Single().Text;
-            var absolutePosition = workspace.Buffers.Single(b => b.Id == activeBufferId).AbsolutePosition;
-
-            var document = _fixture.ForkDocument(code);
-            return (document, absolutePosition);
-        }
-
         private static async Task<ScriptState<object>> EmulateConsoleMainInvocation(
             ScriptState<object> state,
             StringBuilder buffer,
@@ -303,11 +191,6 @@ typeof({entryPointMethod.ContainingType.Name})
             string ParametersForMain() => entryPointMethod.Parameters.Any()
                                               ? "new object[]{ new string[0] }"
                                               : "null";
-        }
-
-        public Task<CompileResult> Compile(WorkspaceRequest request, Budget budget = null)
-        {
-            throw new NotImplementedException();
         }
 
         public static string UserCodeCompletedBudgetEntryName = "UserCodeCompleted";
