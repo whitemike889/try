@@ -101,6 +101,7 @@ public class Program
             var result = await server.GetSignatureHelp(request);
             result.Signatures.Should().NotBeEmpty();
             result.Signatures.First().Label.Should().Be("IEnumerable<TSource> Enumerable.Take<TSource>(IEnumerable<TSource> source, int count)");
+            result.Signatures.First().Documentation.Should().Be("Returns a specified number of contiguous elements from the start of a sequence.");
         }
 
         [Fact]
