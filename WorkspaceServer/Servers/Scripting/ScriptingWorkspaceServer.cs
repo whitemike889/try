@@ -32,7 +32,8 @@ namespace WorkspaceServer.Servers.Scripting
         }
 
         public async Task<RunResult> Run(WorkspaceRequest request, Budget budget = null)
-        {var workspace = request.Workspace;
+        {
+            var workspace = request.Workspace;
             budget = budget ?? new Budget();
 
             using (var operation = Log.OnEnterAndConfirmOnExit())
