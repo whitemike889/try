@@ -9,10 +9,10 @@ namespace MLS.Agent
 {
     public class InstallCommand
     {
-        public static async Task Do(string packageName, string packageSource, IConsole console)
+        public static async Task Do(string packageName, string addSource, IConsole console)
         {
             var dotnet = new Dotnet();
-            string args = $"-g --add-source \"{packageSource}\" {packageName}";
+            string args = $"-g --add-source \"{addSource}\" {packageName}";
             console.Out.WriteLine($"executing dotnet tool install {args}");
             var result = await dotnet.ToolInstall(args);
             console.Out.WriteLine(string.Join("\n", result.Output.Concat(result.Error)));

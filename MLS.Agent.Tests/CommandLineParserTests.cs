@@ -37,10 +37,10 @@ namespace MLS.Agent.Tests
                     _packTarget = packTarget;
                     return Task.CompletedTask;
                 },
-                install: (packageName, packageSource, console) =>
+                install: (packageName, addSource, console) =>
                 {
                     _packageName = packageName;
-                    _packageSource = packageSource;
+                    _packageSource = addSource;
                     return Task.CompletedTask;
                 });
         }
@@ -197,7 +197,7 @@ namespace MLS.Agent.Tests
             _packageName.Should().BeNull();
         }
 
-        [Fact(Skip = "Why")]
+        [Fact]
         public async Task Install_parses_source_option()
         {
             var console = new TestConsole();
@@ -206,7 +206,7 @@ namespace MLS.Agent.Tests
 
             var expectedPackageSource = Path.GetDirectoryName(typeof(PackageCommand).Assembly.Location);
 
-            await _parser.InvokeAsync($"[parse] install --add-source {expectedPackageSource} the-package", console);
+            await _parser.InvokeAsync($"install --add-source {expectedPackageSource} the-package", console);
 
             _packageName.Should().Be("the-package");
             _packageSource.Should().Be(expectedPackageSource);
