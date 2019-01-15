@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace MLS.Agent
 {
@@ -17,7 +14,6 @@ namespace MLS.Agent
         {
             var tempDir = System.IO.Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), Path.GetRandomFileName()));
             return new DisposableDirectory(tempDir);
-
         }
 
         public DirectoryInfo Directory { get; }

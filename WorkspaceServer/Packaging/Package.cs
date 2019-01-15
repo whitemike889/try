@@ -23,7 +23,7 @@ namespace WorkspaceServer.Packaging
 
         static Package()
         {
-            var workspacesPathEnvironmentVariableName = "TRYDOTNET_WORKSPACES_PATH";
+            const string workspacesPathEnvironmentVariableName = "TRYDOTNET_WORKSPACES_PATH";
 
             var environmentVariable = Environment.GetEnvironmentVariable(workspacesPathEnvironmentVariableName);
 

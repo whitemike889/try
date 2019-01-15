@@ -1,4 +1,4 @@
 This is a sample *markdown file*
 
-```cs --project testmagic Program.cs
+```cs Program.cs
 ```

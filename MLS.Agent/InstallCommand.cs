@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.CommandLine;
 using System.Linq;
 using System.Threading.Tasks;
@@ -16,7 +15,10 @@ namespace MLS.Agent
             string args = $" --add-source \"{addSource}\" {packageName} --tool-path {Package.DefaultPackagesDirectory}";
             console.Out.WriteLine($"executing dotnet tool install {args}");
             var result = await dotnet.ToolInstall(args);
-            console.Out.WriteLine(string.Join("\n", result.Output.Concat(result.Error)));
+            if (result.ExitCode != 0)
+            {
+                throw new Exception($"Installation failed with error {result.Error}");
+            }
         }
     }
 }
