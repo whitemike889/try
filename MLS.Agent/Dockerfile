@@ -2,7 +2,7 @@ FROM microsoft/dotnet:2.1.503-sdk-alpine
 
 # configure environment
 ENV NUGET_PACKAGES=/dependencies/.nuget/packages
-ENV TRYDOTNET_WORKSPACES_PATH=/workspaces
+ENV TRYDOTNET_PACKAGES_PATH=/workspaces
 
 # install command line tools
 RUN apk update
