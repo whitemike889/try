@@ -18,9 +18,10 @@ namespace WorkspaceServer
 
         public PackageRegistry()
         {
-            _strategies = new IPackageDiscoveryStrategy[] 
+            _strategies = new IPackageDiscoveryStrategy[]
             {
                 new DirectoryPackageDiscoveryStrategy(),
+                new LocalToolPackageDiscoveryStrategy(Package.DefaultPackagesDirectory),
                 new GlobalToolPackageDiscoveryStrategy()
             };
         }

@@ -20,7 +20,7 @@ namespace WorkspaceServer.PackageDiscovery
                 return Task.FromResult(new PackageBuilder(packageDescriptor.Name));
             }
 
-            return null;
+            return Task.FromResult<PackageBuilder>(null);
         }
     }
 }

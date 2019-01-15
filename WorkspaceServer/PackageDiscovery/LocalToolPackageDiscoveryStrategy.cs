@@ -24,7 +24,8 @@ namespace WorkspaceServer.PackageDiscovery
             var locatedPackage = await _locator.LocatePackageAsync(packageDesciptor.Name, budget);
             if (locatedPackage != null)
             {
-                var pb = new PackageBuilder(packageDesciptor.Name, new PackageToolInitializer(packageDesciptor.Name, _workingDirectory));
+                var pb = new PackageBuilder(packageDesciptor.Name, 
+                    new PackageToolInitializer(Path.Combine(_workingDirectory.FullName, packageDesciptor.Name), _workingDirectory));
                 pb.Directory = locatedPackage.Directory;
                 return pb;
             }
