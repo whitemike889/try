@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "MLS.PackageTool": {
-      "commandName": "Project",
-      "commandLineArgs": "extract-package"
-    }
-  }
-}
