@@ -15,10 +15,14 @@ namespace MLS.Agent
 
         public delegate void StartServer(StartupOptions options, InvocationContext context);
         public delegate Task TryGitHub(string repo, IConsole console);
+        public delegate Task Pack(DirectoryInfo packTarget, IConsole console);
+        public delegate Task Install(string packageName, string packageSource, IConsole console);
 
         public static Parser Create(
             StartServer start,
-            TryGitHub tryGithub)
+            TryGitHub tryGithub,
+            Pack pack,
+            Install install)
         {
             var startHandler = CommandHandler.Create<InvocationContext>(context =>
             {
@@ -134,30 +138,32 @@ namespace MLS.Agent
 
             Command Package()
             {
-                var package = new Command("pack", "create a package");
-                package.Argument = new Argument<DirectoryInfo>();
-                package.Argument.Name = typeof(PackageCommand).GetMethod(nameof(PackageCommand.Do)).GetParameters()
+                var packCommand = new Command("pack", "create a package");
+                packCommand.Argument = new Argument<DirectoryInfo>();
+                packCommand.Argument.Name = typeof(PackageCommand).GetMethod(nameof(PackageCommand.Do)).GetParameters()
                                          .First(p => p.ParameterType == typeof(DirectoryInfo))
                                          .Name;
 
-                package.Handler = CommandHandler.Create<DirectoryInfo, IConsole>(PackageCommand.Do);
-                return package;
+                packCommand.Handler = CommandHandler.Create<DirectoryInfo, IConsole>(
+                    (packTarget, console) => pack(packTarget, console));
+
+                return packCommand;
             }
 
             Command Install()
             {
-                var install = new Command("install", "install a package");
-                install.Argument = new Argument<string>();
-                install.Argument.Name = typeof(InstallCommand).GetMethod(nameof(InstallCommand.Do)).GetParameters()
+                var installCommand = new Command("install", "install a package");
+                installCommand.Argument = new Argument<string>();
+                installCommand.Argument.Name = typeof(InstallCommand).GetMethod(nameof(InstallCommand.Do)).GetParameters()
                                          .First(p => p.ParameterType == typeof(string))
                                          .Name;
 
                 var option = new Option("--add-source", argument: new Argument<string>());
 
-                install.AddOption(option);
+                installCommand.AddOption(option);
 
-                install.Handler = CommandHandler.Create<string, string, IConsole>(InstallCommand.Do);
-                return install;
+                installCommand.Handler = CommandHandler.Create<string, string, IConsole>((packageName, packageSource, console) => install(packageName, packageSource, console));
+                return installCommand;
             }
         }
     }

@@ -15,6 +15,9 @@ namespace MLS.Agent.Tests
         private StartupOptions _options;
         private readonly Parser _parser;
         private string _repo;
+        private DirectoryInfo _packTarget;
+        private string _packageName;
+        private string _packageTaget;
 
         public CommandLineParserTests(ITestOutputHelper output)
         {
@@ -27,6 +30,17 @@ namespace MLS.Agent.Tests
                 tryGithub: (repo, c) =>
                 {
                     _repo = repo;
+                    return Task.CompletedTask;
+                },
+                pack: (packTarget, console) =>
+                {
+                    _packTarget = packTarget;
+                    return Task.CompletedTask;
+                },
+                install: (packageName, packageSource, console) =>
+                {
+                    _packageName = packageName;
+                    _packageTaget = packageSource;
                     return Task.CompletedTask;
                 });
         }
