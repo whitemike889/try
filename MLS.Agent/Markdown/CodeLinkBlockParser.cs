@@ -1,6 +1,7 @@
 ﻿using Markdig.Helpers;
 using Markdig.Parsers;
 using Markdig.Syntax;
+using Markdig.Renderers.Html;
 using System;
 using System.CommandLine;
 using System.IO;
@@ -83,8 +84,8 @@ namespace MLS.Agent.Markdown
         }
 
         private bool ParseCodeOptions(
-            BlockProcessor state, 
-            ref StringSlice line, 
+            BlockProcessor state,
+            ref StringSlice line,
             IFencedBlock fenced)
         {
             // line.Text contains the entire string of the document
@@ -131,6 +132,11 @@ namespace MLS.Agent.Markdown
             }
 
             return true;
+        }
+
+        private void AddAttribute(CodeLinkBlock block, string key, string value)
+        {
+            block.GetAttributes().AddProperty(key, value);
         }
 
         private bool IsCSharp(string language) => Regex.Match(language, @"cs|csharp|c#", RegexOptions.IgnoreCase).Success;
