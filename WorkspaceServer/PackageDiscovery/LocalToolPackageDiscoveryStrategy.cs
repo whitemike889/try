@@ -19,12 +19,12 @@ namespace WorkspaceServer.PackageDiscovery
             _locator = new CustomPackageLocator(workingDirectory);
         }
 
-        public async Task<PackageBuilder> Locate(string workspaceName, Budget budget = null)
+        public async Task<PackageBuilder> Locate(PackageDescriptor packageDesciptor, Budget budget = null)
         {
-            var locatedPackage = await _locator.LocatePackageAsync(workspaceName, budget);
+            var locatedPackage = await _locator.LocatePackageAsync(packageDesciptor.Name, budget);
             if (locatedPackage != null)
             {
-                var pb = new PackageBuilder(workspaceName, new PackageToolInitializer(workspaceName, _workingDirectory));
+                var pb = new PackageBuilder(packageDesciptor.Name, new PackageToolInitializer(packageDesciptor.Name, _workingDirectory));
                 pb.Directory = locatedPackage.Directory;
                 return pb;
             }

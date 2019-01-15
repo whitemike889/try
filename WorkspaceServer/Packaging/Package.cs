@@ -41,7 +41,7 @@ namespace WorkspaceServer.Packaging
                 DefaultPackagesDirectory.Create();
             }
 
-            Log.Info("Workspaces path is {DefaultWorkspacesDirectory}", DefaultPackagesDirectory);
+            Log.Info("Packages path is {DefaultWorkspacesDirectory}", DefaultPackagesDirectory);
         }
 
         private readonly IPackageInitializer _initializer;
@@ -205,7 +205,7 @@ namespace WorkspaceServer.Packaging
                 {
                     if (Directory.GetFiles().Length == 0)
                     {
-                        operation.Info("Initializing workspace using {_initializer} in {directory}", _initializer, Directory);
+                        operation.Info("Initializing package using {_initializer} in {directory}", _initializer, Directory);
                         await _initializer.Initialize(Directory);
                     }
 

@@ -42,20 +42,20 @@ namespace WorkspaceServer
             _packageBuilders.TryAdd(name, Task.FromResult(options));
         }
 
-        public async Task<Package> Get(string workspaceName, Budget budget = null)
+        public async Task<Package> Get(string packageName, Budget budget = null)
         {
-            if (workspaceName == "script")
+            if (packageName == "script")
             {
-                workspaceName = "console";
+                packageName = "console";
             }
 
             var build = await (await _packageBuilders.GetOrAdd(
-                            workspaceName,
+                            packageName,
                             async name =>
                             {
                                 foreach (var strategy in _strategies)
                                 {
-                                    var builder = await strategy.Locate(workspaceName, budget);
+                                    var builder = await strategy.Locate(new PackageDescriptor(packageName), budget);
                                     if (builder != null)
                                     {
                                         return builder;

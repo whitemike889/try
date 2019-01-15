@@ -10,14 +10,14 @@ namespace WorkspaceServer.PackageDiscovery
 {
     internal class DirectoryPackageDiscoveryStrategy : IPackageDiscoveryStrategy
     {
-        public Task<PackageBuilder> Locate(string workspaceName, Budget budget)
+        public Task<PackageBuilder> Locate(PackageDescriptor packageDescriptor, Budget budget)
         {
             var directory = new DirectoryInfo(Path.Combine(
-                    Package.DefaultPackagesDirectory.FullName, workspaceName));
+                    Package.DefaultPackagesDirectory.FullName, packageDescriptor.Name));
 
             if (directory.Exists)
             {
-                return Task.FromResult(new PackageBuilder(workspaceName));
+                return Task.FromResult(new PackageBuilder(packageDescriptor.Name));
             }
 
             return null;

@@ -106,9 +106,9 @@ namespace MLS.Agent
                 {
                     var registry = PackageRegistry.CreateForHostedMode();
 
-                    foreach (var workspace in registry)
+                    foreach (var package in registry)
                     {
-                        console.Out.WriteLine((await workspace).PackageName);
+                        console.Out.WriteLine((await package).PackageName);
                     }
                 });
 
@@ -134,13 +134,13 @@ namespace MLS.Agent
 
             Command Package()
             {
-                var package = new Command("package", "create a package");
+                var package = new Command("pack", "create a package");
                 package.Argument = new Argument<DirectoryInfo>();
                 package.Argument.Name = typeof(PackageCommand).GetMethod(nameof(PackageCommand.Do)).GetParameters()
                                          .First(p => p.ParameterType == typeof(DirectoryInfo))
                                          .Name;
 
-                package.Handler = CommandHandler.Create<DirectoryInfo>(PackageCommand.Do);
+                package.Handler = CommandHandler.Create<DirectoryInfo, IConsole>(PackageCommand.Do);
                 return package;
             }
 
@@ -152,11 +152,11 @@ namespace MLS.Agent
                                          .First(p => p.ParameterType == typeof(string))
                                          .Name;
 
-                var option = new Option("--package-source", argument: new Argument<string>());
+                var option = new Option("--add-source", argument: new Argument<string>());
 
                 install.AddOption(option);
 
-                install.Handler = CommandHandler.Create<string, string>(InstallCommand.Do);
+                install.Handler = CommandHandler.Create<string, string, IConsole>(InstallCommand.Do);
                 return install;
             }
         }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.CommandLine;
 using System.Linq;
 using System.Threading.Tasks;
 using WorkspaceServer;
@@ -8,17 +9,13 @@ namespace MLS.Agent
 {
     public class InstallCommand
     {
-        public static async Task Do(string packageName, string packageSource)
+        public static async Task Do(string packageName, string packageSource, IConsole console)
         {
-            
-
             var dotnet = new Dotnet();
             string args = $"-g --add-source \"{packageSource}\" {packageName}";
-            Console.WriteLine($"executing dotnet tool install {args}");
+            console.Out.WriteLine($"executing dotnet tool install {args}");
             var result = await dotnet.ToolInstall(args);
-            Console.WriteLine(string.Join("\n", result.Output.Concat(result.Error)));
-
-
+            console.Out.WriteLine(string.Join("\n", result.Output.Concat(result.Error)));
         }
     }
 }
