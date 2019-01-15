@@ -29,7 +29,6 @@ using MLS.Protocol.Execution;
 using MLS.Protocol;
 using MLS.Protocol.Diagnostics;
 using WorkspaceServer.LanguageServices;
-using Microsoft.CodeAnalysis.CSharp;
 
 namespace WorkspaceServer.Servers.Roslyn
 {
