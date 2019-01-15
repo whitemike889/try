@@ -6,6 +6,6 @@ namespace WorkspaceServer
 {
     public interface IPackageDiscoveryStrategy
     {
-        Task<PackageBuilder> Locate(string workspaceName, Budget budget);
+        Task<PackageBuilder> Locate(string workspaceName, Budget budget = null);
     }
 }

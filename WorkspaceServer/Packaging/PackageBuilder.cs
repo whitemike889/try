@@ -25,7 +25,7 @@ namespace WorkspaceServer.Packaging
 
         public string PackageName { get; }
 
-        internal IPackageInitializer PackageInitializer { get; private set; }
+        public IPackageInitializer PackageInitializer { get; private set; }
 
         public bool RequiresPublish { get; set; }
 

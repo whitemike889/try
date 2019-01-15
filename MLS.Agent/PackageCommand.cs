@@ -9,18 +9,23 @@ namespace MLS.Agent
 {
     public class PackageCommand
     {
-        public static async Task Do(DirectoryInfo directory)
+        public static Task Do(DirectoryInfo packTarget)
         {
-            Console.WriteLine($"Creating package-tool from {directory.FullName}");
+            return Do(packTarget, packTarget);
+        }
+
+        public static async Task Do(DirectoryInfo packTarget, DirectoryInfo outputDirectory)
+        {
+            Console.WriteLine($"Creating package-tool from {packTarget.FullName}");
             var tempDir = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), Path.GetRandomFileName()));
 
             var archiveName = "packagey.zip";
             var archivePath = Path.Combine(tempDir.FullName, archiveName);
 
-            ZipFile.CreateFromDirectory(directory.FullName, archivePath);
+            ZipFile.CreateFromDirectory(packTarget.FullName, archivePath);
             Console.WriteLine(archivePath);
 
-            var csproj = directory.GetFiles().Single(f => f.Extension.Contains("csproj"));
+            var csproj = packTarget.GetFiles().Single(f => f.Extension.Contains("csproj"));
             var name = Path.GetFileNameWithoutExtension(csproj.Name);
 
             string csprojName = $"package-tool.csproj";
@@ -37,8 +42,7 @@ namespace MLS.Agent
                 throw new Exception("Failed to build intermediate project");
             }
 
-            var outputLocation = directory.FullName;
-            result = await dotnet.Pack($"/p:PackageId={name} /p:ToolCommandName={name} {projectFilePath} -o {outputLocation}");
+            result = await dotnet.Pack($"/p:PackageId={name} /p:ToolCommandName={name} {projectFilePath} -o {outputDirectory.FullName}");
             if (result.ExitCode != 0)
             {
                 throw new Exception("Package build failed");
