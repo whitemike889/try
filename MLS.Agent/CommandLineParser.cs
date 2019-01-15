@@ -15,10 +15,14 @@ namespace MLS.Agent
 
         public delegate void StartServer(StartupOptions options, InvocationContext context);
         public delegate Task TryGitHub(string repo, IConsole console);
+        public delegate Task Pack(DirectoryInfo packTarget, IConsole console);
+        public delegate Task Install(string packageName, string addSource, IConsole console);
 
         public static Parser Create(
             StartServer start,
-            TryGitHub tryGithub)
+            TryGitHub tryGithub,
+            Pack pack,
+            Install install)
         {
             var startHandler = CommandHandler.Create<InvocationContext>(context =>
             {
@@ -36,6 +40,8 @@ namespace MLS.Agent
             rootCommand.AddCommand(startInHostedMode);
             rootCommand.AddCommand(ListPackages());
             rootCommand.AddCommand(GitHub());
+            rootCommand.AddCommand(Pack());
+            rootCommand.AddCommand(Install());
 
             return new CommandLineBuilder(rootCommand)
                    .UseDefaults()
@@ -100,13 +106,13 @@ namespace MLS.Agent
             {
                 var run = new Command("list-packages", "Lists the installed Try .NET packages");
 
-                run.Handler = CommandHandler.Create((IConsole console) =>
+                run.Handler = CommandHandler.Create(async (IConsole console) =>
                 {
                     var registry = PackageRegistry.CreateForHostedMode();
 
-                    foreach (var workspace in registry)
+                    foreach (var package in registry)
                     {
-                        console.Out.WriteLine(workspace.WorkspaceName);
+                        console.Out.WriteLine((await package).PackageName);
                     }
                 });
 
@@ -123,11 +129,43 @@ namespace MLS.Agent
                                          .First(p => p.ParameterType == typeof(string))
                                          .Name;
 
-                var run = new Command("github", "Try a GitHub repo", argument: argument);
+                var github = new Command("github", "Try a GitHub repo", argument: argument);
 
-                run.Handler = CommandHandler.Create<string, IConsole>((repo, console) => tryGithub(repo, console));
+                github.Handler = CommandHandler.Create<string, IConsole>((repo, console) => tryGithub(repo, console));
 
-                return run;
+                return github;
+            }
+
+            Command Pack()
+            {
+                var packCommand = new Command("pack", "create a package");
+                packCommand.Argument = new Argument<DirectoryInfo>();
+                packCommand.Argument.Name = typeof(PackageCommand).GetMethods()
+                                            .First(m => m.Name == nameof(PackageCommand.Do)).GetParameters()
+                                         .First(p => p.ParameterType == typeof(DirectoryInfo))
+                                         .Name;
+
+                packCommand.Handler = CommandHandler.Create<DirectoryInfo, IConsole>(
+                    (packTarget, console) => pack(packTarget, console));
+
+                return packCommand;
+            }
+
+            Command Install()
+            {
+                var installCommand = new Command("install", "install a package");
+                installCommand.Argument = new Argument<string>();
+                installCommand.Argument.Name = typeof(InstallCommand).GetMethods()
+                    .First(m => m.Name == nameof(InstallCommand.Do)).GetParameters()
+                                         .First(p => p.ParameterType == typeof(string))
+                                         .Name;
+
+                var option = new Option("--add-source", argument: new Argument<string>());
+
+                installCommand.AddOption(option);
+
+                installCommand.Handler = CommandHandler.Create<string, string, IConsole>((packageName, addSource, console) => install(packageName, addSource, console));
+                return installCommand;
             }
         }
     }

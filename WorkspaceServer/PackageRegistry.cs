@@ -6,13 +6,25 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Clockwise;
+using WorkspaceServer.PackageDiscovery;
 using WorkspaceServer.Packaging;
 
 namespace WorkspaceServer
 {
-    public class PackageRegistry : IEnumerable<PackageBuilder>
+    public partial class PackageRegistry : IEnumerable<Task<PackageBuilder>>
     {
-        private readonly ConcurrentDictionary<string, PackageBuilder> _workspaceBuilders = new ConcurrentDictionary<string, PackageBuilder>();
+        private readonly ConcurrentDictionary<string, Task<PackageBuilder>> _packageBuilders = new ConcurrentDictionary<string, Task<PackageBuilder>>();
+        private readonly IEnumerable<IPackageDiscoveryStrategy> _strategies;
+
+        public PackageRegistry()
+        {
+            _strategies = new IPackageDiscoveryStrategy[]
+            {
+                new DirectoryPackageDiscoveryStrategy(),
+                new LocalToolPackageDiscoveryStrategy(Package.DefaultPackagesDirectory),
+                new GlobalToolPackageDiscoveryStrategy()
+            };
+        }
 
         public void Add(string name, Action<PackageBuilder> configure)
         {
@@ -28,40 +40,41 @@ namespace WorkspaceServer
 
             var options = new PackageBuilder(name);
             configure(options);
-            _workspaceBuilders.TryAdd(name, options);
+            _packageBuilders.TryAdd(name, Task.FromResult(options));
         }
 
-        public async Task<Package> Get(string workspaceName,  Budget budget = null)
+        public async Task<Package> Get(string packageName, Budget budget = null)
         {
-            if (workspaceName == "script")
+            if (packageName == "script")
             {
-                workspaceName = "console";
+                packageName = "console";
             }
 
-            var build = await _workspaceBuilders.GetOrAdd(
-                                workspaceName,
-                                name =>
+            var build = await (await _packageBuilders.GetOrAdd(
+                            packageName,
+                            async name =>
+                            {
+                                foreach (var strategy in _strategies)
                                 {
-                                    var directory = new DirectoryInfo(
-                                        Path.Combine(
-                                            Package.DefaultWorkspacesDirectory.FullName, workspaceName));
-
-                                    if (directory.Exists)
+                                    var builder = await strategy.Locate(new PackageDescriptor(packageName), budget);
+                                    if (builder != null)
                                     {
-                                        return new PackageBuilder(name);
+                                        return builder;
                                     }
+                                }
 
-                                    throw new ArgumentException($"Workspace named \"{name}\" not found.");
-                                }).GetWorkspaceBuild(budget);
+                                throw new ArgumentException($"Workspace named \"{name}\" not found.");
+                            })).GetPackage(budget);
+
 
             await build.EnsureReady(budget);
             
             return build;
         }
 
-        public IEnumerable<PackageInfo> GetRegisteredWorkspaceInfos()
+        public IEnumerable<Task<PackageInfo>> GetRegisteredPackageInfos()
         {
-            var workspaceInfos = _workspaceBuilders?.Values.Select(wb => wb.GetWorkpaceInfo()).Where(info => info != null).ToArray() ?? Array.Empty<PackageInfo>();
+            var workspaceInfos = _packageBuilders?.Values.Select(async wb => (await wb).GetPackageInfo()).Where(info => info != null).ToArray() ?? Array.Empty<Task<PackageInfo>>();
 
             return workspaceInfos;
         }
@@ -132,8 +145,8 @@ namespace WorkspaceServer
             return registry;
         }
 
-        public IEnumerator<PackageBuilder> GetEnumerator() =>
-            _workspaceBuilders.Values.GetEnumerator();
+        public IEnumerator<Task<PackageBuilder>> GetEnumerator() =>
+            _packageBuilders.Values.GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() =>
             GetEnumerator();

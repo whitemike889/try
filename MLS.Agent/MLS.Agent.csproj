@@ -83,5 +83,8 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
-
+  <ItemGroup>
+    <EmbeddedResource Include="..\MLS.PackageTool\MLS.PackageTool.csproj" />
+    <EmbeddedResource Include="..\MLS.PackageTool\Program.cs" />
+  </ItemGroup>
 </Project>

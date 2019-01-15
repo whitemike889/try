@@ -32,8 +32,6 @@ namespace MLS.Agent
         public string Key { get; set; }
         public string ApplicationInsightsKey { get; set; }
         public bool LogToFile { get; set; }
-        public DirectoryInfo Project { get; set; }
-
         public bool IsInHostedMode => RootDirectory == null;
     }
 }
