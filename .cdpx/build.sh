@@ -23,7 +23,7 @@ cp -r $NUGET_PACKAGES/. $DOCKER_NUGET_PACKAGES
 # create packages
 mkdir $PACKAGE_ROOT
 echo "package"
-dotnet pack $REPO_ROOT/MLS-LS.sln  -c Release --no-build -o $PACKAGE_ROOT /p:NoPackageAnalysis=true
+dotnet pack $REPO_ROOT/MLS.Agent/MLS.Agent.csproj -c Release --no-build -o $PACKAGE_ROOT /p:NoPackageAnalysis=true
 
 noLeadingZeros=$(echo $CDP_BUILD_NUMBER | sed 's/^0*//')
 finalVersion="$CDP_MAJOR_NUMBER_ONLY.$CDP_MINOR_NUMBER_ONLY.$noLeadingZeros-$CDP_VERSION_TAG_ONLY-$CDP_COMMIT_ID"
