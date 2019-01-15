@@ -32,7 +32,7 @@ namespace MLS.Agent
             var projectFilePath = Path.Combine(tempDir.FullName, csprojName);
             var contentFilePath = Path.Combine(tempDir.FullName, "program.cs");
 
-            await File.WriteAllTextAsync(projectFilePath, ReadManifestResource("MLS.Agent.MLS.PackageTool.csproj"));
+            await File.WriteAllTextAsync(projectFilePath, FixCsproj(ReadManifestResource("MLS.Agent.MLS.PackageTool.csproj")));
             await File.WriteAllTextAsync(contentFilePath, ReadManifestResource("MLS.Agent.Program.cs"));
 
             var dotnet = new Dotnet(tempDir);
@@ -47,6 +47,11 @@ namespace MLS.Agent
             {
                 throw new Exception("Package build failed");
             }
+        }
+
+        private static string FixCsproj(string v)
+        {
+            return v.Replace("<!--", "").Replace("-->", "");
         }
 
         private static string ReadManifestResource(string resourceName)
