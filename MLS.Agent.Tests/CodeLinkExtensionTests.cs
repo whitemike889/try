@@ -98,7 +98,7 @@ console.log(""Hello World"");
         }
 
 
-        [Fact(Skip ="Blocked on parser bug")]
+        [Fact]
         public void Error_message_is_displayed_when_the_passed_project_file_doesnot_exist()
         {
             var testDir = TestAssets.SampleConsole;
@@ -107,7 +107,7 @@ console.log(""Hello World"");
                 ("Program.cs", "")
             };
             var projectPath = "sample.csproj";
-           
+
             var document =
 $@"```cs --project {projectPath} Program.cs
 ```";
@@ -130,9 +130,9 @@ $@"```cs --project {projectPath} Program.cs
 
             var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor).Build();
 
-            var projectTemplate = "../src/sample/sample.csproj";
+            var package = "../src/sample/sample.csproj";
             var document =
-$@"```cs --project {projectTemplate} ../src/sample/Program.cs
+$@"```cs --project {package} ../src/sample/Program.cs
 ```";
 
             var html = Markdig.Markdown.ToHtml(document, pipeline).EnforceLF();
@@ -140,16 +140,16 @@ $@"```cs --project {projectTemplate} ../src/sample/Program.cs
             var htmlDocument = new HtmlDocument();
             htmlDocument.LoadHtml(html);
             var output = htmlDocument.DocumentNode
-                .SelectSingleNode("//pre/code").Attributes["data-trydotnet-project-template"];
+                .SelectSingleNode("//pre/code").Attributes["data-trydotnet-package"];
 
-            var fullProjectPath = directoryAccessor.GetFullyQualifiedPath(projectTemplate);
-            output.Value.Should().Be(fullProjectPath);
+            var fullProjectPath = directoryAccessor.GetFullyQualifiedPath(new RelativeFilePath(package));
+            output.Value.Should().Be(fullProjectPath.FullName);
         }
 
-        /*[Fact]
-        public void Project_template_is_based_on_working_directory_when_project_options_is_not_specified()
+        [Fact(Skip = "To be implemented")]
+        public void Package_is_based_on_working_directory_when_project_options_is_not_specified()
         {
-            var rootDirectory = TestAssets.SampleConsole;
+            /*var rootDirectory = TestAssets.SampleConsole;
             var currentDir = new DirectoryInfo(Path.Combine(rootDirectory.FullName, "docs"));
             var directoryAccessor = new InMemoryDirectoryAccessor(currentDir, rootDirectory)
             {
@@ -163,14 +163,14 @@ $@"```cs --project {projectTemplate} ../src/sample/Program.cs
             var document =
 $@"```cs ../src/sample/Program.cs
 ```";
-                projectTemplate.Value.Should().Be("BasicConsoleApp");
-            }
-        }*/
+                projectTemplate.Value.Should().Be("BasicConsoleApp");*/
+        }
 
-        /*[Fact]
-        public void When_the_specified_project_template_does_not_exist_then_an_error_message_is_shown()
+
+        [Fact(Skip = "To be implemented")]
+        public void When_the_specified_package_does_not_exist_then_an_error_message_is_shown()
         {
-            using (var agent = new AgentService(new StartupOptions(rootDirectory: TestAssets.SampleConsole)))
+            /*using (var agent = new AgentService(new StartupOptions(rootDirectory: TestAssets.SampleConsole)))
             {
                 var response = await agent.GetAsync(@"Readme.md");
 
@@ -184,13 +184,13 @@ $@"```cs ../src/sample/Program.cs
                     .SelectSingleNode("//pre/code").Attributes["data-trydotnet-error"];
 
                 errorMessage.Value.Should().Be("The specified project template does not exist");
-            }
+            }*/
         }
 
-        [Fact]
-        public void When_the_specified_project_template_does_not_exist_then_original_fenced_code_is_displayed()
+        [Fact(Skip = "To be implemented")]
+        public void When_the_specified_package_does_not_exist_then_original_fenced_code_is_displayed()
         {
-            using (var agent = new AgentService(new StartupOptions(rootDirectory: TestAssets.SampleConsole)))
+            /*using (var agent = new AgentService(new StartupOptions(rootDirectory: TestAssets.SampleConsole)))
             {
                 var response = await agent.GetAsync(@"Readme.md");
 
@@ -203,28 +203,7 @@ $@"```cs ../src/sample/Program.cs
                 var fencedCode = document.DocumentNode
                     .SelectSingleNode("//pre/code").InnerHtml;
 
-                fencedCode.Should().Be("//specify the code");
-            }
+                fencedCode.Should().Be("//specify the code");*/
         }
-
-        [Fact]
-        public void Project_template_is_based_the_project_option_when_it_is_specified()
-        {
-            using (var agent = new AgentService(new StartupOptions(rootDirectory: TestAssets.SampleConsole)))
-            {
-                var response = await agent.GetAsync(@"Readme.md");
-
-                response.Should().BeSuccessful();
-
-                var html = await response.Content.ReadAsStringAsync();
-
-                var document = new HtmlDocument();
-                document.LoadHtml(html);
-                var fencedCode = document.DocumentNode
-                    .SelectSingleNode("//pre/code").Attributes["data-trydotnet-error"];
-
-                fencedCode.Should().Be("The specified project template does not exist");
-            }
-        }*/
     }
 }
