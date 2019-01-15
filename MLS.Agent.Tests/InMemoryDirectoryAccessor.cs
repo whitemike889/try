@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using MLS.Agent.Markdown;
+using WorkspaceServer.Servers.Roslyn;
 
 namespace MLS.Agent.Tests
 {
@@ -27,31 +28,34 @@ namespace MLS.Agent.Tests
                 new FileInfo(Path.Combine(_rootDirToAddFiles.FullName, file.path)).FullName, file.content);
         }
 
-        public bool FileExists(string filePath)
+        public bool FileExists(RelativeFilePath filePath)
         { 
-            return _files.ContainsKey(GetFullyQualifiedPath(filePath));
+            return _files.ContainsKey(GetFullyQualifiedPath(filePath).FullName);
         }
 
-        public string ReadAllText(string filePath)
+        public string ReadAllText(RelativeFilePath filePath)
         {
-            _files.TryGetValue(GetFullyQualifiedPath(filePath), out var value);
+            _files.TryGetValue(GetFullyQualifiedPath(filePath).FullName, out var value);
             return value;
         }
 
-        public string GetFullyQualifiedPath(string filePath)
+        public FileSystemInfo GetFullyQualifiedPath(RelativePath path)
         {
-            if (filePath == null)
+            if (path == null)
             {
                 throw new ArgumentNullException();
             }
 
-            var path = Path.IsPathRooted(filePath) ?
-                filePath :
-                Path.Combine(_workingDirectory.FullName, filePath);
+            var absolutePath = Path.Combine(_workingDirectory.FullName, path.Value);
 
-            var normalizedPath = path.NormalizePath();
-            FileSystemDirectoryAccessor.ThrowIfContainsDisallowedCharacters(normalizedPath);
-            return normalizedPath;
+            if (path is RelativeFilePath)
+            {
+                return new FileInfo(absolutePath);
+            }
+            else
+            {
+                return new DirectoryInfo(absolutePath);
+            }
         }
 
         public IEnumerator GetEnumerator()
@@ -59,18 +63,19 @@ namespace MLS.Agent.Tests
             throw new System.NotImplementedException();
         }
 
-        public IDirectoryAccessor GetDirectoryAccessorForRelativePath(string relativePath)
+        public IDirectoryAccessor GetDirectoryAccessorForRelativePath(RelativeDirectoryPath relativePath)
         {
-            var newPath = Path.Combine(_workingDirectory.FullName, relativePath);
-            return new InMemoryDirectoryAccessor(new DirectoryInfo(newPath.NormalizePath()))
+            var newPath = Path.Combine(_workingDirectory.FullName, relativePath.Value);
+            return new InMemoryDirectoryAccessor(new DirectoryInfo(newPath))
             {
                 _files = _files
             };
         }
 
-        public IEnumerable<FileInfo> GetAllFilesRecursively()
+        public IEnumerable<RelativeFilePath> GetAllFilesRecursively()
         {
-            return _files.Keys.Select(key => new FileInfo(key));
+            return _files.Keys.Select(key => new RelativeFilePath(
+                PathUtilities.GetRelativePath(_workingDirectory.FullName, key)));
         }
     }
 }

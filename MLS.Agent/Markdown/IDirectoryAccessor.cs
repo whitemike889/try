@@ -5,10 +5,10 @@ namespace MLS.Agent.Markdown
 {
     public interface IDirectoryAccessor
     {
-        bool FileExists(string filePath);
-        string ReadAllText(string filePath);
-        IEnumerable<FileInfo> GetAllFilesRecursively();
-        string GetFullyQualifiedPath(string path);
-        IDirectoryAccessor GetDirectoryAccessorForRelativePath(string relativePath);
+        bool FileExists(RelativeFilePath filePath);
+        string ReadAllText(RelativeFilePath filePath);
+        IEnumerable<RelativeFilePath> GetAllFilesRecursively();
+        FileSystemInfo GetFullyQualifiedPath(RelativePath path);
+        IDirectoryAccessor GetDirectoryAccessorForRelativePath(RelativeDirectoryPath relativePath);
     }
 }

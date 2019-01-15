@@ -8,10 +8,10 @@ namespace MLS.Agent.Controllers
 {
     public class DocumentationController : Controller
     {
-        private readonly IMarkdownProject _markdownProject;
+        private readonly MarkdownProject _markdownProject;
         private readonly StartupOptions startupOptions;
 
-        public DocumentationController(IMarkdownProject markdownProject, StartupOptions startupOptions)
+        public DocumentationController(MarkdownProject markdownProject, StartupOptions startupOptions)
         {
             _markdownProject = markdownProject ??
                                throw new ArgumentNullException(nameof(markdownProject));
@@ -28,19 +28,16 @@ namespace MLS.Agent.Controllers
                     "\n",
                     _markdownProject.GetAllMarkdownFiles()
                                     .Select(f =>
-                                    {
-                                        var relativePath = PathUtilities.GetRelativePath(
-                                                                            startupOptions.RootDirectory.FullName,
-                                                                            f.FileInfo.FullName)
-                                                                        .Replace("\\", "/");
-
-                                        return $@"<a href=""{relativePath.HtmlAttributeEncode()}"">{relativePath}</a>";
-                                    }));
+                                     $@"<a href=""{f.Value.HtmlAttributeEncode()}"">{f.Value}</a>"));
 
                 return Content(Index(links), "text/html");
             }
 
-            if (!_markdownProject.TryGetHtmlContent(path, out var htmlBody))
+            //to do: If the path contains invalid characters , so the relative path will throw an exception
+            // we should handle that
+            var relativeFilePath = new RelativeFilePath(path);
+
+            if (!_markdownProject.TryGetHtmlContent(relativeFilePath, out var htmlBody))
             {
                 return NotFound();
             }

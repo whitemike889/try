@@ -6,7 +6,7 @@ using MLS.Agent.Markdown;
 
 namespace MLS.Agent
 {
-    public class MarkdownProject : IMarkdownProject
+    public class MarkdownProject
     {
         private readonly IDirectoryAccessor _directoryAccessor;
 
@@ -15,13 +15,12 @@ namespace MLS.Agent
             _directoryAccessor = directoryAccessor ?? throw new ArgumentNullException(nameof(directoryAccessor));
         }
 
-        public IEnumerable<MarkdownFile> GetAllMarkdownFiles()
+        public IEnumerable<RelativeFilePath> GetAllMarkdownFiles()
         {
-            var files = _directoryAccessor.GetAllFilesRecursively().Where(file => file.Extension == ".md");
-            return files.Select(file => new MarkdownFile(file)).ToArray();
+           return _directoryAccessor.GetAllFilesRecursively().Where(file => file.Extension == ".md");
         }
 
-        public bool TryGetHtmlContent(string path, out string html)
+        public bool TryGetHtmlContent(RelativeFilePath path, out string html)
         {
             html = null;
 
@@ -34,10 +33,12 @@ namespace MLS.Agent
             return true;
         }
 
-        private string ConvertToHtml(string path, string content)
+        private string ConvertToHtml(RelativeFilePath filePath, string content)
         {
+            var relativeAccessor = _directoryAccessor.GetDirectoryAccessorForRelativePath(filePath.Directory);
+
             var pipeline = new MarkdownPipelineBuilder()
-               .UseCodeLinks(_directoryAccessor)
+               .UseCodeLinks(relativeAccessor)
                .Build();
 
             return Markdig.Markdown.ToHtml(content, pipeline);

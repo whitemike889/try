@@ -14,14 +14,7 @@ namespace MLS.Agent.Tests
         public void When_the_file_exists_FileExists_returns_true()
         {
             var testDir = TestAssets.SampleConsole;
-            GetDirectory(testDir).FileExists("Program.cs").Should().BeTrue();
-        }
-
-        [Fact]
-        public void When_the_filepath_is_empty_FileExists_returns_false()
-        {
-            var testDir = TestAssets.SampleConsole;
-            GetDirectory(testDir).FileExists("").Should().BeFalse();
+            GetDirectory(testDir).FileExists(new RelativeFilePath("Program.cs")).Should().BeTrue();
         }
 
         [Fact]
@@ -31,27 +24,13 @@ namespace MLS.Agent.Tests
             GetDirectory(testDir).Invoking(d => d.FileExists(null)).Should().Throw<ArgumentNullException>();
         }
 
-        [Fact]
-        public void When_the_filepath_contains_invalid_path_characters_FileExists_throws_exception()
-        {
-            var testDir = TestAssets.SampleConsole;
-            GetDirectory(testDir).Invoking(d => d.FileExists($"abc|def")).Should().Throw<ArgumentException>();
-        }
-
-        [Fact]
-        public void When_the_filepath_contains_invalid_filename_characters_FileExists_throws_exception()
-        {
-            var testDir = TestAssets.SampleConsole;
-            GetDirectory(testDir).Invoking(d => d.FileExists($"abc*def")).Should().Throw<ArgumentException>();
-        }
-
         [Theory]
         [InlineData(@"Subdirectory/AnotherProgram.cs")]
         [InlineData(@"Subdirectory\AnotherProgram.cs")]
         public void When_the_filepath_contains_subdirectory_paths_FileExists_returns_true(string filepath)
         {
             var testDir = TestAssets.SampleConsole;
-            GetDirectory(testDir).FileExists(filepath).Should().BeTrue();
+            GetDirectory(testDir).FileExists(new RelativeFilePath(filepath)).Should().BeTrue();
         }
 
         [Theory]
@@ -60,14 +39,14 @@ namespace MLS.Agent.Tests
         public void When_the_filepath_contains_a_path_that_looks_upward_in_tree_then_FileExists_returns_the_text(string filePath)
         {
             var testDir = new DirectoryInfo(Path.Combine(TestAssets.SampleConsole.FullName, "Subdirectory"));
-            GetDirectory(testDir).FileExists(filePath).Should().BeTrue();
+            GetDirectory(testDir).FileExists(new RelativeFilePath(filePath)).Should().BeTrue();
         }
 
         [Fact]
         public void When_the_filepath_contains_an_existing_file_ReadAllText_returns_the_text()
         {
             var testDir = TestAssets.SampleConsole;
-            GetDirectory(testDir).ReadAllText("Program.cs").Should().Contain("Hello World!");
+            GetDirectory(testDir).ReadAllText(new RelativeFilePath("Program.cs")).Should().Contain("Hello World!");
         }
 
         [Theory]
@@ -76,7 +55,7 @@ namespace MLS.Agent.Tests
         public void When_the_filepath_contains_an_existing_file_from_subdirectory_then_ReadAllText_returns_the_text(string filePath)
         {
             var testDir = TestAssets.SampleConsole;
-            GetDirectory(testDir).ReadAllText(filePath).Should().Contain("Hello from Another Program!");
+            GetDirectory(testDir).ReadAllText(new RelativeFilePath(filePath)).Should().Contain("Hello from Another Program!");
         }
 
         [Theory]
@@ -85,7 +64,7 @@ namespace MLS.Agent.Tests
         public void When_the_filepath_contains_a_path_that_looks_upward_in_tree_then_ReadAllText_returns_the_text(string filePath)
         {
             var testDir = new DirectoryInfo(Path.Combine(TestAssets.SampleConsole.FullName, "Subdirectory"));
-            GetDirectory(testDir).ReadAllText(filePath).Should().Contain("Hello World!");
+            GetDirectory(testDir).ReadAllText(new RelativeFilePath(filePath)).Should().Contain("Hello World!");
         }
 
         [Fact]
@@ -93,8 +72,8 @@ namespace MLS.Agent.Tests
         {
             var rootDir = TestAssets.SampleConsole;
             var outerDirAccessor = GetDirectory(rootDir);
-            var inner = outerDirAccessor.GetDirectoryAccessorForRelativePath("Subdirectory");
-            inner.FileExists("AnotherProgram.cs").Should().BeTrue();
+            var inner = outerDirAccessor.GetDirectoryAccessorForRelativePath(new RelativeDirectoryPath("Subdirectory"));
+            inner.FileExists(new RelativeFilePath("AnotherProgram.cs")).Should().BeTrue();
         }
     }
 

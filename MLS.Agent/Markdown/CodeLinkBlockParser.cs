@@ -37,7 +37,7 @@ namespace MLS.Agent.Markdown
                               result =>
                               {
                                    BufferId bufferId = BufferId.Parse(result.Arguments.Single());
-                                   if (_directoryAccessor.FileExists(bufferId.FileName))
+                                   if (_directoryAccessor.FileExists(new RelativeFilePath(bufferId.FileName)))
                                    {
                                        return ArgumentParseResult.Success(bufferId);
                                    }
@@ -51,13 +51,13 @@ namespace MLS.Agent.Markdown
 
             var projectArgument = new Argument<FileInfo>(result =>
             {
-                var projectPath = result.Arguments.Single();
+                var projectPath = new RelativeFilePath(result.Arguments.Single());
                 if (_directoryAccessor.FileExists(projectPath))
                 {
                     return ArgumentParseResult.Success(_directoryAccessor.GetFullyQualifiedPath(projectPath));
                 }
 
-                return ArgumentParseResult.Failure($"Project not found: {projectPath}");
+                return ArgumentParseResult.Failure($"Project not found: {projectPath.Value}");
             })
             {
                 Name = "project",
@@ -69,7 +69,7 @@ namespace MLS.Agent.Markdown
                 var projectFiles = _directoryAccessor.GetAllFilesRecursively().Where(file => file.Extension == ".csproj");
                 if(projectFiles.Count() == 1)
                 {
-                    return projectFiles.Single();
+                    return _directoryAccessor.GetFullyQualifiedPath(projectFiles.Single());
                 }
 
                 return null;
@@ -121,14 +121,14 @@ namespace MLS.Agent.Markdown
             {
                 fenced.Info = langString;
                 var bufferId = parseResult.CommandResult.GetValueOrDefault<BufferId>();
-                codeLinkBlock.CodeLines = new StringSlice(HtmlHelper.Unescape(_directoryAccessor.ReadAllText(bufferId.FileName)));
+                codeLinkBlock.CodeLines = new StringSlice(HtmlHelper.Unescape(_directoryAccessor.ReadAllText(new RelativeFilePath(bufferId.FileName))));
                 AddAttribute(codeLinkBlock, "data-trydotnet-mode", "editor");
-                AddAttribute(codeLinkBlock, "data-trydotnet-project-template", fileInfo.FullName);
+                AddAttribute(codeLinkBlock, "data-trydotnet-package", fileInfo.FullName);
                 AddAttribute(codeLinkBlock, "data-trydotnet-session-id", "a");
             }
             else
             {
-                codeLinkBlock.ErrorMessage = $"No project file could be found at path {_directoryAccessor.GetFullyQualifiedPath(".")}";   
+                codeLinkBlock.ErrorMessage = $"No project file could be found at path {_directoryAccessor.GetFullyQualifiedPath(new RelativeDirectoryPath("."))}";   
             }
 
             return true;
