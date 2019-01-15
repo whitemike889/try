@@ -17,7 +17,7 @@ namespace MLS.Agent.Tests
         private string _repo;
         private DirectoryInfo _packTarget;
         private string _packageName;
-        private string _packageTaget;
+        private string _packageSource;
 
         public CommandLineParserTests(ITestOutputHelper output)
         {
@@ -40,7 +40,7 @@ namespace MLS.Agent.Tests
                 install: (packageName, packageSource, console) =>
                 {
                     _packageName = packageName;
-                    _packageTaget = packageSource;
+                    _packageSource = packageSource;
                     return Task.CompletedTask;
                 });
         }
@@ -164,6 +164,52 @@ namespace MLS.Agent.Tests
             _repo = "value";
             await _parser.InvokeAsync("github roslyn");
             _repo.Should().Be("roslyn");
+        }
+
+        [Fact]
+        public async Task Pack_not_run_if_argument_is_missing()
+        {
+            var console = new TestConsole();
+            _packTarget = null;
+            await _parser.InvokeAsync("pack", console);
+            console.Out.ToString().Should().Contain("pack <packTarget>");
+            _packTarget.Should().BeNull();
+        }
+
+        [Fact]
+        public async Task Pack_parses_directory_info()
+        {
+            var console = new TestConsole();
+            _packTarget = null;
+            var expected = Path.GetDirectoryName(typeof(PackageCommand).Assembly.Location);
+
+            await _parser.InvokeAsync($"pack {expected}", console);
+            _packTarget.FullName.Should().Be(expected);
+        }
+
+        [Fact]
+        public async Task Install_not_run_if_argument_is_missing()
+        {
+            var console = new TestConsole();
+            _packageName = null;
+            await _parser.InvokeAsync("install", console);
+            console.Out.ToString().Should().Contain("install [options] <packageName>");
+            _packageName.Should().BeNull();
+        }
+
+        [Fact(Skip = "Why")]
+        public async Task Install_parses_source_option()
+        {
+            var console = new TestConsole();
+            _packageName = null;
+            _packageSource = null;
+
+            var expectedPackageSource = Path.GetDirectoryName(typeof(PackageCommand).Assembly.Location);
+
+            await _parser.InvokeAsync($"[parse] install --add-source {expectedPackageSource} the-package", console);
+
+            _packageName.Should().Be("the-package");
+            _packageSource.Should().Be(expectedPackageSource);
         }
     }
 }

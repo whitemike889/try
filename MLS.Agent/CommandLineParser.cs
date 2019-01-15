@@ -40,7 +40,7 @@ namespace MLS.Agent
             rootCommand.AddCommand(startInHostedMode);
             rootCommand.AddCommand(ListPackages());
             rootCommand.AddCommand(GitHub());
-            rootCommand.AddCommand(Package());
+            rootCommand.AddCommand(Pack());
             rootCommand.AddCommand(Install());
 
             return new CommandLineBuilder(rootCommand)
@@ -136,11 +136,12 @@ namespace MLS.Agent
                 return github;
             }
 
-            Command Package()
+            Command Pack()
             {
                 var packCommand = new Command("pack", "create a package");
                 packCommand.Argument = new Argument<DirectoryInfo>();
-                packCommand.Argument.Name = typeof(PackageCommand).GetMethod(nameof(PackageCommand.Do)).GetParameters()
+                packCommand.Argument.Name = typeof(PackageCommand).GetMethods()
+                                            .First(m => m.Name == nameof(PackageCommand.Do)).GetParameters()
                                          .First(p => p.ParameterType == typeof(DirectoryInfo))
                                          .Name;
 
@@ -154,11 +155,14 @@ namespace MLS.Agent
             {
                 var installCommand = new Command("install", "install a package");
                 installCommand.Argument = new Argument<string>();
-                installCommand.Argument.Name = typeof(InstallCommand).GetMethod(nameof(InstallCommand.Do)).GetParameters()
+                installCommand.Argument.Name = typeof(InstallCommand).GetMethods()
+                    .First(m => m.Name == nameof(InstallCommand.Do)).GetParameters()
                                          .First(p => p.ParameterType == typeof(string))
                                          .Name;
 
-                var option = new Option("--add-source", argument: new Argument<string>());
+                var optionArgument = new Argument<string>();
+                optionArgument.Name = "packageSource";
+                var option = new Option("--add-source", argument: optionArgument);
 
                 installCommand.AddOption(option);
 
