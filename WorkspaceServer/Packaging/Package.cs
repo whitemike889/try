@@ -23,7 +23,7 @@ namespace WorkspaceServer.Packaging
 
         static Package()
         {
-            const string workspacesPathEnvironmentVariableName = "TRYDOTNET_WORKSPACES_PATH";
+            const string workspacesPathEnvironmentVariableName = "TRYDOTNET_PACKAGES_PATH";
 
             var environmentVariable = Environment.GetEnvironmentVariable(workspacesPathEnvironmentVariableName);
 
@@ -34,14 +34,14 @@ namespace WorkspaceServer.Packaging
                         Path.Combine(
                             Paths.UserProfile,
                             ".trydotnet",
-                            "workspaces"));
+                            "packages"));
 
             if (!DefaultPackagesDirectory.Exists)
             {
                 DefaultPackagesDirectory.Create();
             }
 
-            Log.Info("Workspaces path is {DefaultWorkspacesDirectory}", DefaultPackagesDirectory);
+            Log.Info("Packages path is {DefaultWorkspacesDirectory}", DefaultPackagesDirectory);
         }
 
         private readonly IPackageInitializer _initializer;
@@ -205,7 +205,7 @@ namespace WorkspaceServer.Packaging
                 {
                     if (Directory.GetFiles().Length == 0)
                     {
-                        operation.Info("Initializing workspace using {_initializer} in {directory}", _initializer, Directory);
+                        operation.Info("Initializing package using {_initializer} in {directory}", _initializer, Directory);
                         await _initializer.Initialize(Directory);
                     }
 
@@ -409,25 +409,6 @@ namespace WorkspaceServer.Packaging
         public override string ToString()
         {
             return $"{Name} ({Directory.FullName}) ({new { IsCreated, CreationTime, IsBuilt, BuildTime, IsPublished, PublicationTime, IsReady }})";
-        }
-
-        public async Task<AdhocWorkspace> CreateRoslynWorkspace(ProjectId projectId = null)
-        {
-            projectId = projectId ?? ProjectId.CreateNewId(Name);
-            CSharpCommandLineArguments csharpCommandLineArguments = await GetCommandLineArguments();
-
-            var projectInfo = CommandLineProject.CreateProjectInfo(
-                projectId,
-                Name,
-                csharpCommandLineArguments.CompilationOptions.Language,
-                csharpCommandLineArguments,
-                Directory.FullName);
-
-            var workspace = new AdhocWorkspace(MefHostServices.DefaultHost);
-
-            workspace.AddProject(projectInfo);
-
-            return workspace;
         }
 
         private async Task<CSharpCommandLineArguments> CreateCSharpCommandLineArguments()
