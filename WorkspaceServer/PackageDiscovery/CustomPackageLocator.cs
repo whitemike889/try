@@ -8,23 +8,22 @@ using WorkspaceServer.Packaging;
 
 namespace WorkspaceServer.PackageDiscovery
 {
-    internal class CustomPackageLocator
+    internal class ToolPackageLocator
     {
-        readonly DirectoryInfo _workingDirectory;
+        readonly string _basePath;
 
-        public CustomPackageLocator(DirectoryInfo workingDirectory)
+        public ToolPackageLocator(string basePath)
         {
-            _workingDirectory = workingDirectory;
+            _basePath = basePath ?? throw new ArgumentNullException(nameof(basePath));
         }
 
         public async Task<Package> LocatePackageAsync(string name, Budget budget)
         {
-            var fileName = Path.Combine(_workingDirectory.FullName, name);
+            var fileName = Path.Combine(_basePath, name);
             CommandLineResult result;
             try
             {
                 result = await CommandLine.Execute(fileName, "locate-assembly", budget: budget);
-
             }
             catch (System.ComponentModel.Win32Exception)
             {

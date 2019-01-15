@@ -8,7 +8,7 @@ namespace WorkspaceServer.PackageDiscovery
 {
     internal partial class GlobalToolPackageDiscoveryStrategy : IPackageDiscoveryStrategy
     {
-        CustomPackageLocator _locator = new CustomPackageLocator(null);
+        ToolPackageLocator _locator = new ToolPackageLocator("");
 
         public async Task<PackageBuilder> Locate(PackageDescriptor packageDescriptor, Budget budget)
         {

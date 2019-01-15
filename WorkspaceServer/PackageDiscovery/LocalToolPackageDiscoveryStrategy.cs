@@ -11,12 +11,12 @@ namespace WorkspaceServer.PackageDiscovery
     public class LocalToolPackageDiscoveryStrategy : IPackageDiscoveryStrategy
     {
         private readonly DirectoryInfo _workingDirectory;
-        CustomPackageLocator _locator;
+        ToolPackageLocator _locator;
 
         public LocalToolPackageDiscoveryStrategy(DirectoryInfo workingDirectory)
         {
             _workingDirectory = workingDirectory;
-            _locator = new CustomPackageLocator(workingDirectory);
+            _locator = new ToolPackageLocator(workingDirectory.FullName);
         }
 
         public async Task<PackageBuilder> Locate(PackageDescriptor packageDesciptor, Budget budget = null)
