@@ -6,34 +6,24 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Clockwise;
-using MLS.Agent.Tools;
+using WorkspaceServer.PackageDiscovery;
 using WorkspaceServer.Packaging;
 
 namespace WorkspaceServer
 {
-    public class PackageRegistry : IEnumerable<Task<PackageBuilder>>
+    public partial class PackageRegistry : IEnumerable<Task<PackageBuilder>>
     {
-        private class CustomPackageLocator
-        {
-            public async Task<Package> LocatePackageAsync(string name, Budget budget)
-            {
-                var result = await CommandLine.Execute(name, "locate-assembly", budget: budget);
-                var output = result.Output.FirstOrDefault();
-                if (output == null || !File.Exists(output))
-                {
-                    return null;
-                }
-
-                var directory = Path.GetDirectoryName(output);
-                var projectDirectory = Path.Combine(directory, "project");
-                Console.WriteLine($"Project: {projectDirectory}");
-                var package = new Package(name, directory: new DirectoryInfo(projectDirectory));
-                return package;
-            }
-        }
-
-        private readonly CustomPackageLocator _locator = new CustomPackageLocator();
         private readonly ConcurrentDictionary<string, Task<PackageBuilder>> _packageBuilders = new ConcurrentDictionary<string, Task<PackageBuilder>>();
+        private readonly IEnumerable<IPackageDiscoveryStrategy> _strategies;
+
+        public PackageRegistry()
+        {
+            _strategies = new IPackageDiscoveryStrategy[] 
+            {
+                new DirectoryPackageDiscoveryStrategy(),
+                new GlobalToolPackageDiscoveryStrategy()
+            };
+        }
 
         public void Add(string name, Action<PackageBuilder> configure)
         {
@@ -63,23 +53,14 @@ namespace WorkspaceServer
                             workspaceName,
                             async name =>
                             {
-                                var directory = new DirectoryInfo(
-                                    Path.Combine(
-                                        Package.DefaultPackagesDirectory.FullName, workspaceName));
-
-                                if (directory.Exists)
+                                foreach (var strategy in _strategies)
                                 {
-                                    return new PackageBuilder(name);
+                                    var builder = await strategy.Locate(workspaceName, budget);
+                                    if (builder != null)
+                                    {
+                                        return builder;
+                                    }
                                 }
-
-                                var locatedPackage = await _locator.LocatePackageAsync(name, budget);
-                                if (locatedPackage != null)
-                                {
-                                    var pb = new PackageBuilder(name, new GlobalToolInitializer(name));
-                                    pb.Directory = locatedPackage.Directory;
-                                    return pb;
-                                }
-
 
                                 throw new ArgumentException($"Workspace named \"{name}\" not found.");
                             })).GetPackage(budget);
@@ -88,21 +69,6 @@ namespace WorkspaceServer
             await build.EnsureReady(budget);
             
             return build;
-        }
-
-        class GlobalToolInitializer : IPackageInitializer
-        {
-            private readonly string _toolName;
-
-            public GlobalToolInitializer(string toolName)
-            {
-                _toolName = toolName;
-            }
-
-            public Task Initialize(DirectoryInfo directory, Budget budget = null)
-            {
-                return CommandLine.Execute(_toolName, "extract-package", budget: budget);
-            }
         }
 
         public IEnumerable<Task<PackageInfo>> GetRegisteredPackageInfos()
