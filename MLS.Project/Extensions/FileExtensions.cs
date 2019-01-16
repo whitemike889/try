@@ -6,6 +6,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 using MLS.Project.Execution;
 using MLS.Protocol.Execution;
+using Workspace = MLS.Protocol.Execution.Workspace;
 
 namespace MLS.Project.Extensions
 {

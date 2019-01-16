@@ -28,5 +28,19 @@ namespace MLS.Agent
                 return Path.GetExtension(Value);
             }
         }
+
+        public static bool TryParse(string path, out RelativeFilePath relativeFilePath)
+        {
+            relativeFilePath = null;
+            try
+            {
+                relativeFilePath = new RelativeFilePath(path);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
     }
 }

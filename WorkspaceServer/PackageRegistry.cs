@@ -20,9 +20,10 @@ namespace WorkspaceServer
         {
             _strategies = new IPackageDiscoveryStrategy[]
             {
+                new ProjectFilePackageDiscoveryStrategy(),
                 new DirectoryPackageDiscoveryStrategy(),
                 new LocalToolPackageDiscoveryStrategy(Package.DefaultPackagesDirectory),
-                new GlobalToolPackageDiscoveryStrategy()
+                new GlobalToolPackageDiscoveryStrategy(),
             };
         }
 

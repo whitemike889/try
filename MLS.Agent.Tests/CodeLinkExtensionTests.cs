@@ -118,7 +118,7 @@ $@"```cs --project {projectPath} Program.cs
         }
 
         [Fact]
-        public void Sets_the_trydotnet_project_template_attribute_using_the_passed_project_path()
+        public void Sets_the_trydotnet_package_attribute_using_the_passed_project_path()
         {
             var rootDirectory = TestAssets.SampleConsole;
             var currentDir = new DirectoryInfo(Path.Combine(rootDirectory.FullName, "docs"));
@@ -144,6 +144,187 @@ $@"```cs --project {package} ../src/sample/Program.cs
 
             var fullProjectPath = directoryAccessor.GetFullyQualifiedPath(new RelativeFilePath(package));
             output.Value.Should().Be(fullProjectPath.FullName);
+        }
+
+        [Fact]
+        public void Sets_the_code_in_the_pre_tag_using_the_region_specified_in_markdown()
+        {
+            var regionCode = @"Console.WriteLine(""Hello World!"");";
+            var fileContent = $@"using System;
+
+namespace BasicConsoleApp
+    {{
+        class Program
+        {{
+            static void MyProgram(string[] args)
+            {{
+                #region codeRegion
+                {regionCode}
+                #endregion
+            }}
+        }}
+    }}".EnforceLF();
+
+
+            var rootDirectory = TestAssets.SampleConsole;
+            var directoryAccessor = new InMemoryDirectoryAccessor(rootDirectory)
+            {
+                ("Program.cs", fileContent),
+                ("sample.csproj", "")
+            };
+
+            var document =
+$@"```cs Program.cs --region codeRegion
+```";
+            var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor).Build();
+            var html = Markdig.Markdown.ToHtml(document, pipeline).EnforceLF();
+
+            var htmlDocument = new HtmlDocument();
+            htmlDocument.LoadHtml(html);
+            var output = htmlDocument.DocumentNode
+                .SelectSingleNode("//pre/code").InnerText;
+
+            output.Should().Be($"\n{regionCode.HtmlEncode()}\n");
+        }
+
+        [Fact]
+        public void Sets_the_trydotnet_filename_using_the_filename_specified_in_the_markdown()
+        {
+            var rootDirectory = TestAssets.SampleConsole;
+            var filename = "Program.cs";
+            var codeContent = @"
+#region codeRegion
+Console.WriteLine(""Hello World"");
+#endregion";
+            var directoryAccessor = new InMemoryDirectoryAccessor(rootDirectory)
+            {
+                (filename, codeContent),
+                ("sample.csproj", "")
+            };
+
+            var document =
+$@"```cs Program.cs --region codeRegion
+```";
+            var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor).Build();
+            var html = Markdig.Markdown.ToHtml(document, pipeline).EnforceLF();
+
+            var htmlDocument = new HtmlDocument();
+            htmlDocument.LoadHtml(html);
+            var output = htmlDocument.DocumentNode
+                .SelectSingleNode("//pre/code").Attributes["data-trydotnet-file-name"];
+
+            output.Value.Should().Be(directoryAccessor.GetFullyQualifiedPath(new RelativeFilePath(filename)).FullName);
+        }
+
+        [Fact]
+        public void Sets_the_trydotnet_region_using_the_region_passed_in_the_markdown()
+        {
+            var rootDirectory = TestAssets.SampleConsole;
+            var region = "codeRegion";
+            var codeContent = $@"
+#region {region}
+Console.WriteLine(""Hello World"");
+#endregion";
+            var directoryAccessor = new InMemoryDirectoryAccessor(rootDirectory)
+            {
+                ("Program.cs", codeContent),
+                ("sample.csproj", "")
+            };
+
+            var document =
+$@"```cs Program.cs --region {region}
+```";
+            var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor).Build();
+            var html = Markdig.Markdown.ToHtml(document, pipeline).EnforceLF();
+
+            var htmlDocument = new HtmlDocument();
+            htmlDocument.LoadHtml(html);
+            var output = htmlDocument.DocumentNode
+                .SelectSingleNode("//pre/code").Attributes["data-trydotnet-region"];
+
+            output.Value.Should().Be(region);
+        }
+
+        [Fact]
+        public void If_the_specified_region_does_not_exist_error_message_is_shown()
+        {
+            var rootDirectory = TestAssets.SampleConsole;
+            var region = "noRegion";
+            var directoryAccessor = new InMemoryDirectoryAccessor(rootDirectory)
+            {
+                ("Program.cs", ""),
+                ("sample.csproj", "")
+            };
+
+            var document =
+$@"```cs Program.cs --region {region}
+```";
+            var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor).Build();
+            var html = Markdig.Markdown.ToHtml(document, pipeline).EnforceLF();
+
+            var htmlDocument = new HtmlDocument();
+            htmlDocument.LoadHtml(html);
+            htmlDocument.DocumentNode.SelectSingleNode("//pre|//code").Should().BeNull();
+
+            html.Should().Contain($"Region not found: {region}");
+        }
+
+        [Fact]
+        public void If_the_specified_region_exists_more_than_once()
+        {
+            var rootDirectory = TestAssets.SampleConsole;
+            var codeContent = @"
+#region codeRegion
+#endregion
+#region codeRegion
+#endregion";
+            var region = "codeRegion";
+            var directoryAccessor = new InMemoryDirectoryAccessor(rootDirectory)
+            {
+                ("Program.cs", codeContent),
+                ("sample.csproj", "")
+            };
+
+            var document =
+$@"```cs Program.cs --region {region}
+```";
+            var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor).Build();
+            var html = Markdig.Markdown.ToHtml(document, pipeline).EnforceLF();
+
+            var htmlDocument = new HtmlDocument();
+            htmlDocument.LoadHtml(html);
+            htmlDocument.DocumentNode.SelectSingleNode("//pre|//code").Should().BeNull();
+
+            html.Should().Contain($"Multiple regions found: {region}");
+        }
+
+        [Fact(Skip ="Not yet implemented")]
+        public void If_the_specified_region_cannot_be_found_and_there_are_syntax_errors_then_error_message_is_shown()
+        {
+            var rootDirectory = TestAssets.SampleConsole;
+            var codeContent = @"
+#region codeRegion
+#end region
+";
+
+            var file = "Program.cs";
+            var directoryAccessor = new InMemoryDirectoryAccessor(rootDirectory)
+            {
+                ("Program.cs", codeContent),
+                ("sample.csproj", "")
+            };
+
+            var document =
+$@"```cs {file} --region codeRegion
+```";
+            var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor).Build();
+            var html = Markdig.Markdown.ToHtml(document, pipeline).EnforceLF();
+
+            var htmlDocument = new HtmlDocument();
+            htmlDocument.LoadHtml(html);
+            htmlDocument.DocumentNode.SelectSingleNode("//pre|//code").Should().BeNull();
+
+            html.Should().Contain($"The specified file could not be parsed: {file}");
         }
 
         [Fact(Skip = "To be implemented")]

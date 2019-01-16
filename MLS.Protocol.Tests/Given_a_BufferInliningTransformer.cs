@@ -1,7 +1,9 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
+using MLS.Agent;
 using MLS.Project.Generators;
 using MLS.Project.Transformations;
 using MLS.Protocol.Execution;
@@ -91,6 +93,28 @@ namespace MLS.Protocol.Tests
             var newCode = processed.Files.ElementAt(0).Text;
             newCode.Should().Contain(CodeSamples.SourceCodeProvider.ConsoleProgramSingleRegion);
 
+        }
+
+        [Fact]
+        public async Task If_workspace_contains_files_whose_names_are_absolute_paths_the_contents_are_read_from_disk()
+        {
+            using (var directory = DisposableDirectory.Create())
+            {
+                var filePath = Path.Combine(directory.Directory.FullName, "Program.cs");
+                var content =
+@"using System;";
+                File.WriteAllText(filePath, content);
+                var ws = new Workspace(
+                   files: new[]
+                   {
+                    new Workspace.File(filePath, "")
+                   }
+                   );
+
+                var processor = new BufferInliningTransformer();
+                var processed = await processor.TransformAsync(ws);
+                processed.Files[0].Text.Should().Be(content);
+            }
         }
     }
 }

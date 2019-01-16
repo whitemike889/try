@@ -1,6 +1,7 @@
 ﻿using Markdig.Renderers;
 using Markdig.Renderers.Html;
 using Markdig.Syntax;
+using System.Linq;
 
 namespace MLS.Agent.Markdown
 {
@@ -17,9 +18,14 @@ namespace MLS.Agent.Markdown
                 return;
             }
 
-            if (codeLinkBlock.ErrorMessage != null)
+            if (codeLinkBlock.ErrorMessage.Any())
             {
-                renderer.WriteEscape(codeLinkBlock.ErrorMessage);
+                foreach (var message in codeLinkBlock.ErrorMessage)
+                {
+                    renderer.WriteEscape(message);
+                    renderer.WriteLine();
+                }
+                
                 return;
             }
 

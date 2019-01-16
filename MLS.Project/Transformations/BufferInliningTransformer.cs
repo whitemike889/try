@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Clockwise;
@@ -34,7 +35,16 @@ namespace MLS.Project.Transformations
 
         private static async Task<(Workspace.File[] files, Workspace.Buffer[] buffers)> InlineBuffersAsync(Workspace source, Budget timeBudget)
         {
-            var files = source.GetSourceFiles().ToDictionary(f => f.Name);
+            var files = source.GetSourceFiles().ToDictionary(f => f.Name, f =>
+            {
+                if(File.Exists(f.Name))
+                {
+                    return SourceFile.Create(File.ReadAllText(f.Name), f.Name);
+                }
+
+                return f;
+            });
+            
             var buffers = new List<Workspace.Buffer>();
             foreach (var sourceBuffer in source.Buffers)
             {
