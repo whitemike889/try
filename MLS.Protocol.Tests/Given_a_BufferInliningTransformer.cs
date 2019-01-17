@@ -116,5 +116,35 @@ namespace MLS.Protocol.Tests
                 processed.Files[0].Text.Should().Be(content);
             }
         }
+
+        [Fact]
+        public async Task If_workspace_contains_buffers_whose_file_names_are_absolute_paths_the_contents_are_read_from_disk()
+        {
+            using (var directory = DisposableDirectory.Create())
+            {
+                var filePath = Path.Combine(directory.Directory.FullName, "Program.cs");
+                var content =
+                    @"using System;
+namespace Code{{
+    public static class Program{{
+        public static void Main(){{
+        #region region one
+        #endregion
+        }}
+    }}
+}}";
+                File.WriteAllText(filePath, content);
+                var ws = new Workspace(
+                    buffers: new[]
+                    {
+                        new Workspace.Buffer(new BufferId(filePath,"region one"), "Console.Write(2);"), 
+                    }
+                );
+
+                var processor = new BufferInliningTransformer();
+                var processed = await processor.TransformAsync(ws);
+                processed.Files[0].Text.Should().Be(content);
+            }
+        }
     }
 }
