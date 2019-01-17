@@ -23,7 +23,7 @@ namespace MLS.Project.Extensions
                           leadingTrivia.Kind() == SyntaxKind.EndRegionDirectiveTrivia
                     select node;
 
-                var projections = new List<(SyntaxTrivia startRegion, SyntaxTrivia endRegion, string label)>();
+                var regions = new List<(SyntaxTrivia startRegion, SyntaxTrivia endRegion, string label)>();
                 var stack = new Stack<SyntaxTrivia>();
                 var processedSpans = new HashSet<TextSpan>();
                 foreach (var nodeWithRegionDirective in nodesWithRegionDirectives)
@@ -42,19 +42,19 @@ namespace MLS.Project.Extensions
                         {
                             var start = stack.Pop();
                             var regionName = start.ToFullString().Replace("#region", string.Empty).Trim();
-                            var projectionId = $"{fileName}@{regionName}";
-                            projections.Add(
-                                (start, currentTrivia, projectionId));
+                            var regionId = $"{fileName}@{regionName}";
+                            regions.Add(
+                                (start, currentTrivia, regionId));
                         }
                     }
                 }
 
-                return projections;
+                return regions;
             }
 
             var sourceCodeText = code.ToString();
             var root = CSharpSyntaxTree.ParseText(sourceCodeText).GetRoot();
-            var extractedProjections = new List<Buffer>();
+            var extractedRegions = new List<Buffer>();
             foreach (var (startRegion, endRegion, label) in FindRegions(root))
             {
                 var start = startRegion.GetLocation().SourceSpan.End;
@@ -65,10 +65,10 @@ namespace MLS.Project.Extensions
                 var content = code.ToString(loc);
 
                 content = FormatSourceCode(content);
-                extractedProjections.Add(new Buffer(label, content));
+                extractedRegions.Add(new Buffer(label, content));
             }
 
-            return extractedProjections;
+            return extractedRegions;
         }
 
         private static string FormatSourceCode(string sourceCode)

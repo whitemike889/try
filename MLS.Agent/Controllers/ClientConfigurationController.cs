@@ -111,9 +111,9 @@ namespace MLS.Agent.Controllers
             ""properties"": [],
             ""method"": ""POST""
         },
-        ""projectionsFromFiles"": {
+        ""regionsFromFiles"": {
             ""timeoutMs"": 15000,
-            ""href"": ""/project/files/projections"",
+            ""href"": ""/project/files/regions"",
             ""templated"": false,
             ""properties"": [],
             ""method"": ""POST""

@@ -17,8 +17,8 @@ namespace MLS.Project.Tests
                 new Workspace.File("buffer2.cs", Sources.CodeWithNoRegions),
             };
 
-            var tansformer = new BufferFromRegionExtractor();
-            var result = tansformer.Extract(noRegionFiles, workspaceType: "console");
+            var transformer = new BufferFromRegionExtractor();
+            var result = transformer.Extract(noRegionFiles, workspaceType: "console");
             result.Should().NotBeNull();
             result.Buffers.Should().Contain(found => found.Id == "buffer1.cs" && found.Content == Sources.CodeWithNoRegions);
             result.Buffers.Should().Contain(found => found.Id == "buffer2.cs" && found.Content == Sources.CodeWithNoRegions);
@@ -34,8 +34,8 @@ namespace MLS.Project.Tests
                 new Workspace.File("buffer2.cs", Sources.CodeWithNoRegions),
             };
 
-            var tansformer = new BufferFromRegionExtractor();
-            var result = tansformer.Extract(noRegionFiles, workspaceType: "console");
+            var transformer = new BufferFromRegionExtractor();
+            var result = transformer.Extract(noRegionFiles, workspaceType: "console");
             result.Should().NotBeNull();
 
             result.Buffers.Should().Contain(found => found.Id == "buffer1.cs@objetConstruction" && found.Content == @"var simpleObject = new JObject
@@ -58,8 +58,8 @@ namespace MLS.Project.Tests
                 new Workspace.File("buffer1.cs", Sources.GistWithRegion),
             };
 
-            var tansformer = new BufferFromRegionExtractor();
-            var result = tansformer.Extract(files, workspaceType: "console");
+            var transformer = new BufferFromRegionExtractor();
+            var result = transformer.Extract(files, workspaceType: "console");
             result.Should().NotBeNull();
 
             result.Buffers.Should().Contain(found => found.Id == "buffer1.cs@fragment");
