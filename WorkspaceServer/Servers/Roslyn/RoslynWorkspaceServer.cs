@@ -236,9 +236,7 @@ namespace WorkspaceServer.Servers.Roslyn
             {
                 var build = await getWorkspaceBuildByName(workspace.WorkspaceType);
 
-                workspace = await _transformer.TransformAsync(workspace, budget);
-
-                var (compilation, diagnostics) = await CompileWorker(workspace, request.ActiveBufferId, budget);
+                var (compilation, diagnostics) = await CompileWorker(request.Workspace, request.ActiveBufferId, budget);
 
                 if (diagnostics.ContainsError())
                 {
@@ -262,7 +260,7 @@ namespace WorkspaceServer.Servers.Roslyn
                     return await RunUnitTestsAsync(build, diagnostics, budget, request.RequestId);
                 }
 
-                return await RunConsoleAsync(workspace, build, diagnostics, budget, request.RequestId);
+                return await RunConsoleAsync(build, diagnostics, budget, request.RequestId, workspace.IncludeInstrumentation);
             }
         }
 
@@ -292,7 +290,7 @@ namespace WorkspaceServer.Servers.Roslyn
             }
         }
 
-        private static async Task<RunResult> RunConsoleAsync(Workspace workspace, Package build, SerializableDiagnostic[] diagnostics, Budget budget, string requestId)
+        private static async Task<RunResult> RunConsoleAsync(Package build, SerializableDiagnostic[] diagnostics, Budget budget, string requestId, bool includeInstrumentation)
         {
             var dotnet = new Dotnet(build.Directory);
 
@@ -323,7 +321,7 @@ namespace WorkspaceServer.Servers.Roslyn
                 diagnostics: diagnostics,
                 requestId: requestId);
 
-            if (workspace.IncludeInstrumentation)
+            if (includeInstrumentation)
             {
                 runResult.AddFeature(output.ProgramStatesArray);
                 runResult.AddFeature(output.ProgramDescriptor);
