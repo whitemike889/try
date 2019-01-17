@@ -2,6 +2,7 @@
 using FluentAssertions;
 using MLS.Protocol.Execution;
 using MLS.Project.Extensions;
+using MLS.TestSupport;
 using Xunit;
 
 namespace MLS.Project.Tests
@@ -13,15 +14,15 @@ namespace MLS.Project.Tests
         {
             var noRegionFiles = new[]
             {
-                new Workspace.File("buffer1.cs", Sources.CodeWithNoRegions),
-                new Workspace.File("buffer2.cs", Sources.CodeWithNoRegions),
+                new Workspace.File("buffer1.cs", SourceCodeProvider.CodeWithNoRegions),
+                new Workspace.File("buffer2.cs", SourceCodeProvider.CodeWithNoRegions),
             };
 
-            var tansformer = new BufferFromRegionExtractor();
-            var result = tansformer.Extract(noRegionFiles, workspaceType: "console");
+            var transformer = new BufferFromRegionExtractor();
+            var result = transformer.Extract(noRegionFiles, workspaceType: "console");
             result.Should().NotBeNull();
-            result.Buffers.Should().Contain(found => found.Id == "buffer1.cs" && found.Content == Sources.CodeWithNoRegions);
-            result.Buffers.Should().Contain(found => found.Id == "buffer2.cs" && found.Content == Sources.CodeWithNoRegions);
+            result.Buffers.Should().Contain(found => found.Id == "buffer1.cs" && found.Content == SourceCodeProvider.CodeWithNoRegions);
+            result.Buffers.Should().Contain(found => found.Id == "buffer2.cs" && found.Content == SourceCodeProvider.CodeWithNoRegions);
             result.Files.Should().BeNullOrEmpty();
         }
 
@@ -30,12 +31,12 @@ namespace MLS.Project.Tests
         {
             var noRegionFiles = new[]
             {
-                new Workspace.File("buffer1.cs", Sources.CodeWithTwoRegions),
-                new Workspace.File("buffer2.cs", Sources.CodeWithNoRegions),
+                new Workspace.File("buffer1.cs", SourceCodeProvider.CodeWithTwoRegions),
+                new Workspace.File("buffer2.cs", SourceCodeProvider.CodeWithNoRegions),
             };
 
-            var tansformer = new BufferFromRegionExtractor();
-            var result = tansformer.Extract(noRegionFiles, workspaceType: "console");
+            var transformer = new BufferFromRegionExtractor();
+            var result = transformer.Extract(noRegionFiles, workspaceType: "console");
             result.Should().NotBeNull();
 
             result.Buffers.Should().Contain(found => found.Id == "buffer1.cs@objetConstruction" && found.Content == @"var simpleObject = new JObject
@@ -43,9 +44,9 @@ namespace MLS.Project.Tests
                 {""property"", 4}
             };");
             result.Buffers.Should().Contain(found => found.Id == "buffer1.cs@workspaceIdentifier" && found.Content == @"Console.WriteLine(""jsonDotNet workspace"");");
-            result.Buffers.Should().Contain(found => found.Id == "buffer2.cs" && found.Content == Sources.CodeWithNoRegions);
+            result.Buffers.Should().Contain(found => found.Id == "buffer2.cs" && found.Content == SourceCodeProvider.CodeWithNoRegions);
             result.Files.Should().NotBeNullOrEmpty();
-            result.Files.Should().Contain(found => found.Name == "buffer1.cs" && found.Text == Sources.CodeWithTwoRegions);
+            result.Files.Should().Contain(found => found.Name == "buffer1.cs" && found.Text == SourceCodeProvider.CodeWithTwoRegions);
         }
 
         [Fact]
@@ -55,11 +56,11 @@ namespace MLS.Project.Tests
 
             var files = new[]
             {
-                new Workspace.File("buffer1.cs", Sources.GistWithRegion),
+                new Workspace.File("buffer1.cs", SourceCodeProvider.GistWithRegion),
             };
 
-            var tansformer = new BufferFromRegionExtractor();
-            var result = tansformer.Extract(files, workspaceType: "console");
+            var transformer = new BufferFromRegionExtractor();
+            var result = transformer.Extract(files, workspaceType: "console");
             result.Should().NotBeNull();
 
             result.Buffers.Should().Contain(found => found.Id == "buffer1.cs@fragment");

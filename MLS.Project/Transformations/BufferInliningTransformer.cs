@@ -23,12 +23,12 @@ namespace MLS.Project.Transformations
         {
             if (source == null) throw new ArgumentNullException(nameof(source));
 
-            var results = await InlineBuffersAsync(source, timeBudget);
+            var (files, buffers) = await InlineBuffersAsync(source, timeBudget);
 
             return new Workspace(
                 workspaceType: source.WorkspaceType, 
-                files: results.files,
-                buffers: results.buffers,
+                files: files,
+                buffers: buffers,
                 usings: source.Usings,
                 includeInstrumentation: source.IncludeInstrumentation);
         }
@@ -48,6 +48,13 @@ namespace MLS.Project.Transformations
             var buffers = new List<Workspace.Buffer>();
             foreach (var sourceBuffer in source.Buffers)
             {
+                var bufferFileName = sourceBuffer.Id.FileName;
+                if (!files.ContainsKey(bufferFileName) && File.Exists(bufferFileName))
+                {
+                    var sourceFile = SourceFile.Create(File.ReadAllText(bufferFileName), bufferFileName);
+                    files[bufferFileName] = sourceFile;
+                }
+
                 if (!string.IsNullOrWhiteSpace(sourceBuffer.Id.RegionName))
                 {
                     var viewPorts = files.Select(f => f.Value).ExtractViewports();
