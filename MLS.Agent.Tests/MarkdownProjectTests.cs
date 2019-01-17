@@ -36,7 +36,7 @@ namespace MLS.Agent.Tests
             var project = new MarkdownProject(dirAccessor);
             var path = new RelativeFilePath("DOESNOTEXIST");
 
-            project.TryGetHtmlContent(path, out string content).Should().BeFalse();
+            project.TryGetHtmlContent(path, out _).Should().BeFalse();
         }
 
         [Fact]
@@ -51,7 +51,7 @@ namespace MLS.Agent.Tests
             var project = new MarkdownProject(dirAccessor);
             var path = new RelativeFilePath("Readme.md");
 
-            project.TryGetHtmlContent(path, out string content).Should().BeTrue();
+            project.TryGetHtmlContent(path, out var content).Should().BeTrue();
             content.Should().Contain("<em>markdown file</em>");
         }
 
@@ -66,7 +66,7 @@ namespace MLS.Agent.Tests
             var project = new MarkdownProject(dirAccessor);
             var path = new RelativeFilePath(Path.Combine("Subdirectory", "Tutorial.md"));
 
-            project.TryGetHtmlContent(path, out string content).Should().BeTrue();
+            project.TryGetHtmlContent(path, out var content).Should().BeTrue();
             content.Should().Contain("<em>tutorial file</em>");
         }
 
@@ -98,7 +98,7 @@ namespace BasicConsoleApp
             };
 
             var project = new MarkdownProject(dirAccessor);
-            project.TryGetHtmlContent(new RelativeFilePath("Readme.md"), out string content).Should().BeTrue();
+            project.TryGetHtmlContent(new RelativeFilePath("Readme.md"), out var content).Should().BeTrue();
             content.EnforceLF().Should().Contain(codeContent.HtmlEncode());
         }
 
@@ -133,7 +133,7 @@ $@"
             };
 
             var project = new MarkdownProject(dirAccessor);
-            project.TryGetHtmlContent(new RelativeFilePath("docs/Readme.md"), out string content).Should().BeTrue();
+            project.TryGetHtmlContent(new RelativeFilePath("docs/Readme.md"), out var content).Should().BeTrue();
             content.EnforceLF().Should().Contain(codeContent.HtmlEncode());
         }
 
@@ -153,7 +153,7 @@ $@"```cs --project ../{packagePathRelativeToBaseDir} ../src/sample/Program.cs
             };
 
             var project = new MarkdownProject(dirAccessor);
-            project.TryGetHtmlContent(new RelativeFilePath("docs/Readme.md"), out string content).Should().BeTrue();
+            project.TryGetHtmlContent(new RelativeFilePath("docs/Readme.md"), out var content).Should().BeTrue();
             var htmlDocument = new HtmlDocument();
             htmlDocument.LoadHtml(content);
             var output = htmlDocument.DocumentNode
