@@ -123,7 +123,7 @@ Source
             {
                 if (currentSolution.Projects
                                    .SelectMany(p => p.Documents)
-                                   .FirstOrDefault(d => d.Name == source.Name) is Document document)
+                                   .FirstOrDefault(d => d.Name == source.Name || d.FilePath == source.Name) is Document document)
                 {
                     // there's a pre-existing document, so overwrite its contents
                     document = document.WithText(source.Text);

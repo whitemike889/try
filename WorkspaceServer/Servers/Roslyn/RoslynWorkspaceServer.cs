@@ -236,8 +236,6 @@ namespace WorkspaceServer.Servers.Roslyn
             {
                 var build = await getWorkspaceBuildByName(workspace.WorkspaceType);
 
-                workspace = await _transformer.TransformAsync(workspace, budget);
-
                 var (compilation, diagnostics) = await CompileWorker(request.Workspace, request.ActiveBufferId, budget);
 
                 if (diagnostics.ContainsError())

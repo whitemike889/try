@@ -56,7 +56,7 @@ namespace MLS.Agent.Tests
 
             var requestJson = new WorkspaceRequest(ws, requestId: "TestRun").ToJson();
 
-            var response = await CallRun(requestJson);
+            var response = await CallRun(requestJson, timeoutMs: 60000);
             var result = await response
                                 .EnsureSuccess()
                                 .DeserializeAs<RunResult>();
