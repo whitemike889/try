@@ -125,7 +125,7 @@ namespace MLS.Agent.Markdown
                 return true;
             }
 
-            FileInfo projectFile = parseResult.ValueForOption<FileInfo>("project");
+            var projectFile = parseResult.ValueForOption<FileInfo>("project");
             var project = GetPackageNameFromProjectFile(projectFile);
             if (project == null)
             {
@@ -135,8 +135,8 @@ namespace MLS.Agent.Markdown
 
             var region = parseResult.ValueForOption<string>("region");
             var sourceFile = parseResult.CommandResult.GetValueOrDefault<RelativeFilePath>();
-            string absoluteSourceFilePath = _directoryAccessor.GetFullyQualifiedPath(sourceFile).FullName;
-            string sourceCode = GetSourceCodeToEmbed(codeLinkBlock, region, sourceFile, absoluteSourceFilePath);
+            var absoluteSourceFilePath = _directoryAccessor.GetFullyQualifiedPath(sourceFile).FullName;
+            var sourceCode = GetSourceCodeToEmbed(codeLinkBlock, region, sourceFile, absoluteSourceFilePath);
 
             SetAttributes(codeLinkBlock, project, region, absoluteSourceFilePath, sourceCode);
 
