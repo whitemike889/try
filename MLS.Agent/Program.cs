@@ -152,6 +152,7 @@ namespace MLS.Agent
 
             rootCommand.AddCommand(ListWorkspaces());
             rootCommand.AddCommand(GitHub());
+            rootCommand.AddCommand(Nuget());
 
             return new CommandLineBuilder(rootCommand)
                    .UseDefaults()
@@ -238,6 +239,24 @@ namespace MLS.Agent
                 var run = new Command("github", "Try a GitHub repo", argument: argument);
 
                 run.Handler = CommandHandler.Create(tryGithub);
+
+                return run;
+            }
+
+            Command Nuget()
+            {
+                var argument = new Argument<string>();
+
+                // System.CommandLine parameter binding does lookup by name,
+                // so name the argument after the github command's string param
+                argument.Name = "package";
+
+                var run = new Command("nuget", "Try a NuGet package", argument: argument);
+                var l = new PackageLocator();
+                run.Handler = CommandHandler.Create(async (string package) => {
+                    await l.LocatePackageAsync(package);
+                })
+                ;
 
                 return run;
             }
