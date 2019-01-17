@@ -7,11 +7,12 @@ using MLS.Agent;
 using MLS.Project.Generators;
 using MLS.Project.Transformations;
 using MLS.Protocol.Execution;
+using MLS.Testsupport;
 using Xunit;
 
-namespace MLS.Protocol.Tests
+namespace MLS.Project.Tests
 {
-    public class Given_a_BufferInliningTransformer
+    public class BufferInliningTransformerTests
     {
 
         [Fact]
@@ -28,7 +29,7 @@ namespace MLS.Protocol.Tests
             var original = new Workspace(
                 files: new[]
                 {
-                    new Workspace.File("Program.cs", CodeSamples.SourceCodeProvider.ConsoleProgramSingleRegion)
+                    new Workspace.File("Program.cs", Testsupport.SourceCodeProvider.ConsoleProgramSingleRegion)
                 },
                 buffers: new[]
                 {
@@ -57,7 +58,7 @@ namespace MLS.Protocol.Tests
             var ws = new Workspace(
                 files: new[]
                 {
-                    new Workspace.File("Program.cs", CodeSamples.SourceCodeProvider.ConsoleProgramSingleRegion)
+                    new Workspace.File("Program.cs", Testsupport.SourceCodeProvider.ConsoleProgramSingleRegion)
                 },
                 buffers: new[]
                 {
@@ -83,7 +84,7 @@ namespace MLS.Protocol.Tests
             var ws = new Workspace(
                 buffers: new[]
                 {
-                    new Workspace.Buffer("", CodeSamples.SourceCodeProvider.ConsoleProgramSingleRegion, 0)
+                    new Workspace.Buffer("", Testsupport.SourceCodeProvider.ConsoleProgramSingleRegion, 0)
                 });
             var processor = new BufferInliningTransformer();
 
@@ -91,7 +92,7 @@ namespace MLS.Protocol.Tests
             processed.Should().NotBeNull();
             processed.Files.Should().NotBeEmpty();
             var newCode = processed.Files.ElementAt(0).Text;
-            newCode.Should().Contain(CodeSamples.SourceCodeProvider.ConsoleProgramSingleRegion);
+            newCode.Should().Contain(Testsupport.SourceCodeProvider.ConsoleProgramSingleRegion);
 
         }
 
@@ -123,7 +124,7 @@ namespace MLS.Protocol.Tests
             using (var directory = DisposableDirectory.Create())
             {
                 var filePath = Path.Combine(directory.Directory.FullName, "Program.cs");
-                var content =
+                var fileContent =
                     @"using System;
 namespace Code{{
     public static class Program{{
@@ -132,8 +133,20 @@ namespace Code{{
         #endregion
         }}
     }}
-}}";
-                File.WriteAllText(filePath, content);
+}}".EnforceLF();
+                var expectedFileContent =
+                    @"using System;
+namespace Code{{
+    public static class Program{{
+        public static void Main(){{
+        #region region one
+Console.Write(2);
+#endregion
+        }}
+    }}
+}}".EnforceLF();
+
+                File.WriteAllText(filePath, fileContent);
                 var ws = new Workspace(
                     buffers: new[]
                     {
@@ -143,7 +156,7 @@ namespace Code{{
 
                 var processor = new BufferInliningTransformer();
                 var processed = await processor.TransformAsync(ws);
-                processed.Files[0].Text.Should().Be(content);
+                processed.Files[0].Text.EnforceLF().Should().Be(expectedFileContent);
             }
         }
     }
