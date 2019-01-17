@@ -1,6 +1,6 @@
 ﻿using MLS.Project.Generators;
 
-namespace MLS.Testsupport
+namespace MLS.TestSupport
 {
     public static class SourceCodeProvider
     {

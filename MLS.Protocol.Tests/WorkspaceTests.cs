@@ -3,7 +3,7 @@ using System.Linq;
 using FluentAssertions;
 using MLS.Project.Extensions;
 using MLS.Protocol.Execution;
-using MLS.Testsupport;
+using MLS.TestSupport;
 using Xunit;
 
 namespace MLS.Protocol.Tests

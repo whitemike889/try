@@ -7,7 +7,7 @@ using MLS.Agent;
 using MLS.Project.Generators;
 using MLS.Project.Transformations;
 using MLS.Protocol.Execution;
-using MLS.Testsupport;
+using MLS.TestSupport;
 using Xunit;
 
 namespace MLS.Project.Tests
@@ -29,7 +29,7 @@ namespace MLS.Project.Tests
             var original = new Workspace(
                 files: new[]
                 {
-                    new Workspace.File("Program.cs", Testsupport.SourceCodeProvider.ConsoleProgramSingleRegion)
+                    new Workspace.File("Program.cs", TestSupport.SourceCodeProvider.ConsoleProgramSingleRegion)
                 },
                 buffers: new[]
                 {
@@ -58,7 +58,7 @@ namespace MLS.Project.Tests
             var ws = new Workspace(
                 files: new[]
                 {
-                    new Workspace.File("Program.cs", Testsupport.SourceCodeProvider.ConsoleProgramSingleRegion)
+                    new Workspace.File("Program.cs", TestSupport.SourceCodeProvider.ConsoleProgramSingleRegion)
                 },
                 buffers: new[]
                 {
@@ -84,7 +84,7 @@ namespace MLS.Project.Tests
             var ws = new Workspace(
                 buffers: new[]
                 {
-                    new Workspace.Buffer("", Testsupport.SourceCodeProvider.ConsoleProgramSingleRegion, 0)
+                    new Workspace.Buffer("", TestSupport.SourceCodeProvider.ConsoleProgramSingleRegion, 0)
                 });
             var processor = new BufferInliningTransformer();
 
@@ -92,7 +92,7 @@ namespace MLS.Project.Tests
             processed.Should().NotBeNull();
             processed.Files.Should().NotBeEmpty();
             var newCode = processed.Files.ElementAt(0).Text;
-            newCode.Should().Contain(Testsupport.SourceCodeProvider.ConsoleProgramSingleRegion);
+            newCode.Should().Contain(TestSupport.SourceCodeProvider.ConsoleProgramSingleRegion);
 
         }
 

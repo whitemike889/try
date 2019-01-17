@@ -52,7 +52,7 @@
     <ProjectReference Include="..\MLS.Agent\MLS.Agent.csproj" />
     <ProjectReference Include="..\MLS.Project\MLS.Project.csproj" />
     <ProjectReference Include="..\MLS.Protocol\MLS.Protocol.csproj" />
-    <ProjectReference Include="..\MLS.Testsupport\MLS.Testsupport.csproj" />
+    <ProjectReference Include="..\MLS.Testsupport\MLS.TestSupport.csproj" />
   </ItemGroup>
 
   <ItemGroup>
