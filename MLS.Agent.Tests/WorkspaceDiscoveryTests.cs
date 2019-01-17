@@ -41,10 +41,8 @@ namespace MLS.Agent.Tests
         }
 
         [Fact]
-        public async Task Project_file_path_workspace_can_be_discovered()
+        public async Task Project_file_path_workspace_can_be_discovered_and_run_with_buffer_inlining()
         {
-            var console = new TestConsole();
-
             var csproj = TestAssets.SampleConsole.GetFiles("*.csproj")[0];
             var programCs = TestAssets.SampleConsole.GetFiles("*.cs")[0];
 
@@ -56,7 +54,7 @@ namespace MLS.Agent.Tests
 
             var requestJson = new WorkspaceRequest(ws, requestId: "TestRun").ToJson();
 
-            var response = await CallRun(requestJson, timeoutMs: 60000);
+            var response = await CallRun(requestJson);
             var result = await response
                                 .EnsureSuccess()
                                 .DeserializeAs<RunResult>();
