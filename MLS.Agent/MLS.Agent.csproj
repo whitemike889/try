@@ -27,7 +27,7 @@
   <ItemGroup>
     <PackageReference Include="BadRequestOnInvalidModelFilter" Version="0.1.5650001" />
     <PackageReference Include="CdpxBuildProps" Version="0.1.6040001" />
-    <PackageReference Include="clockwise" Version="1.0.261-beta" />
+    <PackageReference Include="clockwise" Version="1.0.254-beta" />
     <PackageReference Include="ConfigurationExtensions" Version="0.1.5650001" />
     <PackageReference Include="EnvironmentExtensions" Version="0.1.5650001" />
     <PackageReference Include="JsonSerializationExtensions" Version="0.1.5650001">
