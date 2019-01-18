@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using Clockwise;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
@@ -62,13 +61,18 @@ namespace MLS.Agent
 
                 services.AddSingleton(Configuration);
 
-                services.AddSingleton(_ => WorkspaceRegistry.CreateDefault());
-
                 services.AddSingleton(c => new RoslynWorkspaceServer(c.GetRequiredService<WorkspaceRegistry>()));
 
-                services.AddSingleton<IHostedService, Warmup>();
-
-                services.AddSingleton<IMarkdownProject, MarkdownProject>();
+                if (StartupOptions.IsInHostedMode)
+                {
+                    services.AddSingleton(_ => WorkspaceRegistry.CreateForHostedMode());
+                    services.AddSingleton<IHostedService, Warmup>();
+                }
+                else
+                {
+                    services.AddSingleton(_ => WorkspaceRegistry.CreateForTryMode(StartupOptions.Project));
+                    services.AddSingleton<IMarkdownProject, MarkdownProject>();
+                }
 
                 operation.Succeed();
             }
@@ -96,5 +100,3 @@ namespace MLS.Agent
         }
     }
 }
-
-

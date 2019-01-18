@@ -32,7 +32,7 @@ namespace WorkspaceServer.Tests
             var workspaceId = WorkspaceBuild.CreateDirectory(nameof(Workspaces_can_be_registered_to_be_created_using_dotnet_new)).Name;
 
             registry.Add(workspaceId,
-                         options => options.CreateUsingDotnet("console", NetCoreAppBuildArtifactLocator.Instance));
+                         options => options.CreateUsingDotnet("console"));
 
             var workspace = await registry.Get(workspaceId);
 
@@ -49,7 +49,7 @@ namespace WorkspaceServer.Tests
             registry.Add(workspaceId,
                          options =>
                          {
-                             options.CreateUsingDotnet("console", NetCoreAppBuildArtifactLocator.Instance);
+                             options.CreateUsingDotnet("console");
                              options.AddPackageReference("Twilio", "5.9.2");
                          });
 
@@ -103,6 +103,27 @@ namespace Twilio_try.dot.net_sample
             var result = await server.Run(workspaceRequest);
 
             result.Succeeded.Should().BeTrue();
+        }
+
+        [Fact]
+        public async Task Workspace_can_be_registered_in_directory_other_than_the_default()
+        {
+            var parentDirectory = WorkspaceBuild.CreateDirectory(nameof(Workspace_can_be_registered_in_directory_other_than_the_default));
+
+            var workspaceName = "a";
+
+            var childDirectory = parentDirectory.CreateSubdirectory(workspaceName);
+
+            registry.Add(
+                workspaceName,
+                builder =>
+                {
+                    builder.Directory = childDirectory;
+                });
+
+            var workspace = await registry.Get(workspaceName);
+
+            workspace.Directory.Should().Be(childDirectory);
         }
     }
 }

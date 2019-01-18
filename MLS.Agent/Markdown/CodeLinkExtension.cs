@@ -27,7 +27,7 @@ namespace MLS.Agent.Markdown
             var renderers = htmlRenderer?.ObjectRenderers;
             if (renderers != null && !renderers.Contains<CodeLinkBlockRenderer>())
             {
-                renderers.Insert(0, new CodeLinkBlockRenderer(_config));
+                renderers.Insert(0, new CodeLinkBlockRenderer());
             }
         }
     }

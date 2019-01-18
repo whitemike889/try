@@ -61,7 +61,8 @@ namespace MLS.Agent.Tests
             var project = new MarkdownProject(new StartupOptions(rootDirectory: rootDir));
             var path = "Readme.md";
             var expectedValue =
-@"<pre style=""border: none"" height=""300px"" width=""800px"" trydotnetMode=""editor"" projectTemplate=""console"" trydotnetSessionId=""a"" height=""300px"" width=""800px"">using System;
+@"<pre style=""border: none"" height=""300px"" width=""800px"" data-trydotnet-mode=""editor"" data-trydotnet-project-template=""console"" data-trydotnet-session-id=""a"" height=""300px"" width=""800px"">
+using System;
 
 namespace BasicConsoleApp
 {
@@ -75,18 +76,6 @@ namespace BasicConsoleApp
 }
 
 </pre>".EnforceLF();
-
-            project.TryGetHtmlContent(path, out string content).Should().BeTrue();
-            content.EnforceLF().Should().Contain(expectedValue);
-        }
-
-        [Fact]
-        public void Should_add_the_script_src_if_an_existing_file_is_specified()
-        {
-            var rootDir = TestAssets.BasicConsole;
-            var project = new MarkdownProject(new StartupOptions(rootDirectory: rootDir));
-            var path = "Readme.md";
-            var expectedValue = @"<script src=""//trydotnet.microsoft.com/api/trydotnet.min.js""></script>".EnforceLF();
 
             project.TryGetHtmlContent(path, out string content).Should().BeTrue();
             content.EnforceLF().Should().Contain(expectedValue);

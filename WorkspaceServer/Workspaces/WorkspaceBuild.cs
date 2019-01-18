@@ -58,35 +58,16 @@ namespace WorkspaceServer.Workspaces
         private WorkspaceConfiguration _configuration;
         private readonly AsyncLazy<SyntaxTree> _instrumentationEmitterSyntaxTree;
 
-        public DateTimeOffset? ConstructionTime { get; }
-        public DateTimeOffset? CreationTime { get; private set; }
-        public DateTimeOffset? BuildTime { get; private set; }
-        public DateTimeOffset? PublicationTime { get; private set; }
-
         public WorkspaceBuild(
-            string name,
-            IBuildArtifactLocator buildArtifactLocator,
-            IWorkspaceInitializer initializer = null,
-            bool requiresPublish = false) : this(
-            new DirectoryInfo(Path.Combine(DefaultWorkspacesDirectory.FullName, name)),
-            buildArtifactLocator,
-            name,
-            initializer,
-            requiresPublish)
-        {
-        }
-
-        public WorkspaceBuild(
-            DirectoryInfo directory,
-            IBuildArtifactLocator buildArifactLocator,
             string name = null,
             IWorkspaceInitializer initializer = null,
-            bool requiresPublish = false)
+            bool requiresPublish = false,
+            DirectoryInfo directory = null)
         {
-            Name = name ?? directory.Name;
-            Directory = directory ?? throw new ArgumentNullException(nameof(directory));
+            Name = name ?? directory?.Name ?? throw new ArgumentException($"You must specify {nameof(name)}, {nameof(directory)}, or both.");
             _initializer = initializer ?? new WorkspaceInitializer("console", Name);
             ConstructionTime = Clock.Current.Now();
+            Directory = directory ?? new DirectoryInfo(Path.Combine(DefaultWorkspacesDirectory.FullName, Name));
             RequiresPublish = requiresPublish;
             _csharpCommandLineArguments = new AsyncLazy<CSharpCommandLineArguments>(CreateCSharpCommandLineArguments);
             _instrumentationEmitterSyntaxTree = new AsyncLazy<SyntaxTree>(CreateInstrumentationEmitterSyntaxTree);
@@ -94,11 +75,17 @@ namespace WorkspaceServer.Workspaces
             _built = new AsyncLazy<bool>(VerifyOrBuild);
             _published = new AsyncLazy<bool>(VerifyOrPublish);
             _log = new Logger($"{nameof(WorkspaceBuild)}:{Name}");
-
-            BuildArifactLocator = buildArifactLocator ?? NetCoreAppBuildArtifactLocator.Instance;
         }
 
         private bool IsDirectoryCreated { get; set; }
+
+        public DateTimeOffset? ConstructionTime { get; }
+
+        public DateTimeOffset? CreationTime { get; private set; }
+
+        public DateTimeOffset? BuildTime { get; private set; }
+
+        public DateTimeOffset? PublicationTime { get; private set; }
 
         public bool IsCreated { get; private set; }
 
@@ -115,7 +102,7 @@ namespace WorkspaceServer.Workspaces
             (_isWebProject = Directory.GetDirectories("wwwroot", SearchOption.AllDirectories).Any()).Value;
 
         public DirectoryInfo Directory { get; }
-        public IBuildArtifactLocator BuildArifactLocator { get; }
+
         public string Name { get; }
 
         public static DirectoryInfo DefaultWorkspacesDirectory { get; }
@@ -166,7 +153,7 @@ namespace WorkspaceServer.Workspaces
             {
                 if (_entryPointAssemblyPath == null)
                 {
-                    _entryPointAssemblyPath = BuildArifactLocator.GetEntryPointAssemblyPath(Directory, IsWebProject);
+                    _entryPointAssemblyPath = GetEntryPointAssemblyPath(Directory, IsWebProject);
                 }
 
                 return _entryPointAssemblyPath;
@@ -179,7 +166,7 @@ namespace WorkspaceServer.Workspaces
             {
                 if (_targetFramework == null)
                 {
-                    _targetFramework = BuildArifactLocator.GetTargetFramework(Directory);
+                    _targetFramework = GetTargetFramework(Directory);
                 }
 
                 return _targetFramework;
@@ -379,14 +366,13 @@ namespace WorkspaceServer.Workspaces
 
             fromWorkspaceBuild.Directory.CopyTo(destination);
 
-            var copy = new WorkspaceBuild(destination, fromWorkspaceBuild.BuildArifactLocator, destination.Name)
+            var copy = new WorkspaceBuild(directory: destination, name: destination.Name)
             {
                 IsCreated = fromWorkspaceBuild.IsCreated,
                 IsPublished = fromWorkspaceBuild.IsPublished,
                 IsBuilt = fromWorkspaceBuild.IsBuilt,
                 IsReady = fromWorkspaceBuild.IsReady,
-                IsDirectoryCreated = true,
-
+                IsDirectoryCreated = true
             };
 
             Log.Info(
@@ -401,7 +387,7 @@ namespace WorkspaceServer.Workspaces
             string folderNameStartsWith,
             DirectoryInfo parentDirectory = null)
         {
-            if (string.IsNullOrWhiteSpace(folderNameStartsWith))
+            if (String.IsNullOrWhiteSpace(folderNameStartsWith))
             {
                 throw new ArgumentException("Value cannot be null or whitespace.", nameof(folderNameStartsWith));
             }
@@ -474,5 +460,45 @@ namespace WorkspaceServer.Workspaces
         public Task<CSharpCommandLineArguments> GetCommandLineArguments() => _csharpCommandLineArguments.ValueAsync();
 
         public Task<SyntaxTree> GetInstrumentationEmitterSyntaxTree() => _instrumentationEmitterSyntaxTree.ValueAsync();
+
+        private static string GetTargetFramework(DirectoryInfo directory)
+        {
+            var runtimeConfig = directory.GetFiles("*.runtimeconfig.json", SearchOption.AllDirectories).FirstOrDefault();
+
+            if (runtimeConfig != null)
+            {
+                return  RuntimeConfig.GetTargetFramework(runtimeConfig);
+            }
+            else
+            {
+                return "netstandard2.0";
+            }
+        }
+
+        private static FileInfo GetEntryPointAssemblyPath(DirectoryInfo directory, bool isWebProject)
+        {
+            var depsFile = directory.GetFiles("*.deps.json", SearchOption.AllDirectories).FirstOrDefault();
+
+            if (depsFile ==null)
+            {
+                return null;
+            }
+
+            var entryPointAssemblyName = DepsFileParser.GetEntryPointAssemblyName(depsFile);
+
+            var path =
+                Path.Combine(
+                    directory.FullName,
+                    "bin",
+                    "Debug",
+                    GetTargetFramework(directory));
+
+            if (isWebProject)
+            {
+                path = Path.Combine(path, "publish");
+            }
+
+            return new FileInfo(Path.Combine(path, entryPointAssemblyName));
+        }
     }
 }

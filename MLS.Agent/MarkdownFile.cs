@@ -16,7 +16,7 @@ namespace MLS.Agent
 
             if(!fileInfo.Exists)
             {
-                throw new FileNotFoundException("The specified file doesnot exist", fileInfo.FullName);
+                throw new FileNotFoundException("The specified file does not exist", fileInfo.FullName);
             }
 
             FileInfo = fileInfo;

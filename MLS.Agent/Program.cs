@@ -29,8 +29,8 @@ namespace MLS.Agent
         public static async Task<int> Main(string[] args)
         {
             var parser = CreateParser(
-                startServer: (options, console) => ConstructWebHost(options).Run(),
-                (repo, console) => GithubHandler.Handler(repo, console, new GithubRepoLocator()));
+                start: (options, console) => ConstructWebHost(options).Run(),
+                tryGithub: (repo, console) => GithubHandler.Handler(repo, console, new GithubRepoLocator()));
 
             return await parser.InvokeAsync(args);
         }
@@ -145,11 +145,23 @@ namespace MLS.Agent
         private static readonly TypeBinder _typeBinder = new TypeBinder(typeof(StartupOptions));
 
         public static Parser CreateParser(
-            Action<StartupOptions, InvocationContext> startServer,
+            Action<StartupOptions, InvocationContext> start,
             Func<string, IConsole, Task> tryGithub)
         {
-            var rootCommand = StartServer();
+            var startHandler = CommandHandler.Create<InvocationContext>(context =>
+            {
+                var options = (StartupOptions)_typeBinder.CreateInstance(context);
 
+                start(options, context);
+            });
+
+            var rootCommand = StartInTryMode();
+            rootCommand.Handler = startHandler;
+
+            var startInHostedMode = StartInHostedMode();
+            startInHostedMode.Handler = startHandler;
+
+            rootCommand.AddCommand(startInHostedMode);
             rootCommand.AddCommand(ListWorkspaces());
             rootCommand.AddCommand(GitHub());
             rootCommand.AddCommand(Nuget());
@@ -158,55 +170,59 @@ namespace MLS.Agent
                    .UseDefaults()
                    .Build();
 
-            RootCommand StartServer()
+            RootCommand StartInTryMode()
             {
-                var startServerCommand = new RootCommand
-                {
-                    Description = "Starts the Try .NET agent."
-                };
+                var command = new RootCommand
+                              {
+                                  Description = "Try out a .NET project with interactive documentation in your browser"
+                              };
+        
+                command.AddOption(new Option(
+                                      "--root-directory",
+                                      "Specify the path to the root directory",
+                                      new Argument<DirectoryInfo>(new DirectoryInfo(Directory.GetCurrentDirectory())).ExistingOnly()));
 
-                startServerCommand.AddOption(new Option(
-                                                 "--id",
-                                                 "A unique id for the agent instance (e.g. its development environment id).",
-                                                 new Argument<string>(defaultValue: () => Environment.MachineName)));
-                startServerCommand.AddOption(new Option(
-                                                 "--production",
-                                                 "Specifies whether the agent is being run using production resources",
-                                                 new Argument<bool>()));
-                startServerCommand.AddOption(new Option(
-                                                 "--language-service",
-                                                 "Specifies whether the agent is being run in language service-only mode",
-                                                 new Argument<bool>()));
-                startServerCommand.AddOption(new Option(
-                                                 new[] { "-k", "--key" },
-                                                 "The encryption key",
-                                                 new Argument<string>()));
-                startServerCommand.AddOption(new Option(
-                                                 new[] { "--ai-key", "--application-insights-key" },
-                                                 "Application Insights key.",
-                                                 new Argument<string>()));
-                startServerCommand.AddOption(new Option(
-                                                 "--region-id",
-                                                 "A unique id for the agent region",
-                                                 new Argument<string>()));
-                startServerCommand.AddOption(new Option(
-                                                 "--log-to-file",
-                                                 "Writes a log file",
-                                                 new Argument<bool>()));
+                return command;
+            }
 
-                startServerCommand.AddOption(new Option(
-                                                 "--root-directory",
-                                                 "Specify the path to the root directory",
-                                                 new Argument<DirectoryInfo>(new DirectoryInfo(Directory.GetCurrentDirectory())).ExistingOnly()));
+            Command StartInHostedMode()
+            {
+                var command = new Command("hosted")
+                              {
+                                  Description = "Starts the Try .NET agent",
+                                  IsHidden = true
+                              };
 
-                startServerCommand.Handler = CommandHandler.Create<InvocationContext>(context =>
-                {
-                    var options = (StartupOptions)_typeBinder.CreateInstance(context);
+                command.AddOption(new Option(
+                                      "--id",
+                                      "A unique id for the agent instance (e.g. its development environment id).",
+                                      new Argument<string>(defaultValue: () => Environment.MachineName)));
+                command.AddOption(new Option(
+                                      "--production",
+                                      "Specifies whether the agent is being run using production resources",
+                                      new Argument<bool>()));
+                command.AddOption(new Option(
+                                      "--language-service",
+                                      "Specifies whether the agent is being run in language service-only mode",
+                                      new Argument<bool>()));
+                command.AddOption(new Option(
+                                      new[] { "-k", "--key" },
+                                      "The encryption key",
+                                      new Argument<string>()));
+                command.AddOption(new Option(
+                                      new[] { "--ai-key", "--application-insights-key" },
+                                      "Application Insights key.",
+                                      new Argument<string>()));
+                command.AddOption(new Option(
+                                      "--region-id",
+                                      "A unique id for the agent region",
+                                      new Argument<string>()));
+                command.AddOption(new Option(
+                                      "--log-to-file",
+                                      "Writes a log file",
+                                      new Argument<bool>()));
 
-                    startServer(options, context);
-                });
-
-                return startServerCommand;
+                return command;
             }
 
             Command ListWorkspaces()
@@ -215,7 +231,7 @@ namespace MLS.Agent
 
                 run.Handler = CommandHandler.Create((IConsole console) =>
                 {
-                    var registry = WorkspaceRegistry.CreateDefault();
+                    var registry = WorkspaceRegistry.CreateForHostedMode();
 
                     foreach (var workspace in registry)
                     {
@@ -233,8 +249,8 @@ namespace MLS.Agent
                 // System.CommandLine parameter binding does lookup by name,
                 // so name the argument after the github command's string param
                 argument.Name = tryGithub.Method.GetParameters()
-                    .First(p => p.ParameterType == typeof(string))
-                    .Name;
+                                         .First(p => p.ParameterType == typeof(string))
+                                         .Name;
 
                 var run = new Command("github", "Try a GitHub repo", argument: argument);
 

@@ -5,7 +5,7 @@ namespace WorkspaceServer.Tests
 {
     public static class Default
     {
-        private static readonly WorkspaceRegistry _defaultWorkspaces = WorkspaceRegistry.CreateDefault();
+        private static readonly WorkspaceRegistry _defaultWorkspaces = WorkspaceRegistry.CreateForHostedMode();
 
         public static Task<WorkspaceBuild> ConsoleWorkspace => _defaultWorkspaces.Get("console");
 
