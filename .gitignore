@@ -183,3 +183,7 @@ $RECYCLE.BIN/
 
 *.DotSettings
 *.nupkg
+
+docs/\.vscode/
+
+docs/samples/BasicConsole/\.trydotnet
