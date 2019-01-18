@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Completion;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.Recommendations;
 using MLS.Agent.Tools;
 using MLS.Project.Extensions;
@@ -19,8 +21,8 @@ using MLS.Protocol.SignatureHelp;
 using WorkspaceServer.Servers.Roslyn.Instrumentation;
 using WorkspaceServer.Servers.Scripting;
 using WorkspaceServer.Transformations;
-using WorkspaceServer.WorkspaceFeatures;
-using WorkspaceServer.Workspaces;
+using WorkspaceServer.Features;
+using WorkspaceServer.Packaging;
 using static Pocket.Logger<WorkspaceServer.Servers.Roslyn.RoslynWorkspaceServer>;
 using Workspace = MLS.Protocol.Execution.Workspace;
 using MLS.Protocol.Execution;
@@ -39,19 +41,19 @@ namespace WorkspaceServer.Servers.Roslyn
 
         private static readonly string UserCodeCompleted = nameof(UserCodeCompleted);
 
-        private delegate Task<WorkspaceBuild> GetWorkspaceBuildByName(string name);
+        private delegate Task<Package> GetWorkspaceBuildByName(string name);
 
-        public RoslynWorkspaceServer(WorkspaceBuild workspaceBuild)
+        public RoslynWorkspaceServer(Package package)
         {
-            if (workspaceBuild == null)
+            if (package == null)
             {
-                throw new ArgumentNullException(nameof(workspaceBuild));
+                throw new ArgumentNullException(nameof(package));
             }
 
-            getWorkspaceBuildByName = s => Task.FromResult(workspaceBuild);
+            getWorkspaceBuildByName = s => Task.FromResult(package);
         }
 
-        public RoslynWorkspaceServer(WorkspaceRegistry registry)
+        public RoslynWorkspaceServer(PackageRegistry registry)
         {
             if (registry == null)
             {
@@ -68,7 +70,7 @@ namespace WorkspaceServer.Servers.Roslyn
 
             var processed = await _transformer.TransformAsync(request.Workspace, budget);
             var sourceFiles = processed.GetSourceFiles();
-            var (_, documents) = await build.GetCompilation(sourceFiles, budget);
+            var (_, documents) = await build.GetCompilation(sourceFiles, GetSourceCodeKind(request), GetUsings(request.Workspace), budget);
 
             var file = processed.GetFileFromBufferId(request.ActiveBufferId);
             var (_, _, absolutePosition) = processed.GetTextLocation(request.ActiveBufferId);
@@ -111,7 +113,19 @@ namespace WorkspaceServer.Servers.Roslyn
                 diagnostics: diagnostics);
         }
 
-        
+        private SourceCodeKind GetSourceCodeKind(WorkspaceRequest request)
+        {
+            return request.Workspace.WorkspaceType == "script"
+                ? SourceCodeKind.Script
+                : SourceCodeKind.Regular;
+        }
+
+        private IEnumerable<string> GetUsings(Workspace workspace)
+        {
+            return workspace.WorkspaceType == "script"
+                ? workspace.Usings.Concat(WorkspaceUtilities.DefaultUsings).Distinct()
+                : workspace.Usings;
+        }
 
         public async Task<SignatureHelpResult> GetSignatureHelp(WorkspaceRequest request, Budget budget)
         {
@@ -122,7 +136,7 @@ namespace WorkspaceServer.Servers.Roslyn
             var processed = await _transformer.TransformAsync(request.Workspace, budget);
 
             var sourceFiles = processed.GetSourceFiles();
-            var (compilation, documents) = await build.GetCompilation(sourceFiles, budget);
+            var (compilation, documents) = await build.GetCompilation(sourceFiles, GetSourceCodeKind(request), GetUsings(request.Workspace), budget);
 
             var selectedDocument = documents.FirstOrDefault(doc => doc.Name == request.ActiveBufferId.FileName)
                            ??
@@ -162,7 +176,7 @@ namespace WorkspaceServer.Servers.Roslyn
             var processed = await _transformer.TransformAsync(request.Workspace, budget);
 
             var sourceFiles = processed.GetSourceFiles();
-            var (_, documents) = await build.GetCompilation(sourceFiles, budget);
+            var (_, documents) = await build.GetCompilation(sourceFiles, GetSourceCodeKind(request), GetUsings(request.Workspace), budget);
 
             var selectedDocument = documents.FirstOrDefault(doc => doc.Name == request.ActiveBufferId.FileName)
                                    ??
@@ -203,7 +217,7 @@ namespace WorkspaceServer.Servers.Roslyn
                 using (var stream = new MemoryStream())
                 {
                     compilation.Emit(peStream: stream);
-                    var encodedAssembly = System.Convert.ToBase64String(stream.ToArray());
+                    var encodedAssembly = Convert.ToBase64String(stream.ToArray());
                     return new CompileResult(
                         succeeded: true,
                         base64assembly: encodedAssembly,
@@ -221,8 +235,6 @@ namespace WorkspaceServer.Servers.Roslyn
             using (await locks.GetOrAdd(workspace.WorkspaceType, s => new AsyncLock()).LockAsync())
             {
                 var build = await getWorkspaceBuildByName(workspace.WorkspaceType);
-
-                workspace = await _transformer.TransformAsync(workspace, budget);
 
                 var (compilation, diagnostics) = await CompileWorker(request.Workspace, request.ActiveBufferId, budget);
 
@@ -248,11 +260,11 @@ namespace WorkspaceServer.Servers.Roslyn
                     return await RunUnitTestsAsync(build, diagnostics, budget, request.RequestId);
                 }
 
-                return await RunConsoleAsync(workspace, build, diagnostics, budget, request.RequestId);
+                return await RunConsoleAsync(build, diagnostics, budget, request.RequestId, workspace.IncludeInstrumentation);
             }
         }
 
-        private static async Task EmitCompilationAsync(Compilation compilation, WorkspaceBuild build)
+        private static async Task EmitCompilationAsync(Compilation compilation, Package build)
         {
             using (var operation = Log.OnEnterAndExit())
             {
@@ -278,7 +290,7 @@ namespace WorkspaceServer.Servers.Roslyn
             }
         }
 
-        private static async Task<RunResult> RunConsoleAsync(Workspace workspace, WorkspaceBuild build, SerializableDiagnostic[] diagnostics, Budget budget, string requestId)
+        private static async Task<RunResult> RunConsoleAsync(Package build, SerializableDiagnostic[] diagnostics, Budget budget, string requestId, bool includeInstrumentation)
         {
             var dotnet = new Dotnet(build.Directory);
 
@@ -299,7 +311,7 @@ namespace WorkspaceServer.Servers.Roslyn
 
             if (commandLineResult.Error.Count > 0)
             {
-                exceptionMessage = string.Join(Environment.NewLine, commandLineResult.Error);
+                exceptionMessage = String.Join(Environment.NewLine, commandLineResult.Error);
             }
 
             var runResult = new RunResult(
@@ -309,7 +321,7 @@ namespace WorkspaceServer.Servers.Roslyn
                 diagnostics: diagnostics,
                 requestId: requestId);
 
-            if (workspace.IncludeInstrumentation)
+            if (includeInstrumentation)
             {
                 runResult.AddFeature(output.ProgramStatesArray);
                 runResult.AddFeature(output.ProgramDescriptor);
@@ -318,7 +330,7 @@ namespace WorkspaceServer.Servers.Roslyn
             return runResult;
         }
 
-        private static async Task<RunResult> RunUnitTestsAsync(WorkspaceBuild build, SerializableDiagnostic[] diagnostics, Budget budget, string requestId)
+        private static async Task<RunResult> RunUnitTestsAsync(Package build, SerializableDiagnostic[] diagnostics, Budget budget, string requestId)
         {
             var dotnet = new Dotnet(build.Directory);
 
@@ -364,7 +376,7 @@ namespace WorkspaceServer.Servers.Roslyn
             return result;
         }
 
-        private static RunResult RunWebRequest(WorkspaceBuild build, string requestId)
+        private static RunResult RunWebRequest(Package build, string requestId)
         {
             var runResult = new RunResult(succeeded: true, requestId: requestId);
             runResult.AddFeature(new WebServer(build));

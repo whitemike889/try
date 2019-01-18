@@ -19,7 +19,7 @@ namespace MLS.Agent.Controllers
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
         private readonly RoslynWorkspaceServer workspaceServer;
 
-        public LanguageServicesController(WorkspaceRegistry workspaceRegistry, RoslynWorkspaceServer workspaceServer)
+        public LanguageServicesController(PackageRegistry packageRegistry, RoslynWorkspaceServer workspaceServer)
         {
             this.workspaceServer = workspaceServer ?? throw new ArgumentNullException(nameof(workspaceServer));
         }
@@ -122,14 +122,7 @@ namespace MLS.Agent.Controllers
 
         private ILanguageService GetServerForWorkspace(Workspace workspace)
         {
-            if (string.Equals(workspace.WorkspaceType, "script", StringComparison.OrdinalIgnoreCase))
-            {
-                return new ScriptingWorkspaceServer();
-            }
-            else
-            {
-                return workspaceServer;
-            }
+            return workspaceServer;
         }
     }
 }

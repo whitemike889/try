@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 
-namespace WorkspaceServer.WorkspaceFeatures
+namespace WorkspaceServer.Features
 {
     public class UnitTestResult
     {

@@ -1,17 +1,17 @@
 using System.Threading.Tasks;
-using WorkspaceServer.Workspaces;
+using WorkspaceServer.Packaging;
 
 namespace WorkspaceServer.Tests
 {
     public static class Default
     {
-        private static readonly WorkspaceRegistry _defaultWorkspaces = WorkspaceRegistry.CreateForHostedMode();
+        private static readonly PackageRegistry DefaultPackages = PackageRegistry.CreateForHostedMode();
 
-        public static Task<WorkspaceBuild> ConsoleWorkspace => _defaultWorkspaces.Get("console");
+        public static Task<Package> ConsoleWorkspace => DefaultPackages.Get("console");
 
-        public static Task<WorkspaceBuild> WebApiWorkspace => _defaultWorkspaces.Get("aspnet.webapi");
+        public static Task<Package> WebApiWorkspace => DefaultPackages.Get("aspnet.webapi");
 
-        public static Task<WorkspaceBuild> XunitWorkspace => _defaultWorkspaces.Get("xunit");
-        public static Task<WorkspaceBuild> NetstandardWorkspace => _defaultWorkspaces.Get("blazor-console");
+        public static Task<Package> XunitWorkspace => DefaultPackages.Get("xunit");
+        public static Task<Package> NetstandardWorkspace => DefaultPackages.Get("blazor-console");
     }
 }

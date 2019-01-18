@@ -12,7 +12,7 @@ using WorkspaceServer.Models.Instrumentation;
 using WorkspaceServer.Servers.Roslyn;
 using WorkspaceServer.Servers.Roslyn.Instrumentation;
 using WorkspaceServer.Tests.CodeSamples;
-using WorkspaceServer.Workspaces;
+using WorkspaceServer.Packaging;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -24,14 +24,14 @@ namespace WorkspaceServer.Tests
         {
         }
 
-        protected override Workspace CreateWorkspaceWithMainContaining(string text, WorkspaceBuild workspaceBuild)
+        protected override Workspace CreateWorkspaceWithMainContaining(string text, Package package)
         {
             return Workspace.FromSource(
                 $@"using System; using System.Linq; using System.Collections.Generic; class Program {{ static void Main() {{ {text}
                     }}
                 }}
             ",
-                workspaceType: workspaceBuild.Name);
+                workspaceType: package.Name);
         }
 
         [Fact]
@@ -685,7 +685,7 @@ namespace FibonacciTest
                 kv => kv.Key,
                 kv => kv.Value.Select(span => span.ToLinePositionSpan(SourceText.From(code))));
 
-        protected override async Task<(ICodeRunner runner, WorkspaceBuild workspace)> GetRunnerAndWorkspaceBuild(
+        protected override async Task<(ICodeRunner runner, Package workspace)> GetRunnerAndWorkspaceBuild(
             [CallerMemberName] string testName = null)
         {
             var workspace = await Create.ConsoleWorkspaceCopy(testName);
@@ -695,7 +695,7 @@ namespace FibonacciTest
             return (server, workspace);
         }
 
-        protected async Task<(ICodeCompiler compiler, WorkspaceBuild workspace)> GetCompilerAndWorkpaceBuild(
+        protected async Task<(ICodeCompiler compiler, Package workspace)> GetCompilerAndWorkpaceBuild(
             [CallerMemberName] string testName = null)
         {
             var workspace = await Create.ConsoleWorkspaceCopy(testName);
@@ -707,6 +707,6 @@ namespace FibonacciTest
 
         protected override ILanguageService GetLanguageService(
             [CallerMemberName] string testName = null) => new RoslynWorkspaceServer(
-            WorkspaceRegistry.CreateForHostedMode());
+            PackageRegistry.CreateForHostedMode());
     }
 }

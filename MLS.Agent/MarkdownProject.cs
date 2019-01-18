@@ -1,50 +1,44 @@
-﻿using Markdig;
-using MLS.Agent.Markdown;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
+using Markdig;
+using MLS.Agent.Markdown;
 
 namespace MLS.Agent
 {
-    public class MarkdownProject : IMarkdownProject
+    public class MarkdownProject
     {
-        private StartupOptions _startupOptions;
+        private readonly IDirectoryAccessor _directoryAccessor;
 
-        public MarkdownProject(StartupOptions startupOptions)
+        public MarkdownProject(IDirectoryAccessor directoryAccessor)
         {
-            _startupOptions = startupOptions ?? throw new ArgumentNullException(nameof(startupOptions)); ;
+            _directoryAccessor = directoryAccessor ?? throw new ArgumentNullException(nameof(directoryAccessor));
         }
 
-        public IEnumerable<MarkdownFile> GetAllFiles()
+        public IEnumerable<RelativeFilePath> GetAllMarkdownFiles()
         {
-            var files = Directory.GetFiles(_startupOptions.RootDirectory.FullName, "*.md", SearchOption.AllDirectories);
-            return files.Select(file => new MarkdownFile(new FileInfo(file))).ToArray();
+           return _directoryAccessor.GetAllFilesRecursively().Where(file => file.Extension == ".md");
         }
 
-        public bool TryGetHtmlContent(string path, out string html)
+        public bool TryGetHtmlContent(RelativeFilePath path, out string html)
         {
-            html = ""; //TODO: ask what is the correct value here
-            var files = Directory.GetFiles(_startupOptions.RootDirectory.FullName, path);
-            if (files.Length == 0)
+            html = null;
+
+            if(!_directoryAccessor.FileExists(path))
             {
                 return false;
             }
 
-            var markdownfile = new MarkdownFile(new FileInfo(files.First()));
-            if (markdownfile.TryGetContent(out var content))
-            {
-                html = ConvertToHtml(content);
-                return true;
-            }
-
-            return false;
+            html = ConvertToHtml(path, _directoryAccessor.ReadAllText(path));
+            return true;
         }
 
-        private string ConvertToHtml(string content)
+        private string ConvertToHtml(RelativeFilePath filePath, string content)
         {
+            var relativeAccessor = _directoryAccessor.GetDirectoryAccessorForRelativePath(filePath.Directory);
+
             var pipeline = new MarkdownPipelineBuilder()
-               .UseCodeLinks(new Configuration(_startupOptions.RootDirectory))
+               .UseCodeLinks(relativeAccessor)
                .Build();
 
             return Markdig.Markdown.ToHtml(content, pipeline);

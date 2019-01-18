@@ -3,14 +3,16 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Host.Mef;
+using WorkspaceServer.Packaging;
 
 namespace WorkspaceServer.Servers.Roslyn
 {
     public static class WorkspaceUtilities
     {
-        private static readonly string _baseDir = Path.GetDirectoryName(typeof(WorkspaceUtilities).Assembly.Location);
-
         public static readonly ImmutableArray<string> DefaultUsings = new[]
         {
             "System",
@@ -20,17 +22,6 @@ namespace WorkspaceServer.Servers.Roslyn
             "System.Threading.Tasks"
         }.ToImmutableArray();
 
-        public static ImmutableArray<MetadataReference> DefaultReferencedAssemblies =
-            AssembliesNamesToReference()
-                .Select(assemblyName =>
-                            new FileInfo(Path.Combine(_baseDir, "completion", "references", $"{assemblyName}.dll")))
-                .Where(assembly => assembly.Exists)
-                .Select(assembly => MetadataReference.CreateFromFile(
-                            assembly.FullName,
-                            documentation: XmlDocumentationProvider.CreateFromFile(Path.Combine(_baseDir, "completion", "references", $"{assembly.Name}.xml")))
-                )
-                .Cast<MetadataReference>()
-                .ToImmutableArray();
 
         public static IEnumerable<MetadataReference> GetMetadataReferences(this IEnumerable<string> filePaths)
         {
@@ -39,7 +30,7 @@ namespace WorkspaceServer.Servers.Roslyn
                 var expectedXmlFile =
                     filePath.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
                         ? ReplaceCaseInsensitive(filePath, ".dll", ".xml")
-                        : Path.Combine(_baseDir,
+                        : Path.Combine(Paths.InstallDirectory,
                                        "completion",
                                        "references",
                                        $"{Path.GetFileName(filePath)}.xml");
@@ -50,7 +41,7 @@ namespace WorkspaceServer.Servers.Roslyn
             }
         }
 
-        static string ReplaceCaseInsensitive(string str, string toReplace, string replacement)
+        private static string ReplaceCaseInsensitive(string str, string toReplace, string replacement)
         {
             var index = str.IndexOf(toReplace, StringComparison.OrdinalIgnoreCase);
             if (index >= 0)
@@ -62,7 +53,7 @@ namespace WorkspaceServer.Servers.Roslyn
             return str;
         }
 
-        private static string[] AssembliesNamesToReference() => new[]
+        internal static string[] AssembliesNamesToReference() => new[]
         {
             "mscorlib",
             "netstandard",
@@ -181,5 +172,27 @@ namespace WorkspaceServer.Servers.Roslyn
             "NodaTime",
             "NodaTime.Testing",
         };
+
+        public static async Task<AdhocWorkspace> CreateRoslynWorkspace(this Package package, ProjectId projectId = null)
+        {
+            if (package == null)
+            {
+                throw new ArgumentNullException(nameof(package));
+            }
+
+            projectId = projectId ?? ProjectId.CreateNewId(package.Name);
+            CSharpCommandLineArguments csharpCommandLineArguments = await package.GetCommandLineArguments();
+
+            var projectInfo = CommandLineProject.CreateProjectInfo(
+                projectId, package.Name,
+                csharpCommandLineArguments.CompilationOptions.Language,
+                csharpCommandLineArguments, package.Directory.FullName);
+
+            var workspace = new AdhocWorkspace(MefHostServices.DefaultHost);
+
+            workspace.AddProject(projectInfo);
+
+            return workspace;
+        }
     }
 }

@@ -5,21 +5,21 @@ using System.Threading.Tasks;
 using MLS.Agent.Tools;
 using MLS.Protocol.Execution;
 using Pocket;
-using WorkspaceServer.Workspaces;
+using WorkspaceServer.Packaging;
 using static Pocket.Logger;
 
-namespace WorkspaceServer.WorkspaceFeatures
+namespace WorkspaceServer.Features
 {
     public class WebServer : IRunResultFeature, IDisposable
     {
-        private readonly WorkspaceBuild workspaceBuild;
+        private readonly Package package;
         private readonly AsyncLazy<HttpClient> _getHttpClient;
         private readonly AsyncLazy<Uri> _listeningAtUri;
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
 
-        public WebServer(WorkspaceBuild workspaceBuild)
+        public WebServer(Package package)
         {
-            this.workspaceBuild = workspaceBuild ?? throw new ArgumentNullException(nameof(workspaceBuild));
+            this.package = package ?? throw new ArgumentNullException(nameof(package));
 
             _listeningAtUri = new AsyncLazy<Uri>(RunKestrel);
 
@@ -36,14 +36,14 @@ namespace WorkspaceServer.WorkspaceFeatures
 
         private async Task<Uri> RunKestrel()
         {
-            await workspaceBuild.EnsurePublished();
+            await package.EnsurePublished();
 
             var operation = Log.OnEnterAndExit();
 
             var process = CommandLine.StartProcess(
-                DotnetMuxer.Path.FullName,
-                workspaceBuild.EntryPointAssemblyPath.FullName,
-                workspaceBuild.Directory,
+                Dotnet.Path.FullName,
+                package.EntryPointAssemblyPath.FullName,
+                package.Directory,
                 StandardOutput.OnNext,
                 StandardError.OnNext,
                 ("ASPNETCORE_DETAILEDERRORS", "1"),

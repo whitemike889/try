@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
+using System.Reflection;
 using System.Threading.Tasks;
 using Clockwise;
 using MLS.Agent.Tools;
@@ -40,15 +42,74 @@ namespace WorkspaceServer
 
         public Task<CommandLineResult> Execute(string args, Budget budget = null) =>
             CommandLine.Execute(
-                DotnetMuxer.Path,
+                Path,
                 args,
                 _workingDirectory,
                 budget);
 
         public Task<CommandLineResult> Publish(string args, Budget budget = null) =>
             Execute("publish".AppendArgs(args), budget);
-            
+
         public Task<CommandLineResult> VSTest(string args, Budget budget = null) =>
             Execute("vstest".AppendArgs(args), budget);
+
+        public Task<CommandLineResult> ToolInstall(string args = null, Budget budget = null) =>
+            Execute("tool install".AppendArgs(args), budget);
+
+        public Task<CommandLineResult> Pack(string args = null, Budget budget = null) =>
+            Execute("pack".AppendArgs(args), budget);
+
+        private static readonly Lazy<FileInfo> _getPath = new Lazy<FileInfo>(() =>
+                                                                                 FindDotnetFromAppContext() ??
+                                                                                 FindDotnetFromPath());
+
+        public static FileInfo Path => _getPath.Value;
+
+        private static FileInfo FindDotnetFromPath()
+        {
+            FileInfo fileInfo = null;
+
+            using (var process = Process.Start("dotnet"))
+            {
+                if (process != null)
+                {
+                    fileInfo = new FileInfo(process.MainModule.FileName);
+                }
+            }
+
+            return fileInfo;
+        }
+
+        private static FileInfo FindDotnetFromAppContext()
+        {
+            var muxerFileName = "dotnet".ExecutableName();
+
+            var fxDepsFile = GetDataFromAppDomain("FX_DEPS_FILE");
+
+            if (!string.IsNullOrEmpty(fxDepsFile))
+            {
+                var muxerDir = new FileInfo(fxDepsFile).Directory?.Parent?.Parent?.Parent;
+
+                if (muxerDir != null)
+                {
+                    var muxerCandidate = new FileInfo(System.IO.Path.Combine(muxerDir.FullName, muxerFileName));
+
+                    if (muxerCandidate.Exists)
+                    {
+                        return muxerCandidate;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        public static string GetDataFromAppDomain(string propertyName)
+        {
+            var appDomainType = typeof(object).GetTypeInfo().Assembly?.GetType("System.AppDomain");
+            var currentDomain = appDomainType?.GetProperty("CurrentDomain")?.GetValue(null);
+            var deps = appDomainType?.GetMethod("GetData")?.Invoke(currentDomain, new[] { propertyName });
+            return deps as string;
+        }
     }
 }

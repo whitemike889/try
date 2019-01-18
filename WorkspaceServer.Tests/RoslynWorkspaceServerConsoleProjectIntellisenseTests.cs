@@ -7,7 +7,7 @@ using MLS.Protocol;
 using MLS.Protocol.Completion;
 using MLS.Protocol.Execution;
 using WorkspaceServer.Servers.Roslyn;
-using WorkspaceServer.Workspaces;
+using WorkspaceServer.Packaging;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -718,7 +718,7 @@ namespace FibonacciTest
             sample.Parameters.ElementAt(1).Documentation.Value.Should().Contain("An array of objects to write using format.");
         }
 
-        protected override Task<(ICodeRunner runner, WorkspaceBuild workspace)> GetRunnerAndWorkspaceBuild(
+        protected override Task<(ICodeRunner runner, Package workspace)> GetRunnerAndWorkspaceBuild(
             [CallerMemberName] string testName = null)
         {
             throw new NotImplementedException();
@@ -726,7 +726,7 @@ namespace FibonacciTest
 
         protected override ILanguageService GetLanguageService([CallerMemberName] string testName = null)
         {
-            return new RoslynWorkspaceServer(WorkspaceRegistry.CreateForHostedMode());
+            return new RoslynWorkspaceServer(PackageRegistry.CreateForHostedMode());
         }
     }
 }

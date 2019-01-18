@@ -4,11 +4,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using MLS.Project.Execution;
 using MLS.Project.Extensions;
 using MLS.Protocol.Execution;
 using WorkspaceServer.Servers.Roslyn.Instrumentation;
-using WorkspaceServer.Workspaces;
+using WorkspaceServer.Packaging;
 using static System.Environment;
 using Workspace = MLS.Protocol.Execution.Workspace;
 
@@ -17,7 +18,7 @@ namespace WorkspaceServer.Servers.Roslyn
     public static class WorkspaceBuildExtensions
     {
         public static async Task<Compilation> Compile(
-            this WorkspaceBuild build, 
+            this Package build, 
             Workspace workspace, 
             Budget budget, 
             BufferId activeBufferId)
@@ -26,7 +27,7 @@ namespace WorkspaceServer.Servers.Roslyn
 
             var sourceFiles = workspace.GetSourceFiles().ToArray();
 
-            var (compilation, documents) = await build.GetCompilation(sourceFiles, budget);
+            var (compilation, documents) = await build.GetCompilation(sourceFiles, SourceCodeKind.Regular, workspace.Usings, budget);
 
             var viewports = workspace.ExtractViewPorts();
 
@@ -46,7 +47,7 @@ namespace WorkspaceServer.Servers.Roslyn
             Compilation compilation,
             Document document,
             BufferId activeBufferId,
-            WorkspaceBuild build)
+            Package build)
         {
             var regions = InstrumentationLineMapper.FilterActiveViewport(viewports, activeBufferId)
                 .Where(v => v.Destination?.Name != null)
@@ -105,11 +106,11 @@ Source
             return newCompilation;
         }
 
-        
-
         public static async Task<(Compilation compilation, IReadOnlyCollection<Document> documents)> GetCompilation(
-            this WorkspaceBuild build,
+            this Package build,
             IReadOnlyCollection<SourceFile> sources,
+            SourceCodeKind sourceCodeKind,
+            IEnumerable<string> defaultUsings,
             Budget budget)
         {
             var projectId = ProjectId.CreateNewId();
@@ -122,10 +123,11 @@ Source
             {
                 if (currentSolution.Projects
                                    .SelectMany(p => p.Documents)
-                                   .FirstOrDefault(d => d.Name == source.Name) is Document document)
+                                   .FirstOrDefault(d => d.Name == source.Name || d.FilePath == source.Name) is Document document)
                 {
                     // there's a pre-existing document, so overwrite its contents
                     document = document.WithText(source.Text);
+                    document = document.WithSourceCodeKind(sourceCodeKind);
                     currentSolution = document.Project.Solution;
                 }
                 else
@@ -133,10 +135,13 @@ Source
                     var docId = DocumentId.CreateNewId(projectId, $"{build.Name}.Document");
 
                     currentSolution = currentSolution.AddDocument(docId, source.Name, source.Text);
+                    currentSolution = currentSolution.WithDocumentSourceCodeKind(docId, sourceCodeKind);
                 }
             }
 
             var project = currentSolution.GetProject(projectId);
+            var options = (CSharpCompilationOptions)project.CompilationOptions;
+            project = project.WithCompilationOptions(options.WithUsings(defaultUsings));
 
             var compilation = await project.GetCompilationAsync().CancelIfExceeds(budget);
 

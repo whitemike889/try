@@ -37,7 +37,9 @@
     <PackageReference Include="LoggerExtensions" Version="0.1.5650001" />
     <PackageReference Include="markdig" Version="0.15.5" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.3.0" />
-    <PackageReference Include="Microsoft.AspNetCore.App" Version="2.1.1" />
+    <PackageReference Include="Microsoft.AspNetCore.App" Version="2.1.7" />
+    <PackageReference Include="Microsoft.AspNetCore.WebSockets" Version="2.1.7" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Core" Version="2.1.7" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="2.1.1" />
     <PackageReference Include="nodatime" Version="2.3.0" />
     <PackageReference Include="nodatime.testing" Version="2.3.0" />
@@ -60,7 +62,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="system.commandline.experimental" Version="0.1.0-alpha-63703-04" />
+    <PackageReference Include="system.commandline.experimental" Version="0.1.0-alpha-63714-01" />
     <PackageReference Include="System.Reactive" Version="4.0.0" />
     <PackageReference Include="TaskExtensions" Version="0.1.5650001" />
     <PackageReference Include="VersionSensor" Version="0.1.5650001" />
@@ -74,7 +76,6 @@
   <ItemGroup>
     <ProjectReference Include="..\MLS.Agent.Tools\MLS.Agent.Tools.csproj" />
     <ProjectReference Include="..\MLS.Repositories\MLS.Repositories.csproj" />
-    <ProjectReference Include="..\ScriptingWorkspaceServer\ScriptingWorkspaceServer.csproj" />
     <ProjectReference Include="..\WorkspaceServer\WorkspaceServer.csproj" />
   </ItemGroup>
   <ItemGroup>
@@ -82,5 +83,8 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
-
+  <ItemGroup>
+    <EmbeddedResource Include="..\MLS.PackageTool\MLS.PackageTool.csproj" />
+    <EmbeddedResource Include="..\MLS.PackageTool\Program.cs" />
+  </ItemGroup>
 </Project>

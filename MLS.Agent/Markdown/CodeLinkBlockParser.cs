@@ -1,27 +1,29 @@
 ﻿using Markdig.Helpers;
 using Markdig.Parsers;
 using Markdig.Syntax;
+using Markdig.Renderers.Html;
 using System;
 using System.CommandLine;
-using System.CommandLine.Builder;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using MLS.Protocol.Execution;
+using MLS.Project.Extensions;
+using Microsoft.CodeAnalysis.Text;
 
 namespace MLS.Agent.Markdown
 {
     public class CodeLinkBlockParser : FencedBlockParserBase<CodeLinkBlock>
     {
-        private static readonly Parser _csharpLinkParser = CreateLineParser();
+        private readonly Parser _csharpLinkParser;
 
-        private readonly Configuration _config;
+        private readonly IDirectoryAccessor _directoryAccessor;
 
-        public CodeLinkBlockParser(Configuration config)
+        public CodeLinkBlockParser(IDirectoryAccessor directoryAccessor)
         {
             OpeningCharacters = new[] { '`' };
             InfoParser = ParseCodeOptions;
-            _config = config ?? throw new ArgumentNullException(nameof(config));
+            _directoryAccessor = directoryAccessor ?? throw new ArgumentNullException(nameof(directoryAccessor));
+            _csharpLinkParser = CreateLineParser();
         }
 
         protected override CodeLinkBlock CreateFencedBlock(BlockProcessor processor)
@@ -30,36 +32,79 @@ namespace MLS.Agent.Markdown
             return block;
         }
 
-        private static Parser CreateLineParser()
+        private Parser CreateLineParser()
         {
-            var bufferIdArg = new Argument<BufferId>(
-                               result =>
-                               {
-                                   return ArgumentParseResult.Success(BufferId.Parse(result.Arguments.Single()));
-                               })
-                           {
-                               Name = "bufferId",
-                               Arity = ArgumentArity.ExactlyOne
-                           };
+            var sourceFile = new Argument<RelativeFilePath>(
+                              result =>
+                              {
+                                  var filename = result.Arguments.Single();
+                                  if (RelativeFilePath.TryParse(filename, out var relativeFilePath))
+                                  {
+                                      if (_directoryAccessor.FileExists(relativeFilePath))
+                                      {
+                                          return ArgumentParseResult.Success(relativeFilePath);
+                                      }
+                                      else
+                                      {
+                                          return ArgumentParseResult.Failure($"File not found: {relativeFilePath.Value}");
+                                      }
+                                  }
 
-            var language = new Command("csharp", argument: bufferIdArg)
+                                  return ArgumentParseResult.Failure($"Error parsing the filename: {filename}");
+                              })
+            {
+                Name = "SourceFile",
+                Arity = ArgumentArity.ExactlyOne
+            };
+
+            var projectArgument = new Argument<FileInfo>(result =>
+            {
+                var projectPath = new RelativeFilePath(result.Arguments.Single());
+                if (_directoryAccessor.FileExists(projectPath))
+                {
+                    return ArgumentParseResult.Success(_directoryAccessor.GetFullyQualifiedPath(projectPath));
+                }
+
+                return ArgumentParseResult.Failure($"Project not found: {projectPath.Value}");
+            })
+            {
+                Name = "project",
+                Arity = ArgumentArity.ExactlyOne
+            };
+
+            projectArgument.SetDefaultValue(() =>
+            {
+                var projectFiles = _directoryAccessor.GetAllFilesRecursively().Where(file => file.Extension == ".csproj");
+                if (projectFiles.Count() == 1)
+                {
+                    return _directoryAccessor.GetFullyQualifiedPath(projectFiles.Single());
+                }
+
+                return null;
+            });
+
+            var regionArgument = new Argument<string>();
+
+            var csharp = new Command("csharp", argument: sourceFile)
                           {
-                              new Option("--project", 
-                                         argument: new Argument<DirectoryInfo>().ExistingOnly())
+                              new Option("--project", argument: projectArgument),
+                              new Option("--region", argument: regionArgument)
                           };
-            
-            return new Parser(language);
+
+            csharp.AddAlias("CS");
+            csharp.AddAlias("C#");
+            csharp.AddAlias("CSHARP");
+            csharp.AddAlias("cs");
+            csharp.AddAlias("c#");
+
+            return new Parser(new RootCommand { csharp });
         }
 
         private bool ParseCodeOptions(
-            BlockProcessor state, 
-            ref StringSlice line, 
+            BlockProcessor state,
+            ref StringSlice line,
             IFencedBlock fenced)
         {
-            // line.Text contains the entire string of the document
-            // In the ParseBlock method we parse the first line of the fenced block which will be given by line.toString()
-            // This is the line that will contain the filename and all the other trydotnet related config
-
             var codeLinkBlock = fenced as CodeLinkBlock;
 
             if (fenced == null)
@@ -67,71 +112,88 @@ namespace MLS.Agent.Markdown
                 return false;
             }
 
-            var slices = line.ToString().Split(
-                new[] { ' ' }, 2, StringSplitOptions.RemoveEmptyEntries);
-
-            var langString = slices[0];
-            var argString = slices[1];
-
-            if (!IsCSharp(langString))
-            {
-                return false;
-            }
-
-            var parseResult = _csharpLinkParser.Parse(argString);
-
+            var parseResult = _csharpLinkParser.Parse(line.ToString());
+            
             if (parseResult.Errors.Any())
             {
-                codeLinkBlock.ErrorMessage =
-                    string.Join("\n", parseResult.Errors.Select(e => e.ToString()));
+                if(parseResult.CommandResult.Name!="csharp")
+                {
+                    return false;
+                }
+
+                codeLinkBlock.ErrorMessage.AddRange(parseResult.Errors.Select(e => e.ToString()));
                 return true;
             }
 
-            fenced.Info = HtmlHelper.Unescape(langString);
+            var projectFile = parseResult.ValueForOption<FileInfo>("project");
+            var project = GetPackageNameFromProjectFile(projectFile);
+            if (project == null)
+            {
+                codeLinkBlock.ErrorMessage.Add($"No project file could be found at path {_directoryAccessor.GetFullyQualifiedPath(new RelativeDirectoryPath("."))}");
+                return true;
+            }
 
-            if (TryGetCodeFromFile(argString, out var code))
-            {
-                codeLinkBlock.CodeLines = new StringSlice(HtmlHelper.Unescape(code));
-            }
-            else
-            {
-                codeLinkBlock.ErrorMessage = $"Error reading the file {argString}";
-            }
+            var region = parseResult.ValueForOption<string>("region");
+            var sourceFile = parseResult.CommandResult.GetValueOrDefault<RelativeFilePath>();
+            var absoluteSourceFilePath = _directoryAccessor.GetFullyQualifiedPath(sourceFile).FullName;
+            var sourceCode = GetSourceCodeToEmbed(codeLinkBlock, region, sourceFile, absoluteSourceFilePath);
+
+            SetAttributes(codeLinkBlock, project, region, absoluteSourceFilePath, sourceCode);
 
             return true;
         }
 
-        private bool IsCSharp(string language) => Regex.Match(language, @"cs|csharp|c#", RegexOptions.IgnoreCase).Success;
-
-
-        private bool TryGetCodeFromFile(string filename, out string code)
+        private static string GetPackageNameFromProjectFile(FileInfo projectFile)
         {
-            code = null;
-            var filePath = HtmlHelper.Unescape(filename).Trim();
+            return projectFile?.FullName;
+        }
 
-            if (IsValidFilePath(filePath))
+        private void SetAttributes(
+            CodeLinkBlock codeLinkBlock,
+            string trydotnetPackage,
+            string region,
+            string absoluteSourceFilePath,
+            string sourceCode)
+        {
+            codeLinkBlock.AddAttribute("data-trydotnet-mode", "editor");
+            codeLinkBlock.AddAttribute("data-trydotnet-package", trydotnetPackage);
+            codeLinkBlock.AddAttribute("data-trydotnet-file-name", absoluteSourceFilePath);
+            codeLinkBlock.AddAttribute("data-trydotnet-session-id", "a");
+            codeLinkBlock.CodeLines = new StringSlice(sourceCode);
+
+            if (!string.IsNullOrWhiteSpace(region))
             {
-                var fullPath = GetFullyQualifiedPath(filePath);
-                if (File.Exists(fullPath))
+                codeLinkBlock.AddAttribute("data-trydotnet-region", region);
+            }
+        }
+
+        private string GetSourceCodeToEmbed(CodeLinkBlock codeLinkBlock, string region, RelativeFilePath sourceFile, string absoluteSourceFilePath)
+        {
+            var sourceCode = _directoryAccessor.ReadAllText(sourceFile);
+
+            if (!string.IsNullOrWhiteSpace(region))
+            {
+                var sourceText = SourceText.From(sourceCode);
+                var buffers = sourceText.ExtractBuffers(absoluteSourceFilePath)
+                    .Where(b => b.Id.RegionName == region).ToArray();
+
+                if (buffers.Length == 0)
                 {
-                    code = File.ReadAllText(fullPath);
-                    return true;
+                    codeLinkBlock.ErrorMessage.Add($"Region not found: {region}");
+                }
+                else if (buffers.Length > 1)
+                {
+                    codeLinkBlock.ErrorMessage.Add($"Multiple regions found: {region}");
+                }
+                else
+                {
+                    sourceCode = buffers[0].Content;
                 }
             }
 
-            return false;
+            return sourceCode;
         }
 
-        private bool IsValidFilePath(string filePath)
-        {
-            return filePath.IndexOfAny(Path.GetInvalidPathChars()) == -1;
-        }
-
-        private string GetFullyQualifiedPath(string filePath)
-        {
-            return Path.IsPathRooted(filePath) 
-                ? filePath 
-                : Path.Combine(_config.RootDirectory.FullName, filePath);
-        }
+        private bool IsCSharp(string language) => Regex.Match(language, @"cs|csharp|c#", RegexOptions.IgnoreCase).Success;
     }
 }

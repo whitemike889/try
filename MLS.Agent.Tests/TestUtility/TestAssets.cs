@@ -4,9 +4,9 @@ namespace MLS.Agent.Tests
 {
     public static class TestAssets
     {
-        public static DirectoryInfo BasicConsole
+        public static DirectoryInfo SampleConsole
         {
-            get => new DirectoryInfo(Path.Combine(GetTestProjectsFolder(), "BasicConsoleApp"));
+            get => new DirectoryInfo(Path.Combine(GetTestProjectsFolder(), "SampleConsole"));
         }
 
         private static string GetTestProjectsFolder()

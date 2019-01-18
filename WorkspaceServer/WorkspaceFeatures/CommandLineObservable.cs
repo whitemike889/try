@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reactive.Subjects;
 
-namespace WorkspaceServer.WorkspaceFeatures
+namespace WorkspaceServer.Features
 {
     public abstract class CommandLineObservable : IObservable<string>
     {

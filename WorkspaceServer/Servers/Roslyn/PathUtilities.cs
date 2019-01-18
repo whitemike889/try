@@ -13,7 +13,7 @@ namespace WorkspaceServer.Servers.Roslyn
     // Contains path parsing utilities.
     // We need our own because System.IO.Path is insufficient for our purposes
     // For example we need to be able to work with invalid paths or paths containing wildcards
-    internal static class PathUtilities
+    public static class PathUtilities
     {
         // We consider '/' a directory separator on Unix like systems. 
         // On Windows both / and \ are equally accepted.
@@ -815,7 +815,7 @@ namespace WorkspaceServer.Servers.Roslyn
         }
     }
 
-    internal enum PathKind
+    public enum PathKind
     {
         /// <summary>
         /// Null or empty.

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using MLS.Protocol.Execution;
 
-namespace WorkspaceServer.WorkspaceFeatures
+namespace WorkspaceServer.Features
 {
     public class UnitTestRun : IRunResultFeature
     {

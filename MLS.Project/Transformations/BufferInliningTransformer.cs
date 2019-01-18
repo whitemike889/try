@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Clockwise;
@@ -22,22 +23,38 @@ namespace MLS.Project.Transformations
         {
             if (source == null) throw new ArgumentNullException(nameof(source));
 
-            var results = await InlineBuffersAsync(source, timeBudget);
+            var (files, buffers) = await InlineBuffersAsync(source, timeBudget);
 
             return new Workspace(
                 workspaceType: source.WorkspaceType, 
-                files: results.files,
-                buffers: results.buffers,
+                files: files,
+                buffers: buffers,
                 usings: source.Usings,
                 includeInstrumentation: source.IncludeInstrumentation);
         }
 
         private static async Task<(Workspace.File[] files, Workspace.Buffer[] buffers)> InlineBuffersAsync(Workspace source, Budget timeBudget)
         {
-            var files = source.GetSourceFiles().ToDictionary(f => f.Name);
+            var files = source.GetSourceFiles().ToDictionary(f => f.Name, f =>
+            {
+                if(File.Exists(f.Name))
+                {
+                    return SourceFile.Create(File.ReadAllText(f.Name), f.Name);
+                }
+
+                return f;
+            });
+            
             var buffers = new List<Workspace.Buffer>();
             foreach (var sourceBuffer in source.Buffers)
             {
+                var bufferFileName = sourceBuffer.Id.FileName;
+                if (!files.ContainsKey(bufferFileName) && File.Exists(bufferFileName))
+                {
+                    var sourceFile = SourceFile.Create(File.ReadAllText(bufferFileName), bufferFileName);
+                    files[bufferFileName] = sourceFile;
+                }
+
                 if (!string.IsNullOrWhiteSpace(sourceBuffer.Id.RegionName))
                 {
                     var viewPorts = files.Select(f => f.Value).ExtractViewports();

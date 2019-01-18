@@ -13,17 +13,10 @@ namespace MLS.Agent
 {
     public class Warmup : HostedService
     {
-        private readonly StartupOptions _options;
-
         private readonly HttpClient _httpClient = new HttpClient
         {
             BaseAddress = new Uri("http://localhost:4242")
         };
-
-        public Warmup(StartupOptions options)
-        {
-            _options = options;
-        }
 
         protected override async Task ExecuteAsync(Budget budget)
         {

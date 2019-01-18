@@ -7,7 +7,7 @@ using MLS.Protocol.Execution;
 using Pocket;
 using WorkspaceServer.Models;
 using WorkspaceServer.Servers.Roslyn;
-using WorkspaceServer.Workspaces;
+using WorkspaceServer.Packaging;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -16,7 +16,7 @@ namespace WorkspaceServer.Tests
     public class WorkspaceServerRegistryTests : IDisposable
     {
         private readonly CompositeDisposable disposables = new CompositeDisposable();
-        private readonly WorkspaceRegistry registry = new WorkspaceRegistry();
+        private readonly PackageRegistry registry = new PackageRegistry();
 
         public WorkspaceServerRegistryTests(ITestOutputHelper output)
         {
@@ -29,7 +29,7 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task Workspaces_can_be_registered_to_be_created_using_dotnet_new()
         {
-            var workspaceId = WorkspaceBuild.CreateDirectory(nameof(Workspaces_can_be_registered_to_be_created_using_dotnet_new)).Name;
+            var workspaceId = Package.CreateDirectory(nameof(Workspaces_can_be_registered_to_be_created_using_dotnet_new)).Name;
 
             registry.Add(workspaceId,
                          options => options.CreateUsingDotnet("console"));
@@ -44,7 +44,7 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task NuGet_packages_can_be_added_during_initialization()
         {
-            var workspaceId = WorkspaceBuild.CreateDirectory(nameof(NuGet_packages_can_be_added_during_initialization)).Name;
+            var workspaceId = Package.CreateDirectory(nameof(NuGet_packages_can_be_added_during_initialization)).Name;
 
             registry.Add(workspaceId,
                          options =>
@@ -108,7 +108,7 @@ namespace Twilio_try.dot.net_sample
         [Fact]
         public async Task Workspace_can_be_registered_in_directory_other_than_the_default()
         {
-            var parentDirectory = WorkspaceBuild.CreateDirectory(nameof(Workspace_can_be_registered_in_directory_other_than_the_default));
+            var parentDirectory = Package.CreateDirectory(nameof(Workspace_can_be_registered_in_directory_other_than_the_default));
 
             var workspaceName = "a";
 

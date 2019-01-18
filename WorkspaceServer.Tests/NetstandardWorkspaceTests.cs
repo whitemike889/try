@@ -12,7 +12,7 @@ using Pocket;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Servers.Roslyn;
 using WorkspaceServer.Tests.CodeSamples;
-using WorkspaceServer.Workspaces;
+using WorkspaceServer.Packaging;
 using Xunit;
 using Xunit.Abstractions;
 using static Pocket.Logger;
@@ -76,7 +76,7 @@ namespace WorkspaceServer.Tests
             main.Invoke(null, new [] { new string[] { } });
         }
 
-        protected async Task<(ICodeCompiler server, WorkspaceBuild workspace)> GetRunnerAndWorkspace(
+        protected async Task<(ICodeCompiler server, Package workspace)> GetRunnerAndWorkspace(
             [CallerMemberName] string testName = null)
         {
             var workspace = await Create.NetstandardWorkspaceCopy(testName);
