@@ -56,7 +56,7 @@ namespace MLS.Agent.Controllers
 
 <head>
     <meta http-equiv=""Content-Type"" content=""text/html;charset=utf-8""></meta>
-    <script src=""//trydotnet-eastus.azurewebsites.net/api/trydotnet.min.js""></script>
+    <script src=""/api/trydotnet.min.js""></script>
 </head>
 
 <body>

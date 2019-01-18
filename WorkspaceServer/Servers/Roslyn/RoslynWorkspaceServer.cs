@@ -74,10 +74,10 @@ namespace WorkspaceServer.Servers.Roslyn
 
             var file = processed.GetFileFromBufferId(request.ActiveBufferId);
             var (_, _, absolutePosition) = processed.GetTextLocation(request.ActiveBufferId);
-            var selectedDocument = documents.First(doc => doc.Name == file.Name);
+            var selectedDocument = documents.First(doc => doc.IsMatch(file));
 
             var service = CompletionService.GetService(selectedDocument);
-            
+
             var completionList = await service.GetCompletionsAsync(selectedDocument, absolutePosition);
             var semanticModel = await selectedDocument.GetSemanticModelAsync();
             var diagnostics = DiagnosticsExtractor.ExtractSerializableDiagnosticsFromSemanticModel(request.ActiveBufferId, budget, semanticModel, processed);
@@ -90,7 +90,7 @@ namespace WorkspaceServer.Servers.Roslyn
             var symbolToSymbolKey = new Dictionary<(string, int), ISymbol>();
             foreach (var symbol in symbols)
             {
-                var key = (symbol.Name, (int)symbol.Kind);
+                var key = (symbol.Name, (int) symbol.Kind);
                 if (!symbolToSymbolKey.ContainsKey(key))
                 {
                     symbolToSymbolKey[key] = symbol;
@@ -103,28 +103,28 @@ namespace WorkspaceServer.Servers.Roslyn
             }
 
             var completionItems = completionList.Items
-                .Where(i => i != null)
-                .Select(item => item.ToModel(symbolToSymbolKey, selectedDocument));
+                                                .Where(i => i != null)
+                                                .Select(item => item.ToModel(symbolToSymbolKey, selectedDocument));
 
             return new CompletionResult(completionItems
                                         .Deduplicate()
                                         .ToArray(),
-                requestId: request.RequestId,
-                diagnostics: diagnostics);
+                                        requestId: request.RequestId,
+                                        diagnostics: diagnostics);
         }
 
         private SourceCodeKind GetSourceCodeKind(WorkspaceRequest request)
         {
             return request.Workspace.WorkspaceType == "script"
-                ? SourceCodeKind.Script
-                : SourceCodeKind.Regular;
+                       ? SourceCodeKind.Script
+                       : SourceCodeKind.Regular;
         }
 
         private IEnumerable<string> GetUsings(Workspace workspace)
         {
             return workspace.WorkspaceType == "script"
-                ? workspace.Usings.Concat(WorkspaceUtilities.DefaultUsings).Distinct()
-                : workspace.Usings;
+                       ? workspace.Usings.Concat(WorkspaceUtilities.DefaultUsings).Distinct()
+                       : workspace.Usings;
         }
 
         public async Task<SignatureHelpResult> GetSignatureHelp(WorkspaceRequest request, Budget budget)
@@ -138,9 +138,9 @@ namespace WorkspaceServer.Servers.Roslyn
             var sourceFiles = processed.GetSourceFiles();
             var (compilation, documents) = await build.GetCompilation(sourceFiles, GetSourceCodeKind(request), GetUsings(request.Workspace), budget);
 
-            var selectedDocument = documents.FirstOrDefault(doc => doc.Name == request.ActiveBufferId.FileName)
-                           ??
-                           (documents.Count == 1 ? documents.Single() : null);
+            var selectedDocument = documents.FirstOrDefault(doc => doc.IsMatch(request.ActiveBufferId.FileName))
+                                   ??
+                                   (documents.Count == 1 ? documents.Single() : null);
 
             if (selectedDocument == null)
             {
@@ -156,14 +156,15 @@ namespace WorkspaceServer.Servers.Roslyn
             var syntaxNode = tree.GetRoot().FindToken(absolutePosition).Parent;
 
             var result = await SignatureHelpService.GetSignatureHelp(
-                       () => Task.FromResult(compilation.GetSemanticModel(tree)),
-                       syntaxNode,
-                       absolutePosition);
+                             () => Task.FromResult(compilation.GetSemanticModel(tree)),
+                             syntaxNode,
+                             absolutePosition);
             result.RequestId = request.RequestId;
             if (diagnostics?.Count() > 0)
             {
                 result.Diagnostics = diagnostics;
             }
+
             return result;
         }
 
@@ -178,7 +179,7 @@ namespace WorkspaceServer.Servers.Roslyn
             var sourceFiles = processed.GetSourceFiles();
             var (_, documents) = await build.GetCompilation(sourceFiles, GetSourceCodeKind(request), GetUsings(request.Workspace), budget);
 
-            var selectedDocument = documents.FirstOrDefault(doc => doc.Name == request.ActiveBufferId.FileName)
+            var selectedDocument = documents.FirstOrDefault(doc => doc.IsMatch( request.ActiveBufferId.FileName))
                                    ??
                                    (documents.Count == 1 ? documents.Single() : null);
 
@@ -188,12 +189,12 @@ namespace WorkspaceServer.Servers.Roslyn
             }
 
             var diagnostics = await DiagnosticsExtractor.ExtractSerializableDiagnosticsFromDocument(request.ActiveBufferId, budget, selectedDocument, processed);
-  
+
             var result = new DiagnosticResult(diagnostics, request.RequestId);
             return result;
         }
 
-      
+
 
         public async Task<CompileResult> Compile(WorkspaceRequest request, Budget budget = null)
         {
@@ -357,10 +358,10 @@ namespace WorkspaceServer.Servers.Roslyn
             }
 
             var tRexResult = await CommandLine.Execute(
-                 trex,
-                 "",
-                 workingDir: build.Directory,
-                 budget: budget);
+                                 trex,
+                                 "",
+                                 workingDir: build.Directory,
+                                 budget: budget);
 
             var result = new RunResult(
                 commandLineResult.ExitCode == 0,
@@ -369,9 +370,9 @@ namespace WorkspaceServer.Servers.Roslyn
                 requestId: requestId);
 
             result.AddFeature(new UnitTestRun(new[]
-            {
-                new UnitTestResult()
-            }));
+                                              {
+                                                  new UnitTestResult()
+                                              }));
 
             return result;
         }

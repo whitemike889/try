@@ -1,13 +1,12 @@
 ﻿using FluentAssertions;
-using MLS.Agent.Tools;
 using MLS.Protocol;
 using MLS.Protocol.Execution;
 using Recipes;
 using System;
-using System.Collections.Generic;
 using System.CommandLine;
-using System.Text;
+using System.IO;
 using System.Threading.Tasks;
+using Clockwise;
 using WorkspaceServer.Packaging;
 using WorkspaceServer.Tests;
 using Xunit;
@@ -25,17 +24,15 @@ namespace MLS.Agent.Tests
         public async Task Local_tool_workspace_can_be_discovered()
         {
             var console = new TestConsole();
-            await InstallLocalTool(console);
+            var tool = await InstallLocalTool(console);
 
             var output = Guid.NewGuid().ToString();
-            var requestJson = Create.SimpleWorkspaceRequestAsJson(output, "BasicConsoleApp");
+            var requestJson = Create.SimpleWorkspaceRequestAsJson(output, tool.Name);
 
             var response = await CallRun(requestJson);
             var result = await response
                                 .EnsureSuccess()
                                 .DeserializeAs<RunResult>();
-
-            result.Succeeded.Should().BeTrue();
 
             result.ShouldSucceedWithOutput(output);
         }
@@ -64,13 +61,30 @@ namespace MLS.Agent.Tests
             result.ShouldSucceedWithOutput(output);
         }
 
-        private async Task InstallLocalTool(IConsole console)
+        private async Task<Package> InstallLocalTool(IConsole console)
         {
-            using (var dir = DisposableDirectory.Create())
-            {
-                await PackageCommand.Do(TestAssets.SampleConsole, dir.Directory, console);
-                await InstallCommand.Do("BasicConsoleApp", dir.Directory.FullName, console);
-            }
+            var projectName = Guid.NewGuid().ToString("N");
+
+            var copy = Create.EmptyWorkspace(
+                initializer: new PackageInitializer(
+                    "console",
+                    projectName));
+            await copy.EnsureReady(new Budget());
+
+            var packageLocation = new DirectoryInfo(
+                Path.Combine(copy.Directory.FullName, "pack-output"));
+
+            await PackageCommand.Do(
+                copy.Directory,
+                packageLocation,
+                console);
+
+            await InstallCommand.Do(
+                projectName,
+                packageLocation,
+                console);
+
+            return copy;
         }
     }
 }

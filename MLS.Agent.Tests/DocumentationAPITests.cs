@@ -92,7 +92,7 @@ namespace MLS.Agent.Tests
                                      .Descendants("script")
                                      .FirstOrDefault();
 
-                script.Attributes["src"].Value.Should().Be("//trydotnet-eastus.azurewebsites.net/api/trydotnet.min.js");
+                script.Attributes["src"].Value.Should().Be("/api/trydotnet.min.js");
             }
         }
 

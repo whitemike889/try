@@ -17,7 +17,7 @@ namespace MLS.Agent.Tests
         private string _repo;
         private DirectoryInfo _packTarget;
         private string _packageName;
-        private string _packageSource;
+        private DirectoryInfo _packageSource;
 
         public CommandLineParserTests(ITestOutputHelper output)
         {
@@ -209,7 +209,7 @@ namespace MLS.Agent.Tests
             await _parser.InvokeAsync($"install --add-source {expectedPackageSource} the-package", console);
 
             _packageName.Should().Be("the-package");
-            _packageSource.Should().Be(expectedPackageSource);
+            _packageSource.FullName.Should().Be(expectedPackageSource);
         }
     }
 }

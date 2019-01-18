@@ -116,12 +116,13 @@ namespace MLS.Agent.Markdown
             
             if (parseResult.Errors.Any())
             {
-                if(parseResult.CommandResult.Name!="csharp")
+                if (parseResult.CommandResult.Name != "csharp")
                 {
                     return false;
                 }
 
                 codeLinkBlock.ErrorMessage.AddRange(parseResult.Errors.Select(e => e.ToString()));
+
                 return true;
             }
 

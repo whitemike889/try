@@ -16,7 +16,7 @@ namespace MLS.Agent
         public delegate void StartServer(StartupOptions options, InvocationContext context);
         public delegate Task TryGitHub(string repo, IConsole console);
         public delegate Task Pack(DirectoryInfo packTarget, IConsole console);
-        public delegate Task Install(string packageName, string addSource, IConsole console);
+        public delegate Task Install(string packageName, DirectoryInfo addSource, IConsole console);
 
         public static Parser Create(
             StartServer start,
@@ -160,11 +160,12 @@ namespace MLS.Agent
                                          .First(p => p.ParameterType == typeof(string))
                                          .Name;
 
-                var option = new Option("--add-source", argument: new Argument<string>());
+                var option = new Option("--add-source",
+                                        argument: new Argument<DirectoryInfo>().ExistingOnly());
 
                 installCommand.AddOption(option);
 
-                installCommand.Handler = CommandHandler.Create<string, string, IConsole>((packageName, addSource, console) => install(packageName, addSource, console));
+                installCommand.Handler = CommandHandler.Create<string, DirectoryInfo, IConsole>((packageName, addSource, console) => install(packageName, addSource, console));
                 return installCommand;
             }
         }
