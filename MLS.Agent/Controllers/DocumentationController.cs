@@ -2,7 +2,6 @@
 using System.Linq;
 using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Microsoft.AspNetCore.Mvc;
-using WorkspaceServer.Servers.Roslyn;
 
 namespace MLS.Agent.Controllers
 {
@@ -61,8 +60,16 @@ namespace MLS.Agent.Controllers
 </head>
 
 <body>
-    {html}
-
+    <div class=""content"">
+    <div class=""documentation-container"">
+        <div class=""code-column"">
+            {html}
+        </div>
+        <div class=""control-column"">
+        
+        </div>
+    </div>
+    </div>
     <script>trydotnet.autoEnable(new URL(""{hostUrl}""));</script>
 </body>
 

@@ -33,7 +33,7 @@ namespace MLS.Agent.Markdown
 
             renderer
                 .WriteLine(@"<div class=""editor-panel"">")
-                .WriteLine(@"<pre style=""border:none"" height=""300px"" width=""800px"">")
+                .WriteLine(@"<pre style=""border:none"" height=""300px"" width=""100%"">")
                 .Write("<code")
                 .WriteAttributes(codeLinkBlock)
                 .WriteLine(">")

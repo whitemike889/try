@@ -44,10 +44,8 @@ namespace MLS.Agent.Markdown
                                       {
                                           return ArgumentParseResult.Success(relativeFilePath);
                                       }
-                                      else
-                                      {
-                                          return ArgumentParseResult.Failure($"File not found: {relativeFilePath.Value}");
-                                      }
+
+                                      return ArgumentParseResult.Failure($"File not found: {relativeFilePath.Value}");
                                   }
 
                                   return ArgumentParseResult.Failure($"Error parsing the filename: {filename}");
