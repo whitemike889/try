@@ -15,10 +15,12 @@ namespace MLS.Agent
 
         public async Task RouteAsync(RouteContext context)
         {
+
             var path = context.HttpContext.Request.Path;
 
             if (path.Value.EndsWith(".js") ||
                 path.Value.EndsWith(".css") ||
+                path.Value.EndsWith(".png") ||
                 path.Value.EndsWith(".ico"))
             {
                 var response = await _httpClient.GetAsync(path.Value);

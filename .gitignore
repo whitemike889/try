@@ -187,3 +187,7 @@ $RECYCLE.BIN/
 docs/\.vscode/
 
 docs/samples/BasicConsole/\.trydotnet
+
+MLS\.Agent/wwwroot/css/trydotnet\.css
+
+MLS\.Styles/css/

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
@@ -87,4 +87,8 @@
     <EmbeddedResource Include="..\MLS.PackageTool\MLS.PackageTool.csproj" />
     <EmbeddedResource Include="..\MLS.PackageTool\Program.cs" />
   </ItemGroup>
+  <Target Name="PublishClient" BeforeTargets="PrepareForPublish">
+    <Exec Command="npm i" WorkingDirectory="..\MLS.Styles" />
+    <Exec Command="npm run release -- $(ProjectDir)/wwwroot/css/trydotnet.css" WorkingDirectory="..\MLS.Styles" />
+  </Target>
 </Project>
