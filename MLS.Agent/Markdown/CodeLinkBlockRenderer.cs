@@ -1,7 +1,9 @@
-﻿using Markdig.Renderers;
+﻿using System;
+using Markdig.Renderers;
 using Markdig.Renderers.Html;
 using Markdig.Syntax;
 using System.Linq;
+using Markdig.Helpers;
 
 namespace MLS.Agent.Markdown
 {
@@ -33,7 +35,7 @@ namespace MLS.Agent.Markdown
 
             renderer
                 .WriteLine(@"<div class=""editor-panel"">")
-                .WriteLine(@"<pre style=""border:none"" height=""300px"" width=""100%"">")
+                .WriteLine($@"<pre style=""border:none"" height=""{GetEditorHeight(codeLinkBlock.CodeLines)}em"" width=""100%"">")
                 .Write("<code")
                 .WriteAttributes(codeLinkBlock)
                 .WriteLine(">")
@@ -47,6 +49,14 @@ namespace MLS.Agent.Markdown
             AddRunButtonForSession(renderer, session);
 
             AddOutputForSession(renderer, session);
+        }
+
+        private static int GetEditorHeight(StringSlice text)
+        {
+            var height = 
+            text.Text.Split(Environment.NewLine)?.Length ?? 0;
+            height += 60;
+            return height;
         }
 
         private static void AddOutputForSession(HtmlRenderer renderer, string session)
