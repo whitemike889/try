@@ -1,7 +1,9 @@
-﻿using Markdig.Renderers;
+﻿using System;
+using Markdig.Renderers;
 using Markdig.Renderers.Html;
 using Markdig.Syntax;
 using System.Linq;
+using Markdig.Helpers;
 
 namespace MLS.Agent.Markdown
 {
@@ -29,16 +31,54 @@ namespace MLS.Agent.Markdown
                 return;
             }
 
+            var session = codeLinkBlock.GetAttributes().Properties.FirstOrDefault(p => p.Key == "data-trydotnet-session-id").Value;
+
             renderer
-                .WriteLine(@"<pre style=""border:none"" height=""300px"" width=""800px"">")
+                .WriteLine(@"<div class=""editor-panel"">")
+                .WriteLine($@"<pre style=""border:none"" height=""{GetEditorHeight(codeLinkBlock.CodeLines)}em"" width=""100%"">")
                 .Write("<code")
                 .WriteAttributes(codeLinkBlock)
                 .WriteLine(">")
                 .WriteEscape(codeLinkBlock.CodeLines)
                 .WriteLine()
-                .WriteLine("</code></pre>")
-                .WriteLine(@"<button data-trydotnet-mode=""run"" data-trydotnet-session-id=""a"">Run</button>")
-                .WriteLine(@"<div data-trydotnet-mode=""runResult"" data-trydotnet-session-id=""a""></div>");
+                .WriteLine("</code>")
+                .WriteLine("</pre>")
+                .WriteLine(@"</div >");
+
+
+            AddRunButtonForSession(renderer, session);
+
+            AddOutputForSession(renderer, session);
+        }
+
+        private static int GetEditorHeight(StringSlice text)
+        {
+            var height = 
+            ((text.Text.Split(Environment.NewLine)?.Length ?? 10) + 2) * 20;
+            return height;
+        }
+
+        private static void AddOutputForSession(HtmlRenderer renderer, string session)
+        {
+            renderer.Write(@"<div class=""output-panel"" data-trydotnet-mode=""runResult""");
+            WriteDotnetSessionAttribute(renderer, session);
+            renderer.WriteLine(@"></div>");
+        }
+
+        private static void WriteDotnetSessionAttribute(HtmlRenderer renderer, string session)
+        {
+            if (!string.IsNullOrWhiteSpace(session))
+            {
+                renderer.Write($@" data-trydotnet-session-id=""{session}""");
+            }
+        }
+
+        private static void AddRunButtonForSession(HtmlRenderer renderer, string session)
+        {
+            var buttonLabel = string.IsNullOrWhiteSpace(session) ? "Run" : $"Run {session}";
+            renderer.Write(@"<button class=""run-button"" data-trydotnet-mode=""run""");
+            WriteDotnetSessionAttribute(renderer, session);
+            renderer.WriteLine($@">{buttonLabel}</button>");
         }
     }
 }

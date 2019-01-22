@@ -1,0 +1,39 @@
+@charset "utf-8";
+@import "../node_modules/bulma/bulma.sass";
+@import "../node_modules/@mdi/font/scss/materialdesignicons.scss";
+
+.run-button {
+    @extend .button, .is-primary;
+}
+
+.editor-panel{
+
+}
+
+.output-panel{
+
+}
+.code-column{
+    @extend .column.is-two-thirds;    
+}
+
+.control-column{
+    @extend .column;
+}
+
+.documentation-container{
+    @extend .columns;
+    margin: 10px
+}
+
+.code-example{
+    @extend .button, .is-link;
+}
+
+.source-file{
+     @extend .mdi, .mdi-file-document-outline;
+}
+
+ul.code-example-list li{
+    list-style: none;
+}

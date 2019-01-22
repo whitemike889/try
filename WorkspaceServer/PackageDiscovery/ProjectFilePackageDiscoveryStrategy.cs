@@ -5,7 +5,7 @@ using WorkspaceServer.Packaging;
 
 namespace WorkspaceServer.PackageDiscovery
 {
-    class ProjectFilePackageDiscoveryStrategy : IPackageDiscoveryStrategy
+    public class ProjectFilePackageDiscoveryStrategy : IPackageDiscoveryStrategy
     {
         public Task<PackageBuilder> Locate(PackageDescriptor packageDescriptor, Budget budget = null)
         {

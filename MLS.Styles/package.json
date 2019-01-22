@@ -1,0 +1,20 @@
+{
+  "name": "mls.styles",
+  "version": "1.0.0",
+  "description": "css for trydotnet",
+  "main": "sass/trydotnet.scss",
+  "scripts": {
+    "css-build": "node-sass --omit-source-map-url sass/trydotnet.scss css/trydotnet.css",
+    "css-watch": "npm run css-build -- --watch",
+    "start": "npm run build -- --watch",
+    "build": "node-sass --omit-source-map-url sass/trydotnet.scss ../MLS.Agent/wwwroot/css/trydotnet.css",
+    "release": "node-sass --omit-source-map-url --output-style compact sass/trydotnet.scss"
+  },
+  "author": "Diego Colombo",
+  "license": "MIT",
+  "devDependencies": {
+    "@mdi/font": "3.3.92",
+    "bulma": "0.7.2",
+    "node-sass": "4.11.0"
+  }
+}

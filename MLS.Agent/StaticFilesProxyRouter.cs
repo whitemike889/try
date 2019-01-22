@@ -10,15 +10,17 @@ namespace MLS.Agent
         // TODO: (StaticFilesProxyRouter) remove this class and move these resources into the agent repo so they can be served locally without need for an internet connection
         private readonly HttpClient _httpClient = new HttpClient
                                                   {
-                                                      BaseAddress = new Uri("https://trydotnet-eastus.azurewebsites.net/")
+                                                      BaseAddress = new Uri("http://localhost:27261/")
                                                   };
 
         public async Task RouteAsync(RouteContext context)
         {
+
             var path = context.HttpContext.Request.Path;
 
             if (path.Value.EndsWith(".js") ||
                 path.Value.EndsWith(".css") ||
+                path.Value.EndsWith(".png") ||
                 path.Value.EndsWith(".ico"))
             {
                 var response = await _httpClient.GetAsync(path.Value);

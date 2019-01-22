@@ -1,7 +1,6 @@
 ﻿using Markdig.Helpers;
 using Markdig.Parsers;
 using Markdig.Syntax;
-using Markdig.Renderers.Html;
 using System;
 using System.CommandLine;
 using System.IO;
@@ -44,10 +43,8 @@ namespace MLS.Agent.Markdown
                                       {
                                           return ArgumentParseResult.Success(relativeFilePath);
                                       }
-                                      else
-                                      {
-                                          return ArgumentParseResult.Failure($"File not found: {relativeFilePath.Value}");
-                                      }
+
+                                      return ArgumentParseResult.Failure($"File not found: {relativeFilePath.Value}");
                                   }
 
                                   return ArgumentParseResult.Failure($"Error parsing the filename: {filename}");
@@ -119,12 +116,13 @@ namespace MLS.Agent.Markdown
             
             if (parseResult.Errors.Any())
             {
-                if(parseResult.CommandResult.Name!="csharp")
+                if (parseResult.CommandResult.Name != "csharp")
                 {
                     return false;
                 }
 
                 codeLinkBlock.ErrorMessage.AddRange(parseResult.Errors.Select(e => e.ToString()));
+
                 return true;
             }
 

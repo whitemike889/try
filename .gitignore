@@ -183,3 +183,13 @@ $RECYCLE.BIN/
 
 *.DotSettings
 *.nupkg
+
+docs/\.vscode/
+
+docs/samples/BasicConsole/\.trydotnet
+
+MLS\.Agent/wwwroot/css/trydotnet\.css
+
+MLS\.Styles/css/
+
+MLS\.Trydotnet\.js/\.rpt2_cache/

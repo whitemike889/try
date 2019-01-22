@@ -4,11 +4,11 @@ namespace MLS.Agent.Tools
 {
     public static class CommandLineResultExtensions
     {
-        public static void ThrowOnFailure(this CommandLineResult result)
+        public static void ThrowOnFailure(this CommandLineResult result, string message = null)
         {
             if (result.ExitCode != 0)
             {
-                throw new CommandLineInvocationException(result);
+                throw new CommandLineInvocationException(result, message);
             }
         }
     }

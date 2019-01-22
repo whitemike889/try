@@ -10,6 +10,12 @@
     <EmbeddedResource Remove="TestResults\**" />
     <None Remove="TestResults\**" />
   </ItemGroup>
+ 
+  <ItemGroup>
+    <None Include="TestProjects\**">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="FluentAssertions" Version="5.4.1" />
@@ -52,16 +58,6 @@
 
   <ItemGroup>
     <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
-  </ItemGroup>
-  
-  <ItemGroup>
-    <None Include="TestProjects\**">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-  
-  <ItemGroup>
-    <Compile Remove="TestProjects\SampleConsole\Subdirectory\AnotherProgram.cs" />
   </ItemGroup>
 </Project>
 

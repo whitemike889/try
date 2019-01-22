@@ -1,7 +1,9 @@
 ﻿using System;
 using System.CommandLine;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using MLS.Agent.Tools;
 using WorkspaceServer;
 using WorkspaceServer.Packaging;
 
@@ -9,18 +11,14 @@ namespace MLS.Agent
 {
     public class InstallCommand
     {
-        public static async Task Do(string packageName, string addSource, IConsole console)
+        public static async Task Do(string packageName, DirectoryInfo addSource, IConsole console)
         {
             var dotnet = new Dotnet();
-            var result = await dotnet.ToolInstall(
+            (await dotnet.ToolInstall(
                 packageName,
                 Package.DefaultPackagesDirectory.FullName,
-                addSource);
+                addSource)).ThrowOnFailure();
 
-            if (result.ExitCode != 0)
-            {
-                throw new Exception($"Installation failed with error {result.Error}");
-            }
         }
     }
 }
