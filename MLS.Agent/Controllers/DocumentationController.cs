@@ -87,7 +87,7 @@ namespace MLS.Agent.Controllers
 
 <body>
     <div class=""content"">
-        <ul>
+        <ul class=""code-example-list"">
             {html}
         </ul>
     </div>
