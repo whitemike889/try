@@ -11,8 +11,11 @@
 }
 
 .output-panel{
-
+    @extend .box;
+    height: 200px;
+    margin-top: 1em;
 }
+
 .code-column{
     @extend .column.is-two-thirds;    
 }

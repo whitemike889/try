@@ -46,6 +46,8 @@ namespace MLS.Agent.Markdown
 
             codeLinkBlock.Region = parseResult.ValueForOption<string>("region");
 
+            codeLinkBlock.Session = parseResult.ValueForOption<string>("session");
+
             if (parseResult.CommandResult.Result is SuccessfulArgumentParseResult)
             {
                 codeLinkBlock.SourceFile = parseResult.CommandResult.GetValueOrDefault<RelativeFilePath>();

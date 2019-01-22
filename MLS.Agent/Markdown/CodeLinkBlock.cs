@@ -17,6 +17,7 @@ namespace MLS.Agent.Markdown
         private FileInfo _projectFile;
         private RelativeFilePath _sourceFile;
         private string _region;
+        private string _session;
         private string _sourceCode;
         private readonly List<MarkdownProjectDiagnostic> _diagnostics = new List<MarkdownProjectDiagnostic>();
 
@@ -27,7 +28,6 @@ namespace MLS.Agent.Markdown
             _directoryAccessor = directoryAccessor;
 
             AddAttribute("data-trydotnet-mode", "editor");
-            AddAttribute("data-trydotnet-session-id", "a");
         }
 
         public FileInfo ProjectFile
@@ -72,9 +72,22 @@ namespace MLS.Agent.Markdown
             {
                 _region = value;
 
-                if (!string.IsNullOrWhiteSpace(Region))
+                if (!string.IsNullOrWhiteSpace(_region))
                 {
                     AddAttribute("data-trydotnet-region", Region);
+                }
+            }
+        }
+        public string Session
+        {
+            get => _session;
+            set
+            {
+                _session = value;
+
+                if (!string.IsNullOrWhiteSpace(_session))
+                {
+                    AddAttribute("data-trydotnet-session-id", Session);
                 }
             }
         }
@@ -191,12 +204,11 @@ namespace MLS.Agent.Markdown
                 return null;
             });
 
-            var regionArgument = new Argument<string>();
-
             var csharp = new Command("csharp", argument: sourceFileArg)
                          {
                              new Option("--project", argument: projectArg),
-                             new Option("--region", argument: regionArgument)
+                             new Option("--region", argument: new Argument<string>()),
+                             new Option("--session", argument: new Argument<string>(defaultValue: "Run"))
                          };
 
             csharp.AddAlias("CS");

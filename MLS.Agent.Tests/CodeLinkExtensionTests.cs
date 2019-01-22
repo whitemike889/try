@@ -297,5 +297,60 @@ $@"```cs Program.cs --region {region}
 
             html.Should().Contain($"Multiple regions found: {region}");
         }
+
+        [Fact]
+        public void Sets_the_trydotnet_session_using_the_session_passed_in_the_markdown()
+        {
+            var directoryAccessor = new InMemoryDirectoryAccessor(TestAssets.SampleConsole)
+                                    {
+                                        ("Program.cs", ""),
+                                        ("sample.csproj", "")
+                                    };
+
+            var session = "the-session-name";
+            var document =
+                $@"```cs Program.cs --session {session}
+```";
+            var pipeline = new MarkdownPipelineBuilder()
+                           .UseCodeLinks(directoryAccessor)
+                           .Build();
+
+            var html = Markdig.Markdown.ToHtml(document, pipeline).EnforceLF();
+
+            var htmlDocument = new HtmlDocument();
+            htmlDocument.LoadHtml(html);
+            var output = htmlDocument.DocumentNode
+                                     .SelectSingleNode("//pre/code")
+                                     .Attributes["data-trydotnet-session-id"];
+
+            output.Value.Should().Be(session);
+        }
+
+        [Fact]
+        public void Sets_the_trydotnet_session_to_a_default_value_when_a_session_is_not_passed_in_the_markdown()
+        {
+            var directoryAccessor = new InMemoryDirectoryAccessor(TestAssets.SampleConsole)
+                                    {
+                                        ("Program.cs", ""),
+                                        ("sample.csproj", "")
+                                    };
+
+            var document =
+                @"```cs Program.cs
+```";
+            var pipeline = new MarkdownPipelineBuilder()
+                           .UseCodeLinks(directoryAccessor)
+                           .Build();
+
+            var html = Markdig.Markdown.ToHtml(document, pipeline).EnforceLF();
+
+            var htmlDocument = new HtmlDocument();
+            htmlDocument.LoadHtml(html);
+            var output = htmlDocument.DocumentNode
+                                     .SelectSingleNode("//pre/code")
+                                     .Attributes["data-trydotnet-session-id"];
+
+            output.Value.Should().Be("Run");
+        }
     }
 }

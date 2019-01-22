@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Html;
 using MLS.Agent.Markdown;
 
 namespace MLS.Agent
@@ -31,6 +32,15 @@ namespace MLS.Agent
                 codeLinkBlock.MarkdownFile = Path;
                 yield return codeLinkBlock;
             }
+        }
+
+        public IHtmlContent ToHtmlContent()
+        {
+            var pipeline = Project.GetMarkdownPipelineFor(Path);
+
+            var html = Markdig.Markdown.ToHtml(ReadAllText(), pipeline);
+
+            return new HtmlString(html);
         }
 
         public string ReadAllText() =>
