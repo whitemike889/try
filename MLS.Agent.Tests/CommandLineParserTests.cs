@@ -12,12 +12,13 @@ namespace MLS.Agent.Tests
     {
         private readonly ITestOutputHelper _output;
         private readonly TestConsole _console = new TestConsole();
-        private StartupOptions _options;
+        private StartupOptions _start_options;
         private readonly Parser _parser;
-        private string _repo;
-        private DirectoryInfo _packTarget;
-        private string _packageName;
-        private DirectoryInfo _packageSource;
+        private string _tryGitHub_repo;
+        private DirectoryInfo _pack_packTarget;
+        private string _install_packageName;
+        private DirectoryInfo _install_packageSource;
+        private DirectoryInfo _verify_rootDirectory;
 
         public CommandLineParserTests(ITestOutputHelper output)
         {
@@ -25,23 +26,28 @@ namespace MLS.Agent.Tests
             _parser = CommandLineParser.Create(
                 start: (options, invocationContext) =>
                 {
-                    _options = options;
+                    _start_options = options;
                 },
                 tryGithub: (repo, c) =>
                 {
-                    _repo = repo;
+                    _tryGitHub_repo = repo;
                     return Task.CompletedTask;
                 },
                 pack: (packTarget, console) =>
                 {
-                    _packTarget = packTarget;
+                    _pack_packTarget = packTarget;
                     return Task.CompletedTask;
                 },
                 install: (packageName, addSource, console) =>
                 {
-                    _packageName = packageName;
-                    _packageSource = addSource;
+                    _install_packageName = packageName;
+                    _install_packageSource = addSource;
                     return Task.CompletedTask;
+                },
+                verify: (rootDirectory, console) =>
+                {
+                    _verify_rootDirectory = rootDirectory;
+                    return Task.FromResult(1);
                 });
         }
 
@@ -50,7 +56,7 @@ namespace MLS.Agent.Tests
         {
             await _parser.InvokeAsync("hosted", _console);
 
-            _options.Production.Should().BeFalse();
+            _start_options.Production.Should().BeFalse();
         }
 
         [Fact]
@@ -58,7 +64,7 @@ namespace MLS.Agent.Tests
         {
             await _parser.InvokeAsync("hosted --production", _console);
 
-            _options.Production.Should().BeTrue();
+            _start_options.Production.Should().BeTrue();
         }
 
         [Fact]
@@ -66,28 +72,28 @@ namespace MLS.Agent.Tests
         {
             var path = TestAssets.SampleConsole.FullName;
             await _parser.InvokeAsync(new[] { "--root-directory", path }, _console);
-            _options.RootDirectory.FullName.Should().Be(path);
+            _start_options.RootDirectory.FullName.Should().Be(path);
         }
 
         [Fact]
         public async Task Parse_empty_command_line_has_current_directory_as_root_directory()
         {
             await _parser.InvokeAsync("", _console);
-            _options.RootDirectory.FullName.Should().Be(Directory.GetCurrentDirectory());
+            _start_options.RootDirectory.FullName.Should().Be(Directory.GetCurrentDirectory());
         }
 
         [Fact]
         public async Task Parse_root_directory_with_a_non_existing_path_fails()
         {
             await _parser.InvokeAsync("--root-directory INVALIDPATH", _console);
-            _options.Should().BeNull();
+            _start_options.Should().BeNull();
         }
 
         [Fact]
         public async Task Parse_language_service_mode_flag_switches_option_to_language_service()
         {
             await _parser.InvokeAsync("hosted --language-service", _console);
-            _options.IsLanguageService.Should().BeTrue();
+            _start_options.IsLanguageService.Should().BeTrue();
         }
 
         [Fact]
@@ -108,17 +114,17 @@ namespace MLS.Agent.Tests
         public async Task Parse_key_with_parameter_succeeds()
         {
             await _parser.InvokeAsync("hosted -k abc123", _console);
-            _options.Key.Should().Be("abc123");
+            _start_options.Key.Should().Be("abc123");
 
             await _parser.InvokeAsync("hosted --key abc123", _console);
-            _options.Key.Should().Be("abc123");
+            _start_options.Key.Should().Be("abc123");
         }
 
         [Fact]
         public async Task AiKey_defaults_to_null()
         {
             await _parser.InvokeAsync("hosted", _console);
-            _options.ApplicationInsightsKey.Should().BeNull();
+            _start_options.ApplicationInsightsKey.Should().BeNull();
         }
 
         [Fact]
@@ -133,83 +139,83 @@ namespace MLS.Agent.Tests
         public async Task Parse_aiKey_with_parameter_succeeds()
         {
             await _parser.InvokeAsync("hosted --ai-key abc123", _console);
-            _options.ApplicationInsightsKey.Should().Be("abc123");
+            _start_options.ApplicationInsightsKey.Should().Be("abc123");
         }
 
         [Fact]
         public async Task When_root_command_is_specified_then_agent_is_not_in_hosted_mode()
         {
             await _parser.InvokeAsync("", _console);
-            _options.IsInHostedMode.Should().BeFalse();
+            _start_options.IsInHostedMode.Should().BeFalse();
         }
 
         [Fact]
         public async Task When_hosted_command_is_specified_then_agent_is_in_hosted_mode()
         {
             await _parser.InvokeAsync("hosted", _console);
-            _options.IsInHostedMode.Should().BeTrue();
+            _start_options.IsInHostedMode.Should().BeTrue();
         }
 
         [Fact]
         public async Task GitHub_handler_not_run_if_argument_is_missing()
         {
-            _repo = "value";
+            _tryGitHub_repo = "value";
             await _parser.InvokeAsync("github");
-            _repo.Should().Be("value");
+            _tryGitHub_repo.Should().Be("value");
         }
 
         [Fact]
         public async Task GitHub_handler_run_if_argument_is_present()
         {
-            _repo = "value";
+            _tryGitHub_repo = "value";
             await _parser.InvokeAsync("github roslyn");
-            _repo.Should().Be("roslyn");
+            _tryGitHub_repo.Should().Be("roslyn");
         }
 
         [Fact]
         public async Task Pack_not_run_if_argument_is_missing()
         {
             var console = new TestConsole();
-            _packTarget = null;
+            _pack_packTarget = null;
             await _parser.InvokeAsync("pack", console);
             console.Out.ToString().Should().Contain("pack <packTarget>");
-            _packTarget.Should().BeNull();
+            _pack_packTarget.Should().BeNull();
         }
 
         [Fact]
         public async Task Pack_parses_directory_info()
         {
             var console = new TestConsole();
-            _packTarget = null;
+            _pack_packTarget = null;
             var expected = Path.GetDirectoryName(typeof(PackageCommand).Assembly.Location);
 
             await _parser.InvokeAsync($"pack {expected}", console);
-            _packTarget.FullName.Should().Be(expected);
+            _pack_packTarget.FullName.Should().Be(expected);
         }
 
         [Fact]
         public async Task Install_not_run_if_argument_is_missing()
         {
             var console = new TestConsole();
-            _packageName = null;
+            _install_packageName = null;
             await _parser.InvokeAsync("install", console);
             console.Out.ToString().Should().Contain("install [options] <packageName>");
-            _packageName.Should().BeNull();
+            _install_packageName.Should().BeNull();
         }
 
         [Fact]
         public async Task Install_parses_source_option()
         {
             var console = new TestConsole();
-            _packageName = null;
-            _packageSource = null;
+            _install_packageName = null;
+            _install_packageSource = null;
 
             var expectedPackageSource = Path.GetDirectoryName(typeof(PackageCommand).Assembly.Location);
 
             await _parser.InvokeAsync($"install --add-source {expectedPackageSource} the-package", console);
 
-            _packageName.Should().Be("the-package");
-            _packageSource.FullName.Should().Be(expectedPackageSource);
+            _install_packageName.Should().Be("the-package");
+            _install_packageSource.FullName.Should().Be(expectedPackageSource);
         }
     }
 }

@@ -11,7 +11,7 @@ using WorkspaceServer.Packaging;
 
 namespace WorkspaceServer
 {
-    public partial class PackageRegistry : IEnumerable<Task<PackageBuilder>>
+    public class PackageRegistry : IEnumerable<Task<PackageBuilder>>
     {
         private readonly ConcurrentDictionary<string, Task<PackageBuilder>> _packageBuilders = new ConcurrentDictionary<string, Task<PackageBuilder>>();
         private readonly IEnumerable<IPackageDiscoveryStrategy> _strategies;

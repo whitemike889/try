@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace MLS.Repositories
 {
-    public class GithubRepoLocator : IRepoLocator
+    public class GitHubRepoLocator : IRepoLocator
     {
         public async Task<IEnumerable<Repo>> LocateRepo(string repo)
         {

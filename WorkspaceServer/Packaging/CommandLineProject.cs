@@ -5,12 +5,8 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Host.Mef;
-using Microsoft.CodeAnalysis.Text;
-using MLS.Agent.Tools;
 using WorkspaceServer.Servers.Roslyn;
 
 // adapted from https://github.com/dotnet/roslyn/blob/master/src/Workspaces/Core/Desktop/Workspace/CommandLineProject.cs
@@ -131,35 +127,6 @@ namespace WorkspaceServer.Packaging
             {
                 return directory.Split(s_folderSplitters, StringSplitOptions.RemoveEmptyEntries).ToImmutableArray();
             }
-        }
-    }
-
-    public class FileTextLoader : TextLoader
-    {
-        private readonly string _absolutePath;
-
-        public FileTextLoader(string absolutePath)
-        {
-            if (!Path.IsPathRooted(absolutePath))
-            {
-                throw new ArgumentException("Path must be absolute", nameof(absolutePath));
-            }
-
-            _absolutePath = absolutePath;
-        }
-
-        public override async Task<TextAndVersion> LoadTextAndVersionAsync(
-            Workspace workspace,
-            DocumentId documentId,
-            CancellationToken cancellationToken)
-        {
-            var sourceFile = new FileInfo(_absolutePath);
-
-            var prevLastWriteTime = sourceFile.LastWriteTime;
-
-            var sourceText = SourceText.From(await sourceFile.ReadAsync());
-
-            return TextAndVersion.Create(sourceText, VersionStamp.Create(prevLastWriteTime), _absolutePath);
         }
     }
 }

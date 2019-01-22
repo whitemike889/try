@@ -18,12 +18,14 @@ namespace MLS.Agent
         public delegate Task TryGitHub(string repo, IConsole console);
         public delegate Task Pack(DirectoryInfo packTarget, IConsole console);
         public delegate Task Install(string packageName, DirectoryInfo addSource, IConsole console);
+        public delegate Task<int> Verify(DirectoryInfo rootDirectory, IConsole console);
 
         public static Parser Create(
             StartServer start,
             TryGitHub tryGithub,
             Pack pack,
-            Install install)
+            Install install,
+            Verify verify)
         {
             var startHandler = CommandHandler.Create<InvocationContext>(context =>
             {
@@ -43,6 +45,7 @@ namespace MLS.Agent
             rootCommand.AddCommand(GitHub());
             rootCommand.AddCommand(Pack());
             rootCommand.AddCommand(Install());
+            rootCommand.AddCommand(Verify());
 
             return new CommandLineBuilder(rootCommand)
                    .UseDefaults()
@@ -173,6 +176,20 @@ namespace MLS.Agent
 
                 installCommand.Handler = CommandHandler.Create<string, DirectoryInfo, IConsole>((packageName, addSource, console) => install(packageName, addSource, console));
                 return installCommand;
+            }
+
+            Command Verify()
+            {
+                var verifyCommand = new Command("verify");
+
+                verifyCommand.AddOption(new Option(
+                                     "--root-directory",
+                                     "Specify the path to the root directory",
+                                     new Argument<DirectoryInfo>(new DirectoryInfo(Directory.GetCurrentDirectory())).ExistingOnly()));
+
+                verifyCommand.Handler = CommandHandler.Create<DirectoryInfo, IConsole>((rootDirectory, console) => verify(rootDirectory, console));
+
+                return verifyCommand;
             }
         }
     }

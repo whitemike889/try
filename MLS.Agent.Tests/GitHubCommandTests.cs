@@ -4,13 +4,13 @@ using System.Collections.Generic;
 using System.CommandLine;
 using System.Threading.Tasks;
 using Xunit;
-using static MLS.Agent.GithubHandler;
+using static MLS.Agent.GitHubHandler;
 
 namespace MLS.Agent.Tests
 {
     public class GitHubCommandTests
     {
-        IRepoLocator _locator = new RepoLocatorSimulator();
+        private readonly IRepoLocator _locator = new RepoLocatorSimulator();
 
         class TestRepoLocator : IRepoLocator
         {

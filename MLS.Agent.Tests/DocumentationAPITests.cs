@@ -67,7 +67,7 @@ namespace MLS.Agent.Tests
                                    .Select(a => a.Attributes["href"].Value)
                                    .ToArray();
 
-                links.Should().Contain("Readme.md");
+                links.Should().Contain("./Readme.md");
                 links.Should().Contain("Subdirectory/Tutorial.md");
             }
         }

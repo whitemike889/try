@@ -20,11 +20,11 @@ namespace MLS.Agent.Markdown
                 return;
             }
 
-            if (codeLinkBlock.ErrorMessage.Any())
+            if (codeLinkBlock.Diagnostics.Any())
             {
-                foreach (var message in codeLinkBlock.ErrorMessage)
+                foreach (var diagnostic in codeLinkBlock.Diagnostics)
                 {
-                    renderer.WriteEscape(message);
+                    renderer.WriteEscape(diagnostic.Message);
                     renderer.WriteLine();
                 }
                 
@@ -35,26 +35,24 @@ namespace MLS.Agent.Markdown
 
             renderer
                 .WriteLine(@"<div class=""editor-panel"">")
-                .WriteLine($@"<pre style=""border:none"" height=""{GetEditorHeight(codeLinkBlock.CodeLines)}em"" width=""100%"">")
+                .WriteLine($@"<pre style=""border:none"" height=""{GetEditorHeightInEm(codeLinkBlock.Lines)}em"" width=""100%"">")
                 .Write("<code")
                 .WriteAttributes(codeLinkBlock)
                 .WriteLine(">")
-                .WriteEscape(codeLinkBlock.CodeLines)
+                .WriteEscape(codeLinkBlock.Lines.ToSlice().ToString())
                 .WriteLine()
-                .WriteLine("</code>")
-                .WriteLine("</pre>")
+                .WriteLine(@"</code>")
+                .WriteLine(@"</pre>")
                 .WriteLine(@"</div >");
-
 
             AddRunButtonForSession(renderer, session);
 
             AddOutputForSession(renderer, session);
         }
 
-        private static int GetEditorHeight(StringSlice text)
+        private static int GetEditorHeightInEm(StringLineGroup text)
         {
-            var height = 
-            ((text.Text.Split(Environment.NewLine)?.Length ?? 10) + 2) * 20;
+            var height = (text.ToString().Split("\n").Length + 1) * 20;
             return height;
         }
 
