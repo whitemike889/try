@@ -5,6 +5,7 @@ using NuGet.Protocol.Core.Types;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,14 +14,16 @@ namespace MLS.Repositories
 {
     public class PackageLocator
     {
-        public async Task LocatePackageAsync(string name)
+        public async Task<bool> PackageExists(string name, DirectoryInfo addSource)
         {
             var settings = NuGet.Configuration.Settings.LoadDefaultSettings(Directory.GetCurrentDirectory());
             IPackageSourceProvider psp = new PackageSourceProvider(settings);
             ISourceRepositoryProvider srp = new SourceRepositoryProvider(psp, FactoryExtensionsV3.GetCoreV3(Repository.Provider));
 
+            var addedSource = new PackageSource(addSource.FullName);
+
             List<IEnumerableAsync<IPackageSearchMetadata>> lists = new List<IEnumerableAsync<IPackageSearchMetadata>>();
-            foreach (var source in psp.LoadPackageSources())
+            foreach (var source in psp.LoadPackageSources().Concat(new[] { addedSource }))
             {
                 try
                 {
@@ -55,7 +58,7 @@ namespace MLS.Repositories
             if (packages[0].Title == name)
             {
                 Console.WriteLine(packages[0].ProjectUrl);
-                return;
+                return true;
             }
 
             if (packages.Count > 1)
@@ -67,7 +70,7 @@ namespace MLS.Repositories
                 }
             }
 
-            return;
+            return false;
         }
 
         public class Logger : ILogger

@@ -85,10 +85,13 @@ namespace MLS.Agent.Markdown
 
             var regionArgument = new Argument<string>();
 
+            var packageArgument = new Argument<string>();
+
             var csharp = new Command("csharp", argument: sourceFile)
                           {
                               new Option("--project", argument: projectArgument),
-                              new Option("--region", argument: regionArgument)
+                              new Option("--region", argument: regionArgument),
+                              new Option("--package", argument: packageArgument);
                           };
 
             csharp.AddAlias("CS");

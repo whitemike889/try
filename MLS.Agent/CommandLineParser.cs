@@ -60,6 +60,11 @@ namespace MLS.Agent
                                       "Specify the path to the root directory",
                                       new Argument<DirectoryInfo>(new DirectoryInfo(Directory.GetCurrentDirectory())).ExistingOnly()));
 
+                command.AddOption(new Option(
+                                     "--add-source",
+                                     "Specify an additional nuget package source",
+                                     new Argument<string>()));
+
                 return command;
             }
 
@@ -179,10 +184,6 @@ namespace MLS.Agent
 
                 var run = new Command("nuget", "Try a NuGet package", argument: argument);
                 var l = new PackageLocator();
-                run.Handler = CommandHandler.Create(async (string package) => {
-                    await l.LocatePackageAsync(package);
-                })
-                ;
 
                 return run;
             }

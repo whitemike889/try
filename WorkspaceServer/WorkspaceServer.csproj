@@ -75,6 +75,7 @@
     <ProjectReference Include="..\MLS.Agent.Tools\MLS.Agent.Tools.csproj" />
     <ProjectReference Include="..\MLS.Project\MLS.Project.csproj" />
     <ProjectReference Include="..\MLS.Protocol\MLS.Protocol.csproj" />
+    <ProjectReference Include="..\MLS.Repositories\MLS.Repositories.csproj" />
   </ItemGroup>
 
 </Project>

@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using WorkspaceServer;
 using WorkspaceServer.PackageDiscovery;
+using WorkspaceServer.Tests;
 using Xunit;
 
 namespace MLS.Agent.Tests
@@ -26,7 +27,7 @@ namespace MLS.Agent.Tests
                 var result = await CommandLine.Execute("dotnet", $"tool install --add-source {temp.FullName} BasicConsoleApp --tool-path {temp.FullName}");
                 result.ExitCode.Should().Be(0);
 
-                var strategy = new LocalToolPackageDiscoveryStrategy(temp);
+                var strategy = new LocalToolPackageDiscoveryStrategy(temp, "");
                 var tool = await strategy.Locate(new PackageDescriptor("BasicConsoleApp"));
                 tool.Should().NotBeNull();
                 tool.PackageInitializer.Should().BeOfType<PackageToolInitializer>();
@@ -39,10 +40,21 @@ namespace MLS.Agent.Tests
             using (var directory = DisposableDirectory.Create())
             {
                 var temp = directory.Directory;
-                var strategy = new LocalToolPackageDiscoveryStrategy(temp);
+                var strategy = new LocalToolPackageDiscoveryStrategy(temp, "");
 
                 strategy.Invoking(s => s.Locate(new PackageDescriptor("not-a-workspace")).Wait()).Should().NotThrow();
             }
+        }
+
+        public async Task Installs_tool_from_package_source_when_requested()
+        {
+            var console = new TestConsole();
+            var asset = await Create.ConsoleWorkspaceCopy();
+            await PackageCommand.Do(asset.Directory, console);
+
+            var strategy = new NugetToolPackageDiscoveryStrategy(asset.Directory, asset.Directory.FullName.ToString());
+            var package = await strategy.Locate(new PackageDescriptor("console"));
+            package.Should().NotBeNull();
         }
     }
 }
