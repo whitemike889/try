@@ -54,8 +54,7 @@ namespace MLS.Agent.Markdown
         private static int GetEditorHeight(StringSlice text)
         {
             var height = 
-            text.Text.Split(Environment.NewLine)?.Length ?? 0;
-            height += 60;
+            (text.Text.Split(Environment.NewLine)?.Length ?? 0) * 20;
             return height;
         }
 
