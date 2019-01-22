@@ -174,20 +174,6 @@ namespace MLS.Agent
                 installCommand.Handler = CommandHandler.Create<string, DirectoryInfo, IConsole>((packageName, addSource, console) => install(packageName, addSource, console));
                 return installCommand;
             }
-
-            Command Nuget()
-            {
-                var argument = new Argument<string>();
-
-                // System.CommandLine parameter binding does lookup by name,
-                // so name the argument after the github command's string param
-                argument.Name = "package";
-
-                var run = new Command("nuget", "Try a NuGet package", argument: argument);
-                var l = new PackageLocator();
-
-                return run;
-            }
         }
     }
 }
