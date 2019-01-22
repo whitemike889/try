@@ -1,33 +1,54 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 
 namespace MLS.Agent
 {
-    public class RelativeFilePath : RelativePath
+    public class RelativeFilePath :
+        RelativePath,
+        IEquatable<RelativeFilePath>
     {
-        private RelativeDirectoryPath _directory;
-
-        public RelativeFilePath(string filePath) : base(filePath)
+        public RelativeFilePath(string filePath)
         {
             if (string.IsNullOrWhiteSpace(filePath))
             {
-                throw new System.ArgumentException("File path cannot be null or empty", nameof(filePath));
+                throw new ArgumentException("File path cannot be null or consist entirely of whitespace", nameof(filePath));
             }
-        }
-        public RelativeDirectoryPath Directory
-        {
-            get
-            {
-                return _directory ?? (_directory = new RelativeDirectoryPath(Path.GetDirectoryName(Value)));
-            }
+
+            var (directoryPath, fileName) = GetFileAndDirectoryNames(filePath);
+
+            FileName = fileName;
+
+            ThrowIfContainsDisallowedFilePathChars(FileName);
+
+            Directory = new RelativeDirectoryPath(directoryPath);
+
+            Value = Directory.Value + FileName;
         }
 
-        public string Extension
+        private static (string directoryPath, string fileName) GetFileAndDirectoryNames(string filePath)
         {
-            get
+            var lastDirectorySeparatorPos = filePath.LastIndexOfAny(new[] { '\\', '/' });
+
+            if (lastDirectorySeparatorPos == -1)
             {
-                return Path.GetExtension(Value);
+                return ("./", filePath);
             }
+
+            var fileName = filePath.Substring(lastDirectorySeparatorPos + 1);
+
+            var directoryPath = filePath.Substring(0, lastDirectorySeparatorPos);
+
+            directoryPath = NormalizeDirectory(directoryPath);
+
+            return (directoryPath, fileName);
         }
+
+        public string FileName { get; }
+
+        public RelativeDirectoryPath Directory { get; }
+
+        public string Extension =>
+            Path.GetExtension(Value);
 
         public static bool TryParse(string path, out RelativeFilePath relativeFilePath)
         {
@@ -41,6 +62,42 @@ namespace MLS.Agent
             {
                 return false;
             }
+        }
+
+        public bool Equals(RelativeFilePath other)
+        {
+            if (ReferenceEquals(null, other))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            return string.Equals(FileName, other.FileName) &&
+                   Equals(Directory, other.Directory);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+
+            if (obj.GetType() != GetType())
+            {
+                return false;
+            }
+
+            return Equals((RelativeFilePath) obj);
         }
     }
 }

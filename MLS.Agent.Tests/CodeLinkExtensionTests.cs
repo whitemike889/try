@@ -77,11 +77,11 @@ console.log(""Hello World"");
 @"```cs DOESNOTEXIST
 ```";
             var html = Markdig.Markdown.ToHtml(document, pipeline).EnforceLF();
-            html.Should().Contain("File not found: DOESNOTEXIST");
+            html.Should().Contain("File not found: ./DOESNOTEXIST");
         }
 
         [Fact]
-        public void Error_message_is_displayed_when_no_project_is_passed_and_no_project_file_is_found()
+        public void Error_message_is_displayed_when_no_project_is_specified_and_no_project_file_is_found()
         {
             var testDir = TestAssets.SampleConsole;
             var directoryAccessor = new InMemoryDirectoryAccessor(testDir)
@@ -97,9 +97,8 @@ console.log(""Hello World"");
             html.Should().Contain($"No project file could be found at path {testDir.FullName}");
         }
 
-
         [Fact]
-        public void Error_message_is_displayed_when_the_passed_project_file_doesnot_exist()
+        public void Error_message_is_displayed_when_a_project_is_specified_but_the_file_does_not_exist()
         {
             var testDir = TestAssets.SampleConsole;
             var directoryAccessor = new InMemoryDirectoryAccessor(testDir)
@@ -114,7 +113,7 @@ $@"```cs --project {projectPath} Program.cs
             var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor).Build();
             var html = Markdig.Markdown.ToHtml(document, pipeline).EnforceLF();
 
-            html.Should().Contain($"Project not found: {projectPath}");
+            html.Should().Contain($"Project not found: ./{projectPath}");
         }
 
         [Fact]
@@ -246,7 +245,7 @@ $@"```cs Program.cs --region {region}
         }
 
         [Fact]
-        public void If_the_specified_region_does_not_exist_error_message_is_shown()
+        public void If_the_specified_region_does_not_exist_then_an_error_message_is_shown()
         {
             var rootDirectory = TestAssets.SampleConsole;
             var region = "noRegion";
@@ -264,13 +263,14 @@ $@"```cs Program.cs --region {region}
 
             var htmlDocument = new HtmlDocument();
             htmlDocument.LoadHtml(html);
-            htmlDocument.DocumentNode.SelectSingleNode("//pre|//code").Should().BeNull();
+            var node = htmlDocument.DocumentNode.SelectSingleNode("//pre|//code");
+            node.Should().BeNull();
 
             html.Should().Contain($"Region not found: {region}");
         }
 
         [Fact]
-        public void If_the_specified_region_exists_more_than_once()
+        public void If_the_specified_region_exists_more_than_once_then_an_error_is_displayed()
         {
             var rootDirectory = TestAssets.SampleConsole;
             var codeContent = @"
@@ -296,95 +296,6 @@ $@"```cs Program.cs --region {region}
             htmlDocument.DocumentNode.SelectSingleNode("//pre|//code").Should().BeNull();
 
             html.Should().Contain($"Multiple regions found: {region}");
-        }
-
-        [Fact(Skip ="Not yet implemented")]
-        public void If_the_specified_region_cannot_be_found_and_there_are_syntax_errors_then_error_message_is_shown()
-        {
-            var rootDirectory = TestAssets.SampleConsole;
-            var codeContent = @"
-#region codeRegion
-#end region
-";
-
-            var file = "Program.cs";
-            var directoryAccessor = new InMemoryDirectoryAccessor(rootDirectory)
-            {
-                ("Program.cs", codeContent),
-                ("sample.csproj", "")
-            };
-
-            var document =
-$@"```cs {file} --region codeRegion
-```";
-            var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor).Build();
-            var html = Markdig.Markdown.ToHtml(document, pipeline).EnforceLF();
-
-            var htmlDocument = new HtmlDocument();
-            htmlDocument.LoadHtml(html);
-            htmlDocument.DocumentNode.SelectSingleNode("//pre|//code").Should().BeNull();
-
-            html.Should().Contain($"The specified file could not be parsed: {file}");
-        }
-
-        [Fact(Skip = "To be implemented")]
-        public void Package_is_based_on_working_directory_when_project_options_is_not_specified()
-        {
-            /*var rootDirectory = TestAssets.SampleConsole;
-            var currentDir = new DirectoryInfo(Path.Combine(rootDirectory.FullName, "docs"));
-            var directoryAccessor = new InMemoryDirectoryAccessor(currentDir, rootDirectory)
-            {
-                ("src/sample/Program.cs", ""),
-                ("sample.csproj", "")
-            };
-
-            var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor).Build();
-
-            var projectTemplate = "../src/sample/sample.csproj";
-            var document =
-$@"```cs ../src/sample/Program.cs
-```";
-                projectTemplate.Value.Should().Be("BasicConsoleApp");*/
-        }
-
-
-        [Fact(Skip = "To be implemented")]
-        public void When_the_specified_package_does_not_exist_then_an_error_message_is_shown()
-        {
-            /*using (var agent = new AgentService(new StartupOptions(rootDirectory: TestAssets.SampleConsole)))
-            {
-                var response = await agent.GetAsync(@"Readme.md");
-
-                response.Should().BeSuccessful();
-
-                var html = await response.Content.ReadAsStringAsync();
-
-                var document = new HtmlDocument();
-                document.LoadHtml(html);
-                var errorMessage = document.DocumentNode
-                    .SelectSingleNode("//pre/code").Attributes["data-trydotnet-error"];
-
-                errorMessage.Value.Should().Be("The specified project template does not exist");
-            }*/
-        }
-
-        [Fact(Skip = "To be implemented")]
-        public void When_the_specified_package_does_not_exist_then_original_fenced_code_is_displayed()
-        {
-            /*using (var agent = new AgentService(new StartupOptions(rootDirectory: TestAssets.SampleConsole)))
-            {
-                var response = await agent.GetAsync(@"Readme.md");
-
-                response.Should().BeSuccessful();
-
-                var html = await response.Content.ReadAsStringAsync();
-
-                var document = new HtmlDocument();
-                document.LoadHtml(html);
-                var fencedCode = document.DocumentNode
-                    .SelectSingleNode("//pre/code").InnerHtml;
-
-                fencedCode.Should().Be("//specify the code");*/
         }
     }
 }

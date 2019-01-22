@@ -15,6 +15,7 @@ using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
+using MLS.Agent.Markdown;
 using WorkspaceServer.Servers.Roslyn;
 using static Pocket.Logger<MLS.Agent.Program>;
 using SerilogLoggerConfiguration = Serilog.LoggerConfiguration;
@@ -26,10 +27,18 @@ namespace MLS.Agent
         public static async Task<int> Main(string[] args)
         {
             var parser = CommandLineParser.Create(
-                start: (options, console) => ConstructWebHost(options).Run(),
-                tryGithub: (repo, console) => GithubHandler.Handler(repo, console, new GithubRepoLocator()),
-                pack: (packTarget, console) => PackageCommand.Do(packTarget, console),
-                install: (packageName, packageSource, console) => InstallCommand.Do(packageName, packageSource, console));
+                start: (options, console) =>
+                    ConstructWebHost(options).Run(),
+                tryGithub: (repo, console) =>
+                    GitHubHandler.Handler(repo,
+                                          console,
+                                          new GitHubRepoLocator()),
+                pack: PackageCommand.Do,
+                install: InstallCommand.Do,
+                verify: (rootDirectory, console) =>
+                    VerifyCommand.Do(rootDirectory,
+                                     console,
+                                     () => new FileSystemDirectoryAccessor(rootDirectory)));
 
             return await parser.InvokeAsync(args);
         }

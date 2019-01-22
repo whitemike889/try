@@ -9,7 +9,7 @@ using WorkspaceServer;
 
 namespace MLS.Agent
 {
-    public class PackageCommand
+    public static class PackageCommand
     {
         public static Task Do(DirectoryInfo packTarget, IConsole console)
         {

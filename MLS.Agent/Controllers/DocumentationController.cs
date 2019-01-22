@@ -8,13 +8,11 @@ namespace MLS.Agent.Controllers
     public class DocumentationController : Controller
     {
         private readonly MarkdownProject _markdownProject;
-        private readonly StartupOptions startupOptions;
 
         public DocumentationController(MarkdownProject markdownProject, StartupOptions startupOptions)
         {
             _markdownProject = markdownProject ??
                                throw new ArgumentNullException(nameof(markdownProject));
-            this.startupOptions = startupOptions;
         }
 
         [HttpGet]
@@ -27,7 +25,7 @@ namespace MLS.Agent.Controllers
                     "\n",
                     _markdownProject.GetAllMarkdownFiles()
                                     .Select(f =>
-                                     $@"<li ><a class=""code-example"" href=""{f.Value.HtmlAttributeEncode()}""><span class=""icon is-small""><i class=""source-file""></i></span><span>{f.Value}</span></a></li>"));
+                                     $@"<li ><a class=""code-example"" href=""{f.Path.Value.HtmlAttributeEncode()}""><span class=""icon is-small""><i class=""source-file""></i></span><span>{f.Path.Value}</span></a></li>"));
 
                 return Content(Index(links), "text/html");
             }

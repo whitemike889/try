@@ -12,7 +12,7 @@ namespace MLS.Agent.Markdown
 
         public FileSystemDirectoryAccessor(DirectoryInfo rootDir)
         {
-            _rootDirectory = rootDir ?? throw new System.ArgumentNullException(nameof(rootDir));
+            _rootDirectory = rootDir ?? throw new ArgumentNullException(nameof(rootDir));
         }
 
         public bool FileExists(RelativeFilePath filePath)

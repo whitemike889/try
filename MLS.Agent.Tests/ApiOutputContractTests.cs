@@ -190,7 +190,6 @@ namespace MLS.Agent.Tests
         [Fact]
         public async Task The_run_contract_with_no_instrumentation_has_not_been_broken()
         {
-
             var requestJson = new WorkspaceRequest(
                 new Workspace(
                     workspaceType: "console",
