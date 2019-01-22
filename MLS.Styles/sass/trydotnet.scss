@@ -33,3 +33,7 @@
 .source-file{
      @extend .mdi, .mdi-file-document-outline;
 }
+
+ul.code-example-list li{
+    list-style: none;
+}
