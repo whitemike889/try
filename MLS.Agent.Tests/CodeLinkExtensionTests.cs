@@ -147,6 +147,34 @@ $@"```cs --project {package} ../src/sample/Program.cs
         }
 
         [Fact]
+        public void Sets_the_trydotnet_package_attribute_using_the_passed_package_option()
+        {
+            var rootDirectory = TestAssets.SampleConsole;
+            var currentDir = new DirectoryInfo(Path.Combine(rootDirectory.FullName, "docs"));
+            var directoryAccessor = new InMemoryDirectoryAccessor(currentDir, rootDirectory)
+            {
+                ("src/sample/Program.cs", ""),
+                ("src/sample/sample.csproj", "")
+            };
+
+            var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor).Build();
+
+            var package = "the-package";
+            var document =
+$@"```cs --package {package} ../src/sample/Program.cs
+```";
+
+            var html = Markdig.Markdown.ToHtml(document, pipeline).EnforceLF();
+
+            var htmlDocument = new HtmlDocument();
+            htmlDocument.LoadHtml(html);
+            var output = htmlDocument.DocumentNode
+                .SelectSingleNode("//pre/code").Attributes["data-trydotnet-package"];
+
+            output.Value.Should().Be(package);
+        }
+
+        [Fact]
         public void Sets_the_code_in_the_pre_tag_using_the_region_specified_in_markdown()
         {
             var regionCode = @"Console.WriteLine(""Hello World!"");";

@@ -63,7 +63,7 @@ namespace MLS.Agent
                 command.AddOption(new Option(
                                      "--add-source",
                                      "Specify an additional nuget package source",
-                                     new Argument<string>()));
+                                     new Argument<DirectoryInfo>(new DirectoryInfo(Directory.GetCurrentDirectory())).ExistingOnly()));
 
                 return command;
             }

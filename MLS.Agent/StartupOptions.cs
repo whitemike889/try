@@ -13,7 +13,7 @@ namespace MLS.Agent
             string id = null,
             string regionId = null,
             DirectoryInfo rootDirectory = null,
-            string addSource = null)
+            DirectoryInfo addSource = null)
         {
             LogToFile = logToFile;
             Id = id;
@@ -29,7 +29,7 @@ namespace MLS.Agent
         public string Id { get; set; }
         public string RegionId { get; set; }
         public DirectoryInfo RootDirectory { get; set; }
-        public string AddSource { get; }
+        public DirectoryInfo AddSource { get; }
         public bool Production { get; set; }
         public bool IsLanguageService { get; set; }
         public string Key { get; set; }

@@ -79,7 +79,7 @@ namespace WorkspaceServer
             return workspaceInfos;
         }
 
-        public static PackageRegistry CreateForTryMode(DirectoryInfo project, string addSource)
+        public static PackageRegistry CreateForTryMode(DirectoryInfo project, DirectoryInfo addSource)
         {
             var registry = new PackageRegistry(
                 new LocalToolPackageDiscoveryStrategy(Package.DefaultPackagesDirectory, addSource));

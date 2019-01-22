@@ -88,7 +88,7 @@ namespace MLS.Agent.Markdown
                           {
                               new Option("--project", argument: projectArgument),
                               new Option("--region", argument: regionArgument),
-                              new Option("--package", argument: packageArgument);
+                              new Option("--package", argument: packageArgument)
                           };
 
             csharp.AddAlias("CS");
@@ -113,7 +113,7 @@ namespace MLS.Agent.Markdown
             }
 
             var parseResult = _csharpLinkParser.Parse(line.ToString());
-            
+
             if (parseResult.Errors.Any())
             {
                 if (parseResult.CommandResult.Name != "csharp")
@@ -126,13 +126,22 @@ namespace MLS.Agent.Markdown
                 return true;
             }
 
+
+            var package = parseResult.ValueForOption<string>("package");
             var projectFile = parseResult.ValueForOption<FileInfo>("project");
-            var project = GetPackageNameFromProjectFile(projectFile);
-            if (project == null)
+
+            string project = null;
+            if (projectFile != null)
             {
-                codeLinkBlock.ErrorMessage.Add($"No project file could be found at path {_directoryAccessor.GetFullyQualifiedPath(new RelativeDirectoryPath("."))}");
-                return true;
+                project = GetPackageNameFromProjectFile(projectFile);
+                if (project == null)
+                {
+                    codeLinkBlock.ErrorMessage.Add($"No project file could be found at path {_directoryAccessor.GetFullyQualifiedPath(new RelativeDirectoryPath("."))}");
+                    return true;
+                }
             }
+
+            project = package ?? project;
 
             var region = parseResult.ValueForOption<string>("region");
             var sourceFile = parseResult.CommandResult.GetValueOrDefault<RelativeFilePath>();
