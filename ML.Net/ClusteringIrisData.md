@@ -29,7 +29,6 @@ Clustering can look similar to multiclass classification, but the difference is 
 To solve this problem, first we will build and train an ML model. Then we will use trained model for predicting a cluster for iris flowers.
 
 ### 1. Build model
-
 Building a model includes: uploading data (`iris-full.txt` with `TextLoader`), transforming the data so it can be used effectively by an ML algorithm (with `Concatenate`), and choosing a learning algorithm (`KMeans`). All of those steps are stored in `trainingPipeline`:
 ```csharp --region create_model --project ./IrisClustering/IrisClustering/IrisClustering.csproj --session "iris clustering"     ./IrisClustering/IrisClustering/Program.cs
 ```
