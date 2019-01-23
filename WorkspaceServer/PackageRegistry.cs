@@ -16,15 +16,14 @@ namespace WorkspaceServer
         private readonly ConcurrentDictionary<string, Task<PackageBuilder>> _packageBuilders = new ConcurrentDictionary<string, Task<PackageBuilder>>();
         private readonly IEnumerable<IPackageDiscoveryStrategy> _strategies;
 
-        public PackageRegistry()
+        public PackageRegistry(params IPackageDiscoveryStrategy[] additionalStrategies)
         {
             _strategies = new IPackageDiscoveryStrategy[]
             {
                 new ProjectFilePackageDiscoveryStrategy(),
                 new DirectoryPackageDiscoveryStrategy(),
-                new LocalToolPackageDiscoveryStrategy(Package.DefaultPackagesDirectory),
                 new GlobalToolPackageDiscoveryStrategy(),
-            };
+            }.Concat(additionalStrategies);
         }
 
         public void Add(string name, Action<PackageBuilder> configure)
@@ -80,9 +79,10 @@ namespace WorkspaceServer
             return workspaceInfos;
         }
 
-        public static PackageRegistry CreateForTryMode(DirectoryInfo project)
+        public static PackageRegistry CreateForTryMode(DirectoryInfo project, DirectoryInfo addSource)
         {
-            var registry = new PackageRegistry();
+            var registry = new PackageRegistry(
+                new LocalToolPackageDiscoveryStrategy(Package.DefaultPackagesDirectory, addSource));
 
             registry.Add(project.Name, builder =>
             {

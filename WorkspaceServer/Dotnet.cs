@@ -56,6 +56,20 @@ namespace WorkspaceServer
         public Task<CommandLineResult> ToolInstall(string args = null, Budget budget = null) =>
             Execute("tool install".AppendArgs(args), budget);
 
+        public Task<CommandLineResult> ToolInstall(
+            string packageName, 
+            string toolPath,
+            DirectoryInfo addSource = null, Budget budget = null)
+        {
+            var args = $"{packageName} --tool-path {toolPath} --version 1.0.0";
+            if (addSource != null)
+            {
+                args += $" --add-source \"{addSource}\"";
+            }
+
+            return Execute("tool install".AppendArgs(args), budget);
+        }
+
         public Task<CommandLineResult> Pack(string args = null, Budget budget = null) =>
             Execute("pack".AppendArgs(args), budget);
 

@@ -1,3 +1,4 @@
+using MLS.Repositories;
 using System;
 using System.CommandLine;
 using System.CommandLine.Builder;
@@ -61,6 +62,11 @@ namespace MLS.Agent
                                       "--root-directory",
                                       "Specify the path to the root directory",
                                       new Argument<DirectoryInfo>(new DirectoryInfo(Directory.GetCurrentDirectory())).ExistingOnly()));
+
+                command.AddOption(new Option(
+                                     "--add-source",
+                                     "Specify an additional nuget package source",
+                                     new Argument<DirectoryInfo>(new DirectoryInfo(Directory.GetCurrentDirectory())).ExistingOnly()));
 
                 return command;
             }

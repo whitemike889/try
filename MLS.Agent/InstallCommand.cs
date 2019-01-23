@@ -12,9 +12,11 @@ namespace MLS.Agent
         public static async Task Do(string packageName, DirectoryInfo addSource, IConsole console)
         {
             var dotnet = new Dotnet();
-            var args = $"--add-source \"{addSource.FullName}\" {packageName} --tool-path {Package.DefaultPackagesDirectory}";
-            console.Out.WriteLine($"Executing dotnet tool install {args}");
-            (await dotnet.ToolInstall(args)).ThrowOnFailure();
+            (await dotnet.ToolInstall(
+                packageName,
+                Package.DefaultPackagesDirectory.FullName,
+                addSource)).ThrowOnFailure();
+
         }
     }
 }

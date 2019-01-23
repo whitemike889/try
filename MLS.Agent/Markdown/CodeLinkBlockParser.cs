@@ -68,8 +68,16 @@ namespace MLS.Agent.Markdown
                 }
             }
 
-            var optionResult = parseResult.CommandResult["project"];
-            if (optionResult?.ArgumentResult is SuccessfulArgumentResult)
+            var projectOptionResult = parseResult.CommandResult["project"];
+            var packageOptionResult = parseResult.CommandResult["package"];
+
+
+            if (packageOptionResult?.ArgumentResult is SuccessfulArgumentResult)
+            {
+                codeLinkBlock.Package = parseResult.CommandResult.ValueForOption<string>("package");
+            }
+
+            if (codeLinkBlock.Package == null &&  projectOptionResult?.ArgumentResult is SuccessfulArgumentResult)
             {
                 codeLinkBlock.ProjectFile = parseResult.CommandResult.ValueForOption<FileInfo>("project");
 
@@ -81,6 +89,11 @@ namespace MLS.Agent.Markdown
                     codeLinkBlock.AddDiagnostic(
                         $"No project file could be found at path {_directoryAccessor.GetFullyQualifiedPath(new RelativeDirectoryPath("."))}");
                 }
+            }
+
+            if (codeLinkBlock.Package != null && !projectOptionResult.IsImplicit)
+            {
+                codeLinkBlock.AddDiagnostic("Can't specify both --project and --package");
             }
 
             return true;

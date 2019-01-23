@@ -19,6 +19,7 @@ namespace MLS.Agent.Markdown
         private string _region;
         private string _session;
         private string _sourceCode;
+        private string _package;
         private readonly List<MarkdownProjectDiagnostic> _diagnostics = new List<MarkdownProjectDiagnostic>();
 
         public CodeLinkBlock(
@@ -40,6 +41,20 @@ namespace MLS.Agent.Markdown
                 if (value != null)
                 {
                     AddAttribute("data-trydotnet-package", value.FullName);
+                }
+            }
+        }
+
+        public string Package
+        {
+            get => _package;
+            set
+            {
+                _package = value;
+
+                if (value != null)
+                {
+                    AddAttribute("data-trydotnet-package", value);
                 }
             }
         }
@@ -206,12 +221,17 @@ namespace MLS.Agent.Markdown
                 return null;
             });
 
+            var regionArgument = new Argument<string>();
+            var packageArgument = new Argument<string>();
+
             var csharp = new Command("csharp", argument: sourceFileArg)
                          {
                              new Option("--project", argument: projectArg),
-                             new Option("--region", argument: new Argument<string>()),
+                             new Option("--region", argument: regionArgument),
+                             new Option("--package", argument: packageArgument),
                              new Option("--session", argument: new Argument<string>(defaultValue: "Run"))
                          };
+
 
             csharp.AddAlias("CS");
             csharp.AddAlias("C#");
