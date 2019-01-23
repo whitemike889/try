@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Microsoft.ApplicationInsights.AspNetCore.Extensions;
+using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MLS.Agent.Controllers
@@ -30,11 +33,9 @@ namespace MLS.Agent.Controllers
                 return Content(Index(links), "text/html");
             }
 
-            //to do: If the path contains invalid characters , so the relative path will throw an exception
-            // we should handle that
             var relativeFilePath = new RelativeFilePath(path);
 
-            if (!_markdownProject.TryGetHtmlContent(relativeFilePath, out var htmlBody))
+            if (!_markdownProject.TryGetMarkdownFile(relativeFilePath, out var markdownFile))
             {
                 return NotFound();
             }
@@ -42,11 +43,29 @@ namespace MLS.Agent.Controllers
             var hostUrl = Request.GetUri();
 
             return Content(
-                Scaffold(htmlBody,
-                         $"{hostUrl.Scheme}://{hostUrl.Authority}"), "text/html");
+                Scaffold($"{hostUrl.Scheme}://{hostUrl.Authority}",
+                         markdownFile), "text/html");
         }
 
-        private string Scaffold(string editorHtml, string hostUrl) =>
+        private static IHtmlContent SessionControlsHtml(MarkdownFile markdownFile)
+        {
+            var sessions= markdownFile
+                   .GetCodeLinkBlocks()
+                   .Select(b => b.Session)
+                   .Distinct();
+
+            var sb = new StringBuilder();
+
+            foreach (var session in sessions)
+            {
+                sb.AppendLine($@"<button class=""run-button"" data-trydotnet-mode=""run"" data-trydotnet-session-id=""{session}"">{session}</button>");
+                sb.AppendLine($@"<div class=""output-panel"" data-trydotnet-mode=""runResult"" data-trydotnet-session-id=""{session}""></div>");
+            }
+
+            return new HtmlString(sb.ToString());
+        }
+
+        private string Scaffold(string hostUrl, MarkdownFile markdownFile) =>
             $@"
 <!DOCTYPE html>
 <html lang=""en"">
@@ -61,10 +80,10 @@ namespace MLS.Agent.Controllers
     <div class=""content"">
     <div class=""documentation-container"">
         <div class=""code-column"">
-            {editorHtml}
+            {markdownFile.ToHtmlContent()}
         </div>
         <div class=""control-column"">
-        
+            {SessionControlsHtml(markdownFile)}
         </div>
     </div>
     </div>

@@ -28,32 +28,31 @@ namespace MLS.Agent
 
                 foreach (var codeLinkBlock in codeLinkBlocks)
                 {
-                    var sourceFilePath = codeLinkBlock.SourceFile;
-
-                    var sourceFile =
-                        sourceFilePath != null
-                            ? directoryAccessor.GetFullyQualifiedPath(sourceFilePath).FullName
-                            : "UNKNOWN";
-
-                    var projectPath = codeLinkBlock.ProjectFile;
-
-                    var project = projectPath != null
-                                      ? projectPath.FullName
-                                      : "UNKNOWN";
-
-                    console.Out.WriteLine($"  {sourceFile} (in project {project})");
-
                     var diagnostics = codeLinkBlock.Diagnostics.ToArray();
 
                     if (diagnostics.Any())
                     {
-                        foreach (var diagnostic in diagnostics)
-                        {
-                            console.Out.WriteLine($"  ! {codeLinkBlock.MarkdownFile} (line {codeLinkBlock.Line}): {diagnostic.Message}");
-                        }
-
+                        Console.ForegroundColor = ConsoleColor.Red;
                         returnCode = 1;
                     }
+                    else
+                    {
+                        Console.ForegroundColor = ConsoleColor.Green;
+                    }
+
+                    var sourceFile =
+                        codeLinkBlock.SourceFile != null
+                            ? directoryAccessor.GetFullyQualifiedPath(codeLinkBlock.SourceFile).FullName
+                            : "UNKNOWN";
+                    var project = codeLinkBlock.ProjectFile?.FullName ?? "UNKNOWN";
+                    console.Out.WriteLine($"  {sourceFile} (in project {project})");
+
+                    foreach (var diagnostic in diagnostics)
+                    {
+                        console.Out.WriteLine($"  ! {codeLinkBlock.MarkdownFile} (line {codeLinkBlock.Line + 1}): {diagnostic.Message}");
+                    }
+
+                    Console.ResetColor();
                 }
             }
 

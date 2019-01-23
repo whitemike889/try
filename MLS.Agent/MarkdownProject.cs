@@ -23,24 +23,16 @@ namespace MLS.Agent
                              .Where(file => file.Extension == ".md")
                              .Select(file => new MarkdownFile(file, this));
 
-        public bool TryGetHtmlContent(RelativeFilePath path, out string html)
+        public bool TryGetMarkdownFile(RelativeFilePath path, out MarkdownFile markdownFile)
         {
             if (!DirectoryAccessor.FileExists(path))
             {
-                html = null;
+                markdownFile = null;
                 return false;
             }
 
-            html = ConvertToHtml(path, DirectoryAccessor.ReadAllText(path));
-
+            markdownFile = new MarkdownFile(path, this);
             return true;
-        }
-
-        private string ConvertToHtml(RelativeFilePath filePath, string content)
-        {
-            var pipeline = GetMarkdownPipelineFor(filePath);
-
-            return Markdig.Markdown.ToHtml(content, pipeline);
         }
 
         internal MarkdownPipeline GetMarkdownPipelineFor(RelativeFilePath filePath)
@@ -50,8 +42,9 @@ namespace MLS.Agent
                 var relativeAccessor = DirectoryAccessor.GetDirectoryAccessorForRelativePath(filePath.Directory);
 
                 return new MarkdownPipelineBuilder()
-                       .UseCodeLinks(relativeAccessor)
-                       .Build();
+                    .UseAdvancedExtensions()
+                    .UseCodeLinks(relativeAccessor)
+                    .Build();
             });
         }
     }

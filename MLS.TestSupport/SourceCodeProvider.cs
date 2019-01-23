@@ -35,10 +35,12 @@ namespace ConsoleProgramSingleRegion
         {
             #region alpha
             var a = 10;
+            var c = a * 10;
             #endregion
 
             #region beta
             var b = 10;
+            var d = c - Math.Min(b,a);
             #endregion
         }
     }

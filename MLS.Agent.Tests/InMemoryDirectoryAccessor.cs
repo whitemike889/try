@@ -45,27 +45,26 @@ namespace MLS.Agent.Tests
                 throw new ArgumentNullException();
             }
 
-            var absolutePath = Path.Combine(_workingDirectory.FullName, path.Value);
-
-            if (path is RelativeFilePath)
+            switch (path)
             {
-                return new FileInfo(absolutePath);
-            }
-            else
-            {
-                return new DirectoryInfo(absolutePath);
+                case RelativeFilePath rfp:
+                    return _workingDirectory.Combine(rfp);
+                case RelativeDirectoryPath rdp:
+                    return _workingDirectory.Combine(rdp);
+                default:
+                    throw new NotSupportedException();
             }
         }
 
         public IEnumerator GetEnumerator()
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
 
         public IDirectoryAccessor GetDirectoryAccessorForRelativePath(RelativeDirectoryPath relativePath)
         {
-            var newPath = Path.Combine(_workingDirectory.FullName, relativePath.Value);
-            return new InMemoryDirectoryAccessor(new DirectoryInfo(newPath))
+            var newPath = _workingDirectory.Combine(relativePath);
+            return new InMemoryDirectoryAccessor(newPath)
             {
                 _files = _files
             };
@@ -74,7 +73,7 @@ namespace MLS.Agent.Tests
         public IEnumerable<RelativeFilePath> GetAllFilesRecursively()
         {
             return _files.Keys.Select(key => new RelativeFilePath(
-                PathUtilities.GetRelativePath(_workingDirectory.FullName, key)));
+                Path.GetRelativePath(_workingDirectory.FullName, key)));
         }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using Markdig;
-using Markdig.Helpers;
 
 namespace MLS.Agent.Markdown
 {

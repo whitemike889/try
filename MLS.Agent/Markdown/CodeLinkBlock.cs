@@ -17,6 +17,7 @@ namespace MLS.Agent.Markdown
         private FileInfo _projectFile;
         private RelativeFilePath _sourceFile;
         private string _region;
+        private string _session;
         private string _sourceCode;
         private string _package;
         private readonly List<MarkdownProjectDiagnostic> _diagnostics = new List<MarkdownProjectDiagnostic>();
@@ -28,7 +29,6 @@ namespace MLS.Agent.Markdown
             _directoryAccessor = directoryAccessor;
 
             AddAttribute("data-trydotnet-mode", "editor");
-            AddAttribute("data-trydotnet-session-id", "a");
         }
 
         public FileInfo ProjectFile
@@ -87,9 +87,22 @@ namespace MLS.Agent.Markdown
             {
                 _region = value;
 
-                if (!string.IsNullOrWhiteSpace(Region))
+                if (!string.IsNullOrWhiteSpace(_region))
                 {
                     AddAttribute("data-trydotnet-region", Region);
+                }
+            }
+        }
+        public string Session
+        {
+            get => _session;
+            set
+            {
+                _session = value;
+
+                if (!string.IsNullOrWhiteSpace(_session))
+                {
+                    AddAttribute("data-trydotnet-session-id", Session);
                 }
             }
         }
@@ -113,13 +126,15 @@ namespace MLS.Agent.Markdown
                 if (!string.IsNullOrWhiteSpace(Region))
                 {
                     var sourceText = SourceText.From(_sourceCode);
-                    var buffers = sourceText.ExtractBuffers(GetSourceFileAbsolutePath())
+                    var sourceFileAbsolutePath = GetSourceFileAbsolutePath();
+
+                    var buffers = sourceText.ExtractBuffers(sourceFileAbsolutePath)
                                             .Where(b => b.Id.RegionName == Region)
                                             .ToArray();
 
                     if (buffers.Length == 0)
                     {
-                        AddDiagnostic($"Region not found: {Region}");
+                        AddDiagnostic($"Region \"{Region}\" not found in file {sourceFileAbsolutePath}");
                     }
                     else if (buffers.Length > 1)
                     {
@@ -156,20 +171,20 @@ namespace MLS.Agent.Markdown
 
                                         if (filename == null)
                                         {
-                                            return ArgumentParseResult.Success<string>(null);
+                                            return ArgumentResult.Success<string>(null);
                                         }
 
                                         if (RelativeFilePath.TryParse(filename, out var relativeFilePath))
                                         {
                                             if (directoryAccessor.FileExists(relativeFilePath))
                                             {
-                                                return ArgumentParseResult.Success(relativeFilePath);
+                                                return ArgumentResult.Success(relativeFilePath);
                                             }
 
-                                            return ArgumentParseResult.Failure($"File not found: {relativeFilePath.Value}");
+                                            return ArgumentResult.Failure($"File not found: {relativeFilePath.Value}");
                                         }
 
-                                        return ArgumentParseResult.Failure($"Error parsing the filename: {filename}");
+                                        return ArgumentResult.Failure($"Error parsing the filename: {filename}");
                                     })
                                 {
                                     Name = "SourceFile",
@@ -182,10 +197,10 @@ namespace MLS.Agent.Markdown
 
                                  if (directoryAccessor.FileExists(projectPath))
                                  {
-                                     return ArgumentParseResult.Success(directoryAccessor.GetFullyQualifiedPath(projectPath));
+                                     return ArgumentResult.Success(directoryAccessor.GetFullyQualifiedPath(projectPath));
                                  }
 
-                                 return ArgumentParseResult.Failure($"Project not found: {projectPath.Value}");
+                                 return ArgumentResult.Failure($"Project not found: {projectPath.Value}");
                              })
                              {
                                  Name = "project",
@@ -213,7 +228,8 @@ namespace MLS.Agent.Markdown
                          {
                              new Option("--project", argument: projectArg),
                              new Option("--region", argument: regionArgument),
-                             new Option("--package", argument: packageArgument)
+                             new Option("--package", argument: packageArgument),
+                             new Option("--session", argument: new Argument<string>(defaultValue: "Run"))
                          };
 
             csharp.AddAlias("CS");
