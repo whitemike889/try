@@ -42,8 +42,9 @@ namespace MLS.Agent
                 var relativeAccessor = DirectoryAccessor.GetDirectoryAccessorForRelativePath(filePath.Directory);
 
                 return new MarkdownPipelineBuilder()
-                       .UseCodeLinks(relativeAccessor)
-                       .Build();
+                    .UseAdvancedExtensions()
+                    .UseCodeLinks(relativeAccessor)
+                    .Build();
             });
         }
     }

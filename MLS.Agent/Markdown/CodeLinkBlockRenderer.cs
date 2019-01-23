@@ -22,11 +22,11 @@ namespace MLS.Agent.Markdown
 
             if (codeLinkBlock.Diagnostics.Any())
             {
-                renderer.WriteLine($@"<pre style=""border:none"" class=""error"" height=""{GetEditorHeightInEm(codeLinkBlock.Lines)}em"" width=""100%"">");
+                renderer.WriteLine($@"<pre style=""border:none"" class=""error error-icon"" height=""{GetEditorHeightInEm(codeLinkBlock.Lines)}em"" width=""100%"">");
 
                 foreach (var diagnostic in codeLinkBlock.Diagnostics)
                 {
-                    renderer.WriteEscape(diagnostic.Message);
+                    renderer.WriteEscape("\t"+diagnostic.Message);
                     renderer.WriteLine();
                 }
 
@@ -50,7 +50,8 @@ namespace MLS.Agent.Markdown
 
         private static int GetEditorHeightInEm(StringLineGroup text)
         {
-            return (text.ToString().Split("\n").Length + 3) * 50;
+            var size = (text.ToString().Split("\n").Length + 3) * 20;
+            return Math.Max(100, size);
         }
     }
 }

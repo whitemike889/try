@@ -7,7 +7,6 @@ using MLS.Agent;
 using MLS.Project.Generators;
 using MLS.Project.Transformations;
 using MLS.Protocol.Execution;
-using MLS.TestSupport;
 using Xunit;
 
 namespace MLS.Project.Tests
@@ -94,6 +93,49 @@ namespace MLS.Project.Tests
             var newCode = processed.Files.ElementAt(0).Text;
             newCode.Should().Contain(TestSupport.SourceCodeProvider.ConsoleProgramSingleRegion);
 
+        }
+
+        [Fact]
+        public async Task If_workspace_contains_with_multiple_buffers_targeting_single_file_generates_a_single_file()
+        {
+            var expectedCode = @"using System;
+
+namespace ConsoleProgramSingleRegion
+{
+    public class Program
+    {
+        public static void Main(string[] args)
+        {
+            #region alpha
+var newValueA = ""as string"";
+Console.Write(newValueA);
+#endregion
+
+            #region beta
+var newValueB = ""as different string"";
+Console.Write(newValueA + newValueB);
+#endregion
+        }
+    }
+}".EnforceLF();
+
+            var ws = new Workspace(
+                files: new[]
+                {
+                    new Workspace.File("Program.cs", TestSupport.SourceCodeProvider.ConsoleProgramMultipleRegions)
+                },
+                buffers: new[]
+                {
+                    new Workspace.Buffer(new BufferId("Program.cs", "alpha"), "var newValueA = \"as string\";\nConsole.Write(newValueA);", 0),
+                    new Workspace.Buffer(new BufferId("Program.cs", "beta"), "var newValueB = \"as different string\";\nConsole.Write(newValueA + newValueB);", 0)
+                });
+            var processor = new BufferInliningTransformer();
+
+            var processed = await processor.TransformAsync(ws);
+            processed.Should().NotBeNull();
+            processed.Files.Should().NotBeEmpty();
+            var newCode = processed.Files.ElementAt(0).Text.EnforceLF();
+            newCode.Should().Be(expectedCode);
         }
 
         [Fact]
