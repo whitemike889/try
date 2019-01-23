@@ -71,12 +71,13 @@ namespace MLS.Agent.Markdown
             var projectOptionResult = parseResult.CommandResult["project"];
             var packageOptionResult = parseResult.CommandResult["package"];
 
+
             if (packageOptionResult?.ArgumentResult is SuccessfulArgumentResult)
             {
                 codeLinkBlock.Package = parseResult.CommandResult.ValueForOption<string>("package");
             }
 
-            if (projectOptionResult?.ArgumentResult is SuccessfulArgumentResult)
+            if (codeLinkBlock.Package == null &&  projectOptionResult?.ArgumentResult is SuccessfulArgumentResult)
             {
                 codeLinkBlock.ProjectFile = parseResult.CommandResult.ValueForOption<FileInfo>("project");
 
@@ -90,7 +91,7 @@ namespace MLS.Agent.Markdown
                 }
             }
 
-            if (codeLinkBlock.Package != null && codeLinkBlock.ProjectFile != null)
+            if (codeLinkBlock.Package != null && !projectOptionResult.IsImplicit)
             {
                 codeLinkBlock.AddDiagnostic("Can't specify both --project and --package");
             }
