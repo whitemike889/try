@@ -38,9 +38,9 @@ namespace WorkspaceServer
                 throw new ArgumentException("Value cannot be null or whitespace.", nameof(name));
             }
 
-            var options = new PackageBuilder(name);
-            configure(options);
-            _packageBuilders.TryAdd(name, Task.FromResult(options));
+            var packageBuilder = new PackageBuilder(name);
+            configure(packageBuilder);
+            _packageBuilders.TryAdd(name, Task.FromResult(packageBuilder));
         }
 
         public async Task<Package> Get(string packageName, Budget budget = null)
@@ -50,7 +50,7 @@ namespace WorkspaceServer
                 packageName = "console";
             }
 
-            var build = await (await _packageBuilders.GetOrAdd(
+            var package = await (await _packageBuilders.GetOrAdd(
                             packageName,
                             async name =>
                             {
@@ -67,16 +67,16 @@ namespace WorkspaceServer
                             })).GetPackage(budget);
 
 
-            await build.EnsureReady(budget);
+            await package.EnsureReady(budget);
             
-            return build;
+            return package;
         }
 
         public IEnumerable<Task<PackageInfo>> GetRegisteredPackageInfos()
         {
-            var workspaceInfos = _packageBuilders?.Values.Select(async wb => (await wb).GetPackageInfo()).Where(info => info != null).ToArray() ?? Array.Empty<Task<PackageInfo>>();
+            var packageInfos = _packageBuilders?.Values.Select(async wb => (await wb).GetPackageInfo()).Where(info => info != null).ToArray() ?? Array.Empty<Task<PackageInfo>>();
 
-            return workspaceInfos;
+            return packageInfos;
         }
 
         public static PackageRegistry CreateForTryMode(DirectoryInfo project, DirectoryInfo addSource)

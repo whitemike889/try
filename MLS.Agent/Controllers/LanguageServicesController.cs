@@ -19,7 +19,7 @@ namespace MLS.Agent.Controllers
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
         private readonly RoslynWorkspaceServer workspaceServer;
 
-        public LanguageServicesController(PackageRegistry packageRegistry, RoslynWorkspaceServer workspaceServer)
+        public LanguageServicesController(RoslynWorkspaceServer workspaceServer)
         {
             this.workspaceServer = workspaceServer ?? throw new ArgumentNullException(nameof(workspaceServer));
         }

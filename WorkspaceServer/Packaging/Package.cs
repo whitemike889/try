@@ -55,6 +55,7 @@ namespace WorkspaceServer.Packaging
         private FileInfo _entryPointAssemblyPath;
         private static string _targetFramework;
         private readonly Logger _log;
+        private readonly string _workspaceConfigFilePath;
         private PackageConfiguration _configuration;
         private readonly AsyncLazy<SyntaxTree> _instrumentationEmitterSyntaxTree;
 
@@ -75,6 +76,7 @@ namespace WorkspaceServer.Packaging
             _built = new AsyncLazy<bool>(VerifyOrBuild);
             _published = new AsyncLazy<bool>(VerifyOrPublish);
             _log = new Logger($"{nameof(Package)}:{Name}");
+            _workspaceConfigFilePath = Path.Combine(Directory.FullName, ".trydotnet");
         }
 
         private bool IsDirectoryCreated { get; set; }
@@ -89,7 +91,8 @@ namespace WorkspaceServer.Packaging
 
         public bool IsCreated { get; private set; }
 
-        public bool IsBuilt { get; private set; }
+        public bool IsBuilt =>
+               File.Exists(_workspaceConfigFilePath);
 
         private bool IsReady { get; set; }
 
@@ -113,8 +116,7 @@ namespace WorkspaceServer.Packaging
             {
                 await EnsureBuilt();
 
-                var workspaceConfigFile = new FileInfo(Path.Combine(Directory.FullName, ".trydotnet"));
-
+                var workspaceConfigFile = new FileInfo(_workspaceConfigFilePath);
                 if (workspaceConfigFile.Exists)
                 {
                     var json = await workspaceConfigFile.ReadAsync();
@@ -123,22 +125,7 @@ namespace WorkspaceServer.Packaging
                 }
                 else
                 {
-                    var buildLog = Directory.GetFiles("msbuild.log").SingleOrDefault();
-
-                    if (buildLog == null)
-                    {
-                        throw new InvalidOperationException($"msbuild.log not found in {Directory}");
-                    }
-
-                    var compilerCommandLine = buildLog.FindCompilerCommandLineAndSetLanguageversion(csharpLanguageVersion);
-
-                    _configuration = new PackageConfiguration
-                    {
-                        CompilerArgs = compilerCommandLine
-                    };
-
-                    File.WriteAllText(workspaceConfigFile.FullName,
-                                      _configuration.ToJson());
+                    throw new InvalidOperationException($"{workspaceConfigFile.Name} not found in {Directory}");
                 }
             }
 
@@ -253,47 +240,57 @@ namespace WorkspaceServer.Packaging
         {
             using (var operation = _log.OnEnterAndConfirmOnExit())
             {
-                if (!IsBuilt)
+                var lockFile = new FileInfo(Path.Combine(Directory.FullName, ".trydotnet-lock"));
+                FileStream fileStream = null;
+                try
                 {
-                    var lockFile = new FileInfo(Path.Combine(Directory.FullName, ".trydotnet-lock"));
-                    FileStream fileStream = null;
-
-                    try
+                    fileStream = File.Create(lockFile.FullName, 1, FileOptions.DeleteOnClose);
+                    if (!IsBuilt)
                     {
-                        fileStream = File.Create(lockFile.FullName, 1, FileOptions.DeleteOnClose);
-
-                        operation.Info("Building workspace");
-                        if (Directory.GetFiles("*.deps.json", SearchOption.AllDirectories).Length == 0)
-                        {
-                            operation.Info("Building workspace using {_initializer} in {directory}", _initializer, Directory);
-                            var result = await new Dotnet(Directory)
-                                             .Build(args: "/fl /p:ProvideCommandLineArgs=true;append=true");
-                            result.ThrowOnFailure();
-                        }
-
-                        IsBuilt = true;
+                        operation.Info("Building workspace using {_initializer} in {directory}", _initializer, Directory);
+                        var result = await new Dotnet(Directory)
+                                         .Build(args: "/fl /p:ProvideCommandLineArgs=true;append=true");
+                        result.ThrowOnFailure();
+                        CreateWorkspaceConfigurationFile();
                         BuildTime = Clock.Current.Now();
-
                         operation.Info("Workspace built");
                     }
-                    catch (Exception exception)
+                    else
                     {
-                        operation.Error("Exception building workspace", exception);
-                    }
-                    finally
-                    {
-                        fileStream?.Dispose();
+                        operation.Info("Workspace already built");
                     }
                 }
-                else
+                catch (Exception exception)
                 {
-                    operation.Info("Workspace already built");
+                    operation.Error("Exception building workspace", exception);
+                }
+                finally
+                {
+                    fileStream?.Dispose();
                 }
 
                 operation.Succeed();
             }
 
             return true;
+        }
+
+        private void CreateWorkspaceConfigurationFile()
+        {
+            var buildLog = Directory.GetFiles("msbuild.log").SingleOrDefault();
+            if (buildLog == null)
+            {
+                throw new InvalidOperationException($"msbuild.log not found in {Directory}");
+            }
+
+            var compilerCommandLine = buildLog.FindCompilerCommandLineAndSetLanguageversion(csharpLanguageVersion);
+
+            _configuration = new PackageConfiguration
+            {
+                CompilerArgs = compilerCommandLine
+            };
+
+            File.WriteAllText(_workspaceConfigFilePath, _configuration.ToJson());
         }
 
         public async Task EnsurePublished(Budget budget = null)
@@ -370,7 +367,6 @@ namespace WorkspaceServer.Packaging
             {
                 IsCreated = fromPackage.IsCreated,
                 IsPublished = fromPackage.IsPublished,
-                IsBuilt = fromPackage.IsBuilt,
                 IsReady = fromPackage.IsReady,
                 IsDirectoryCreated = true
             };
@@ -448,7 +444,7 @@ namespace WorkspaceServer.Packaging
 
             if (runtimeConfig != null)
             {
-                return  RuntimeConfig.GetTargetFramework(runtimeConfig);
+                return RuntimeConfig.GetTargetFramework(runtimeConfig);
             }
             else
             {
@@ -460,7 +456,7 @@ namespace WorkspaceServer.Packaging
         {
             var depsFile = directory.GetFiles("*.deps.json", SearchOption.AllDirectories).FirstOrDefault();
 
-            if (depsFile ==null)
+            if (depsFile == null)
             {
                 return null;
             }

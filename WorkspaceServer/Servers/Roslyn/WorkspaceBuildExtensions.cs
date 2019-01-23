@@ -107,7 +107,7 @@ Source
         }
 
         public static async Task<(Compilation compilation, IReadOnlyCollection<Document> documents)> GetCompilation(
-            this Package build,
+            this Package package,
             IReadOnlyCollection<SourceFile> sources,
             SourceCodeKind sourceCodeKind,
             IEnumerable<string> defaultUsings,
@@ -115,7 +115,7 @@ Source
         {
             var projectId = ProjectId.CreateNewId();
 
-            var workspace = await build.CreateRoslynWorkspace(projectId);
+            var workspace = await package.CreateRoslynWorkspace(projectId);
 
             var currentSolution = workspace.CurrentSolution;
 
@@ -132,7 +132,7 @@ Source
                 }
                 else
                 {
-                    var docId = DocumentId.CreateNewId(projectId, $"{build.Name}.Document");
+                    var docId = DocumentId.CreateNewId(projectId, $"{package.Name}.Document");
 
                     currentSolution = currentSolution.AddDocument(docId, source.Name, source.Text);
                     currentSolution = currentSolution.WithDocumentSourceCodeKind(docId, sourceCodeKind);

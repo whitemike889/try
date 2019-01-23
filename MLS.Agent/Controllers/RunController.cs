@@ -22,7 +22,6 @@ namespace MLS.Agent.Controllers
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
 
         public RunController(
-            PackageRegistry packageRegistry,
             StartupOptions options,
             RoslynWorkspaceServer workspaceServer)
         {

@@ -9,14 +9,15 @@ using Pocket;
 using Xunit;
 using Xunit.Abstractions;
 using WorkspaceServer.Packaging;
+using System.Linq;
 
 namespace WorkspaceServer.Tests
 {
-    public class WorkspaceBuildTests : IDisposable
+    public class PackageTests : IDisposable
     {
         private readonly CompositeDisposable disposables = new CompositeDisposable();
 
-        public WorkspaceBuildTests(ITestOutputHelper output)
+        public PackageTests(ITestOutputHelper output)
         {
             disposables.Add(output.SubscribeToPocketLogger());
             disposables.Add(VirtualClock.Start());
@@ -25,22 +26,22 @@ namespace WorkspaceServer.Tests
         public void Dispose() => disposables.Dispose();
 
         [Fact]
-        public async Task A_workspace_is_not_initialized_more_than_once()
+        public async Task A_package_is_not_initialized_more_than_once()
         {
             var initializer = new TestPackageInitializer(
                 "console",
                 "MyProject");
 
-            var workspace = Create.EmptyWorkspace(initializer: initializer);
+            var package = Create.EmptyWorkspace(initializer: initializer);
 
-            await workspace.EnsureCreated();
-            await workspace.EnsureCreated();
+            await package.EnsureCreated();
+            await package.EnsureCreated();
 
             initializer.InitializeCount.Should().Be(1);
         }
 
         [Fact]
-        public async Task Workspace_after_create_actions_are_not_run_more_than_once()
+        public async Task Package_after_create_actions_are_not_run_more_than_once()
         {
             var afterCreateCallCount = 0;
 
@@ -53,16 +54,16 @@ namespace WorkspaceServer.Tests
                     afterCreateCallCount++;
                 });
 
-            var workspace = Create.EmptyWorkspace(initializer: initializer);
+            var package = Create.EmptyWorkspace(initializer: initializer);
 
-            await workspace.EnsureCreated();
-            await workspace.EnsureCreated();
+            await package.EnsureCreated();
+            await package.EnsureCreated();
 
             afterCreateCallCount.Should().Be(1);
         }
 
         [Fact]
-        public async Task A_workspace_copy_is_not_reinitialized_if_the_source_was_already_built()
+        public async Task A_package_copy_is_not_reinitialized_if_the_source_was_already_built()
         {
             var initializer = new TestPackageInitializer(
                 "console", 
@@ -137,64 +138,86 @@ namespace WorkspaceServer.Tests
         }
 
         [Fact]
-        public async Task When_workspace_contains_simple_console_app_then_IsAspNet_is_false()
+        public async Task When_package_contains_simple_console_app_then_IsAspNet_is_false()
         {
-            var workspace = await Create.ConsoleWorkspaceCopy();
+            var package = await Create.ConsoleWorkspaceCopy();
 
-            await workspace.EnsureCreated();
+            await package.EnsureCreated();
 
-            workspace.IsWebProject.Should().BeFalse();
+            package.IsWebProject.Should().BeFalse();
         }
 
         [Fact]
-        public async Task When_workspace_contains_aspnet_project_then_IsAspNet_is_true()
+        public async Task When_package_contains_aspnet_project_then_IsAspNet_is_true()
         {
-            var workspace = await Create.WebApiWorkspaceCopy();
+            var package = await Create.WebApiWorkspaceCopy();
 
-            await workspace.EnsureCreated();
+            await package.EnsureCreated();
 
-            workspace.IsWebProject.Should().BeTrue();
+            package.IsWebProject.Should().BeTrue();
         }
 
         [Fact]
-        public async Task When_workspace_contains_simple_console_app_then_entry_point_dll_is_in_the_build_directory()
+        public async Task When_package_contains_simple_console_app_then_entry_point_dll_is_in_the_build_directory()
         {
-            var workspace = await Create.ConsoleWorkspaceCopy();
+            var package = await Create.ConsoleWorkspaceCopy();
 
-            await workspace.EnsurePublished();
+            await package.EnsurePublished();
 
-            workspace.EntryPointAssemblyPath.Exists.Should().BeTrue();
+            package.EntryPointAssemblyPath.Exists.Should().BeTrue();
 
-            workspace.EntryPointAssemblyPath
+            package.EntryPointAssemblyPath
                      .FullName
                      .Should()
                      .Be(Path.Combine(
-                             workspace.Directory.FullName,
+                             package.Directory.FullName,
                              "bin",
                              "Debug",
-                             workspace.TargetFramework,
+                             package.TargetFramework,
                              "console.dll"));
         }
 
         [Fact]
-        public async Task When_workspace_contains_aspnet_project_then_entry_point_dll_is_in_the_publish_directory()
+        public async Task When_package_contains_aspnet_project_then_entry_point_dll_is_in_the_publish_directory()
         {
-            var workspace = await Create.WebApiWorkspaceCopy();
+            var package = await Create.WebApiWorkspaceCopy();
 
-            await workspace.EnsurePublished();
+            await package.EnsurePublished();
 
-            workspace.EntryPointAssemblyPath.Exists.Should().BeTrue();
+            package.EntryPointAssemblyPath.Exists.Should().BeTrue();
 
-            workspace.EntryPointAssemblyPath
+            package.EntryPointAssemblyPath
                      .FullName
                      .Should()
                      .Be(Path.Combine(
-                             workspace.Directory.FullName,
+                             package.Directory.FullName,
                              "bin",
                              "Debug",
-                             workspace.TargetFramework,
+                             package.TargetFramework,
                              "publish",
                              "aspnet.webapi.dll"));
+        }
+
+
+        [Fact]
+        public async Task When_workspace_is_built_trydotnet_file_is_created()
+        {
+            var package = await Create.ConsoleWorkspaceCopy();
+            await package.EnsureBuilt();
+            package.Directory.GetFiles(".trydotnet").Should().HaveCount(1);
+        }
+
+
+        [Fact(Skip = "Not yet implemented")]
+        public async Task When_the_project_file_has_been_modified_the_package_is_rebuilt()
+        {
+            var package = await Create.ConsoleWorkspaceCopy();
+            await package.EnsureBuilt();
+            var modifiedTime = package.Directory.GetFiles(".trydotnet").Single().LastWriteTimeUtc;
+
+            await new Dotnet(package.Directory).AddPackage("jquery");
+            await package.EnsureBuilt();
+            package.Directory.GetFiles(".trydotnet").Single().LastWriteTimeUtc.Should().BeAfter(modifiedTime);
         }
     }
 }

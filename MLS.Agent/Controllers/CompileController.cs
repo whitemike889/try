@@ -17,7 +17,6 @@ namespace MLS.Agent.Controllers
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
 
         public CompileController(
-            PackageRegistry packageRegistry,
             RoslynWorkspaceServer workspaceServer)
         {
             _workspaceServer = workspaceServer;
