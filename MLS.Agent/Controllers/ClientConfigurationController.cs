@@ -27,7 +27,7 @@ namespace MLS.Agent.Controllers
             ""method"": ""POST""
         },
         ""completion"": {
-            ""timeoutMs"": 15000,
+            ""timeoutMs"": 600000,
             ""href"": ""/workspace/completion"",
             ""templated"": false,
             ""properties"": [
@@ -59,21 +59,21 @@ namespace MLS.Agent.Controllers
             ""method"": ""GET""
         },
         ""diagnostics"": {
-            ""timeoutMs"": 15000,
+            ""timeoutMs"": 600000,
             ""href"": ""/workspace/diagnostics"",
             ""templated"": false,
             ""properties"": [],
             ""method"": ""POST""
         },
         ""signatureHelp"": {
-            ""timeoutMs"": 15000,
+            ""timeoutMs"": 600000,
             ""href"": ""/workspace/signatureHelp"",
             ""templated"": false,
             ""properties"": [],
             ""method"": ""POST""
         },
         ""run"": {
-            ""timeoutMs"": 15000,
+            ""timeoutMs"": 600000,
             ""href"": ""/workspace/run"",
             ""templated"": false,
             ""properties"": [],
@@ -98,7 +98,7 @@ namespace MLS.Agent.Controllers
             ""method"": ""GET""
         },
         ""compile"": {
-            ""timeoutMs"": 15000,
+            ""timeoutMs"": 600000,
             ""href"": ""/workspace/compile"",
             ""templated"": false,
             ""properties"": [],
