@@ -50,7 +50,8 @@ namespace MLS.Agent.Markdown
 
         private static int GetEditorHeightInEm(StringLineGroup text)
         {
-            return (text.ToString().Split("\n").Length + 3) * 50;
+            var size = (text.ToString().Split("\n").Length + 3) * 20;
+            return Math.Max(100, size);
         }
     }
 }
