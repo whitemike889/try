@@ -16,4 +16,16 @@
     <PackageReference Include="Microsoft.ML.MatrixFactorization" Version="0.9.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Data\recommendation-movies.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Data\recommendation-ratings-test.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Data\recommendation-ratings-train.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

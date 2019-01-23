@@ -9,11 +9,10 @@ namespace MovieRecommendation
     class Program
     {
         // Using the ml-latest-small.zip as dataset from https://grouplens.org/datasets/movielens/. 
-        private static string ModelsLocation = @"../../../../MLModels";
-        public static string DatasetsLocation = @"../../../../Data";
+        
+        public static string DatasetsLocation = @"./Data";
         private static string TrainingDataLocation = $"{DatasetsLocation}/recommendation-ratings-train.csv";
         private static string TestDataLocation = $"{DatasetsLocation}/recommendation-ratings-test.csv";
-        private static string MoviesDataLocation = $"{DatasetsLocation}/movies.csv";
         private const float predictionuserId = 6;
         private const int predictionmovieId = 10;
 
@@ -46,7 +45,7 @@ namespace MovieRecommendation
          
             Console.WriteLine("=============== Training the model ===============");
 
-            #region build_model
+            #region train_model
             var model = pipeline.Fit(trainingDataView);
             #endregion
 
