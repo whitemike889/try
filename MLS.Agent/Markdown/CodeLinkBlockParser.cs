@@ -71,12 +71,12 @@ namespace MLS.Agent.Markdown
             var projectOptionResult = parseResult.CommandResult["project"];
             var packageOptionResult = parseResult.CommandResult["package"];
 
-            if (packageOptionResult.ArgumentResult is SuccessfulArgumentResult)
+            if (packageOptionResult?.ArgumentResult is SuccessfulArgumentResult)
             {
                 codeLinkBlock.Package = parseResult.CommandResult.ValueForOption<string>("package");
             }
 
-            if (projectOptionResult.ArgumentResult is SuccessfulArgumentResult)
+            if (projectOptionResult?.ArgumentResult is SuccessfulArgumentResult)
             {
                 codeLinkBlock.ProjectFile = parseResult.CommandResult.ValueForOption<FileInfo>("project");
 
