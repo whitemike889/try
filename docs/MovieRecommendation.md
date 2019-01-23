@@ -36,6 +36,23 @@ Building a model includes:
 
 Here's the code which will be used to build the model:
 ```csharp --project ./MovieRecommendation/MovieRecommendation/MovieRecommendation.csproj --session movieRecommendation ./MovieRecommendation/MovieRecommendation/Program.cs --region build_model
+var reader = mlcontext.Data.CreateTextReader(new TextLoader.Arguments()
+{
+    Separator = ",",
+    HasHeader = true,
+    Column = new[]
+                {
+                    new TextLoader.Column("userId", DataKind.R4, 0),
+                    new TextLoader.Column("movieId", DataKind.R4, 1),
+                    new TextLoader.Column("Label", DataKind.R4, 2)
+                }
+});
+
+var trainingDataView = reader.Read(TrainingDataLocation);
+
+var pipeline = mlcontext.Transforms.Conversion.MapValueToKey("userId", "userIdEncoded")
+               .Append(mlcontext.Transforms.Conversion.MapValueToKey("movieId", "movieIdEncoded"))
+               .Append(mlcontext.Recommendation().Trainers.MatrixFactorization("userIdEncoded", "movieIdEncoded", "Label", advancedSettings: s => { s.NumIterations = 20; s.K = 100; }));
 ```
 
 
@@ -45,6 +62,7 @@ Training the model is a process of running the chosen algorithm on a training da
 To perform training you need to call the `Fit()` method while providing the training dataset (`recommendation-ratings-train.csv` file) in a DataView object.
 
 ```csharp --project ./MovieRecommendation/MovieRecommendation/MovieRecommendation.csproj --session movieRecommendation  ./MovieRecommendation/MovieRecommendation/Program.cs --region train_model
+var model = pipeline.Fit(trainingDataView);
 ```
 Note that ML.NET works with data with a lazy-load approach, so in reality no data is really loaded in memory until you actually call the method .Fit().
 
@@ -54,11 +72,33 @@ We need this step to conclude how accurate our model operates on new data. To do
 `Evaluate()` compares the predicted values for the test dataset and produces various metrics, such as accuracy, you can explore.
 
 ```csharp --project ./MovieRecommendation/MovieRecommendation/MovieRecommendation.csproj --session movieRecommendation   ./MovieRecommendation/MovieRecommendation/Program.cs --region evaluate_model
+var testDataView = reader.Read(TestDataLocation);
+var prediction = model.Transform(testDataView);
+var metrics = mlcontext.Regression.Evaluate(prediction, label: "Label", score: "Score");
+Console.WriteLine($"The model evaluation metrics rms: {Math.Round(metrics.Rms, 1)}");
 ```
 
 ### 4. Consume model
 After the model is trained, you can use the `Predict()` API to predict the rating for a particular movie/user combination. 
 ```csharp --project ./MovieRecommendation/MovieRecommendation/MovieRecommendation.csproj --session movieRecommendation      ./MovieRecommendation/MovieRecommendation/Program.cs --region prediction       
+var userId = 6;
+var movieId = 10;
+
+var predictionengine = model.CreatePredictionEngine<MovieRating, MovieRatingPrediction>(mlcontext);
+/* Make a single movie rating prediction, the scores are for a particular user and will range from 1 - 5. 
+   The higher the score the higher the likelihood of a user liking a particular movie.
+   You can recommend a movie to a user if say rating > 3.5.*/
+var movieratingprediction = predictionengine.Predict(
+    new MovieRating()
+    {
+                    //Example rating prediction for userId = 6, movieId = 10 (GoldenEye)
+                    userId = userId,
+        movieId = movieId
+    }
+);
+
+var movieService = new Movie();
+Console.WriteLine($"For userId: {userId} movie rating prediction (1 - 5 stars) for movie: {movieService.Get(movieId).movieTitle} is: {Math.Round(movieratingprediction.Score, 0, MidpointRounding.ToEven)}");
 ```
 Please note this is one approach for performing movie recommendations with Matrix Factorization. There are other scenarios for recommendation as well which we will build samples for as well. 
 
