@@ -22,11 +22,11 @@ namespace MLS.Agent.Markdown
 
             if (codeLinkBlock.Diagnostics.Any())
             {
-                renderer.WriteLine($@"<pre style=""border:none"" class=""error"" height=""{GetEditorHeightInEm(codeLinkBlock.Lines)}em"" width=""100%"">");
+                renderer.WriteLine($@"<pre style=""border:none"" class=""error error-icon"" height=""{GetEditorHeightInEm(codeLinkBlock.Lines)}em"" width=""100%"">");
 
                 foreach (var diagnostic in codeLinkBlock.Diagnostics)
                 {
-                    renderer.WriteEscape(diagnostic.Message);
+                    renderer.WriteEscape("\t"+diagnostic.Message);
                     renderer.WriteLine();
                 }
 

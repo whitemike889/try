@@ -14,6 +14,11 @@
     color: red;
 }
 
+.error-icon{
+    @extend .mdi, .mdi-alert-decagram-outline;
+    color: red;
+}
+
 .output-panel{
     @extend .box;   
     min-height: 200px;
