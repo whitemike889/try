@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using MovieRecommendation; 
 
 namespace MovieRecommendation.DataStructures
 {
@@ -11,9 +9,9 @@ namespace MovieRecommendation.DataStructures
     {
         public int movieId;
 
-        public String movieTitle;
+        public string movieTitle;
 
-        private static String moviesdatasetpath = $"{Program.DatasetsLocation}/recommendation-movies.csv";
+        private static string moviesdatasetpath = $"{Program.DatasetsLocation}/recommendation-movies.csv";
 
         public Lazy<List<Movie>> _movies = new Lazy<List<Movie>>(() => LoadMovieData(moviesdatasetpath));
         
@@ -26,16 +24,16 @@ namespace MovieRecommendation.DataStructures
             return _movies.Value.Single(m => m.movieId == id);
         }
 
-        private static List<Movie> LoadMovieData(String moviesdatasetpath)
+        private static List<Movie> LoadMovieData(string moviesDatasetPath)
         {
             var result = new List<Movie>();
-            Stream fileReader = File.OpenRead(moviesdatasetpath);
-            StreamReader reader = new StreamReader(fileReader);
+            var fileReader = File.OpenRead(moviesDatasetPath);
+            var reader = new StreamReader(fileReader);
             try
             {
-                bool header = true;
-                int index = 0;
-                var line = "";
+                var header = true;
+                var index = 0;
+                var line = string.Empty;
                 while (!reader.EndOfStream)
                 {
                     if (header)
@@ -44,9 +42,9 @@ namespace MovieRecommendation.DataStructures
                         header = false;
                     }
                     line = reader.ReadLine();
-                    string[] fields = line.Split(',');
-                    int movieId = Int32.Parse(fields[0].ToString().TrimStart(new char[] { '0' }));
-                    string movieTitle = fields[1].ToString();
+                    var fields = line.Split(',');
+                    var movieId = int.Parse(fields[0].ToString().TrimStart(new char[] { '0' }));
+                    var movieTitle = fields[1];
                     result.Add(new Movie() { movieId = movieId, movieTitle = movieTitle });
                     index++;
                 }

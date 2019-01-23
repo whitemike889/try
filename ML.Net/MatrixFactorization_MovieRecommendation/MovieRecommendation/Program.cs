@@ -9,12 +9,11 @@ namespace MovieRecommendation
     class Program
     {
         // Using the ml-latest-small.zip as dataset from https://grouplens.org/datasets/movielens/. 
-        
+
         public static string DatasetsLocation = @"./Data";
         private static string TrainingDataLocation = $"{DatasetsLocation}/recommendation-ratings-train.csv";
         private static string TestDataLocation = $"{DatasetsLocation}/recommendation-ratings-test.csv";
-        private const float predictionuserId = 6;
-        private const int predictionmovieId = 10;
+
 
         static void Main(string[] args)
         {
@@ -37,12 +36,11 @@ namespace MovieRecommendation
 
             var pipeline = mlcontext.Transforms.Conversion.MapValueToKey("userId", "userIdEncoded")
                            .Append(mlcontext.Transforms.Conversion.MapValueToKey("movieId", "movieIdEncoded"))
-                           .Append(mlcontext.Recommendation().Trainers.MatrixFactorization("userIdEncoded", "movieIdEncoded", "Label",
-                           advancedSettings: s => { s.NumIterations = 20; s.K = 100; }));
+                           .Append(mlcontext.Recommendation().Trainers.MatrixFactorization("userIdEncoded", "movieIdEncoded", "Label", advancedSettings: s => { s.NumIterations = 20; s.K = 100; }));
 
             #endregion
 
-         
+
             Console.WriteLine("=============== Training the model ===============");
 
             #region train_model
@@ -56,26 +54,30 @@ namespace MovieRecommendation
             var testDataView = reader.Read(TestDataLocation);
             var prediction = model.Transform(testDataView);
             var metrics = mlcontext.Regression.Evaluate(prediction, label: "Label", score: "Score");
-            Console.WriteLine("The model evaluation metrics rms:" + Math.Round(float.Parse(metrics.Rms.ToString()), 1));
+            Console.WriteLine($"The model evaluation metrics rms: {Math.Round(metrics.Rms, 1)}");
             #endregion
 
 
             #region prediction
+
+            var userId = 6;
+            var movieId = 10;
+
             var predictionengine = model.CreatePredictionEngine<MovieRating, MovieRatingPrediction>(mlcontext);
             /* Make a single movie rating prediction, the scores are for a particular user and will range from 1 - 5. 
-               The higher the score the higher the likelyhood of a user liking a particular movie.
+               The higher the score the higher the likelihood of a user liking a particular movie.
                You can recommend a movie to a user if say rating > 3.5.*/
             var movieratingprediction = predictionengine.Predict(
                 new MovieRating()
                 {
                     //Example rating prediction for userId = 6, movieId = 10 (GoldenEye)
-                    userId = predictionuserId,
-                    movieId = predictionmovieId
+                    userId = userId,
+                    movieId = movieId
                 }
             );
 
             var movieService = new Movie();
-            Console.WriteLine("For userId:" + predictionuserId + " movie rating prediction (1 - 5 stars) for movie:" + movieService.Get(predictionmovieId).movieTitle + " is:" + Math.Round(movieratingprediction.Score, 1));
+            Console.WriteLine($"For userId: {userId} movie rating prediction (1 - 5 stars) for movie: {movieService.Get(movieId).movieTitle} is: {Math.Round(movieratingprediction.Score, 0, MidpointRounding.ToEven)}");
             #endregion
         }
     }
