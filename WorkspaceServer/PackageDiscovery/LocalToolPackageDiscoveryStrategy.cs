@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Threading.Tasks;
 using Clockwise;
@@ -42,6 +43,7 @@ namespace WorkspaceServer.PackageDiscovery
 
             if (installationResult.ExitCode != 0)
             {
+                Console.WriteLine($"Tool not installed: {packageDesciptor.Name}");
                 return null;
             }
 

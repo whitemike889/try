@@ -75,7 +75,8 @@ namespace MLS.Agent.Markdown
             {
                 codeLinkBlock.Package = parseResult.CommandResult.ValueForOption<string>("package");
             }
-            else if (projectOptionResult.ArgumentResult is SuccessfulArgumentResult)
+
+            if (projectOptionResult.ArgumentResult is SuccessfulArgumentResult)
             {
                 codeLinkBlock.ProjectFile = parseResult.CommandResult.ValueForOption<FileInfo>("project");
 
@@ -87,6 +88,11 @@ namespace MLS.Agent.Markdown
                     codeLinkBlock.AddDiagnostic(
                         $"No project file could be found at path {_directoryAccessor.GetFullyQualifiedPath(new RelativeDirectoryPath("."))}");
                 }
+            }
+
+            if (codeLinkBlock.Package != null && codeLinkBlock.ProjectFile != null)
+            {
+                codeLinkBlock.AddDiagnostic("Can't specify both --project and --package");
             }
 
             return true;
