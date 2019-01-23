@@ -48,7 +48,7 @@ namespace MLS.Agent.Markdown
 
             codeLinkBlock.Session = parseResult.ValueForOption<string>("session");
 
-            if (parseResult.CommandResult.Result is SuccessfulArgumentParseResult)
+            if (parseResult.CommandResult.ArgumentResult is SuccessfulArgumentResult)
             {
                 codeLinkBlock.SourceFile = parseResult.CommandResult.GetValueOrDefault<RelativeFilePath>();
             }
@@ -69,7 +69,7 @@ namespace MLS.Agent.Markdown
             }
 
             var optionResult = parseResult.CommandResult["project"];
-            if (optionResult?.Result is SuccessfulArgumentParseResult)
+            if (optionResult?.ArgumentResult is SuccessfulArgumentResult)
             {
                 codeLinkBlock.ProjectFile = parseResult.CommandResult.ValueForOption<FileInfo>("project");
 

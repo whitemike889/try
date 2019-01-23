@@ -8,7 +8,7 @@ namespace MLS.Agent.Tests
 {
     public class MarkdownFileTests
     {
-        public class ToHtmlString
+        public class ToHtmlContent
         {
             [Fact]
             public void Returns_true_and_get_html_content_for_the_passed_path()

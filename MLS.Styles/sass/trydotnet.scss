@@ -10,6 +10,10 @@
 
 }
 
+.error {
+    color: red;
+}
+
 .output-panel{
     @extend .box;
     height: 200px;

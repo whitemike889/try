@@ -1,4 +1,5 @@
-﻿using FluentAssertions;
+﻿using System;
+using FluentAssertions;
 using Markdig;
 using MLS.Agent.Markdown;
 using MLS.Project.Generators;
@@ -78,6 +79,32 @@ console.log(""Hello World"");
 ```";
             var html = Markdig.Markdown.ToHtml(document, pipeline).EnforceLF();
             html.Should().Contain("File not found: ./DOESNOTEXIST");
+        }
+
+        [Fact]
+        public void Error_style_is_applied_when_there_are_errors()
+        {
+            var testDir = TestAssets.SampleConsole;
+            var directoryAccessor = new InMemoryDirectoryAccessor(testDir)
+                                    {
+                                        ("sample.csproj", "")
+                                    };
+
+            var pipeline = new MarkdownPipelineBuilder()
+                           .UseCodeLinks(directoryAccessor)
+                           .Build();
+
+            var document =
+                @"```cs DOESNOTEXIST
+```";
+            var html = Markdig.Markdown.ToHtml(document, pipeline);
+
+            var htmlDoc = new HtmlDocument();
+            htmlDoc.LoadHtml(html);
+
+            var pre = htmlDoc.DocumentNode.SelectSingleNode("//pre");
+
+            pre.Attributes["class"].Value.Split(' ').Should().Contain("error");
         }
 
         [Fact]
@@ -264,9 +291,8 @@ $@"```cs Program.cs --region {region}
             var htmlDocument = new HtmlDocument();
             htmlDocument.LoadHtml(html);
             var node = htmlDocument.DocumentNode.SelectSingleNode("//pre|//code");
-            node.Should().BeNull();
 
-            html.Should().Contain($"Region not found: {region}");
+            node.InnerHtml.Should().Contain($"Region \"{region}\" not found in file {directoryAccessor.GetFullyQualifiedPath(new RelativeFilePath("./Program.cs"))}".HtmlEncode());
         }
 
         [Fact]
@@ -280,22 +306,22 @@ $@"```cs Program.cs --region {region}
 #endregion";
             var region = "codeRegion";
             var directoryAccessor = new InMemoryDirectoryAccessor(rootDirectory)
-            {
-                ("Program.cs", codeContent),
-                ("sample.csproj", "")
-            };
+                                    {
+                                        ("Program.cs", codeContent),
+                                        ("sample.csproj", "")
+                                    };
 
             var document =
-$@"```cs Program.cs --region {region}
+                $@"```cs Program.cs --region {region}
 ```";
             var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor).Build();
             var html = Markdig.Markdown.ToHtml(document, pipeline).EnforceLF();
 
             var htmlDocument = new HtmlDocument();
             htmlDocument.LoadHtml(html);
-            htmlDocument.DocumentNode.SelectSingleNode("//pre|//code").Should().BeNull();
+            var pre = htmlDocument.DocumentNode.SelectSingleNode("//pre");
 
-            html.Should().Contain($"Multiple regions found: {region}");
+            pre.InnerHtml.Should().Contain($"Multiple regions found: {region}");
         }
 
         [Fact]

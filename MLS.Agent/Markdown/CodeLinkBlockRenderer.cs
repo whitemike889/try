@@ -1,9 +1,9 @@
 ﻿using System;
+using System.Linq;
+using Markdig.Helpers;
 using Markdig.Renderers;
 using Markdig.Renderers.Html;
 using Markdig.Syntax;
-using System.Linq;
-using Markdig.Helpers;
 
 namespace MLS.Agent.Markdown
 {
@@ -22,16 +22,18 @@ namespace MLS.Agent.Markdown
 
             if (codeLinkBlock.Diagnostics.Any())
             {
+                renderer.WriteLine($@"<pre style=""border:none"" class=""error"" height=""{GetEditorHeightInEm(codeLinkBlock.Lines)}em"" width=""100%"">");
+
                 foreach (var diagnostic in codeLinkBlock.Diagnostics)
                 {
                     renderer.WriteEscape(diagnostic.Message);
                     renderer.WriteLine();
                 }
 
+                renderer.WriteLine(@"</pre>");
+
                 return;
             }
-
-            var session = codeLinkBlock.Session;
 
             renderer
                 .WriteLine(@"<div class=""editor-panel"">")

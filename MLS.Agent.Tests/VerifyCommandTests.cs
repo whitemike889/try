@@ -42,7 +42,7 @@ This is some sample code:
             console.Out
                    .ToString()
                    .Should()
-                   .Contain("doc.md (line 2): File not found: ./Program.cs");
+                   .Contain("doc.md (line 3): File not found: ./Program.cs");
         }
 
         [Fact]

@@ -111,13 +111,15 @@ namespace MLS.Agent.Markdown
                 if (!string.IsNullOrWhiteSpace(Region))
                 {
                     var sourceText = SourceText.From(_sourceCode);
-                    var buffers = sourceText.ExtractBuffers(GetSourceFileAbsolutePath())
+                    var sourceFileAbsolutePath = GetSourceFileAbsolutePath();
+
+                    var buffers = sourceText.ExtractBuffers(sourceFileAbsolutePath)
                                             .Where(b => b.Id.RegionName == Region)
                                             .ToArray();
 
                     if (buffers.Length == 0)
                     {
-                        AddDiagnostic($"Region not found: {Region}");
+                        AddDiagnostic($"Region \"{Region}\" not found in file {sourceFileAbsolutePath}");
                     }
                     else if (buffers.Length > 1)
                     {
@@ -154,20 +156,20 @@ namespace MLS.Agent.Markdown
 
                                         if (filename == null)
                                         {
-                                            return ArgumentParseResult.Success<string>(null);
+                                            return ArgumentResult.Success<string>(null);
                                         }
 
                                         if (RelativeFilePath.TryParse(filename, out var relativeFilePath))
                                         {
                                             if (directoryAccessor.FileExists(relativeFilePath))
                                             {
-                                                return ArgumentParseResult.Success(relativeFilePath);
+                                                return ArgumentResult.Success(relativeFilePath);
                                             }
 
-                                            return ArgumentParseResult.Failure($"File not found: {relativeFilePath.Value}");
+                                            return ArgumentResult.Failure($"File not found: {relativeFilePath.Value}");
                                         }
 
-                                        return ArgumentParseResult.Failure($"Error parsing the filename: {filename}");
+                                        return ArgumentResult.Failure($"Error parsing the filename: {filename}");
                                     })
                                 {
                                     Name = "SourceFile",
@@ -180,10 +182,10 @@ namespace MLS.Agent.Markdown
 
                                  if (directoryAccessor.FileExists(projectPath))
                                  {
-                                     return ArgumentParseResult.Success(directoryAccessor.GetFullyQualifiedPath(projectPath));
+                                     return ArgumentResult.Success(directoryAccessor.GetFullyQualifiedPath(projectPath));
                                  }
 
-                                 return ArgumentParseResult.Failure($"Project not found: {projectPath.Value}");
+                                 return ArgumentResult.Failure($"Project not found: {projectPath.Value}");
                              })
                              {
                                  Name = "project",
