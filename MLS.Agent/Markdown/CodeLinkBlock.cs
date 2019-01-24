@@ -9,6 +9,29 @@ using MLS.Project.Extensions;
 
 namespace MLS.Agent.Markdown
 {
+    public class CodeLinkBlockOptions
+    {
+        public CodeLinkBlockOptions(
+            RelativeFilePath sourceFile = null, 
+            FileInfo project = null, 
+            string package = null, 
+            string region = null, 
+            string session = null)
+        {
+            SourceFile = sourceFile;
+            Project = project;
+            this.package = package;
+            this.region = region;
+            this.session = session;
+        }
+
+        RelativeFilePath SourceFile { get; }
+        FileInfo Project { get; }
+        string package { get; }
+        string region { get; }
+        string session { get; }
+    }
+
     public class CodeLinkBlock : FencedCodeBlock
     {
         private readonly IDirectoryAccessor _directoryAccessor;

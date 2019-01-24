@@ -1,4 +1,6 @@
-﻿using System.CommandLine;
+﻿using System;
+using System.CommandLine;
+using System.CommandLine.Invocation;
 using System.IO;
 using System.Linq;
 
@@ -6,7 +8,21 @@ namespace MLS.Agent.Markdown
 {
     public class MarkdownArgumentParser
     {
-        public static Parser CreateOptionsParser(IDirectoryAccessor directoryAccessor)
+        Parser _parser;
+        CodeLinkBlockOptions _options;
+
+        public MarkdownArgumentParser(IDirectoryAccessor directoryAccessor)
+        {
+            _parser = CreateOptionsParser(directoryAccessor, o => _options = o);
+        }
+
+        public async Task<CodeLinkBlockOptions> Parse(string line)
+        {
+            await _parser.InvokeAsync(line);
+            return _options;
+        }
+
+        public static Parser CreateOptionsParser(IDirectoryAccessor directoryAccessor, Action<CodeLinkBlockOptions> thing)
         {
             var sourceFileArg = new Argument<RelativeFilePath>(
                                     result =>
@@ -83,7 +99,17 @@ namespace MLS.Agent.Markdown
             csharp.AddAlias("cs");
             csharp.AddAlias("c#");
 
-            return new Parser(new RootCommand { csharp });
+            var binder = new TypeBinder(typeof(CodeLinkBlockOptions));
+            var command = new RootCommand { csharp };
+
+            command.Handler = CommandHandler.Create<InvocationContext>(context =>
+            {
+                var options = (CodeLinkBlockOptions)binder.CreateInstance(context);
+
+                thing(options);
+            });
+
+            return new Parser(command);
         }
     }
 }
