@@ -3,6 +3,7 @@ using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace MLS.Agent.Markdown
 {
@@ -16,13 +17,14 @@ namespace MLS.Agent.Markdown
             _parser = CreateOptionsParser(directoryAccessor, o => _options = o);
         }
 
-        public async Task<CodeLinkBlockOptions> Parse(string line)
+        public CodeLinkBlockOptions Parse(string line)
         {
-            await _parser.InvokeAsync(line);
+            _options = null;
+            _parser.InvokeAsync(line).Wait();
             return _options;
         }
 
-        public static Parser CreateOptionsParser(IDirectoryAccessor directoryAccessor, Action<CodeLinkBlockOptions> thing)
+        private static Parser CreateOptionsParser(IDirectoryAccessor directoryAccessor, Action<CodeLinkBlockOptions> thing)
         {
             var sourceFileArg = new Argument<RelativeFilePath>(
                                     result =>
@@ -102,11 +104,21 @@ namespace MLS.Agent.Markdown
             var binder = new TypeBinder(typeof(CodeLinkBlockOptions));
             var command = new RootCommand { csharp };
 
-            command.Handler = CommandHandler.Create<InvocationContext>(context =>
+            csharp.Handler = CommandHandler.Create<InvocationContext>((context) =>
             {
                 var options = (CodeLinkBlockOptions)binder.CreateInstance(context);
 
+                var projectResult = context.ParseResult.CommandResult["project"];
+                if (projectResult?.IsImplicit ?? false)
+                {
+                    options = options.WithIsProjectImplicit(
+                        isProjectFileImplicit: true);
+                }
+
+                options = options.WithErrors(context.ParseResult.Errors.Select(e => e.Message));
+
                 thing(options);
+                return 0;
             });
 
             return new Parser(command);

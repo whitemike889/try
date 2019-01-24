@@ -10,7 +10,7 @@ namespace MLS.Agent.Markdown
 {
     public class CodeLinkBlockParser : FencedBlockParserBase<CodeLinkBlock>
     {
-        private readonly Parser _csharpLinkParser;
+        private readonly MarkdownArgumentParser _csharpLinkParser;
 
         private readonly IDirectoryAccessor _directoryAccessor;
 
@@ -19,7 +19,7 @@ namespace MLS.Agent.Markdown
             OpeningCharacters = new[] { '`' };
             InfoParser = ParseCodeOptions;
             _directoryAccessor = directoryAccessor ?? throw new ArgumentNullException(nameof(directoryAccessor));
-            _csharpLinkParser = MarkdownArgumentParser.CreateOptionsParser(_directoryAccessor);
+            _csharpLinkParser = new MarkdownArgumentParser(_directoryAccessor);
         }
 
         protected override CodeLinkBlock CreateFencedBlock(BlockProcessor processor) => 
@@ -39,19 +39,16 @@ namespace MLS.Agent.Markdown
 
             var parseResult = _csharpLinkParser.Parse(line.ToString());
 
-            if (parseResult.CommandResult.Name != "csharp")
+            if (parseResult ==  null)
             {
                 return false;
             }
 
-            codeLinkBlock.Region = parseResult.ValueForOption<string>("region");
+            codeLinkBlock.Region = parseResult.Region;
 
-            codeLinkBlock.Session = parseResult.ValueForOption<string>("session");
+            codeLinkBlock.Session = parseResult.Session;
 
-            if (parseResult.CommandResult.ArgumentResult is SuccessfulArgumentResult)
-            {
-                codeLinkBlock.SourceFile = parseResult.CommandResult.GetValueOrDefault<RelativeFilePath>();
-            }
+            codeLinkBlock.SourceFile = parseResult.SourceFile;
 
             if (codeLinkBlock.SourceFile != null)
             {
@@ -60,26 +57,24 @@ namespace MLS.Agent.Markdown
 
             if (parseResult.Errors.Any())
             {
-                var errors = parseResult.Errors.Select(e => e.ToString());
-
-                foreach (var error in errors)
+                foreach (var error in parseResult.Errors)
                 {
                     codeLinkBlock.AddDiagnostic(error);
                 }
             }
 
-            var projectOptionResult = parseResult.CommandResult["project"];
-            var packageOptionResult = parseResult.CommandResult["package"];
+            var project = parseResult.Project;
+            var package = parseResult.Package;
 
 
-            if (packageOptionResult?.ArgumentResult is SuccessfulArgumentResult)
+            if (!string.IsNullOrWhiteSpace(package))
             {
-                codeLinkBlock.Package = parseResult.CommandResult.ValueForOption<string>("package");
+                codeLinkBlock.Package = parseResult.Package;
             }
 
-            if (codeLinkBlock.Package == null &&  projectOptionResult?.ArgumentResult is SuccessfulArgumentResult)
+            if (codeLinkBlock.Package == null &&  project != null)
             {
-                codeLinkBlock.ProjectFile = parseResult.CommandResult.ValueForOption<FileInfo>("project");
+                codeLinkBlock.ProjectFile = project;
 
                 var packageName = GetPackageNameFromProjectFile(codeLinkBlock.ProjectFile);
 
@@ -91,7 +86,7 @@ namespace MLS.Agent.Markdown
                 }
             }
 
-            if (codeLinkBlock.Package != null && !projectOptionResult.IsImplicit)
+            if (codeLinkBlock.Package != null && !parseResult.IsProjectImplicit)
             {
                 codeLinkBlock.AddDiagnostic("Can't specify both --project and --package");
             }
