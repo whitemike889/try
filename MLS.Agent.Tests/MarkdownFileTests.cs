@@ -89,8 +89,11 @@ namespace BasicConsoleApp
 
                 var project = new MarkdownProject(dirAccessor);
                 project.TryGetMarkdownFile(new RelativeFilePath("Readme.md"), out var markdownFile).Should().BeTrue();
-
-                markdownFile.ToHtmlContent().ToString().EnforceLF().Should().Contain(fencedCode.HtmlEncode());
+                var htmlDocument = new HtmlDocument();
+                htmlDocument.LoadHtml(markdownFile.ToHtmlContent().ToString());
+                var output = htmlDocument.DocumentNode
+                                         .SelectSingleNode("//pre/code").InnerHtml.EnforceLF();
+                output.Should().Be($"\n{fencedCode}\n");
             }
 
             [Fact]
@@ -151,6 +154,96 @@ namespace BasicConsoleApp
 
                 var fullProjectPath = dirAccessor.GetFullyQualifiedPath(new RelativeFilePath(packagePathRelativeToBaseDir));
                 output.Value.Should().Be(fullProjectPath.FullName);
+            }
+
+            [Fact]
+            public void Should_include_the_code_from_source_file_and_not_the_fenced_code()
+            {
+                var codeContent = @"using System;
+
+namespace BasicConsoleApp
+{
+    class Program
+    {
+        static void MyProgram(string[] args)
+        {
+            Console.WriteLine(""Hello World!"");
+        }
+    }
+}".EnforceLF();
+
+                var workingDir = TestAssets.SampleConsole;
+                var dirAccessor = new InMemoryDirectoryAccessor(workingDir)
+                {
+                    ("sample.csproj", ""),
+                    ("Program.cs", codeContent),
+                    ("Readme.md",
+@"```cs Program.cs
+Console.WriteLine(""This code should not appear"");
+```"),
+                };
+
+                var project = new MarkdownProject(dirAccessor);
+                project.TryGetMarkdownFile(new RelativeFilePath("Readme.md"), out var markdownFile).Should().BeTrue();
+                var htmlDocument = new HtmlDocument();
+                htmlDocument.LoadHtml(markdownFile.ToHtmlContent().ToString());
+                var output = htmlDocument.DocumentNode
+                                         .SelectSingleNode("//pre/code").InnerHtml.EnforceLF();
+
+                output.Should().Be($"\n{codeContent.HtmlEncode()}\n");
+            }
+
+            [Fact]
+            public void Multiple_fenced_code_blocks_are_correctly_rendered()
+            {
+                var region1Code = @"Console.WriteLine(""I am region one code"");";
+                var region2Code = @"Console.WriteLine(""I am region two code"");";
+                var directory = TestAssets.SampleConsole;
+                var codeContent = $@"using System;
+
+namespace BasicConsoleApp
+{{
+    class Program
+    {{
+        static void MyProgram(string[] args)
+        {{
+            #region region1
+            {region1Code}
+            #endregion
+            
+            #region region2
+            {region2Code}
+            #endregion
+        }}
+    }}
+}}".EnforceLF();
+
+                var dirAccessor = new InMemoryDirectoryAccessor(directory)
+                {
+                    ("sample.csproj", ""),
+                    ("Program.cs", codeContent),
+                    ("Readme.md",
+@"This is a markdown file with two regions
+This is region 1
+```cs Program.cs --region region1
+//This part should not be included
+```
+This is region 2
+```cs Program.cs --region region2
+//This part should not be included as well
+```
+This is the end of the file")
+                };
+
+                var project = new MarkdownProject(dirAccessor);
+                project.TryGetMarkdownFile(new RelativeFilePath("Readme.md"), out var markdownFile).Should().BeTrue();
+                var htmlDocument = new HtmlDocument();
+                htmlDocument.LoadHtml(markdownFile.ToHtmlContent().ToString());
+                var codeNodes = htmlDocument.DocumentNode.SelectNodes("//pre/code");
+
+                codeNodes.Should().HaveCount(2);
+                codeNodes[0].InnerHtml.Should().Be($"\n{region1Code.HtmlEncode()}\n");
+                codeNodes[1].InnerHtml.Should().Be($"\n{region2Code.HtmlEncode()}\n");
             }
         }
     }

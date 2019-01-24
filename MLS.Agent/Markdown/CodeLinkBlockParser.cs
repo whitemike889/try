@@ -22,7 +22,7 @@ namespace MLS.Agent.Markdown
             _csharpLinkParser = new MarkdownArgumentParser(_directoryAccessor);
         }
 
-        protected override CodeLinkBlock CreateFencedBlock(BlockProcessor processor) => 
+        protected override CodeLinkBlock CreateFencedBlock(BlockProcessor processor) =>
             new CodeLinkBlock(this, _directoryAccessor);
 
         private bool ParseCodeOptions(
@@ -97,6 +97,45 @@ namespace MLS.Agent.Markdown
         private static string GetPackageNameFromProjectFile(FileInfo projectFile)
         {
             return projectFile?.FullName;
+        }
+
+        public override BlockState TryContinue(BlockProcessor processor, Block block)
+        {
+            var fence = (IFencedBlock)block;
+            var count = fence.FencedCharCount;
+            var matchChar = fence.FencedChar;
+            var c = processor.CurrentChar;
+
+            // Match if we have a closing fence
+            var line = processor.Line;
+            while (c == matchChar)
+            {
+                c = line.NextChar();
+                count--;
+            }
+
+            // If we have a closing fence, close it and discard the current line
+            // The line must contain only fence opening character followed only by whitespaces.
+            if (count <= 0 && !processor.IsCodeIndent && (c == '\0' || c.IsWhitespace()) && line.TrimEnd())
+            {
+                block.UpdateSpanEnd(line.Start - 1);
+
+                // Don't keep the last line
+                return BlockState.BreakDiscard;
+            }
+
+            // Reset the indentation to the column before the indent
+            processor.GoToColumn(processor.ColumnBeforeIndent);
+
+            var codeBlock = block as CodeLinkBlock;
+
+            //if we already have the source code discard the lines that are inside the fenced code
+            if (codeBlock != null && !string.IsNullOrWhiteSpace(codeBlock.SourceCode))
+            {
+                return BlockState.ContinueDiscard;
+            }
+
+            return BlockState.Continue;
         }
     }
 }
