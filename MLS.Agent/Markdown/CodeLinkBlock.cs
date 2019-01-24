@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Markdig.Parsers;
@@ -9,69 +10,12 @@ using MLS.Project.Extensions;
 
 namespace MLS.Agent.Markdown
 {
-    public class CodeLinkBlockOptions
-    {
-        public CodeLinkBlockOptions(
-            RelativeFilePath sourceFile = null, 
-            FileInfo project = null, 
-            string package = null, 
-            string region = null, 
-            string session = null,
-            bool isProjectFileImplicit = false,
-            IEnumerable<string> errors = null)
-        {
-            SourceFile = sourceFile;
-            Project = project;
-            Package = package;
-            Region = region;
-            Session = session;
-            IsProjectImplicit = isProjectFileImplicit;
-            Errors = errors ?? Enumerable.Empty<string>();
-        }
-
-        public CodeLinkBlockOptions WithIsProjectImplicit(bool isProjectFileImplicit)
-        {
-            return new CodeLinkBlockOptions(
-                        SourceFile,
-                        Project,
-                        Package,
-                        Region,
-                        Session,
-                        isProjectFileImplicit: isProjectFileImplicit,
-                        errors: Errors);
-        }
-
-        public CodeLinkBlockOptions WithErrors(IEnumerable<string> errors)
-        {
-            return new CodeLinkBlockOptions(
-                        SourceFile,
-                        Project,
-                        Package,
-                        Region,
-                        Session,
-                        IsProjectImplicit,
-                        errors: errors);
-        }
-
-        public FileInfo Project { get; }
-        public string Package { get; }
-        public RelativeFilePath SourceFile { get; }
-        public string Region { get; }
-        public string Session { get; }
-        public bool IsProjectImplicit { get; internal set; }
-        public IEnumerable<string> Errors { get; }
-    }
-
     public class CodeLinkBlock : FencedCodeBlock
     {
         private readonly IDirectoryAccessor _directoryAccessor;
-        private FileInfo _projectFile;
-        private RelativeFilePath _sourceFile;
-        private string _region;
-        private string _session;
+        private CodeLinkBlockOptions _options;
         private string _sourceCode;
-        private string _package;
-        private readonly List<MarkdownProjectDiagnostic> _diagnostics = new List<MarkdownProjectDiagnostic>();
+        private readonly List<string> _diagnostics = new List<string>();
 
         public CodeLinkBlock(
             BlockParser parser,
@@ -82,80 +26,67 @@ namespace MLS.Agent.Markdown
             AddAttribute("data-trydotnet-mode", "editor");
         }
 
+        public void AddOptions(CodeLinkBlockOptions options)
+        {
+            _options = options;
+
+            AddAttributeIfNotNull(options.Project, "package");
+            AddAttributeIfNotNull(options.Region, "region");
+            AddAttributeIfNotNull(options.Session, "session-id");
+            AddAttributeIfNotNull(Package, "package");
+
+            if (options.SourceFile != null)
+            {
+                AddAttribute(
+                    "data-trydotnet-file-name",
+                    GetSourceFileAbsolutePath());
+            }
+        }
+
+        private void AddAttributeIfNotNull(object o, string name)
+        {
+            if (o != null)
+            {
+                AddAttribute($"data-trydotnet-{name}", o.ToString());
+            }
+        }
+
         public FileInfo ProjectFile
         {
-            get => _projectFile;
-            set
-            {
-                _projectFile = value;
-
-                if (value != null)
-                {
-                    AddAttribute("data-trydotnet-package", value.FullName);
-                }
-            }
+            get => _options.Project;
         }
 
         public string Package
         {
-            get => _package;
-            set
+            get
             {
-                _package = value;
-
-                if (value != null)
+                if (_options.Package != null)
                 {
-                    AddAttribute("data-trydotnet-package", value);
+                    return _options.Package;
                 }
+
+                if (_options.Project != null)
+                {
+                    return _options.Project.FullName;
+                }
+
+                throw new InvalidOperationException("Options contains neither project nor package");
             }
         }
 
         public RelativeFilePath SourceFile
         {
-            get => _sourceFile;
-            set
-            {
-                _sourceFile = value;
-
-                if (value != null)
-                {
-                    AddAttribute(
-                        "data-trydotnet-file-name",
-                        GetSourceFileAbsolutePath());
-                }
-            }
-        }
-
-        private string GetSourceFileAbsolutePath()
-        {
-            return _directoryAccessor.GetFullyQualifiedPath(_sourceFile).FullName;
+            get => _options.SourceFile;
         }
 
         public string Region
         {
-            get => _region;
-            set
-            {
-                _region = value;
-
-                if (!string.IsNullOrWhiteSpace(_region))
-                {
-                    AddAttribute("data-trydotnet-region", Region);
-                }
-            }
+            get => _options.Region;
         }
+
         public string Session
         {
-            get => _session;
-            set
-            {
-                _session = value;
-
-                if (!string.IsNullOrWhiteSpace(_session))
-                {
-                    AddAttribute("data-trydotnet-session-id", Session);
-                }
-            }
+            get => _options.Session;
         }
 
         public string SourceCode
@@ -201,7 +132,12 @@ namespace MLS.Agent.Markdown
             }
         }
 
-        public IEnumerable<MarkdownProjectDiagnostic> Diagnostics => _diagnostics;
+        private string GetSourceFileAbsolutePath()
+        {
+            return _directoryAccessor.GetFullyQualifiedPath(_options.SourceFile).FullName;
+        }
+
+        public IEnumerable<string> Diagnostics => _diagnostics;
 
         public RelativeFilePath MarkdownFile { get; internal set; }
 
@@ -211,6 +147,6 @@ namespace MLS.Agent.Markdown
         }
 
         public void AddDiagnostic(string message) =>
-            _diagnostics.Add(new MarkdownProjectDiagnostic(message, this));
+            _diagnostics.Add(message);
     }
 }

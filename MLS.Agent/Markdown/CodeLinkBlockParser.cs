@@ -11,7 +11,6 @@ namespace MLS.Agent.Markdown
     public class CodeLinkBlockParser : FencedBlockParserBase<CodeLinkBlock>
     {
         private readonly MarkdownArgumentParser _csharpLinkParser;
-
         private readonly IDirectoryAccessor _directoryAccessor;
 
         public CodeLinkBlockParser(IDirectoryAccessor directoryAccessor)
@@ -39,16 +38,17 @@ namespace MLS.Agent.Markdown
 
             var parseResult = _csharpLinkParser.Parse(line.ToString());
 
-            if (parseResult ==  null)
+            if (parseResult == null)
             {
                 return false;
             }
 
-            codeLinkBlock.Region = parseResult.Region;
+            if (parseResult.Package != null && !parseResult.IsProjectImplicit)
+            {
+                codeLinkBlock.AddDiagnostic("Can't specify both --project and --package");
+            }
 
-            codeLinkBlock.Session = parseResult.Session;
-
-            codeLinkBlock.SourceFile = parseResult.SourceFile;
+            codeLinkBlock.AddOptions(parseResult);
 
             if (codeLinkBlock.SourceFile != null)
             {
@@ -63,19 +63,8 @@ namespace MLS.Agent.Markdown
                 }
             }
 
-            var project = parseResult.Project;
-            var package = parseResult.Package;
-
-
-            if (!string.IsNullOrWhiteSpace(package))
+            if (parseResult.Project != null)
             {
-                codeLinkBlock.Package = parseResult.Package;
-            }
-
-            if (codeLinkBlock.Package == null &&  project != null)
-            {
-                codeLinkBlock.ProjectFile = project;
-
                 var packageName = GetPackageNameFromProjectFile(codeLinkBlock.ProjectFile);
 
                 if (packageName == null &&
@@ -84,11 +73,6 @@ namespace MLS.Agent.Markdown
                     codeLinkBlock.AddDiagnostic(
                         $"No project file could be found at path {_directoryAccessor.GetFullyQualifiedPath(new RelativeDirectoryPath("."))}");
                 }
-            }
-
-            if (codeLinkBlock.Package != null && !parseResult.IsProjectImplicit)
-            {
-                codeLinkBlock.AddDiagnostic("Can't specify both --project and --package");
             }
 
             return true;

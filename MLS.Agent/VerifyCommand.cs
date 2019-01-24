@@ -55,7 +55,7 @@ namespace MLS.Agent
 
                     foreach (var diagnostic in diagnostics)
                     {
-                        console.Out.WriteLine($"\t\t{diagnostic.Message}");
+                        console.Out.WriteLine($"\t\t{diagnostic}");
                     }
 
                     Console.ResetColor();
