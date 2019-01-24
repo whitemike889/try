@@ -22,18 +22,22 @@ namespace MLS.Agent.Markdown
             IDirectoryAccessor directoryAccessor) : base(parser)
         {
             _directoryAccessor = directoryAccessor;
-
-            AddAttribute("data-trydotnet-mode", "editor");
         }
 
         public void AddOptions(CodeLinkBlockOptions options)
         {
             _options = options;
+            ValidateOptions(options);
+            AddAttributes(options);
+        }
 
-            AddAttributeIfNotNull(options.Project, "package");
-            AddAttributeIfNotNull(options.Region, "region");
-            AddAttributeIfNotNull(options.Session, "session-id");
-            AddAttributeIfNotNull(Package, "package");
+        private void AddAttributes(CodeLinkBlockOptions options)
+        {
+            AddAttribute("data-trydotnet-mode", "editor");
+            AddAttributeIfNotNull("package", options.Project);
+            AddAttributeIfNotNull("region", options.Region);
+            AddAttributeIfNotNull("session-id", options.Session);
+            AddAttributeIfNotNull("package", Package);
 
             if (options.SourceFile != null)
             {
@@ -43,7 +47,36 @@ namespace MLS.Agent.Markdown
             }
         }
 
-        private void AddAttributeIfNotNull(object o, string name)
+        private void ValidateOptions(CodeLinkBlockOptions options)
+        {
+            if (options.Package != null && !options.IsProjectImplicit)
+            {
+                this.AddDiagnostic("Can't specify both --project and --package");
+            }
+
+            foreach (var error in options.Errors)
+            {
+                this.AddDiagnostic(error);
+            }
+
+            if (options.Project != null)
+            {
+                var packageName = GetPackageNameFromProjectFile(options.Project);
+
+                if (packageName == null)
+                {
+                    this.AddDiagnostic(
+                        $"No project file could be found at path {_directoryAccessor.GetFullyQualifiedPath(new RelativeDirectoryPath("."))}");
+                }
+            }
+        }
+
+        private static string GetPackageNameFromProjectFile(FileInfo projectFile)
+        {
+            return projectFile?.FullName;
+        }
+
+        private void AddAttributeIfNotNull(string name, object o)
         {
             if (o != null)
             {
@@ -51,10 +84,7 @@ namespace MLS.Agent.Markdown
             }
         }
 
-        public FileInfo ProjectFile
-        {
-            get => _options.Project;
-        }
+        public FileInfo ProjectFile => _options.Project;
 
         public string Package
         {
@@ -74,20 +104,11 @@ namespace MLS.Agent.Markdown
             }
         }
 
-        public RelativeFilePath SourceFile
-        {
-            get => _options.SourceFile;
-        }
+        public RelativeFilePath SourceFile => _options.SourceFile;
 
-        public string Region
-        {
-            get => _options.Region;
-        }
+        public string Region => _options.Region;
 
-        public string Session
-        {
-            get => _options.Session;
-        }
+        public string Session  => _options.Session;
 
         public string SourceCode
         {

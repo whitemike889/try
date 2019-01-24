@@ -1,7 +1,4 @@
 ﻿using System;
-using System.CommandLine;
-using System.IO;
-using System.Linq;
 using Markdig.Helpers;
 using Markdig.Parsers;
 using Markdig.Syntax;
@@ -43,11 +40,6 @@ namespace MLS.Agent.Markdown
                 return false;
             }
 
-            if (parseResult.Package != null && !parseResult.IsProjectImplicit)
-            {
-                codeLinkBlock.AddDiagnostic("Can't specify both --project and --package");
-            }
-
             codeLinkBlock.AddOptions(parseResult);
 
             if (codeLinkBlock.SourceFile != null)
@@ -55,32 +47,7 @@ namespace MLS.Agent.Markdown
                 codeLinkBlock.Lines = new StringLineGroup(codeLinkBlock.SourceCode);
             }
 
-            if (parseResult.Errors.Any())
-            {
-                foreach (var error in parseResult.Errors)
-                {
-                    codeLinkBlock.AddDiagnostic(error);
-                }
-            }
-
-            if (parseResult.Project != null)
-            {
-                var packageName = GetPackageNameFromProjectFile(codeLinkBlock.ProjectFile);
-
-                if (packageName == null &&
-                    codeLinkBlock.SourceFile != null)
-                {
-                    codeLinkBlock.AddDiagnostic(
-                        $"No project file could be found at path {_directoryAccessor.GetFullyQualifiedPath(new RelativeDirectoryPath("."))}");
-                }
-            }
-
             return true;
-        }
-
-        private static string GetPackageNameFromProjectFile(FileInfo projectFile)
-        {
-            return projectFile?.FullName;
         }
 
         public override BlockState TryContinue(BlockProcessor processor, Block block)
