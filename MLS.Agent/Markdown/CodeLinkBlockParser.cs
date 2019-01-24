@@ -103,17 +103,5 @@ namespace MLS.Agent.Markdown
         {
             return projectFile?.FullName;
         }
-
-        public override BlockState TryContinue(BlockProcessor processor, Block block)
-        {
-            var codeLinkBlock = block as CodeLinkBlock;
-            //If we already have the source code no need to process the lines within the codeblock
-            if(codeLinkBlock != null && !string.IsNullOrEmpty(codeLinkBlock.SourceCode))
-            {
-                return BlockState.None;
-            }
-
-            return base.TryContinue(processor, block);
-        }
     }
 }
