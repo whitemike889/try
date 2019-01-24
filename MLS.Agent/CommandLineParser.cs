@@ -1,4 +1,3 @@
-using MLS.Repositories;
 using System;
 using System.CommandLine;
 using System.CommandLine.Builder;
@@ -55,13 +54,13 @@ namespace MLS.Agent
             {
                 var command = new RootCommand
                               {
-                                  Description = "Try out a .NET project with interactive documentation in your browser"
+                                  Description = "Try out a .NET project with interactive documentation in your browser",
+                                  Argument = new Argument<DirectoryInfo>(() => new DirectoryInfo(Directory.GetCurrentDirectory()))
+                                             {
+                                                 Name = "rootDirectory",
+                                                 Description = "Specify the path to the root directory"
+                                             }.ExistingOnly()
                               };
-        
-                command.AddOption(new Option(
-                                      "--root-directory",
-                                      "Specify the path to the root directory",
-                                      new Argument<DirectoryInfo>(new DirectoryInfo(Directory.GetCurrentDirectory())).ExistingOnly()));
 
                 command.AddOption(new Option(
                                      "--add-source",
@@ -185,12 +184,14 @@ namespace MLS.Agent
 
             Command Verify()
             {
-                var verifyCommand = new Command("verify");
-
-                verifyCommand.AddOption(new Option(
-                                     "--root-directory",
-                                     "Specify the path to the root directory",
-                                     new Argument<DirectoryInfo>(new DirectoryInfo(Directory.GetCurrentDirectory())).ExistingOnly()));
+                var verifyCommand = new Command("verify")
+                                    {
+                                        Argument = new Argument<DirectoryInfo>(() => new DirectoryInfo(Directory.GetCurrentDirectory()))
+                                                   {
+                                                       Name = "rootDirectory",
+                                                       Description = "Specify the path to the root directory"
+                                                   }.ExistingOnly()
+                                    };
 
                 verifyCommand.Handler = CommandHandler.Create<DirectoryInfo, IConsole>((rootDirectory, console) => verify(rootDirectory, console));
 

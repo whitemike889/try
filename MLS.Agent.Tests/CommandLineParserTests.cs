@@ -71,7 +71,7 @@ namespace MLS.Agent.Tests
         public async Task Parse_root_directory_with_a_valid_path_succeeds()
         {
             var path = TestAssets.SampleConsole.FullName;
-            await _parser.InvokeAsync(new[] { "--root-directory", path }, _console);
+            await _parser.InvokeAsync(new[] { path }, _console);
             _start_options.RootDirectory.FullName.Should().Be(path);
         }
 
@@ -85,8 +85,9 @@ namespace MLS.Agent.Tests
         [Fact]
         public async Task Parse_root_directory_with_a_non_existing_path_fails()
         {
-            await _parser.InvokeAsync("--root-directory INVALIDPATH", _console);
+            await _parser.InvokeAsync("INVALIDPATH", _console);
             _start_options.Should().BeNull();
+            _console.Error.ToString().Should().Match("*Directory does not exist: INVALIDPATH*");
         }
 
         [Fact]

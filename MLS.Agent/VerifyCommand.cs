@@ -44,12 +44,18 @@ namespace MLS.Agent
                         codeLinkBlock.SourceFile != null
                             ? directoryAccessor.GetFullyQualifiedPath(codeLinkBlock.SourceFile).FullName
                             : "UNKNOWN";
+
                     var project = codeLinkBlock.ProjectFile?.FullName ?? "UNKNOWN";
-                    console.Out.WriteLine($"  {sourceFile} (in project {project})");
+
+                    var symbol = diagnostics.Any()
+                                     ? "X"
+                                     : "✓";
+
+                    console.Out.WriteLine($"    {symbol}  Line {codeLinkBlock.Line + 1}:\t{sourceFile} (in project {project})");
 
                     foreach (var diagnostic in diagnostics)
                     {
-                        console.Out.WriteLine($"  ! {codeLinkBlock.MarkdownFile} (line {codeLinkBlock.Line + 1}): {diagnostic.Message}");
+                        console.Out.WriteLine($"\t\t{diagnostic.Message}");
                     }
 
                     Console.ResetColor();

@@ -21,9 +21,9 @@ namespace MLS.Agent.Tests
         [Fact]
         public async Task Errors_are_written_to_std_out()
         {
-            var workingDirectory = new DirectoryInfo(".");
+            var root = new DirectoryInfo(Directory.GetDirectoryRoot(Directory.GetCurrentDirectory()));
 
-            var directoryAccessor = new InMemoryDirectoryAccessor(workingDirectory, workingDirectory)
+            var directoryAccessor = new InMemoryDirectoryAccessor(root, root)
                                     {
                                         ("doc.md", @"
 This is some sample code:
@@ -35,14 +35,14 @@ This is some sample code:
             var console = new TestConsole();
 
             await VerifyCommand.Do(
-                workingDirectory,
+                root,
                 console,
                 () => directoryAccessor);
 
             console.Out
                    .ToString()
                    .Should()
-                   .Contain("doc.md (line 3): File not found: ./Program.cs");
+                   .Match($"{root}doc.md*Line 3:*UNKNOWN (in project UNKNOWN)*File not found: ./Program.cs*");
         }
 
         [Fact]
@@ -75,8 +75,7 @@ This is some sample code:
                    .EnforceLF()
                    .Should()
                    .Match(
-                       $@"{root}doc.md
-  {root}Program.cs (in project {root}some.csproj)".EnforceLF());
+                       $@"{root}doc.md*Line 2:*{root}Program.cs (in project {root}some.csproj)".EnforceLF());
         }
 
         [Fact]
@@ -109,9 +108,9 @@ This is some sample code:
         [Fact]
         public async Task When_there_are_errors_then_return_code_is_1()
         {
-            var workingDirectory = new DirectoryInfo(".");
+            var rootDirectory = new DirectoryInfo(".");
 
-            var directoryAccessor = new InMemoryDirectoryAccessor(workingDirectory)
+            var directoryAccessor = new InMemoryDirectoryAccessor(rootDirectory)
                                     {
                                         ("doc.md", @"
 ```cs Program.cs
@@ -122,7 +121,7 @@ This is some sample code:
             var console = new TestConsole();
 
             var resultCode = await VerifyCommand.Do(
-                                 workingDirectory,
+                                 rootDirectory,
                                  console,
                                  () => directoryAccessor);
 
