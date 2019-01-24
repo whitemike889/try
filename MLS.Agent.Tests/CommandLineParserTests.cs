@@ -90,6 +90,13 @@ namespace MLS.Agent.Tests
         }
 
         [Fact]
+        public async Task Parse_uri_workspace()
+        {
+            await _parser.InvokeAsync("--uri https://google.com/foo.md", _console);
+            _start_options.Uri.Should().Be("https://google.com/foo.md");
+        }
+
+        [Fact]
         public async Task Parse_language_service_mode_flag_switches_option_to_language_service()
         {
             await _parser.InvokeAsync("hosted --language-service", _console);

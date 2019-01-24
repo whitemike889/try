@@ -68,6 +68,11 @@ namespace MLS.Agent
                                      "Specify an additional nuget package source",
                                      new Argument<DirectoryInfo>(new DirectoryInfo(Directory.GetCurrentDirectory())).ExistingOnly()));
 
+                command.AddOption(new Option(
+                     "--uri",
+                     "Specify a URL to a markdown file",
+                     new Argument<Uri>()));
+
                 return command;
             }
 

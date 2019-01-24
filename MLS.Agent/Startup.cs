@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
+using System.Net;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Clockwise;
@@ -77,11 +79,34 @@ namespace MLS.Agent
                 {
                     services.AddSingleton(_ => PackageRegistry.CreateForTryMode(StartupOptions.RootDirectory, StartupOptions.AddSource));
                     services.AddSingleton(c => new MarkdownProject(c.GetRequiredService<IDirectoryAccessor>()));
-                    services.AddSingleton<IDirectoryAccessor>(_ => new FileSystemDirectoryAccessor(StartupOptions.RootDirectory));
+                    services.AddSingleton((Func<IServiceProvider, IDirectoryAccessor>)(_ => CreateDirectoryAccessor()));
                 }
 
                 operation.Succeed();
             }
+        }
+
+        private IDirectoryAccessor CreateDirectoryAccessor()
+        {
+            if (StartupOptions.Uri != null)
+            {
+                var client = new WebClient();
+                var tempDirPath = Path.Combine(
+                    Path.GetTempPath(),
+                    Path.GetRandomFileName());
+
+                var tempDir = Directory.CreateDirectory(tempDirPath);
+
+                var temp = Path.Combine(
+                    tempDir.FullName,
+                    Path.GetFileName(StartupOptions.Uri.LocalPath));
+
+                client.DownloadFile(StartupOptions.Uri, temp);
+                var fileInfo = new FileInfo(temp);
+                return new FileSystemDirectoryAccessor(fileInfo.Directory);
+            }
+
+            return new FileSystemDirectoryAccessor(StartupOptions.RootDirectory);
         }
 
         public void Configure(
