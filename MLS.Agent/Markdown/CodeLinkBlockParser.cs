@@ -19,7 +19,7 @@ namespace MLS.Agent.Markdown
             OpeningCharacters = new[] { '`' };
             InfoParser = ParseCodeOptions;
             _directoryAccessor = directoryAccessor ?? throw new ArgumentNullException(nameof(directoryAccessor));
-            _csharpLinkParser = CodeLinkBlock.CreateOptionsParser(_directoryAccessor);
+            _csharpLinkParser = MarkdownArgumentParser.CreateOptionsParser(_directoryAccessor);
         }
 
         protected override CodeLinkBlock CreateFencedBlock(BlockProcessor processor) => 
