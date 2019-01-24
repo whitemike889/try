@@ -2,6 +2,17 @@
 @import "../node_modules/bulma/bulma.sass";
 @import "../node_modules/@mdi/font/scss/materialdesignicons.scss";
 
+
+@keyframes textBlink {
+    from {
+      color: $white;
+    }
+    
+    to {
+        color: $text;
+    }
+  }
+
 .run-button {
     @extend .button, .is-primary;
 }
@@ -51,4 +62,20 @@
 
 ul.code-example-list li{
     list-style: none;
+}
+
+.run-failure{
+    transition: all 0.2s ease-in;
+    background: $red;
+    color: $white;
+}
+.run-execution{
+    animation-duration: 1s;
+    animation-name: textBlink;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+}
+
+.run-success{
+    transition: all 0.2s ease-in; 
 }
