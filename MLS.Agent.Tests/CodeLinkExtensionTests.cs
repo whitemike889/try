@@ -82,32 +82,6 @@ console.log(""Hello World"");
         }
 
         [Fact]
-        public void Error_style_is_applied_when_there_are_errors()
-        {
-            var testDir = TestAssets.SampleConsole;
-            var directoryAccessor = new InMemoryDirectoryAccessor(testDir)
-                                    {
-                                        ("sample.csproj", "")
-                                    };
-
-            var pipeline = new MarkdownPipelineBuilder()
-                           .UseCodeLinks(directoryAccessor)
-                           .Build();
-
-            var document =
-                @"```cs DOESNOTEXIST
-```";
-            var html = Markdig.Markdown.ToHtml(document, pipeline);
-
-            var htmlDoc = new HtmlDocument();
-            htmlDoc.LoadHtml(html);
-
-            var pre = htmlDoc.DocumentNode.SelectSingleNode("//pre");
-
-            pre.Attributes["class"].Value.Split(' ').Should().Contain("error");
-        }
-
-        [Fact]
         public void Error_message_is_displayed_when_no_project_is_specified_and_no_project_file_is_found()
         {
             var testDir = TestAssets.SampleConsole;
@@ -223,7 +197,7 @@ $@"```cs --package {package} --project {project} ../src/sample/Program.cs
 
             var htmlDocument = new HtmlDocument();
             htmlDocument.LoadHtml(html);
-            var node = htmlDocument.DocumentNode.SelectSingleNode("//pre|//code");
+            var node = htmlDocument.DocumentNode.SelectSingleNode("//div[@class='notification is-danger']");
 
             node.InnerHtml.Should().Contain("Can't specify both --project and --package");
 
@@ -347,7 +321,7 @@ $@"```cs Program.cs --region {region}
 
             var htmlDocument = new HtmlDocument();
             htmlDocument.LoadHtml(html);
-            var node = htmlDocument.DocumentNode.SelectSingleNode("//pre|//code");
+            var node = htmlDocument.DocumentNode.SelectSingleNode("//div[@class='notification is-danger']");
 
             node.InnerHtml.Should().Contain($"Region \"{region}\" not found in file {directoryAccessor.GetFullyQualifiedPath(new RelativeFilePath("./Program.cs"))}".HtmlEncode());
         }
@@ -376,7 +350,7 @@ $@"```cs Program.cs --region {region}
 
             var htmlDocument = new HtmlDocument();
             htmlDocument.LoadHtml(html);
-            var pre = htmlDocument.DocumentNode.SelectSingleNode("//pre");
+            var pre = htmlDocument.DocumentNode.SelectSingleNode("//div[@class='notification is-danger']");
 
             pre.InnerHtml.Should().Contain($"Multiple regions found: {region}");
         }

@@ -12,11 +12,12 @@
 
 .error {
     color: red;
+    border: red;
+    border-style: dotted;
 }
 
 .error-icon{
     @extend .mdi, .mdi-alert-decagram-outline;
-    color: red;
 }
 
 .output-panel{
