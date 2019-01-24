@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 
 namespace MLS.Agent
@@ -13,7 +14,8 @@ namespace MLS.Agent
             string id = null,
             string regionId = null,
             DirectoryInfo rootDirectory = null,
-            DirectoryInfo addSource = null)
+            DirectoryInfo addSource = null,
+            Uri uri = null)
         {
             LogToFile = logToFile;
             Id = id;
@@ -24,12 +26,14 @@ namespace MLS.Agent
             RegionId = regionId;
             RootDirectory = rootDirectory;
             AddSource = addSource;
+            Uri = uri;
         }
 
         public string Id { get; set; }
         public string RegionId { get; set; }
         public DirectoryInfo RootDirectory { get; set; }
         public DirectoryInfo AddSource { get; }
+        public Uri Uri { get; }
         public bool Production { get; set; }
         public bool IsLanguageService { get; set; }
         public string Key { get; set; }
