@@ -45,6 +45,8 @@
 
 .control-column{
     @extend .column;
+    overflow-y: auto;
+    height: 98vh; 
 }
 
 .documentation-container{
