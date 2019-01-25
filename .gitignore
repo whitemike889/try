@@ -186,20 +186,13 @@ $RECYCLE.BIN/
 
 docs/\.vscode/
 
-docs/samples/BasicConsole/\.trydotnet
-
 MLS\.Agent/wwwroot/css/trydotnet\.css
 
 MLS\.Styles/css/
 
-MLS\.Trydotnet\.js/\.rpt2_cache/
+.rpt2_cache/
 
-ML\.Net/MatrixFactorization_MovieRecommendation/MovieRecommendation/\.trydotnet
+.trydotnet
 
-ML\.Net/IrisClustering/IrisClustering/MLModels/IrisModel\.zip
+*.zip
 
-docs/IrisClustering/IrisClustering/\.trydotnet
-
-docs/IrisClustering/IrisClustering/MLModels/IrisModel\.zip
-
-docs/MovieRecommendation/MovieRecommendation/\.trydotnet
