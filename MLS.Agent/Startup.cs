@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
@@ -6,8 +7,10 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.StaticFiles.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using MLS.Agent.Markdown;
 using Newtonsoft.Json;
@@ -118,7 +121,7 @@ namespace MLS.Agent
                 lifetime.ApplicationStopping.Register(() => _disposables.Dispose());
 
                 app.UseDefaultFiles()
-                   .UseStaticFiles()
+                   .UseStaticFiles(GetStaticFileOptions())
                    .UseRouter(new StaticFilesProxyRouter())
                    .UseMvc();
 
@@ -152,6 +155,26 @@ namespace MLS.Agent
                         });
                 }
             }
+        }
+
+        private StaticFileOptions GetStaticFileOptions()
+        {
+            var localRoot = Path.Combine(System.Environment.CurrentDirectory, "wwwroot");
+            var toolRoot = Path.Combine( Path.GetDirectoryName(this.GetType().Assembly.Location), "wwwroot");
+
+            var providers = new Stack<IFileProvider>();
+
+
+            providers.Push(new PhysicalFileProvider(toolRoot));
+
+            if (Directory.Exists(localRoot))
+            {
+                providers.Push(new PhysicalFileProvider(localRoot));
+            }
+            var combinedProvider = new CompositeFileProvider(providers);
+            
+            var sharedOptions = new SharedOptions { FileProvider = combinedProvider };
+            return new StaticFileOptions(sharedOptions);
         }
     }
 }
