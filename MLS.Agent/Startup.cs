@@ -121,7 +121,7 @@ namespace MLS.Agent
                 lifetime.ApplicationStopping.Register(() => _disposables.Dispose());
 
                 app.UseDefaultFiles()
-                   .UseStaticFiles(GetStaticFileOptions())
+                   .UseStaticFiles(GetStaticFilesOptions())
                    .UseRouter(new StaticFilesProxyRouter())
                    .UseMvc();
 
@@ -157,7 +157,7 @@ namespace MLS.Agent
             }
         }
 
-        private StaticFileOptions GetStaticFileOptions()
+        private StaticFileOptions GetStaticFilesOptions()
         {
             var localRoot = Path.Combine(StartupOptions?.RootDirectory?.FullName ?? System.Environment.CurrentDirectory, "wwwroot");
             var toolRoot = Path.Combine( Path.GetDirectoryName(GetType().Assembly.Location), "wwwroot");
