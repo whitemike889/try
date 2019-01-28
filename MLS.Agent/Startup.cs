@@ -144,6 +144,11 @@ namespace MLS.Agent
                         {
                             var url = "http://localhost:4242";
 
+                            if (Process.GetCurrentProcess().ProcessName.Contains("dotnet-try"))
+                            {
+                                url = "http://localhost:5000";
+                            }
+
                             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                             {
                                 Process.Start(new ProcessStartInfo("cmd", $"/c start {url}"));
