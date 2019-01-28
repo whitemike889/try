@@ -159,9 +159,8 @@ namespace MLS.Agent
 
         private StaticFileOptions GetStaticFileOptions()
         {
-            var localRoot = Path.Combine(System.Environment.CurrentDirectory, "wwwroot");
-            var toolRoot = Path.Combine( Path.GetDirectoryName(this.GetType().Assembly.Location), "wwwroot");
-
+            var localRoot = Path.Combine(StartupOptions?.RootDirectory?.FullName ?? System.Environment.CurrentDirectory, "wwwroot");
+            var toolRoot = Path.Combine( Path.GetDirectoryName(GetType().Assembly.Location), "wwwroot");
             var providers = new Stack<IFileProvider>();
 
 
