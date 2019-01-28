@@ -121,7 +121,7 @@ namespace MLS.Agent
                     .UseStaticFilesFromToolLocation()
                     .UseRouter(new StaticFilesProxyRouter())
                     .UseMvc();
-
+                
                 var budget = new Budget();
 
                 _disposables.Add(() => budget.Cancel());
