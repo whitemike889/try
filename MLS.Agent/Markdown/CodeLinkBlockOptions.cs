@@ -36,7 +36,7 @@ namespace MLS.Agent.Markdown
                         errors: Errors);
         }
 
-        public CodeLinkBlockOptions WithErrors(IEnumerable<string> errors)
+        public CodeLinkBlockOptions ReplaceErrors(IEnumerable<string> errors)
         {
             return new CodeLinkBlockOptions(
                         SourceFile,

@@ -29,14 +29,14 @@ namespace MLS.Agent.Markdown
 
             if (result.Errors.Any())
             {
-                return new CodeLinkBlockOptions().WithErrors(result.Errors.Select(e => e.Message));
+                return new CodeLinkBlockOptions().ReplaceErrors(result.Errors.Select(e => e.Message));
             }
 
             _parser.InvokeAsync(line).Wait();
             return _options;
         }
 
-        private static Parser CreateOptionsParser(IDirectoryAccessor directoryAccessor, Action<CodeLinkBlockOptions> thing)
+        private static Parser CreateOptionsParser(IDirectoryAccessor directoryAccessor, Action<CodeLinkBlockOptions> extractOptionsDelegate)
         {
             var sourceFileArg = new Argument<RelativeFilePath>(
                                     result =>
@@ -127,9 +127,9 @@ namespace MLS.Agent.Markdown
                         isProjectFileImplicit: true);
                 }
 
-                options = options.WithErrors(context.ParseResult.Errors.Select(e => e.Message));
+                options = options.ReplaceErrors(context.ParseResult.Errors.Select(e => e.Message));
 
-                thing(options);
+                extractOptionsDelegate(options);
                 return 0;
             });
 
