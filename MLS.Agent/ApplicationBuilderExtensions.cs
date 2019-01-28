@@ -28,18 +28,23 @@ namespace MLS.Agent
 
         private static StaticFileOptions GetStaticFilesOptions(StartupOptions startupOptions)
         {
-            var paths = new List<string>
-            {
-                Path.Combine(startupOptions?.RootDirectory?.FullName ?? System.Environment.CurrentDirectory, "wwwroot"),
-                Path.Combine(Path.GetDirectoryName(typeof(ApplicationBuilderExtensions).Assembly.Location), "wwwroot")
-            };
+            var paths = new List<string>();
 
-            var providers = paths.Where(Directory.Exists).Select(p => new PhysicalFileProvider(p)).ToList();
+            if (startupOptions?.RootDirectory != null) 
+            {
+                paths.Add(Path.Combine(startupOptions.RootDirectory.FullName, "wwwroot"));
+            }
+
+
+            paths.Add(Path.Combine(Path.GetDirectoryName(typeof(Startup).Assembly.Location), "wwwroot"));
+            
+
+            var providers = paths.Where(Directory.Exists).Select(p => new PhysicalFileProvider(p)).ToArray();
 
 
             StaticFileOptions options = null;
 
-            if (providers.Count > 0)
+            if (providers.Length > 0)
             {
                 var combinedProvider = new CompositeFileProvider(providers);
 
