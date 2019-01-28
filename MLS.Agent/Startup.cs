@@ -118,7 +118,7 @@ namespace MLS.Agent
                 lifetime.ApplicationStopping.Register(() => _disposables.Dispose());
 
                 app.UseDefaultFiles()
-                    .UseStaticFiles(StartupOptions)
+                    .UseStaticFilesFromToolLocation()
                     .UseRouter(new StaticFilesProxyRouter())
                     .UseMvc();
 
@@ -136,12 +136,7 @@ namespace MLS.Agent
                         .ContinueWith(task =>
                         {
                             var url = "http://localhost:4242";
-
-                            if (Process.GetCurrentProcess().ProcessName.Contains("dotnet-try"))
-                            {
-                                url = "http://localhost:5000";
-                            }
-
+                         
                             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                             {
                                 Process.Start(new ProcessStartInfo("cmd", $"/c start {url}"));

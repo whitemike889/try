@@ -10,9 +10,9 @@ namespace MLS.Agent
 {
     internal static class ApplicationBuilderExtensions
     {
-        public static IApplicationBuilder UseStaticFiles(this IApplicationBuilder app, StartupOptions startupOptions)
+        public static IApplicationBuilder UseStaticFilesFromToolLocation(this IApplicationBuilder app)
         {
-            var options = GetStaticFilesOptions(startupOptions);
+            var options = GetStaticFilesOptions();
 
             if (options != null)
             {
@@ -26,18 +26,13 @@ namespace MLS.Agent
             return app;
         }
 
-        private static StaticFileOptions GetStaticFilesOptions(StartupOptions startupOptions)
+        private static StaticFileOptions GetStaticFilesOptions()
         {
-            var paths = new List<string>();
-
-            if (startupOptions?.RootDirectory != null) 
+            var paths = new List<string>
             {
-                paths.Add(Path.Combine(startupOptions.RootDirectory.FullName, "wwwroot"));
-            }
+                Path.Combine(Path.GetDirectoryName(typeof(Startup).Assembly.Location), "wwwroot")
+            };
 
-
-            paths.Add(Path.Combine(Path.GetDirectoryName(typeof(Startup).Assembly.Location), "wwwroot"));
-            
 
             var providers = paths.Where(Directory.Exists).Select(p => new PhysicalFileProvider(p)).ToArray();
 
