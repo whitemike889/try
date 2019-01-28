@@ -95,7 +95,7 @@ console.log(""Hello World"");
 ```";
             var html = Markdig.Markdown.ToHtml(document, pipeline).EnforceLF();
 
-            html.Should().Contain($"No project file could be found at path {testDir.FullName}");
+            html.Should().Contain($"No project file or package specified");
         }
 
         [Fact]

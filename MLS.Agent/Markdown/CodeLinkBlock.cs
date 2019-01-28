@@ -27,8 +27,10 @@ namespace MLS.Agent.Markdown
         public void AddOptions(CodeLinkBlockOptions options)
         {
             _options = options;
-            ValidateOptions(options);
-            AddAttributes(options);
+            if (ValidateOptions(options))
+            {
+                AddAttributes(options);
+            }
         }
 
         private void AddAttributes(CodeLinkBlockOptions options)
@@ -47,16 +49,25 @@ namespace MLS.Agent.Markdown
             }
         }
 
-        private void ValidateOptions(CodeLinkBlockOptions options)
+        private bool ValidateOptions(CodeLinkBlockOptions options)
         {
+            bool succeeded = true;
+
+            if (string.IsNullOrEmpty(options.Package) && options.Project == null)
+            {
+                this.AddDiagnostic("No project file or package specified");
+            }
+
             if (options.Package != null && !options.IsProjectImplicit)
             {
                 this.AddDiagnostic("Can't specify both --project and --package");
+                succeeded = false;
             }
 
             foreach (var error in options.Errors)
             {
                 this.AddDiagnostic(error);
+                succeeded = false;
             }
 
             if (options.Project != null)
@@ -67,8 +78,11 @@ namespace MLS.Agent.Markdown
                 {
                     this.AddDiagnostic(
                         $"No project file could be found at path {_directoryAccessor.GetFullyQualifiedPath(new RelativeDirectoryPath("."))}");
+                    succeeded = false;
                 }
             }
+
+            return succeeded;
         }
 
         private static string GetPackageNameFromProjectFile(FileInfo projectFile)
@@ -100,7 +114,7 @@ namespace MLS.Agent.Markdown
                     return _options.Project.FullName;
                 }
 
-                throw new InvalidOperationException("Options contains neither project nor package");
+                return string.Empty;
             }
         }
 

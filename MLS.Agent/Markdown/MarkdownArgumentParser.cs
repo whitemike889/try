@@ -20,6 +20,18 @@ namespace MLS.Agent.Markdown
         public CodeLinkBlockOptions Parse(string line)
         {
             _options = null;
+            var result = _parser.Parse(line);
+
+            if (result.CommandResult.Name != "csharp")
+            {
+                return null;
+            }
+
+            if (result.Errors.Any())
+            {
+                return new CodeLinkBlockOptions().WithErrors(result.Errors.Select(e => e.Message));
+            }
+
             _parser.InvokeAsync(line).Wait();
             return _options;
         }
