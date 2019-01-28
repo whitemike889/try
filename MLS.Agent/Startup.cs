@@ -1,19 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.StaticFiles.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging.Abstractions;
 using MLS.Agent.Markdown;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
@@ -122,12 +117,10 @@ namespace MLS.Agent
             {
                 lifetime.ApplicationStopping.Register(() => _disposables.Dispose());
 
-                app.UseDefaultFiles();
-
-                UseStaticFiles(app);
-
-                app.UseRouter(new StaticFilesProxyRouter())
-                .UseMvc();
+                app.UseDefaultFiles()
+                    .UseStaticFiles(StartupOptions)
+                    .UseRouter(new StaticFilesProxyRouter())
+                    .UseMvc();
 
                 var budget = new Budget();
 
@@ -166,42 +159,6 @@ namespace MLS.Agent
             }
         }
 
-        private void UseStaticFiles(IApplicationBuilder app)
-        {
-            var options = GetStaticFilesOptions();
 
-            if (options != null)
-            {
-                app.UseSpaStaticFiles(options);
-            }
-            else
-            {
-                app.UseStaticFiles();
-            }
-        }
-
-        private StaticFileOptions GetStaticFilesOptions()
-        {
-            var paths = new List<string>
-            {
-                Path.Combine(StartupOptions?.RootDirectory?.FullName ?? System.Environment.CurrentDirectory, "wwwroot"),
-                Path.Combine(Path.GetDirectoryName(GetType().Assembly.Location), "wwwroot")
-            };
-
-            var providers = paths.Where(Directory.Exists).Select(p => new PhysicalFileProvider(p)).ToList();
-
-
-            StaticFileOptions options = null;
-
-            if (providers.Count > 0)
-            {
-                var combinedProvider = new CompositeFileProvider(providers);
-
-                var sharedOptions = new SharedOptions { FileProvider = combinedProvider };
-                options = new StaticFileOptions(sharedOptions);
-            }
-
-            return options;
-        }
     }
 }
