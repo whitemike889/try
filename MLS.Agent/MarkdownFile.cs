@@ -42,24 +42,6 @@ namespace MLS.Agent
             var pipeline = Project.GetMarkdownPipelineFor(Path);
             var html = await pipeline.ToHtmlAsync(ReadAllText());
             return new HtmlString(html);
-
-            //var document = Markdig.Markdown.Parse(
-            //    ReadAllText(),
-            //    pipeline);
-
-            //foreach (var codeLinkBlock in document.OfType<CodeLinkBlock>())
-            //{
-            //    await codeLinkBlock.InitializeAsync();
-            //}
-
-            //using (var writer = new StringWriter())
-            //{
-            //    var renderer = new HtmlRenderer(writer);
-            //    pipeline.Setup(renderer);
-            //    renderer.Render(document);
-            //    var html = writer.ToString();
-            //    return new HtmlString(html);
-            //}
         }
 
         public string ReadAllText() =>
