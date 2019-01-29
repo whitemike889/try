@@ -14,10 +14,10 @@ namespace MLS.Agent.Markdown
                text,
                pipeline);
 
-            foreach (var codeLinkBlock in document.OfType<CodeLinkBlock>())
-            {
-                await codeLinkBlock.InitializeAsync();
-            }
+            var initializeTasks = document.OfType<CodeLinkBlock>()
+                .Select(c => c.InitializeAsync());
+
+            await Task.WhenAll(initializeTasks);
 
             using (var writer = new StringWriter())
             {

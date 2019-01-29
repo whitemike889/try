@@ -176,7 +176,7 @@ namespace MLS.Agent.Markdown
             {
                 if (_sourceCode == null)
                 {
-                    throw new InvalidOperationException("Attempted to retrive SourceCode from uninitialized CodeLinkBlock");
+                    throw new InvalidOperationException($"Attempted to retrieve {nameof(SourceCode)} from uninitialized {nameof(CodeLinkBlock)}");
                 }
 
                 return _sourceCode;
