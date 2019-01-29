@@ -29,7 +29,7 @@ namespace MLS.Agent.Tests
                 .UsingExtension("json");
 
 #if !DEBUG
-            _configuration = configuration.SetInteractive(false);
+            _configuration = _configuration.SetInteractive(false);
 #endif
         }
         [Fact]
