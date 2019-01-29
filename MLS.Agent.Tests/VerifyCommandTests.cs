@@ -37,7 +37,8 @@ This is some sample code:
             await VerifyCommand.Do(
                 root,
                 console,
-                () => directoryAccessor);
+                () => directoryAccessor,
+                new WorkspaceServer.PackageRegistry());
 
             console.Out
                    .ToString()
@@ -65,7 +66,8 @@ This is some sample code:
             await VerifyCommand.Do(
                 root,
                 console,
-                () => directoryAccessor);
+                () => directoryAccessor,
+                new WorkspaceServer.PackageRegistry());
 
             _output.WriteLine(console.Out.ToString());
 
@@ -98,7 +100,8 @@ This is some sample code:
             var resultCode = await VerifyCommand.Do(
                                  workingDirectory,
                                  console,
-                                 () => directoryAccessor);
+                                 () => directoryAccessor,
+                                new WorkspaceServer.PackageRegistry());
 
             _output.WriteLine(console.Out.ToString());
 
@@ -123,7 +126,8 @@ This is some sample code:
             var resultCode = await VerifyCommand.Do(
                                  rootDirectory,
                                  console,
-                                 () => directoryAccessor);
+                                 () => directoryAccessor,
+                                new WorkspaceServer.PackageRegistry());
 
             resultCode.Should().Be(1);
         }

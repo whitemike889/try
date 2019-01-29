@@ -1,15 +1,18 @@
 ﻿using Markdig;
 using Markdig.Renderers;
+using WorkspaceServer;
 
 namespace MLS.Agent.Markdown
 {
     public class CodeLinkExtension : IMarkdownExtension
     {
         private readonly IDirectoryAccessor _directoryAccessor;
+        private readonly PackageRegistry _packageRegistry;
 
-        public CodeLinkExtension(IDirectoryAccessor directoryAccessor)
+        public CodeLinkExtension(IDirectoryAccessor directoryAccessor, PackageRegistry packageRegistry)
         {
             _directoryAccessor = directoryAccessor;
+            this._packageRegistry = packageRegistry;
         }
 
         public void Setup(MarkdownPipelineBuilder pipeline)
@@ -17,7 +20,7 @@ namespace MLS.Agent.Markdown
             if (!pipeline.BlockParsers.Contains<CodeLinkBlockParser>())
             {
                 // It should execute before the FencedCodeBlockParser
-                pipeline.BlockParsers.Insert(0, new CodeLinkBlockParser(_directoryAccessor));
+                pipeline.BlockParsers.Insert(0, new CodeLinkBlockParser(_directoryAccessor, _packageRegistry));
             }
         }
 

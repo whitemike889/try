@@ -4,18 +4,21 @@ using System.Linq;
 using Markdig;
 using MLS.Agent.Markdown;
 using Recipes;
+using WorkspaceServer;
 
 namespace MLS.Agent
 {
     public class MarkdownProject
     {
         internal IDirectoryAccessor DirectoryAccessor { get; }
+        private readonly PackageRegistry _packageRegistry;
 
         private readonly Dictionary<RelativeFilePath, MarkdownPipeline> _markdownPipelines = new Dictionary<RelativeFilePath, MarkdownPipeline>();
 
-        public MarkdownProject(IDirectoryAccessor directoryAccessor)
+        public MarkdownProject(IDirectoryAccessor directoryAccessor, PackageRegistry packageRegistry)
         {
             DirectoryAccessor = directoryAccessor ?? throw new ArgumentNullException(nameof(directoryAccessor));
+            _packageRegistry = packageRegistry ?? throw new ArgumentNullException(nameof(packageRegistry));
         }
 
         public IEnumerable<MarkdownFile> GetAllMarkdownFiles() =>
@@ -43,7 +46,7 @@ namespace MLS.Agent
 
                 return new MarkdownPipelineBuilder()
                     .UseAdvancedExtensions()
-                    .UseCodeLinks(relativeAccessor)
+                    .UseCodeLinks(relativeAccessor, _packageRegistry)
                     .Build();
             });
         }

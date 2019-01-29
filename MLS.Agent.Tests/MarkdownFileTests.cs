@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using HtmlAgilityPack;
 using MLS.Project.Generators;
+using WorkspaceServer;
 using Xunit;
 
 namespace MLS.Agent.Tests
@@ -20,7 +21,7 @@ namespace MLS.Agent.Tests
                                       ("Readme.md", "This is a sample *markdown file*")
                                   };
 
-                var project = new MarkdownProject(dirAccessor);
+                var project = new MarkdownProject(dirAccessor, PackageRegistry.CreateForHostedMode());
                 var path = new RelativeFilePath("Readme.md");
 
                 project.TryGetMarkdownFile(path, out var markdownFile).Should().BeTrue();
@@ -35,7 +36,7 @@ namespace MLS.Agent.Tests
                                   {
                                       ("Subdirectory/Tutorial.md", "This is a sample *tutorial file*")
                                   };
-                var project = new MarkdownProject(dirAccessor);
+                var project = new MarkdownProject(dirAccessor, PackageRegistry.CreateForHostedMode());
                 var path = new RelativeFilePath(Path.Combine("Subdirectory", "Tutorial.md"));
 
                 project.TryGetMarkdownFile(path, out var markdownFile).Should().BeTrue();
@@ -69,7 +70,7 @@ namespace BasicConsoleApp
                                       ("sample.csproj", "")
                                   };
 
-                var project = new MarkdownProject(dirAccessor);
+                var project = new MarkdownProject(dirAccessor, PackageRegistry.CreateForHostedMode());
                 project.TryGetMarkdownFile(new RelativeFilePath("Readme.md"), out var markdownFile).Should().BeTrue();
                 (await markdownFile.ToHtmlContentAsync()).ToString().EnforceLF().Should().Contain(codeContent.HtmlEncode());
             }
@@ -89,7 +90,7 @@ namespace BasicConsoleApp
                                       ("sample.csproj", "")
                                   };
 
-                var project = new MarkdownProject(dirAccessor);
+                var project = new MarkdownProject(dirAccessor, PackageRegistry.CreateForHostedMode());
                 project.TryGetMarkdownFile(new RelativeFilePath("Readme.md"), out var markdownFile).Should().BeTrue();
                 var htmlDocument = new HtmlDocument();
                 htmlDocument.LoadHtml((await markdownFile.ToHtmlContentAsync()).ToString());
@@ -127,7 +128,7 @@ namespace BasicConsoleApp
 ```")
                                   };
 
-                var project = new MarkdownProject(dirAccessor);
+                var project = new MarkdownProject(dirAccessor, PackageRegistry.CreateForHostedMode());
                 project.TryGetMarkdownFile(new RelativeFilePath("docs/Readme.md"), out var markdownFile).Should().BeTrue();
                 (await markdownFile.ToHtmlContentAsync()).ToString().EnforceLF().Should().Contain(codeContent.HtmlEncode());
             }
@@ -147,7 +148,7 @@ namespace BasicConsoleApp
 ```")
                                   };
 
-                var project = new MarkdownProject(dirAccessor);
+                var project = new MarkdownProject(dirAccessor, PackageRegistry.CreateForHostedMode());
                 project.TryGetMarkdownFile(new RelativeFilePath("docs/Readme.md"), out var markdownFile).Should().BeTrue();
                 var htmlDocument = new HtmlDocument();
                 htmlDocument.LoadHtml((await markdownFile.ToHtmlContentAsync()).ToString());
@@ -185,7 +186,7 @@ Console.WriteLine(""This code should not appear"");
 ```"),
                 };
 
-                var project = new MarkdownProject(dirAccessor);
+                var project = new MarkdownProject(dirAccessor, PackageRegistry.CreateForHostedMode());
                 project.TryGetMarkdownFile(new RelativeFilePath("Readme.md"), out var markdownFile).Should().BeTrue();
                 var htmlDocument = new HtmlDocument();
                 htmlDocument.LoadHtml((await markdownFile.ToHtmlContentAsync()).ToString());
@@ -237,7 +238,7 @@ This is region 2
 This is the end of the file")
                 };
 
-                var project = new MarkdownProject(dirAccessor);
+                var project = new MarkdownProject(dirAccessor, PackageRegistry.CreateForHostedMode());
                 project.TryGetMarkdownFile(new RelativeFilePath("Readme.md"), out var markdownFile).Should().BeTrue();
                 var htmlDocument = new HtmlDocument();
                 htmlDocument.LoadHtml((await markdownFile.ToHtmlContentAsync()).ToString());

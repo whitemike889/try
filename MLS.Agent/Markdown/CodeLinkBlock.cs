@@ -14,21 +14,21 @@ namespace MLS.Agent.Markdown
 {
     public class CodeLinkBlock : FencedCodeBlock
     {
-        private readonly AsyncLazy<IDirectoryAccessor> _directoryAccessor;
+        private  AsyncLazy<IDirectoryAccessor> _directoryAccessor;
         private CodeLinkBlockOptions _options;
         private string _sourceCode;
         private readonly List<string> _diagnostics = new List<string>();
 
         public CodeLinkBlock(
-            BlockParser parser,
-            Func<Task<IDirectoryAccessor>> directoryAccessor) : base(parser)
+            BlockParser parser) : base(parser)
         {
-            _directoryAccessor = new AsyncLazy<IDirectoryAccessor>(directoryAccessor);
+            
         }
 
-        public void AddOptions(CodeLinkBlockOptions options)
+        public void AddOptions(CodeLinkBlockOptions options, Func<Task<IDirectoryAccessor>> directoryAccessor)
         {
             _options = options;
+            _directoryAccessor = new AsyncLazy<IDirectoryAccessor>(directoryAccessor);
         }
 
         public async Task InitializeAsync()

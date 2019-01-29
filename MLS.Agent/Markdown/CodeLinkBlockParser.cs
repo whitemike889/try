@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Markdig.Helpers;
 using Markdig.Parsers;
 using Markdig.Syntax;
+using WorkspaceServer;
 
 namespace MLS.Agent.Markdown
 {
@@ -11,7 +12,7 @@ namespace MLS.Agent.Markdown
         private readonly MarkdownArgumentParser _csharpLinkParser;
         private readonly IDirectoryAccessor _directoryAccessor;
 
-        public CodeLinkBlockParser(IDirectoryAccessor directoryAccessor)
+        public CodeLinkBlockParser(IDirectoryAccessor directoryAccessor, PackageRegistry registry)
         {
             OpeningCharacters = new[] { '`' };
             InfoParser = ParseCodeOptions;
@@ -20,7 +21,7 @@ namespace MLS.Agent.Markdown
         }
 
         protected override CodeLinkBlock CreateFencedBlock(BlockProcessor processor) =>
-            new CodeLinkBlock(this, () => Task.FromResult(_directoryAccessor));
+            new CodeLinkBlock(this);
 
         private bool ParseCodeOptions(
             BlockProcessor state,
@@ -41,7 +42,7 @@ namespace MLS.Agent.Markdown
                 return false;
             }
 
-            codeLinkBlock.AddOptions(parseResult);
+            codeLinkBlock.AddOptions(parseResult, () => Task.FromResult(_directoryAccessor));
 
             return true;
         }
