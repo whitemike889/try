@@ -27,7 +27,7 @@ namespace MLS.Agent.Markdown
                 
                 foreach (var diagnostic in codeLinkBlock.Diagnostics)
                 {
-                    renderer.WriteEscape("\t"+diagnostic.Message);
+                    renderer.WriteEscape("\t"+diagnostic);
                     renderer.WriteLine();
                 }
 

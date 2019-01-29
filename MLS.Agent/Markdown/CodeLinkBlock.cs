@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.CommandLine;
 using System.IO;
 using System.Linq;
 using Markdig.Parsers;
@@ -14,98 +13,116 @@ namespace MLS.Agent.Markdown
     public class CodeLinkBlock : FencedCodeBlock
     {
         private readonly IDirectoryAccessor _directoryAccessor;
-        private FileInfo _projectFile;
-        private RelativeFilePath _sourceFile;
-        private string _region;
-        private string _session;
+        private CodeLinkBlockOptions _options;
         private string _sourceCode;
-        private string _package;
-        private readonly List<MarkdownProjectDiagnostic> _diagnostics = new List<MarkdownProjectDiagnostic>();
+        private readonly List<string> _diagnostics = new List<string>();
 
         public CodeLinkBlock(
             BlockParser parser,
             IDirectoryAccessor directoryAccessor) : base(parser)
         {
             _directoryAccessor = directoryAccessor;
-
-            AddAttribute("data-trydotnet-mode", "editor");
         }
 
-        public FileInfo ProjectFile
+        public void AddOptions(CodeLinkBlockOptions options)
         {
-            get => _projectFile;
-            set
+            _options = options;
+            if (ValidateOptions(options))
             {
-                _projectFile = value;
-
-                if (value != null)
-                {
-                    AddAttribute("data-trydotnet-package", value.FullName);
-                }
+                AddAttributes(options);
             }
         }
+
+        private void AddAttributes(CodeLinkBlockOptions options)
+        {
+            AddAttribute("data-trydotnet-mode", "editor");
+            AddAttributeIfNotNull("package", options.Project);
+            AddAttributeIfNotNull("region", options.Region);
+            AddAttributeIfNotNull("session-id", options.Session);
+            AddAttributeIfNotNull("package", Package);
+
+            if (options.SourceFile != null)
+            {
+                AddAttribute(
+                    "data-trydotnet-file-name",
+                    GetSourceFileAbsolutePath());
+            }
+        }
+
+        private bool ValidateOptions(CodeLinkBlockOptions options)
+        {
+            bool succeeded = true;
+
+            if (string.IsNullOrEmpty(options.Package) && options.Project == null)
+            {
+                this.AddDiagnostic("No project file or package specified");
+            }
+
+            if (options.Package != null && !options.IsProjectImplicit)
+            {
+                this.AddDiagnostic("Can't specify both --project and --package");
+                succeeded = false;
+            }
+
+            foreach (var error in options.Errors)
+            {
+                this.AddDiagnostic(error);
+                succeeded = false;
+            }
+
+            if (options.Project != null)
+            {
+                var packageName = GetPackageNameFromProjectFile(options.Project);
+
+                if (packageName == null)
+                {
+                    this.AddDiagnostic(
+                        $"No project file could be found at path {_directoryAccessor.GetFullyQualifiedPath(new RelativeDirectoryPath("."))}");
+                    succeeded = false;
+                }
+            }
+
+            return succeeded;
+        }
+
+        private static string GetPackageNameFromProjectFile(FileInfo projectFile)
+        {
+            return projectFile?.FullName;
+        }
+
+        private void AddAttributeIfNotNull(string name, object o)
+        {
+            if (o != null)
+            {
+                AddAttribute($"data-trydotnet-{name}", o.ToString());
+            }
+        }
+
+        public FileInfo ProjectFile => _options.Project;
 
         public string Package
         {
-            get => _package;
-            set
+            get
             {
-                _package = value;
-
-                if (value != null)
+                if (_options.Package != null)
                 {
-                    AddAttribute("data-trydotnet-package", value);
+                    return _options.Package;
                 }
+
+                if (_options.Project != null)
+                {
+                    return _options.Project.FullName;
+                }
+
+                return string.Empty;
             }
         }
 
-        public RelativeFilePath SourceFile
-        {
-            get => _sourceFile;
-            set
-            {
-                _sourceFile = value;
+        public RelativeFilePath SourceFile => _options.SourceFile;
 
-                if (value != null)
-                {
-                    AddAttribute(
-                        "data-trydotnet-file-name",
-                        GetSourceFileAbsolutePath());
-                }
-            }
-        }
+        public string Region => _options.Region;
 
-        private string GetSourceFileAbsolutePath()
-        {
-            return _directoryAccessor.GetFullyQualifiedPath(_sourceFile).FullName;
-        }
-
-        public string Region
-        {
-            get => _region;
-            set
-            {
-                _region = value;
-
-                if (!string.IsNullOrWhiteSpace(_region))
-                {
-                    AddAttribute("data-trydotnet-region", Region);
-                }
-            }
-        }
-        public string Session
-        {
-            get => _session;
-            set
-            {
-                _session = value;
-
-                if (!string.IsNullOrWhiteSpace(_session))
-                {
-                    AddAttribute("data-trydotnet-session-id", Session);
-                }
-            }
-        }
+        public string Session  => _options.Session;
 
         public string SourceCode
         {
@@ -150,7 +167,12 @@ namespace MLS.Agent.Markdown
             }
         }
 
-        public IEnumerable<MarkdownProjectDiagnostic> Diagnostics => _diagnostics;
+        private string GetSourceFileAbsolutePath()
+        {
+            return _directoryAccessor.GetFullyQualifiedPath(_options.SourceFile).FullName;
+        }
+
+        public IEnumerable<string> Diagnostics => _diagnostics;
 
         public RelativeFilePath MarkdownFile { get; internal set; }
 
@@ -160,86 +182,6 @@ namespace MLS.Agent.Markdown
         }
 
         public void AddDiagnostic(string message) =>
-            _diagnostics.Add(new MarkdownProjectDiagnostic(message, this));
-
-        public static Parser CreateOptionsParser(IDirectoryAccessor directoryAccessor)
-        {
-            var sourceFileArg = new Argument<RelativeFilePath>(
-                                    result =>
-                                    {
-                                        var filename = result.Arguments.SingleOrDefault();
-
-                                        if (filename == null)
-                                        {
-                                            return ArgumentResult.Success<string>(null);
-                                        }
-
-                                        if (RelativeFilePath.TryParse(filename, out var relativeFilePath))
-                                        {
-                                            if (directoryAccessor.FileExists(relativeFilePath))
-                                            {
-                                                return ArgumentResult.Success(relativeFilePath);
-                                            }
-
-                                            return ArgumentResult.Failure($"File not found: {relativeFilePath.Value}");
-                                        }
-
-                                        return ArgumentResult.Failure($"Error parsing the filename: {filename}");
-                                    })
-                                {
-                                    Name = "SourceFile",
-                                    Arity = ArgumentArity.ZeroOrOne
-                                };
-
-            var projectArg = new Argument<FileInfo>(result =>
-                             {
-                                 var projectPath = new RelativeFilePath(result.Arguments.Single());
-
-                                 if (directoryAccessor.FileExists(projectPath))
-                                 {
-                                     return ArgumentResult.Success(directoryAccessor.GetFullyQualifiedPath(projectPath));
-                                 }
-
-                                 return ArgumentResult.Failure($"Project not found: {projectPath.Value}");
-                             })
-                             {
-                                 Name = "project",
-                                 Arity = ArgumentArity.ExactlyOne
-                             };
-
-            projectArg.SetDefaultValue(() =>
-            {
-                var projectFiles = directoryAccessor.GetAllFilesRecursively()
-                                                    .Where(file => file.Extension == ".csproj")
-                                                    .ToArray();
-
-                if (projectFiles.Length == 1)
-                {
-                    return directoryAccessor.GetFullyQualifiedPath(projectFiles.Single());
-                }
-
-                return null;
-            });
-
-            var regionArgument = new Argument<string>();
-            var packageArgument = new Argument<string>();
-
-            var csharp = new Command("csharp", argument: sourceFileArg)
-                         {
-                             new Option("--project", argument: projectArg),
-                             new Option("--region", argument: regionArgument),
-                             new Option("--package", argument: packageArgument),
-                             new Option("--session", argument: new Argument<string>(defaultValue: "Run"))
-                         };
-
-
-            csharp.AddAlias("CS");
-            csharp.AddAlias("C#");
-            csharp.AddAlias("CSHARP");
-            csharp.AddAlias("cs");
-            csharp.AddAlias("c#");
-
-            return new Parser(new RootCommand { csharp });
-        }
+            _diagnostics.Add(message);
     }
 }

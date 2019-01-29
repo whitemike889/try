@@ -1,7 +1,4 @@
 ﻿using System;
-using System.CommandLine;
-using System.IO;
-using System.Linq;
 using Markdig.Helpers;
 using Markdig.Parsers;
 using Markdig.Syntax;
@@ -10,8 +7,7 @@ namespace MLS.Agent.Markdown
 {
     public class CodeLinkBlockParser : FencedBlockParserBase<CodeLinkBlock>
     {
-        private readonly Parser _csharpLinkParser;
-
+        private readonly MarkdownArgumentParser _csharpLinkParser;
         private readonly IDirectoryAccessor _directoryAccessor;
 
         public CodeLinkBlockParser(IDirectoryAccessor directoryAccessor)
@@ -19,7 +15,7 @@ namespace MLS.Agent.Markdown
             OpeningCharacters = new[] { '`' };
             InfoParser = ParseCodeOptions;
             _directoryAccessor = directoryAccessor ?? throw new ArgumentNullException(nameof(directoryAccessor));
-            _csharpLinkParser = CodeLinkBlock.CreateOptionsParser(_directoryAccessor);
+            _csharpLinkParser = new MarkdownArgumentParser(_directoryAccessor);
         }
 
         protected override CodeLinkBlock CreateFencedBlock(BlockProcessor processor) =>
@@ -39,69 +35,19 @@ namespace MLS.Agent.Markdown
 
             var parseResult = _csharpLinkParser.Parse(line.ToString());
 
-            if (parseResult.CommandResult.Name != "csharp")
+            if (parseResult == null)
             {
                 return false;
             }
 
-            codeLinkBlock.Region = parseResult.ValueForOption<string>("region");
-
-            codeLinkBlock.Session = parseResult.ValueForOption<string>("session");
-
-            if (parseResult.CommandResult.ArgumentResult is SuccessfulArgumentResult)
-            {
-                codeLinkBlock.SourceFile = parseResult.CommandResult.GetValueOrDefault<RelativeFilePath>();
-            }
+            codeLinkBlock.AddOptions(parseResult);
 
             if (codeLinkBlock.SourceFile != null)
             {
                 codeLinkBlock.Lines = new StringLineGroup(codeLinkBlock.SourceCode);
             }
 
-            if (parseResult.Errors.Any())
-            {
-                var errors = parseResult.Errors.Select(e => e.ToString());
-
-                foreach (var error in errors)
-                {
-                    codeLinkBlock.AddDiagnostic(error);
-                }
-            }
-
-            var projectOptionResult = parseResult.CommandResult["project"];
-            var packageOptionResult = parseResult.CommandResult["package"];
-
-
-            if (packageOptionResult?.ArgumentResult is SuccessfulArgumentResult)
-            {
-                codeLinkBlock.Package = parseResult.CommandResult.ValueForOption<string>("package");
-            }
-
-            if (codeLinkBlock.Package == null && projectOptionResult?.ArgumentResult is SuccessfulArgumentResult)
-            {
-                codeLinkBlock.ProjectFile = parseResult.CommandResult.ValueForOption<FileInfo>("project");
-
-                var packageName = GetPackageNameFromProjectFile(codeLinkBlock.ProjectFile);
-
-                if (packageName == null &&
-                    codeLinkBlock.SourceFile != null)
-                {
-                    codeLinkBlock.AddDiagnostic(
-                        $"No project file could be found at path {_directoryAccessor.GetFullyQualifiedPath(new RelativeDirectoryPath("."))}");
-                }
-            }
-
-            if (codeLinkBlock.Package != null && !projectOptionResult.IsImplicit)
-            {
-                codeLinkBlock.AddDiagnostic("Can't specify both --project and --package");
-            }
-
             return true;
-        }
-
-        private static string GetPackageNameFromProjectFile(FileInfo projectFile)
-        {
-            return projectFile?.FullName;
         }
 
         public override BlockState TryContinue(BlockProcessor processor, Block block)
