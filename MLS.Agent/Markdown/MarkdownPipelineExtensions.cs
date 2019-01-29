@@ -8,7 +8,7 @@ namespace MLS.Agent.Markdown
 {
     public static class MarkdownPipelineExtensions
     {
-        public static async Task<string> ToHtmlAsync(this MarkdownPipeline pipeline, string text)
+        public static async Task<string> RenderHtmlAsync(this MarkdownPipeline pipeline, string text)
         {
             var document = Markdig.Markdown.Parse(
                text,

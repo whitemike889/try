@@ -235,7 +235,7 @@ namespace BasicConsoleApp
 $@"```cs Program.cs --region codeRegion
 ```";
             var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor).Build();
-            var html = (await pipeline.ToHtmlAsync(document)).EnforceLF();
+            var html = (await pipeline.RenderHtmlAsync(document)).EnforceLF();
 
             var htmlDocument = new HtmlDocument();
             htmlDocument.LoadHtml(html);
@@ -264,7 +264,7 @@ Console.WriteLine(""Hello World"");
 $@"```cs Program.cs --region codeRegion
 ```";
             var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor).Build();
-            var html = (await pipeline.ToHtmlAsync(document)).EnforceLF();
+            var html = (await pipeline.RenderHtmlAsync(document)).EnforceLF();
 
             var htmlDocument = new HtmlDocument();
             htmlDocument.LoadHtml(html);
@@ -293,7 +293,7 @@ Console.WriteLine(""Hello World"");
 $@"```cs Program.cs --region {region}
 ```";
             var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor).Build();
-            var html = (await pipeline.ToHtmlAsync(document)).EnforceLF();
+            var html = (await pipeline.RenderHtmlAsync(document)).EnforceLF();
 
             var htmlDocument = new HtmlDocument();
             htmlDocument.LoadHtml(html);
@@ -318,7 +318,7 @@ $@"```cs Program.cs --region {region}
 $@"```cs Program.cs --region {region}
 ```";
             var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor).Build();
-            var html = (await pipeline.ToHtmlAsync(document)).EnforceLF();
+            var html = (await pipeline.RenderHtmlAsync(document)).EnforceLF();
 
             var htmlDocument = new HtmlDocument();
             htmlDocument.LoadHtml(html);
@@ -373,7 +373,7 @@ $@"```cs Program.cs --region {region}
                            .UseCodeLinks(directoryAccessor)
                            .Build();
 
-            var html = (await pipeline.ToHtmlAsync(document)).EnforceLF();
+            var html = (await pipeline.RenderHtmlAsync(document)).EnforceLF();
 
             var htmlDocument = new HtmlDocument();
             htmlDocument.LoadHtml(html);
@@ -400,7 +400,7 @@ $@"```cs Program.cs --region {region}
                            .UseCodeLinks(directoryAccessor)
                            .Build();
 
-            var html = (await pipeline.ToHtmlAsync(document)).EnforceLF();
+            var html = (await pipeline.RenderHtmlAsync(document)).EnforceLF();
 
             var htmlDocument = new HtmlDocument();
             htmlDocument.LoadHtml(html);

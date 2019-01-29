@@ -39,7 +39,7 @@ namespace MLS.Agent
         public async Task<IHtmlContent> ToHtmlContentAsync()
         {
             var pipeline = Project.GetMarkdownPipelineFor(Path);
-            var html = await pipeline.ToHtmlAsync(ReadAllText());
+            var html = await pipeline.RenderHtmlAsync(ReadAllText());
             return new HtmlString(html);
         }
 
