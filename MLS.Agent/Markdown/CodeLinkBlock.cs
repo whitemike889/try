@@ -99,6 +99,11 @@ namespace MLS.Agent.Markdown
         {
             bool succeeded = true;
 
+            if (!(await _directoryAccessor.ValueAsync()).FileExists(options.SourceFile))
+            {
+                this.AddDiagnostic($"File not found: {options.SourceFile.Value}");
+            }
+
             if (string.IsNullOrEmpty(options.Package) && options.Project == null)
             {
                 this.AddDiagnostic("No project file or package specified");
