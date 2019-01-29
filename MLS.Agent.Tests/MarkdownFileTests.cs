@@ -84,7 +84,8 @@ namespace BasicConsoleApp
 
 ```cs
 {fencedCode}
-```")
+```"),
+                                      ("sample.csproj", "")
                                   };
 
                 var project = new MarkdownProject(dirAccessor);
