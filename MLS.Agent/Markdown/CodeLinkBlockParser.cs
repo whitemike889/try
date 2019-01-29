@@ -43,11 +43,6 @@ namespace MLS.Agent.Markdown
 
             codeLinkBlock.AddOptions(parseResult);
 
-            //if (codeLinkBlock.SourceFile != null)
-            //{
-            //    codeLinkBlock.Lines = new StringLineGroup(codeLinkBlock.SourceCode);
-            //}
-
             return true;
         }
 
