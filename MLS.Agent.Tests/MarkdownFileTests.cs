@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Threading.Tasks;
 using FluentAssertions;
 using HtmlAgilityPack;
 using MLS.Project.Generators;
@@ -11,7 +12,7 @@ namespace MLS.Agent.Tests
         public class ToHtmlContent
         {
             [Fact]
-            public void Returns_true_and_get_html_content_for_the_passed_path()
+            public async Task Returns_true_and_get_html_content_for_the_passed_path()
             {
                 var workingDir = TestAssets.SampleConsole;
                 var dirAccessor = new InMemoryDirectoryAccessor(workingDir)
@@ -23,11 +24,11 @@ namespace MLS.Agent.Tests
                 var path = new RelativeFilePath("Readme.md");
 
                 project.TryGetMarkdownFile(path, out var markdownFile).Should().BeTrue();
-                markdownFile.ToHtmlContent().ToString().Should().Contain("<em>markdown file</em>");
+                (await markdownFile.ToHtmlContentAsync()).ToString().Should().Contain("<em>markdown file</em>");
             }
 
             [Fact]
-            public void Returns_true_and_get_html_content_for_subdirectory_paths()
+            public async Task Returns_true_and_get_html_content_for_subdirectory_paths()
             {
                 var workingDir = TestAssets.SampleConsole;
                 var dirAccessor = new InMemoryDirectoryAccessor(workingDir)
@@ -38,11 +39,11 @@ namespace MLS.Agent.Tests
                 var path = new RelativeFilePath(Path.Combine("Subdirectory", "Tutorial.md"));
 
                 project.TryGetMarkdownFile(path, out var markdownFile).Should().BeTrue();
-                markdownFile.ToHtmlContent().ToString().Should().Contain("<em>tutorial file</em>");
+                (await markdownFile.ToHtmlContentAsync()).ToString().Should().Contain("<em>tutorial file</em>");
             }
 
             [Fact]
-            public void When_file_argument_is_specified_then_it_inserts_code_present_in_csharp_file()
+            public async Task When_file_argument_is_specified_then_it_inserts_code_present_in_csharp_file()
             {
                 var workingDir = TestAssets.SampleConsole;
                 var codeContent = @"using System;
@@ -70,11 +71,11 @@ namespace BasicConsoleApp
 
                 var project = new MarkdownProject(dirAccessor);
                 project.TryGetMarkdownFile(new RelativeFilePath("Readme.md"), out var markdownFile).Should().BeTrue();
-                markdownFile.ToHtmlContent().ToString().EnforceLF().Should().Contain(codeContent.HtmlEncode());
+                (await markdownFile.ToHtmlContentAsync()).ToString().EnforceLF().Should().Contain(codeContent.HtmlEncode());
             }
 
             [Fact]
-            public void When_no_source_file_argument_is_specified_then_it_does_not_replace_fenced_csharp_code()
+            public async Task When_no_source_file_argument_is_specified_then_it_does_not_replace_fenced_csharp_code()
             {
                 var fencedCode = @"// this is the actual embedded code";
                 var dirAccessor = new InMemoryDirectoryAccessor(TestAssets.SampleConsole)
@@ -91,14 +92,14 @@ namespace BasicConsoleApp
                 var project = new MarkdownProject(dirAccessor);
                 project.TryGetMarkdownFile(new RelativeFilePath("Readme.md"), out var markdownFile).Should().BeTrue();
                 var htmlDocument = new HtmlDocument();
-                htmlDocument.LoadHtml(markdownFile.ToHtmlContent().ToString());
+                htmlDocument.LoadHtml((await markdownFile.ToHtmlContentAsync()).ToString());
                 var output = htmlDocument.DocumentNode
                                          .SelectSingleNode("//pre/code").InnerHtml.EnforceLF();
                 output.Should().Be($"\n{fencedCode}\n");
             }
 
             [Fact]
-            public void Should_parse_markdown_file_and_insert_code_from_paths_relative_to_the_markdown_file()
+            public async Task Should_parse_markdown_file_and_insert_code_from_paths_relative_to_the_markdown_file()
             {
                 var workingDir = TestAssets.SampleConsole;
                 var codeContent = @"using System;
@@ -128,11 +129,11 @@ namespace BasicConsoleApp
 
                 var project = new MarkdownProject(dirAccessor);
                 project.TryGetMarkdownFile(new RelativeFilePath("docs/Readme.md"), out var markdownFile).Should().BeTrue();
-                markdownFile.ToHtmlContent().ToString().EnforceLF().Should().Contain(codeContent.HtmlEncode());
+                (await markdownFile.ToHtmlContentAsync()).ToString().EnforceLF().Should().Contain(codeContent.HtmlEncode());
             }
 
             [Fact]
-            public void Should_parse_markdown_file_and_set_package_with_fully_resolved_path()
+            public async Task Should_parse_markdown_file_and_set_package_with_fully_resolved_path()
             {
                 var workingDir = TestAssets.SampleConsole;
                 var packagePathRelativeToBaseDir = "src/sample/sample.csproj";
@@ -149,7 +150,7 @@ namespace BasicConsoleApp
                 var project = new MarkdownProject(dirAccessor);
                 project.TryGetMarkdownFile(new RelativeFilePath("docs/Readme.md"), out var markdownFile).Should().BeTrue();
                 var htmlDocument = new HtmlDocument();
-                htmlDocument.LoadHtml(markdownFile.ToHtmlContent().ToString());
+                htmlDocument.LoadHtml((await markdownFile.ToHtmlContentAsync()).ToString());
                 var output = htmlDocument.DocumentNode
                                          .SelectSingleNode("//pre/code").Attributes["data-trydotnet-package"];
 
@@ -158,7 +159,7 @@ namespace BasicConsoleApp
             }
 
             [Fact]
-            public void Should_include_the_code_from_source_file_and_not_the_fenced_code()
+            public async Task Should_include_the_code_from_source_file_and_not_the_fenced_code()
             {
                 var codeContent = @"using System;
 
@@ -187,7 +188,7 @@ Console.WriteLine(""This code should not appear"");
                 var project = new MarkdownProject(dirAccessor);
                 project.TryGetMarkdownFile(new RelativeFilePath("Readme.md"), out var markdownFile).Should().BeTrue();
                 var htmlDocument = new HtmlDocument();
-                htmlDocument.LoadHtml(markdownFile.ToHtmlContent().ToString());
+                htmlDocument.LoadHtml((await markdownFile.ToHtmlContentAsync()).ToString());
                 var output = htmlDocument.DocumentNode
                                          .SelectSingleNode("//pre/code").InnerHtml.EnforceLF();
 
@@ -195,7 +196,7 @@ Console.WriteLine(""This code should not appear"");
             }
 
             [Fact]
-            public void Multiple_fenced_code_blocks_are_correctly_rendered()
+            public async Task Multiple_fenced_code_blocks_are_correctly_rendered()
             {
                 var region1Code = @"Console.WriteLine(""I am region one code"");";
                 var region2Code = @"Console.WriteLine(""I am region two code"");";
@@ -239,7 +240,7 @@ This is the end of the file")
                 var project = new MarkdownProject(dirAccessor);
                 project.TryGetMarkdownFile(new RelativeFilePath("Readme.md"), out var markdownFile).Should().BeTrue();
                 var htmlDocument = new HtmlDocument();
-                htmlDocument.LoadHtml(markdownFile.ToHtmlContent().ToString());
+                htmlDocument.LoadHtml((await markdownFile.ToHtmlContentAsync()).ToString());
                 var codeNodes = htmlDocument.DocumentNode.SelectNodes("//pre/code");
 
                 codeNodes.Should().HaveCount(2);

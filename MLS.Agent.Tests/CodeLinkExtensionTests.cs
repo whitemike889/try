@@ -6,6 +6,7 @@ using MLS.Project.Generators;
 using System.IO;
 using Xunit;
 using HtmlAgilityPack;
+using System.Threading.Tasks;
 
 namespace MLS.Agent.Tests
 {
@@ -204,7 +205,7 @@ $@"```cs --package {package} --project {project} ../src/sample/Program.cs
         }
 
         [Fact]
-        public void Sets_the_code_in_the_pre_tag_using_the_region_specified_in_markdown()
+        public async Task Sets_the_code_in_the_pre_tag_using_the_region_specified_in_markdown()
         {
             var regionCode = @"Console.WriteLine(""Hello World!"");";
             var fileContent = $@"using System;
@@ -234,7 +235,7 @@ namespace BasicConsoleApp
 $@"```cs Program.cs --region codeRegion
 ```";
             var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor).Build();
-            var html = Markdig.Markdown.ToHtml(document, pipeline).EnforceLF();
+            var html = (await pipeline.ToHtmlAsync(document)).EnforceLF();
 
             var htmlDocument = new HtmlDocument();
             htmlDocument.LoadHtml(html);
@@ -245,7 +246,7 @@ $@"```cs Program.cs --region codeRegion
         }
 
         [Fact]
-        public void Sets_the_trydotnet_filename_using_the_filename_specified_in_the_markdown()
+        public async Task Sets_the_trydotnet_filename_using_the_filename_specified_in_the_markdown()
         {
             var rootDirectory = TestAssets.SampleConsole;
             var filename = "Program.cs";
@@ -263,7 +264,7 @@ Console.WriteLine(""Hello World"");
 $@"```cs Program.cs --region codeRegion
 ```";
             var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor).Build();
-            var html = Markdig.Markdown.ToHtml(document, pipeline).EnforceLF();
+            var html = (await pipeline.ToHtmlAsync(document)).EnforceLF();
 
             var htmlDocument = new HtmlDocument();
             htmlDocument.LoadHtml(html);
@@ -274,7 +275,7 @@ $@"```cs Program.cs --region codeRegion
         }
 
         [Fact]
-        public void Sets_the_trydotnet_region_using_the_region_passed_in_the_markdown()
+        public async Task Sets_the_trydotnet_region_using_the_region_passed_in_the_markdown()
         {
             var rootDirectory = TestAssets.SampleConsole;
             var region = "codeRegion";
@@ -292,7 +293,7 @@ Console.WriteLine(""Hello World"");
 $@"```cs Program.cs --region {region}
 ```";
             var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor).Build();
-            var html = Markdig.Markdown.ToHtml(document, pipeline).EnforceLF();
+            var html = (await pipeline.ToHtmlAsync(document)).EnforceLF();
 
             var htmlDocument = new HtmlDocument();
             htmlDocument.LoadHtml(html);
@@ -303,7 +304,7 @@ $@"```cs Program.cs --region {region}
         }
 
         [Fact]
-        public void If_the_specified_region_does_not_exist_then_an_error_message_is_shown()
+        public async Task If_the_specified_region_does_not_exist_then_an_error_message_is_shown()
         {
             var rootDirectory = TestAssets.SampleConsole;
             var region = "noRegion";
@@ -317,7 +318,7 @@ $@"```cs Program.cs --region {region}
 $@"```cs Program.cs --region {region}
 ```";
             var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor).Build();
-            var html = Markdig.Markdown.ToHtml(document, pipeline).EnforceLF();
+            var html = (await pipeline.ToHtmlAsync(document)).EnforceLF();
 
             var htmlDocument = new HtmlDocument();
             htmlDocument.LoadHtml(html);
@@ -356,7 +357,7 @@ $@"```cs Program.cs --region {region}
         }
 
         [Fact]
-        public void Sets_the_trydotnet_session_using_the_session_passed_in_the_markdown()
+        public async Task Sets_the_trydotnet_session_using_the_session_passed_in_the_markdown()
         {
             var directoryAccessor = new InMemoryDirectoryAccessor(TestAssets.SampleConsole)
                                     {
@@ -372,7 +373,7 @@ $@"```cs Program.cs --region {region}
                            .UseCodeLinks(directoryAccessor)
                            .Build();
 
-            var html = Markdig.Markdown.ToHtml(document, pipeline).EnforceLF();
+            var html = (await pipeline.ToHtmlAsync(document)).EnforceLF();
 
             var htmlDocument = new HtmlDocument();
             htmlDocument.LoadHtml(html);
@@ -384,7 +385,7 @@ $@"```cs Program.cs --region {region}
         }
 
         [Fact]
-        public void Sets_the_trydotnet_session_to_a_default_value_when_a_session_is_not_passed_in_the_markdown()
+        public async Task Sets_the_trydotnet_session_to_a_default_value_when_a_session_is_not_passed_in_the_markdown()
         {
             var directoryAccessor = new InMemoryDirectoryAccessor(TestAssets.SampleConsole)
                                     {
@@ -399,7 +400,7 @@ $@"```cs Program.cs --region {region}
                            .UseCodeLinks(directoryAccessor)
                            .Build();
 
-            var html = Markdig.Markdown.ToHtml(document, pipeline).EnforceLF();
+            var html = (await pipeline.ToHtmlAsync(document)).EnforceLF();
 
             var htmlDocument = new HtmlDocument();
             htmlDocument.LoadHtml(html);

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc;
@@ -20,7 +21,7 @@ namespace MLS.Agent.Controllers
 
         [HttpGet]
         [Route("{*path}")]
-        public IActionResult ShowMarkdownFile(string path)
+        public async Task<IActionResult> ShowMarkdownFile(string path)
         {
             if (string.IsNullOrEmpty(path))
             {
@@ -43,7 +44,7 @@ namespace MLS.Agent.Controllers
             var hostUrl = Request.GetUri();
 
             return Content(
-                Scaffold($"{hostUrl.Scheme}://{hostUrl.Authority}",
+                await Scaffold($"{hostUrl.Scheme}://{hostUrl.Authority}",
                          markdownFile), "text/html");
         }
 
@@ -65,7 +66,7 @@ namespace MLS.Agent.Controllers
             return new HtmlString(sb.ToString());
         }
 
-        private string Scaffold(string hostUrl, MarkdownFile markdownFile) =>
+        private async Task<string> Scaffold(string hostUrl, MarkdownFile markdownFile) =>
             $@"
 <!DOCTYPE html>
 <html lang=""en"">
@@ -80,7 +81,7 @@ namespace MLS.Agent.Controllers
     <div class=""content"">
     <div class=""documentation-container"">
         <div class=""code-column"">
-            {markdownFile.ToHtmlContent()}
+            {await markdownFile.ToHtmlContentAsync()}
         </div>
         <div class=""control-column"">
             {SessionControlsHtml(markdownFile)}

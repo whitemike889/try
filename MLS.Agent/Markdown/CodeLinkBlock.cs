@@ -2,38 +2,84 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Markdig.Parsers;
 using Markdig.Renderers.Html;
 using Markdig.Syntax;
 using Microsoft.CodeAnalysis.Text;
+using MLS.Agent.Tools;
 using MLS.Project.Extensions;
 
 namespace MLS.Agent.Markdown
 {
     public class CodeLinkBlock : FencedCodeBlock
     {
-        private readonly IDirectoryAccessor _directoryAccessor;
+        private readonly AsyncLazy<IDirectoryAccessor> _directoryAccessor;
         private CodeLinkBlockOptions _options;
         private string _sourceCode;
         private readonly List<string> _diagnostics = new List<string>();
 
         public CodeLinkBlock(
             BlockParser parser,
-            IDirectoryAccessor directoryAccessor) : base(parser)
+            Func<Task<IDirectoryAccessor>> directoryAccessor) : base(parser)
         {
-            _directoryAccessor = directoryAccessor;
+            _directoryAccessor = new AsyncLazy<IDirectoryAccessor>(directoryAccessor);
         }
 
         public void AddOptions(CodeLinkBlockOptions options)
         {
             _options = options;
-            if (ValidateOptions(options))
+        }
+
+        public async Task InitializeAsync()
+        {
+            await SetSourceCode();
+
+            if (await ValidateOptions(_options))
             {
-                AddAttributes(options);
+                await AddAttributes(_options);
             }
         }
 
-        private void AddAttributes(CodeLinkBlockOptions options)
+        private async Task SetSourceCode()
+        {
+            if (SourceFile != null)
+            {
+                _sourceCode = (await _directoryAccessor.ValueAsync()).ReadAllText(SourceFile);
+
+                if (!string.IsNullOrWhiteSpace(Region))
+                {
+                    var sourceText = SourceText.From(_sourceCode);
+                    var sourceFileAbsolutePath = await GetSourceFileAbsolutePath();
+
+                    var buffers = sourceText.ExtractBuffers(sourceFileAbsolutePath)
+                                            .Where(b => b.Id.RegionName == Region)
+                                            .ToArray();
+
+                    if (buffers.Length == 0)
+                    {
+                        AddDiagnostic($"Region \"{Region}\" not found in file {sourceFileAbsolutePath}");
+                    }
+                    else if (buffers.Length > 1)
+                    {
+                        AddDiagnostic($"Multiple regions found: {Region}");
+                    }
+                    else
+                    {
+                        _sourceCode = buffers[0].Content;
+                    }
+                }
+
+                if (_sourceCode != null)
+                {
+                    Lines = new Markdig.Helpers.StringLineGroup(_sourceCode);
+                }
+            }
+
+            _sourceCode = _sourceCode ?? "";
+        }
+
+        private async Task AddAttributes(CodeLinkBlockOptions options)
         {
             AddAttribute("data-trydotnet-mode", "editor");
             AddAttributeIfNotNull("package", options.Project);
@@ -45,11 +91,11 @@ namespace MLS.Agent.Markdown
             {
                 AddAttribute(
                     "data-trydotnet-file-name",
-                    GetSourceFileAbsolutePath());
+                    await GetSourceFileAbsolutePath());
             }
         }
 
-        private bool ValidateOptions(CodeLinkBlockOptions options)
+        private async Task<bool> ValidateOptions(CodeLinkBlockOptions options)
         {
             bool succeeded = true;
 
@@ -77,7 +123,7 @@ namespace MLS.Agent.Markdown
                 if (packageName == null)
                 {
                     this.AddDiagnostic(
-                        $"No project file could be found at path {_directoryAccessor.GetFullyQualifiedPath(new RelativeDirectoryPath("."))}");
+                        $"No project file could be found at path {(await _directoryAccessor.ValueAsync()).GetFullyQualifiedPath(new RelativeDirectoryPath("."))}");
                     succeeded = false;
                 }
             }
@@ -128,48 +174,18 @@ namespace MLS.Agent.Markdown
         {
             get
             {
-                if (_sourceCode != null)
+                if (_sourceCode == null)
                 {
-                    return _sourceCode;
-                }
-
-                if (SourceFile == null)
-                {
-                    return "";
-                }
-
-                _sourceCode = _directoryAccessor.ReadAllText(SourceFile);
-
-                if (!string.IsNullOrWhiteSpace(Region))
-                {
-                    var sourceText = SourceText.From(_sourceCode);
-                    var sourceFileAbsolutePath = GetSourceFileAbsolutePath();
-
-                    var buffers = sourceText.ExtractBuffers(sourceFileAbsolutePath)
-                                            .Where(b => b.Id.RegionName == Region)
-                                            .ToArray();
-
-                    if (buffers.Length == 0)
-                    {
-                        AddDiagnostic($"Region \"{Region}\" not found in file {sourceFileAbsolutePath}");
-                    }
-                    else if (buffers.Length > 1)
-                    {
-                        AddDiagnostic($"Multiple regions found: {Region}");
-                    }
-                    else
-                    {
-                        _sourceCode = buffers[0].Content;
-                    }
+                    throw new InvalidOperationException("Attempted to retrive SourceCode from uninitialized CodeLinkBlock");
                 }
 
                 return _sourceCode;
             }
         }
 
-        private string GetSourceFileAbsolutePath()
+        private async Task<string> GetSourceFileAbsolutePath()
         {
-            return _directoryAccessor.GetFullyQualifiedPath(_options.SourceFile).FullName;
+            return (await _directoryAccessor.ValueAsync()).GetFullyQualifiedPath(_options.SourceFile).FullName;
         }
 
         public IEnumerable<string> Diagnostics => _diagnostics;
