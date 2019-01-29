@@ -1,10 +1,6 @@
 ﻿using FluentAssertions;
 using MLS.Agent.Tools;
-using System;
-using System.Collections.Generic;
 using System.CommandLine;
-using System.IO;
-using System.Text;
 using System.Threading.Tasks;
 using WorkspaceServer;
 using WorkspaceServer.PackageDiscovery;

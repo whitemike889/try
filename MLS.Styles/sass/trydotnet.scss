@@ -35,6 +35,7 @@
     @extend .box;   
     min-height: 200px;
     margin-top: 1em;
+    margin-bottom: 1em;
 }
 
 .code-column{
@@ -45,6 +46,8 @@
 
 .control-column{
     @extend .column;
+    overflow-y: auto;
+    height: 98vh; 
 }
 
 .documentation-container{
