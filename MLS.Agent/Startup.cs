@@ -118,17 +118,17 @@ namespace MLS.Agent
                 lifetime.ApplicationStopping.Register(() => _disposables.Dispose());
 
                 app.UseDefaultFiles()
-                   .UseStaticFiles()
-                   .UseRouter(new StaticFilesProxyRouter())
-                   .UseMvc();
-
+                    .UseStaticFilesFromToolLocation()
+                    .UseRouter(new StaticFilesProxyRouter())
+                    .UseMvc();
+                
                 var budget = new Budget();
 
                 _disposables.Add(() => budget.Cancel());
 
                 operation.Succeed();
 
-                if (!StartupOptions.IsInHostedMode && 
+                if (!StartupOptions.IsInHostedMode &&
                     Environment.EnvironmentName != "test" &&
                     !Debugger.IsAttached)
                 {
@@ -136,7 +136,7 @@ namespace MLS.Agent
                         .ContinueWith(task =>
                         {
                             var url = "http://localhost:4242";
-
+                         
                             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                             {
                                 Process.Start(new ProcessStartInfo("cmd", $"/c start {url}"));
@@ -153,5 +153,7 @@ namespace MLS.Agent
                 }
             }
         }
+
+
     }
 }

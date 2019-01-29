@@ -383,7 +383,7 @@ namespace WorkspaceServer.Packaging
             string folderNameStartsWith,
             DirectoryInfo parentDirectory = null)
         {
-            if (String.IsNullOrWhiteSpace(folderNameStartsWith))
+            if (string.IsNullOrWhiteSpace(folderNameStartsWith))
             {
                 throw new ArgumentException("Value cannot be null or whitespace.", nameof(folderNameStartsWith));
             }
