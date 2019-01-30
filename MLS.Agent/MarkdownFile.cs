@@ -22,7 +22,7 @@ namespace MLS.Agent
 
         public MarkdownProject Project { get; }
 
-        public IEnumerable<CodeLinkBlock> GetCodeLinkBlocks()
+        public async Task<IEnumerable<CodeLinkBlock>> GetCodeLinkBlocks()
         {
             var pipeline = Project.GetMarkdownPipelineFor(Path);
 
@@ -30,17 +30,16 @@ namespace MLS.Agent
                 ReadAllText(),
                 pipeline);
 
-            foreach (var codeLinkBlock in document.OfType<CodeLinkBlock>())
-            {
-                codeLinkBlock.MarkdownFile = Path;
-                yield return codeLinkBlock;
-            }
+            var blocks = document.OfType<CodeLinkBlock>();
+
+            await Task.WhenAll(blocks.Select(b => b.InitializeAsync()));
+            return blocks;
         }
 
         public async Task<IHtmlContent> ToHtmlContentAsync()
         {
             var pipeline = Project.GetMarkdownPipelineFor(Path);
-            var html = await pipeline.ToHtmlAsync(ReadAllText());
+            var html = await pipeline.RenderHtmlAsync(ReadAllText());
             return new HtmlString(html);
         }
 

@@ -48,10 +48,10 @@ namespace MLS.Agent.Controllers
                          markdownFile), "text/html");
         }
 
-        private static IHtmlContent SessionControlsHtml(MarkdownFile markdownFile)
+        private static async Task<IHtmlContent> SessionControlsHtml(MarkdownFile markdownFile)
         {
-            var sessions= markdownFile
-                   .GetCodeLinkBlocks()
+            var sessions= (await markdownFile
+                   .GetCodeLinkBlocks())
                    .Select(b => b.Session)
                    .Distinct();
 
@@ -84,7 +84,7 @@ namespace MLS.Agent.Controllers
             {await markdownFile.ToHtmlContentAsync()}
         </div>
         <div class=""control-column"">
-            {SessionControlsHtml(markdownFile)}
+            {await SessionControlsHtml(markdownFile)}
         </div>
     </div>
     </div>

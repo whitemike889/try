@@ -3,6 +3,7 @@ using FluentAssertions;
 using System.Linq;
 using Xunit;
 using WorkspaceServer;
+using System.Threading.Tasks;
 
 namespace MLS.Agent.Tests
 {
@@ -48,7 +49,7 @@ namespace MLS.Agent.Tests
         public class GetAllProjects
         {
             [Fact]
-            public void Returns_all_projects_referenced_from_all_markdown_files()
+            public async Task Returns_all_projects_referenced_from_all_markdown_files()
             {
                 var project = new MarkdownProject(
                     new InMemoryDirectoryAccessor(new DirectoryInfo(Directory.GetCurrentDirectory()))
@@ -64,8 +65,8 @@ namespace MLS.Agent.Tests
                     },
                     PackageRegistry.CreateForHostedMode());
 
-                project.GetAllMarkdownFiles()
-                       .SelectMany(f => f.GetCodeLinkBlocks().Select(b => b.ProjectFile))
+                var files = await Task.WhenAll(project.GetAllMarkdownFiles().Select(f => f.GetCodeLinkBlocks()));
+                files.SelectMany(f => f).Select(b => b.ProjectFile)
                        .Should()
                        .Contain(p => p.Directory.Name == "Project1")
                        .And

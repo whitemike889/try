@@ -10,7 +10,7 @@ namespace MLS.Agent
 {
     public static class VerifyCommand
     {
-        public static Task<int> Do(
+        public static async Task<int> Do(
             DirectoryInfo rootDirectory,
             IConsole console,
             Func<IDirectoryAccessor> getDirectoryAccessor,
@@ -26,7 +26,7 @@ namespace MLS.Agent
 
                 console.Out.WriteLine(fullName);
 
-                var codeLinkBlocks = markdownFile.GetCodeLinkBlocks();
+                var codeLinkBlocks = await markdownFile.GetCodeLinkBlocks();
 
                 foreach (var codeLinkBlock in codeLinkBlocks)
                 {
@@ -64,7 +64,7 @@ namespace MLS.Agent
                 }
             }
 
-            return Task.FromResult(returnCode);
+            return returnCode;
         }
     }
 }
