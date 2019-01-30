@@ -1,5 +1,8 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
+using Markdig.Renderers;
 using Microsoft.AspNetCore.Html;
 using MLS.Agent.Markdown;
 
@@ -19,7 +22,7 @@ namespace MLS.Agent
 
         public MarkdownProject Project { get; }
 
-        public IEnumerable<CodeLinkBlock> GetCodeLinkBlocks()
+        public async Task<IEnumerable<CodeLinkBlock>> GetCodeLinkBlocks()
         {
             var pipeline = Project.GetMarkdownPipelineFor(Path);
 
@@ -27,19 +30,16 @@ namespace MLS.Agent
                 ReadAllText(),
                 pipeline);
 
-            foreach (var codeLinkBlock in document.OfType<CodeLinkBlock>())
-            {
-                codeLinkBlock.MarkdownFile = Path;
-                yield return codeLinkBlock;
-            }
+            var blocks = document.OfType<CodeLinkBlock>();
+
+            await Task.WhenAll(blocks.Select(b => b.InitializeAsync()));
+            return blocks;
         }
 
-        public IHtmlContent ToHtmlContent()
+        public async Task<IHtmlContent> ToHtmlContentAsync()
         {
             var pipeline = Project.GetMarkdownPipelineFor(Path);
-
-            var html = Markdig.Markdown.ToHtml(ReadAllText(), pipeline);
-
+            var html = await pipeline.RenderHtmlAsync(ReadAllText());
             return new HtmlString(html);
         }
 

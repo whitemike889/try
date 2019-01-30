@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Markdig.Helpers;
 using Markdig.Parsers;
 using Markdig.Syntax;
@@ -19,7 +20,7 @@ namespace MLS.Agent.Markdown
         }
 
         protected override CodeLinkBlock CreateFencedBlock(BlockProcessor processor) =>
-            new CodeLinkBlock(this, _directoryAccessor);
+            new CodeLinkBlock(this, () => Task.FromResult(_directoryAccessor));
 
         private bool ParseCodeOptions(
             BlockProcessor state,
@@ -41,11 +42,6 @@ namespace MLS.Agent.Markdown
             }
 
             codeLinkBlock.AddOptions(parseResult);
-
-            if (codeLinkBlock.SourceFile != null)
-            {
-                codeLinkBlock.Lines = new StringLineGroup(codeLinkBlock.SourceCode);
-            }
 
             return true;
         }
@@ -81,7 +77,7 @@ namespace MLS.Agent.Markdown
             var codeBlock = block as CodeLinkBlock;
 
             //if we already have the source code discard the lines that are inside the fenced code
-            if (codeBlock != null && !string.IsNullOrWhiteSpace(codeBlock.SourceCode))
+            if (codeBlock != null && codeBlock.SourceFile != null)
             {
                 return BlockState.ContinueDiscard;
             }
