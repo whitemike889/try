@@ -19,7 +19,7 @@ namespace MLS.Agent.Tests
         [InlineData("CS")]
         [InlineData("CSHARP")]
         [InlineData("C#")]
-        public void Inserts_code_when_an_existing_file_is_linked(string language)
+        public async Task Inserts_code_when_an_existing_file_is_linked(string language)
         {
             var testDir = TestAssets.SampleConsole;
             var fileContent = @"using System;
@@ -43,12 +43,12 @@ namespace BasicConsoleApp
             var document =
 $@"```{language} Program.cs
 ```";
-            string html = Markdig.Markdown.ToHtml(document, pipeline).EnforceLF();
+            string html = (await pipeline.RenderHtmlAsync(document)).EnforceLF();
             html.Should().Contain(fileContent.HtmlEncode());
         }
 
         [Fact]
-        public void Does_not_insert_code_when_specified_language_is_not_csharp()
+        public async Task Does_not_insert_code_when_specified_language_is_not_csharp()
         {
             string expectedValue =
 @"<pre><code class=""language-js"">console.log(&quot;Hello World&quot;);
@@ -62,12 +62,12 @@ $@"```{language} Program.cs
 ```js Program.cs
 console.log(""Hello World"");
 ```";
-            var html = Markdig.Markdown.ToHtml(document, pipeline).EnforceLF();
+            var html = (await pipeline.RenderHtmlAsync(document)).EnforceLF();
             html.Should().Contain(expectedValue);
         }
 
         [Fact]
-        public void Error_messsage_is_displayed_when_the_linked_file_does_not_exist()
+        public async Task Error_messsage_is_displayed_when_the_linked_file_does_not_exist()
         {
             var testDir = TestAssets.SampleConsole;
             var directoryAccessor = new InMemoryDirectoryAccessor(testDir)
@@ -78,12 +78,12 @@ console.log(""Hello World"");
             var document =
 @"```cs DOESNOTEXIST
 ```";
-            var html = Markdig.Markdown.ToHtml(document, pipeline).EnforceLF();
+            var html = (await pipeline.RenderHtmlAsync(document)).EnforceLF();
             html.Should().Contain("File not found: ./DOESNOTEXIST");
         }
 
         [Fact]
-        public void Error_message_is_displayed_when_no_project_is_specified_and_no_project_file_is_found()
+        public async Task Error_message_is_displayed_when_no_project_is_specified_and_no_project_file_is_found()
         {
             var testDir = TestAssets.SampleConsole;
             var directoryAccessor = new InMemoryDirectoryAccessor(testDir)
@@ -94,13 +94,13 @@ console.log(""Hello World"");
             var document =
 @"```cs Program.cs
 ```";
-            var html = Markdig.Markdown.ToHtml(document, pipeline).EnforceLF();
+            var html = (await pipeline.RenderHtmlAsync(document)).EnforceLF();
 
             html.Should().Contain($"No project file or package specified");
         }
 
         [Fact]
-        public void Error_message_is_displayed_when_a_project_is_specified_but_the_file_does_not_exist()
+        public async Task Error_message_is_displayed_when_a_project_is_specified_but_the_file_does_not_exist()
         {
             var testDir = TestAssets.SampleConsole;
             var directoryAccessor = new InMemoryDirectoryAccessor(testDir)
@@ -113,13 +113,13 @@ console.log(""Hello World"");
 $@"```cs --project {projectPath} Program.cs
 ```";
             var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor).Build();
-            var html = Markdig.Markdown.ToHtml(document, pipeline).EnforceLF();
+            var html = (await pipeline.RenderHtmlAsync(document)).EnforceLF();
 
             html.Should().Contain($"Project not found: ./{projectPath}");
         }
 
         [Fact]
-        public void Sets_the_trydotnet_package_attribute_using_the_passed_project_path()
+        public async Task Sets_the_trydotnet_package_attribute_using_the_passed_project_path()
         {
             var rootDirectory = TestAssets.SampleConsole;
             var currentDir = new DirectoryInfo(Path.Combine(rootDirectory.FullName, "docs"));
@@ -136,7 +136,7 @@ $@"```cs --project {projectPath} Program.cs
 $@"```cs --project {package} ../src/sample/Program.cs
 ```";
 
-            var html = Markdig.Markdown.ToHtml(document, pipeline).EnforceLF();
+            var html = (await pipeline.RenderHtmlAsync(document)).EnforceLF();
 
             var htmlDocument = new HtmlDocument();
             htmlDocument.LoadHtml(html);
@@ -148,7 +148,7 @@ $@"```cs --project {package} ../src/sample/Program.cs
         }
 
         [Fact]
-        public void Sets_the_trydotnet_package_attribute_using_the_passed_package_option()
+        public async Task Sets_the_trydotnet_package_attribute_using_the_passed_package_option()
         {
             var rootDirectory = TestAssets.SampleConsole;
             var currentDir = new DirectoryInfo(Path.Combine(rootDirectory.FullName, "docs"));
@@ -165,7 +165,7 @@ $@"```cs --project {package} ../src/sample/Program.cs
 $@"```cs --package {package} ../src/sample/Program.cs
 ```";
 
-            var html = Markdig.Markdown.ToHtml(document, pipeline).EnforceLF();
+            var html = (await pipeline.RenderHtmlAsync(document)).EnforceLF();
 
             var htmlDocument = new HtmlDocument();
             htmlDocument.LoadHtml(html);
@@ -176,7 +176,7 @@ $@"```cs --package {package} ../src/sample/Program.cs
         }
 
         [Fact]
-        public void Sets_a_diagnostic_if_both_package_and_project_are_specified()
+        public async Task Sets_a_diagnostic_if_both_package_and_project_are_specified()
         {
             var rootDirectory = TestAssets.SampleConsole;
             var currentDir = new DirectoryInfo(Path.Combine(rootDirectory.FullName, "docs"));
@@ -194,7 +194,7 @@ $@"```cs --package {package} ../src/sample/Program.cs
 $@"```cs --package {package} --project {project} ../src/sample/Program.cs
 ```";
 
-            var html = Markdig.Markdown.ToHtml(document, pipeline).EnforceLF();
+            var html = (await pipeline.RenderHtmlAsync(document)).EnforceLF();
 
             var htmlDocument = new HtmlDocument();
             htmlDocument.LoadHtml(html);
@@ -328,7 +328,7 @@ $@"```cs Program.cs --region {region}
         }
 
         [Fact]
-        public void If_the_specified_region_exists_more_than_once_then_an_error_is_displayed()
+        public async Task If_the_specified_region_exists_more_than_once_then_an_error_is_displayed()
         {
             var rootDirectory = TestAssets.SampleConsole;
             var codeContent = @"
@@ -347,7 +347,7 @@ $@"```cs Program.cs --region {region}
                 $@"```cs Program.cs --region {region}
 ```";
             var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor).Build();
-            var html = Markdig.Markdown.ToHtml(document, pipeline).EnforceLF();
+            var html = (await pipeline.RenderHtmlAsync(document)).EnforceLF();
 
             var htmlDocument = new HtmlDocument();
             htmlDocument.LoadHtml(html);

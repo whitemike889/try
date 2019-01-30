@@ -64,7 +64,6 @@ namespace MLS.Agent.Tests
                     });
 
                 var files = await Task.WhenAll(project.GetAllMarkdownFiles().Select(f => f.GetCodeLinkBlocks()));
-
                 files.SelectMany(f => f).Select(b => b.ProjectFile)
                        .Should()
                        .Contain(p => p.Directory.Name == "Project1")
