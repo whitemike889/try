@@ -22,7 +22,6 @@ namespace MLS.Agent.Markdown
         public CodeLinkBlock(
             BlockParser parser) : base(parser)
         {
-            
         }
 
         public void AddOptions(CodeLinkBlockOptions options, Func<Task<IDirectoryAccessor>> directoryAccessor)
@@ -33,6 +32,11 @@ namespace MLS.Agent.Markdown
 
         public async Task InitializeAsync()
         {
+            if (_options == null)
+            {
+                throw new InvalidOperationException("Attempted to initialize block before adding options");
+            }
+
             await SetSourceCode();
 
             if (await ValidateOptions(_options))

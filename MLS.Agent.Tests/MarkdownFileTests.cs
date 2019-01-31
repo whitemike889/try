@@ -1,9 +1,12 @@
-﻿using System.IO;
+﻿using System.CommandLine;
+using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using HtmlAgilityPack;
 using MLS.Project.Generators;
 using WorkspaceServer;
+using WorkspaceServer.PackageDiscovery;
 using Xunit;
 
 namespace MLS.Agent.Tests
@@ -247,6 +250,28 @@ This is the end of the file")
                 codeNodes.Should().HaveCount(2);
                 codeNodes[0].InnerHtml.Should().Be($"\n{region1Code.HtmlEncode()}\n");
                 codeNodes[1].InnerHtml.Should().Be($"\n{region2Code.HtmlEncode()}\n");
+            }
+
+            [Fact]
+            public async Task When_file_argument_is_specified_then_it_inserts_code_present_in_csharp_file_from_a_package()
+            {
+                var console = new TestConsole();
+                var asset = await LocalToolHelpers.CreateTool(console);
+                var registry = new PackageRegistry(new LocalToolPackageDiscoveryStrategy(asset, asset));
+
+                var project = new MarkdownProject(
+                    new InMemoryDirectoryAccessor(new DirectoryInfo(Directory.GetCurrentDirectory()))
+                    {
+                        ("readme.md", @"
+```cs Program.cs --package console
+```
+                        ")
+                    },
+                    registry);
+
+                var thing = project.GetAllMarkdownFiles().Single();
+                var text = (await thing.ToHtmlContentAsync()).ToString();
+                text.Should().Contain("Hello World!");
             }
         }
     }

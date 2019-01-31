@@ -4,7 +4,6 @@ using System.CommandLine;
 using System.Threading.Tasks;
 using WorkspaceServer;
 using WorkspaceServer.PackageDiscovery;
-using WorkspaceServer.Tests;
 using Xunit;
 
 namespace MLS.Agent.Tests
@@ -46,10 +45,9 @@ namespace MLS.Agent.Tests
         public async Task Installs_tool_from_package_source_when_requested()
         {
             var console = new TestConsole();
-            var asset = await Create.ConsoleWorkspaceCopy();
-            await PackageCommand.Do(asset.Directory, console);
+            var asset = await LocalToolHelpers.CreateTool(console);
 
-            var strategy = new LocalToolPackageDiscoveryStrategy(asset.Directory, asset.Directory);
+            var strategy = new LocalToolPackageDiscoveryStrategy(asset, asset);
             var package = await strategy.Locate(new PackageDescriptor("console"));
             package.Should().NotBeNull();
         }

@@ -113,7 +113,7 @@ console.log(""Hello World"");
             var document =
 $@"```cs --project {projectPath} Program.cs
 ```";
-            var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor).Build();
+            var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor, PackageRegistry.CreateForHostedMode()).Build();
             var html = (await pipeline.RenderHtmlAsync(document)).EnforceLF();
 
             html.Should().Contain($"Project not found: ./{projectPath}");
