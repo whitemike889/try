@@ -51,13 +51,6 @@ namespace MLS.Agent.Markdown
                                         if (RelativeFilePath.TryParse(filename, out var relativeFilePath))
                                         {
                                             return ArgumentResult.Success(relativeFilePath);
-
-                                            if (directoryAccessor.FileExists(relativeFilePath))
-                                            {
-                                                return ArgumentResult.Success(relativeFilePath);
-                                            }
-
-                                            return ArgumentResult.Failure($"File not found: {relativeFilePath.Value}");
                                         }
 
                                         return ArgumentResult.Failure($"Error parsing the filename: {filename}");
