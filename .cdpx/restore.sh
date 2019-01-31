@@ -69,3 +69,12 @@ dotnet new console
 dotnet add package Microsoft.ML --version 0.3.0
 xmlstarlet ed --inplace --insert "/Project/PropertyGroup/OutputType" --type elem -n "LangVersion" --value "7.3" microsoftml.csproj
 dotnet build /fl /p:ProvideCommandLineArgs=true
+
+#blazor-console
+mkdir -p $WORKSPACES_ROOT/blazor-console
+cd $WORKSPACES_ROOT/blazor-console
+dotnet new classlib
+dotnet add package Newtonsoft.Json
+xmlstarlet ed --inplace --insert "/Project/PropertyGroup/OutputType" --type elem -n "LangVersion" --value "7.3" blazor-console.csproj
+dotnet build /fl /p:ProvideCommandLineArgs=true
+
