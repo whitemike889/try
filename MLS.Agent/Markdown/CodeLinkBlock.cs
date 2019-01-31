@@ -14,7 +14,7 @@ namespace MLS.Agent.Markdown
 {
     public class CodeLinkBlock : FencedCodeBlock
     {
-        private  AsyncLazy<IDirectoryAccessor> _directoryAccessor;
+        private AsyncLazy<IDirectoryAccessor> _directoryAccessor;
         private CodeLinkBlockOptions _options;
         private string _sourceCode;
         private readonly List<string> _diagnostics = new List<string>();
@@ -37,10 +37,10 @@ namespace MLS.Agent.Markdown
                 throw new InvalidOperationException("Attempted to initialize block before adding options");
             }
 
-            await SetSourceCode();
 
             if (await ValidateOptions(_options))
             {
+                await SetSourceCode();
                 await AddAttributes(_options);
             }
         }
@@ -103,7 +103,18 @@ namespace MLS.Agent.Markdown
         {
             bool succeeded = true;
 
-            if (!(await _directoryAccessor.ValueAsync()).FileExists(options.SourceFile))
+            IDirectoryAccessor accessor = null;
+            try
+            {
+                accessor = await _directoryAccessor.ValueAsync();
+            }
+            catch (ArgumentException e)
+            {
+                this.AddDiagnostic(e.Message);
+                return false;
+            }
+
+            if (options.SourceFile != null && !accessor.FileExists(options.SourceFile))
             {
                 this.AddDiagnostic($"File not found: {options.SourceFile.Value}");
             }
@@ -132,7 +143,7 @@ namespace MLS.Agent.Markdown
                 if (packageName == null)
                 {
                     this.AddDiagnostic(
-                        $"No project file could be found at path {(await _directoryAccessor.ValueAsync()).GetFullyQualifiedPath(new RelativeDirectoryPath("."))}");
+                        $"No project file could be found at path {accessor.GetFullyQualifiedPath(new RelativeDirectoryPath("."))}");
                     succeeded = false;
                 }
             }
@@ -177,7 +188,7 @@ namespace MLS.Agent.Markdown
 
         public string Region => _options.Region;
 
-        public string Session  => _options.Session;
+        public string Session => _options.Session;
 
         public string SourceCode
         {

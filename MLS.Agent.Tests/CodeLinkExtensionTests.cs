@@ -8,11 +8,28 @@ using Xunit;
 using HtmlAgilityPack;
 using System.Threading.Tasks;
 using WorkspaceServer;
+using System.CommandLine;
+using MLS.Agent.Tools;
+using WorkspaceServer.PackageDiscovery;
 
 namespace MLS.Agent.Tests
 {
     public class CodeLinkExtensionTests
     {
+        private readonly TestConsole _console;
+        private readonly AsyncLazy<(PackageRegistry, string)> _package;
+
+        public CodeLinkExtensionTests()
+        {
+            _console = new TestConsole();
+            _package = new AsyncLazy<(PackageRegistry, string)>( async () => {
+                var dir = await LocalToolHelpers.CreateTool(_console);
+                var strategy = new LocalToolPackageDiscoveryStrategy(dir, dir);
+                return (new PackageRegistry(strategy), "console");
+            }
+            );
+        }
+
         [Theory]
         [InlineData("cs")]
         [InlineData("csharp")]
@@ -159,11 +176,12 @@ $@"```cs --project {package} ../src/sample/Program.cs
                 ("src/sample/sample.csproj", "")
             };
 
-            var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor, PackageRegistry.CreateForHostedMode()).Build();
+            var (registry, package) = await _package.ValueAsync();
+            var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor, registry).Build();
 
-            var package = "the-package";
+
             var document =
-$@"```cs --package {package} ../src/sample/Program.cs
+$@"```cs --package {package} Program.cs
 ```";
 
             var html = (await pipeline.RenderHtmlAsync(document)).EnforceLF();
@@ -187,9 +205,9 @@ $@"```cs --package {package} ../src/sample/Program.cs
                 ("src/sample/sample.csproj", "")
             };
 
-            var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor, PackageRegistry.CreateForHostedMode()).Build();
+            var (registry, package) = await _package.ValueAsync();
+            var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor, registry).Build();
 
-            var package = "the-package";
             var project = "../src/sample/sample.csproj";
             var document =
 $@"```cs --package {package} --project {project} ../src/sample/Program.cs
@@ -410,6 +428,35 @@ $@"```cs Program.cs --region {region}
                                      .Attributes["data-trydotnet-session-id"];
 
             output.Value.Should().Be("Run");
+        }
+
+        [Fact]
+        public async Task Sets_a_diagnostic_if_the_package_cannot_be_found()
+        {
+            var rootDirectory = TestAssets.SampleConsole;
+            var currentDir = new DirectoryInfo(Path.Combine(rootDirectory.FullName, "docs"));
+            var directoryAccessor = new InMemoryDirectoryAccessor(currentDir, rootDirectory)
+            {
+                ("src/sample/Program.cs", ""),
+                ("src/sample/sample.csproj", "")
+            };
+
+            var (registry, package) = await _package.ValueAsync();
+            var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor, registry).Build();
+
+            package = "not-the-package";
+
+            var document =
+$@"```cs --package {package} Program.cs
+```";
+
+            var html = (await pipeline.RenderHtmlAsync(document)).EnforceLF();
+
+            var htmlDocument = new HtmlDocument();
+            htmlDocument.LoadHtml(html);
+            var node = htmlDocument.DocumentNode.SelectSingleNode("//div[@class='notification is-danger']");
+
+            node.InnerHtml.Should().Contain($"Package named &quot;{package}&quot; not found");
         }
     }
 }

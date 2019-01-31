@@ -43,7 +43,7 @@ This is some sample code:
             console.Out
                    .ToString()
                    .Should()
-                   .Match($"{root}doc.md*Line 3:*UNKNOWN (in project UNKNOWN)*File not found: ./Program.cs*");
+                   .Match($"{root}doc.md*Line 3:*{root}Program.cs (in project UNKNOWN)*File not found: ./Program.cs*No project file or package specified*");
         }
 
         [Fact]
