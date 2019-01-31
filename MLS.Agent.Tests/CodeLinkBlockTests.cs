@@ -40,7 +40,7 @@ namespace MLS.Agent.Tests
 
             var options = new CodeLinkBlockOptions(
                 sourceFile: new RelativeFilePath("Program.cs"),
-                package: "the-package");
+                package: "the-package").WithIsProjectImplicit(true);
 
             var block = new CodeLinkBlock(null);
             block.AddOptions(options, () => Task.FromResult<IDirectoryAccessor>(accessor));
