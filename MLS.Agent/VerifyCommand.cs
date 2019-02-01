@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using MLS.Agent.Markdown;
+using WorkspaceServer;
 
 namespace MLS.Agent
 {
@@ -12,10 +13,11 @@ namespace MLS.Agent
         public static async Task<int> Do(
             DirectoryInfo rootDirectory,
             IConsole console,
-            Func<IDirectoryAccessor> getDirectoryAccessor)
+            Func<IDirectoryAccessor> getDirectoryAccessor,
+            PackageRegistry packageRegistry)
         {
             var directoryAccessor = getDirectoryAccessor();
-            var markdownProject = new MarkdownProject(directoryAccessor);
+            var markdownProject = new MarkdownProject(directoryAccessor, packageRegistry);
             var returnCode = 0;
 
             foreach (var markdownFile in markdownProject.GetAllMarkdownFiles())

@@ -19,6 +19,7 @@ using MLS.Agent.Markdown;
 using WorkspaceServer.Servers.Roslyn;
 using static Pocket.Logger<MLS.Agent.Program>;
 using SerilogLoggerConfiguration = Serilog.LoggerConfiguration;
+using WorkspaceServer;
 
 namespace MLS.Agent
 {
@@ -38,7 +39,8 @@ namespace MLS.Agent
                 verify: (rootDirectory, console) =>
                     VerifyCommand.Do(rootDirectory,
                                      console,
-                                     () => new FileSystemDirectoryAccessor(rootDirectory)));
+                                     () => new FileSystemDirectoryAccessor(rootDirectory),
+                                     PackageRegistry.CreateForTryMode(rootDirectory, null)));
 
             return await parser.InvokeAsync(args);
         }

@@ -7,11 +7,29 @@ using System.IO;
 using Xunit;
 using HtmlAgilityPack;
 using System.Threading.Tasks;
+using WorkspaceServer;
+using System.CommandLine;
+using MLS.Agent.Tools;
+using WorkspaceServer.PackageDiscovery;
 
 namespace MLS.Agent.Tests
 {
     public class CodeLinkExtensionTests
     {
+        private readonly TestConsole _console;
+        private readonly AsyncLazy<(PackageRegistry, string)> _package;
+
+        public CodeLinkExtensionTests()
+        {
+            _console = new TestConsole();
+            _package = new AsyncLazy<(PackageRegistry, string)>( async () => {
+                var dir = await LocalToolHelpers.CreateTool(_console);
+                var strategy = new LocalToolPackageDiscoveryStrategy(dir, dir);
+                return (new PackageRegistry(strategy), "console");
+            }
+            );
+        }
+
         [Theory]
         [InlineData("cs")]
         [InlineData("csharp")]
@@ -39,7 +57,7 @@ namespace BasicConsoleApp
                  ("Program.cs", fileContent),
                  ("sample.csproj", "")
             };
-            var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor).Build();
+            var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor, PackageRegistry.CreateForHostedMode()).Build();
             var document =
 $@"```{language} Program.cs
 ```";
@@ -57,7 +75,7 @@ $@"```{language} Program.cs
 
             var testDir = TestAssets.SampleConsole;
             var directoryAccessor = new InMemoryDirectoryAccessor(testDir);
-            var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor).Build();
+            var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor, PackageRegistry.CreateForHostedMode()).Build();
             var document = @"
 ```js Program.cs
 console.log(""Hello World"");
@@ -74,7 +92,7 @@ console.log(""Hello World"");
             {
                 ("sample.csproj", "")
             };
-            var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor).Build();
+            var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor, PackageRegistry.CreateForHostedMode()).Build();
             var document =
 @"```cs DOESNOTEXIST
 ```";
@@ -90,7 +108,7 @@ console.log(""Hello World"");
             {
                 ("Program.cs", "")
             };
-            var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor).Build();
+            var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor, PackageRegistry.CreateForHostedMode()).Build();
             var document =
 @"```cs Program.cs
 ```";
@@ -112,7 +130,7 @@ console.log(""Hello World"");
             var document =
 $@"```cs --project {projectPath} Program.cs
 ```";
-            var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor).Build();
+            var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor, PackageRegistry.CreateForHostedMode()).Build();
             var html = (await pipeline.RenderHtmlAsync(document)).EnforceLF();
 
             html.Should().Contain($"Project not found: ./{projectPath}");
@@ -129,7 +147,7 @@ $@"```cs --project {projectPath} Program.cs
                 ("src/sample/sample.csproj", "")
             };
 
-            var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor).Build();
+            var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor, PackageRegistry.CreateForHostedMode()).Build();
 
             var package = "../src/sample/sample.csproj";
             var document =
@@ -158,11 +176,12 @@ $@"```cs --project {package} ../src/sample/Program.cs
                 ("src/sample/sample.csproj", "")
             };
 
-            var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor).Build();
+            var (registry, package) = await _package.ValueAsync();
+            var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor, registry).Build();
 
-            var package = "the-package";
+
             var document =
-$@"```cs --package {package} ../src/sample/Program.cs
+$@"```cs --package {package} Program.cs
 ```";
 
             var html = (await pipeline.RenderHtmlAsync(document)).EnforceLF();
@@ -186,9 +205,9 @@ $@"```cs --package {package} ../src/sample/Program.cs
                 ("src/sample/sample.csproj", "")
             };
 
-            var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor).Build();
+            var (registry, package) = await _package.ValueAsync();
+            var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor, registry).Build();
 
-            var package = "the-package";
             var project = "../src/sample/sample.csproj";
             var document =
 $@"```cs --package {package} --project {project} ../src/sample/Program.cs
@@ -234,7 +253,7 @@ namespace BasicConsoleApp
             var document =
 $@"```cs Program.cs --region codeRegion
 ```";
-            var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor).Build();
+            var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor, PackageRegistry.CreateForHostedMode()).Build();
             var html = (await pipeline.RenderHtmlAsync(document)).EnforceLF();
 
             var htmlDocument = new HtmlDocument();
@@ -263,7 +282,7 @@ Console.WriteLine(""Hello World"");
             var document =
 $@"```cs Program.cs --region codeRegion
 ```";
-            var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor).Build();
+            var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor, PackageRegistry.CreateForHostedMode()).Build();
             var html = (await pipeline.RenderHtmlAsync(document)).EnforceLF();
 
             var htmlDocument = new HtmlDocument();
@@ -292,7 +311,7 @@ Console.WriteLine(""Hello World"");
             var document =
 $@"```cs Program.cs --region {region}
 ```";
-            var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor).Build();
+            var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor, PackageRegistry.CreateForHostedMode()).Build();
             var html = (await pipeline.RenderHtmlAsync(document)).EnforceLF();
 
             var htmlDocument = new HtmlDocument();
@@ -317,7 +336,7 @@ $@"```cs Program.cs --region {region}
             var document =
 $@"```cs Program.cs --region {region}
 ```";
-            var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor).Build();
+            var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor, PackageRegistry.CreateForHostedMode()).Build();
             var html = (await pipeline.RenderHtmlAsync(document)).EnforceLF();
 
             var htmlDocument = new HtmlDocument();
@@ -346,7 +365,7 @@ $@"```cs Program.cs --region {region}
             var document =
                 $@"```cs Program.cs --region {region}
 ```";
-            var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor).Build();
+            var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor, PackageRegistry.CreateForHostedMode()).Build();
             var html = (await pipeline.RenderHtmlAsync(document)).EnforceLF();
 
             var htmlDocument = new HtmlDocument();
@@ -370,7 +389,7 @@ $@"```cs Program.cs --region {region}
                 $@"```cs Program.cs --session {session}
 ```";
             var pipeline = new MarkdownPipelineBuilder()
-                           .UseCodeLinks(directoryAccessor)
+                           .UseCodeLinks(directoryAccessor, PackageRegistry.CreateForHostedMode())
                            .Build();
 
             var html = (await pipeline.RenderHtmlAsync(document)).EnforceLF();
@@ -397,7 +416,7 @@ $@"```cs Program.cs --region {region}
                 @"```cs Program.cs
 ```";
             var pipeline = new MarkdownPipelineBuilder()
-                           .UseCodeLinks(directoryAccessor)
+                           .UseCodeLinks(directoryAccessor, PackageRegistry.CreateForHostedMode())
                            .Build();
 
             var html = (await pipeline.RenderHtmlAsync(document)).EnforceLF();
@@ -409,6 +428,35 @@ $@"```cs Program.cs --region {region}
                                      .Attributes["data-trydotnet-session-id"];
 
             output.Value.Should().Be("Run");
+        }
+
+        [Fact]
+        public async Task Sets_a_diagnostic_if_the_package_cannot_be_found()
+        {
+            var rootDirectory = TestAssets.SampleConsole;
+            var currentDir = new DirectoryInfo(Path.Combine(rootDirectory.FullName, "docs"));
+            var directoryAccessor = new InMemoryDirectoryAccessor(currentDir, rootDirectory)
+            {
+                ("src/sample/Program.cs", ""),
+                ("src/sample/sample.csproj", "")
+            };
+
+            var (registry, package) = await _package.ValueAsync();
+            var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor, registry).Build();
+
+            package = "not-the-package";
+
+            var document =
+$@"```cs --package {package} Program.cs
+```";
+
+            var html = (await pipeline.RenderHtmlAsync(document)).EnforceLF();
+
+            var htmlDocument = new HtmlDocument();
+            htmlDocument.LoadHtml(html);
+            var node = htmlDocument.DocumentNode.SelectSingleNode("//div[@class='notification is-danger']");
+
+            node.InnerHtml.Should().Contain($"Package named &quot;{package}&quot; not found");
         }
     }
 }

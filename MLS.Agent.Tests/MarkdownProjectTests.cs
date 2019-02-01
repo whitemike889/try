@@ -2,6 +2,7 @@
 using FluentAssertions;
 using System.Linq;
 using Xunit;
+using WorkspaceServer;
 using System.Threading.Tasks;
 
 namespace MLS.Agent.Tests
@@ -21,7 +22,7 @@ namespace MLS.Agent.Tests
                                       ("Program.cs", "")
                                   };
 
-                var project = new MarkdownProject(dirAccessor);
+                var project = new MarkdownProject(dirAccessor, PackageRegistry.CreateForHostedMode());
 
                 var files = project.GetAllMarkdownFiles();
 
@@ -38,7 +39,7 @@ namespace MLS.Agent.Tests
             {
                 var workingDir = TestAssets.SampleConsole;
                 var dirAccessor = new InMemoryDirectoryAccessor(workingDir);
-                var project = new MarkdownProject(dirAccessor);
+                var project = new MarkdownProject(dirAccessor, PackageRegistry.CreateForHostedMode());
                 var path = new RelativeFilePath("DOESNOTEXIST");
 
                 project.TryGetMarkdownFile(path, out _).Should().BeFalse();
@@ -61,7 +62,8 @@ namespace MLS.Agent.Tests
                         "),
                         ("../Project1/Console1.csproj", @""),
                         ("../Project2/Console2.csproj", @"")
-                    });
+                    },
+                    PackageRegistry.CreateForHostedMode());
 
                 var files = await Task.WhenAll(project.GetAllMarkdownFiles().Select(f => f.GetCodeLinkBlocks()));
                 files.SelectMany(f => f).Select(b => b.ProjectFile)

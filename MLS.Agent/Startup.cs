@@ -78,7 +78,7 @@ namespace MLS.Agent
                 else
                 {
                     services.AddSingleton(_ => PackageRegistry.CreateForTryMode(StartupOptions.RootDirectory, StartupOptions.AddSource));
-                    services.AddSingleton(c => new MarkdownProject(c.GetRequiredService<IDirectoryAccessor>()));
+                    services.AddSingleton(c => new MarkdownProject(c.GetRequiredService<IDirectoryAccessor>(), c.GetRequiredService<PackageRegistry>()));
                     services.AddSingleton((Func<IServiceProvider, IDirectoryAccessor>)(_ => CreateDirectoryAccessor()));
                 }
 

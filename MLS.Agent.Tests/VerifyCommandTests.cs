@@ -37,12 +37,13 @@ This is some sample code:
             await VerifyCommand.Do(
                 root,
                 console,
-                () => directoryAccessor);
+                () => directoryAccessor,
+                new WorkspaceServer.PackageRegistry());
 
             console.Out
                    .ToString()
                    .Should()
-                   .Match($"{root}doc.md*Line 3:*UNKNOWN (in project UNKNOWN)*File not found: ./Program.cs*");
+                   .Match($"{root}doc.md*Line 3:*{root}Program.cs (in project UNKNOWN)*File not found: ./Program.cs*No project file or package specified*");
         }
 
         [Fact]
@@ -65,7 +66,8 @@ This is some sample code:
             await VerifyCommand.Do(
                 root,
                 console,
-                () => directoryAccessor);
+                () => directoryAccessor,
+                new WorkspaceServer.PackageRegistry());
 
             _output.WriteLine(console.Out.ToString());
 
@@ -98,7 +100,8 @@ This is some sample code:
             var resultCode = await VerifyCommand.Do(
                                  workingDirectory,
                                  console,
-                                 () => directoryAccessor);
+                                 () => directoryAccessor,
+                                new WorkspaceServer.PackageRegistry());
 
             _output.WriteLine(console.Out.ToString());
 
@@ -123,7 +126,8 @@ This is some sample code:
             var resultCode = await VerifyCommand.Do(
                                  rootDirectory,
                                  console,
-                                 () => directoryAccessor);
+                                 () => directoryAccessor,
+                                new WorkspaceServer.PackageRegistry());
 
             resultCode.Should().Be(1);
         }

@@ -16,14 +16,24 @@ namespace WorkspaceServer
         private readonly ConcurrentDictionary<string, Task<PackageBuilder>> _packageBuilders = new ConcurrentDictionary<string, Task<PackageBuilder>>();
         private readonly IEnumerable<IPackageDiscoveryStrategy> _strategies;
 
-        public PackageRegistry(params IPackageDiscoveryStrategy[] additionalStrategies)
+        public static PackageRegistry CreateWithOneStrategy(IPackageDiscoveryStrategy strategy)
         {
-            _strategies = new IPackageDiscoveryStrategy[]
+            var collection = (IEnumerable<IPackageDiscoveryStrategy>)(new[] { strategy });
+            return new PackageRegistry(collection);
+        }
+
+        public PackageRegistry(params IPackageDiscoveryStrategy[] additionalStrategies) : this(new IPackageDiscoveryStrategy[]
             {
                 new ProjectFilePackageDiscoveryStrategy(),
                 new DirectoryPackageDiscoveryStrategy(),
                 new GlobalToolPackageDiscoveryStrategy(),
-            }.Concat(additionalStrategies);
+            }.Concat(additionalStrategies))
+        {
+        }
+
+        private PackageRegistry(IEnumerable<IPackageDiscoveryStrategy> strategies)
+        {
+            _strategies = strategies;
         }
 
         public void Add(string name, Action<PackageBuilder> configure)
@@ -63,7 +73,7 @@ namespace WorkspaceServer
                                     }
                                 }
 
-                                throw new ArgumentException($"Workspace named \"{name}\" not found.");
+                                throw new ArgumentException($"Package named \"{name}\" not found.");
                             })).GetPackage(budget);
 
 

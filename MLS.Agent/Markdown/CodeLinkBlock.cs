@@ -14,29 +14,33 @@ namespace MLS.Agent.Markdown
 {
     public class CodeLinkBlock : FencedCodeBlock
     {
-        private readonly AsyncLazy<IDirectoryAccessor> _directoryAccessor;
+        private AsyncLazy<IDirectoryAccessor> _directoryAccessor;
         private CodeLinkBlockOptions _options;
         private string _sourceCode;
         private readonly List<string> _diagnostics = new List<string>();
 
         public CodeLinkBlock(
-            BlockParser parser,
-            Func<Task<IDirectoryAccessor>> directoryAccessor) : base(parser)
+            BlockParser parser) : base(parser)
         {
-            _directoryAccessor = new AsyncLazy<IDirectoryAccessor>(directoryAccessor);
         }
 
-        public void AddOptions(CodeLinkBlockOptions options)
+        public void AddOptions(CodeLinkBlockOptions options, Func<Task<IDirectoryAccessor>> directoryAccessor)
         {
             _options = options;
+            _directoryAccessor = new AsyncLazy<IDirectoryAccessor>(directoryAccessor);
         }
 
         public async Task InitializeAsync()
         {
-            await SetSourceCode();
+            if (_options == null)
+            {
+                throw new InvalidOperationException("Attempted to initialize block before adding options");
+            }
+
 
             if (await ValidateOptions(_options))
             {
+                await SetSourceCode();
                 await AddAttributes(_options);
             }
         }
@@ -99,6 +103,22 @@ namespace MLS.Agent.Markdown
         {
             bool succeeded = true;
 
+            IDirectoryAccessor accessor = null;
+            try
+            {
+                accessor = await _directoryAccessor.ValueAsync();
+            }
+            catch (ArgumentException e)
+            {
+                this.AddDiagnostic(e.Message);
+                return false;
+            }
+
+            if (options.SourceFile != null && !accessor.FileExists(options.SourceFile))
+            {
+                this.AddDiagnostic($"File not found: {options.SourceFile.Value}");
+            }
+
             if (string.IsNullOrEmpty(options.Package) && options.Project == null)
             {
                 this.AddDiagnostic("No project file or package specified");
@@ -123,7 +143,7 @@ namespace MLS.Agent.Markdown
                 if (packageName == null)
                 {
                     this.AddDiagnostic(
-                        $"No project file could be found at path {(await _directoryAccessor.ValueAsync()).GetFullyQualifiedPath(new RelativeDirectoryPath("."))}");
+                        $"No project file could be found at path {accessor.GetFullyQualifiedPath(new RelativeDirectoryPath("."))}");
                     succeeded = false;
                 }
             }
@@ -168,7 +188,7 @@ namespace MLS.Agent.Markdown
 
         public string Region => _options.Region;
 
-        public string Session  => _options.Session;
+        public string Session => _options.Session;
 
         public string SourceCode
         {

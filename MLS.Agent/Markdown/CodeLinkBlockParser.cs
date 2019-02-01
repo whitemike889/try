@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Markdig.Helpers;
 using Markdig.Parsers;
 using Markdig.Syntax;
+using WorkspaceServer;
 
 namespace MLS.Agent.Markdown
 {
@@ -11,16 +12,19 @@ namespace MLS.Agent.Markdown
         private readonly MarkdownArgumentParser _csharpLinkParser;
         private readonly IDirectoryAccessor _directoryAccessor;
 
-        public CodeLinkBlockParser(IDirectoryAccessor directoryAccessor)
+        private readonly PackageRegistry _registry;
+
+        public CodeLinkBlockParser(IDirectoryAccessor directoryAccessor, PackageRegistry registry)
         {
             OpeningCharacters = new[] { '`' };
             InfoParser = ParseCodeOptions;
             _directoryAccessor = directoryAccessor ?? throw new ArgumentNullException(nameof(directoryAccessor));
+            _registry = registry ?? throw new ArgumentNullException(nameof(registry));
             _csharpLinkParser = new MarkdownArgumentParser(_directoryAccessor);
         }
 
         protected override CodeLinkBlock CreateFencedBlock(BlockProcessor processor) =>
-            new CodeLinkBlock(this, () => Task.FromResult(_directoryAccessor));
+            new CodeLinkBlock(this);
 
         private bool ParseCodeOptions(
             BlockProcessor state,
@@ -41,9 +45,23 @@ namespace MLS.Agent.Markdown
                 return false;
             }
 
-            codeLinkBlock.AddOptions(parseResult);
+            codeLinkBlock.AddOptions(parseResult, () => GetAccessor(parseResult.Package, _registry, _directoryAccessor));
 
             return true;
+        }
+
+        private static async Task<IDirectoryAccessor> GetAccessor(string package, PackageRegistry registry, IDirectoryAccessor defaultAccessor)
+        {
+            if (package != null)
+            {
+                var installedPackage = await registry.Get(package);
+                if (installedPackage != null && installedPackage.Directory != null)
+                {
+                    return new FileSystemDirectoryAccessor(installedPackage.Directory);
+                }
+            }
+
+            return defaultAccessor;
         }
 
         public override BlockState TryContinue(BlockProcessor processor, Block block)
