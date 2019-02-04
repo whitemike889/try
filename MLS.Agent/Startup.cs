@@ -79,7 +79,7 @@ namespace MLS.Agent
                 {
                     services.AddSingleton(_ => PackageRegistry.CreateForTryMode(StartupOptions.RootDirectory, StartupOptions.AddSource));
                     services.AddSingleton(c => new MarkdownProject(c.GetRequiredService<IDirectoryAccessor>(), c.GetRequiredService<PackageRegistry>()));
-                    services.AddSingleton((Func<IServiceProvider, IDirectoryAccessor>)(_ => CreateDirectoryAccessor()));
+                    services.AddSingleton(_ => CreateDirectoryAccessor());
                 }
 
                 operation.Succeed();
@@ -121,7 +121,7 @@ namespace MLS.Agent
                     .UseStaticFilesFromToolLocation()
                     .UseRouter(new StaticFilesProxyRouter())
                     .UseMvc();
-                
+
                 var budget = new Budget();
 
                 _disposables.Add(() => budget.Cancel());
@@ -135,25 +135,28 @@ namespace MLS.Agent
                     Task.Delay(TimeSpan.FromSeconds(1))
                         .ContinueWith(task =>
                         {
-                            var url = "http://localhost:4242";
-                         
+                            var processName = Process.GetCurrentProcess().ProcessName;
+
+                            var launchUrl = processName == "dotnet" ||
+                                            processName == "dotnet.exe"
+                                                ? "http://localhost:4242"
+                                                : "http://localhost:5000";
+
                             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                             {
-                                Process.Start(new ProcessStartInfo("cmd", $"/c start {url}"));
+                                Process.Start(new ProcessStartInfo("cmd", $"/c start {launchUrl}"));
                             }
                             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                             {
-                                Process.Start("xdg-open", url);
+                                Process.Start("xdg-open", launchUrl);
                             }
                             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                             {
-                                Process.Start("open", url);
+                                Process.Start("open", launchUrl);
                             }
                         });
                 }
             }
         }
-
-
     }
 }

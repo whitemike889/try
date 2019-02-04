@@ -20,7 +20,6 @@ namespace WorkspaceServer.Tests.Instrumentation
         {
             var a = 1;
             var b = "two";
-            var c = a;
 
             programStateJson = InstrumentationEmitter.GetProgramState(
                     new FilePosition

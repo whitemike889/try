@@ -9,7 +9,7 @@ namespace WorkspaceServer.PackageDiscovery
     public class LocalToolPackageDiscoveryStrategy : IPackageDiscoveryStrategy
     {
         private readonly DirectoryInfo _workingDirectory;
-        ToolPackageLocator _locator;
+        private readonly ToolPackageLocator _locator;
         private readonly DirectoryInfo _addSource;
 
         public LocalToolPackageDiscoveryStrategy(DirectoryInfo workingDirectory, DirectoryInfo addSource)

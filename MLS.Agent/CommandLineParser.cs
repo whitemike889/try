@@ -5,7 +5,7 @@ using System.CommandLine.Invocation;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using WorkspaceServer;
+using WorkspaceServer.Packaging;
 
 namespace MLS.Agent
 {
@@ -121,11 +121,18 @@ namespace MLS.Agent
 
                 run.Handler = CommandHandler.Create(async (IConsole console) =>
                 {
-                    var registry = PackageRegistry.CreateForHostedMode();
+                    var packagesDirectory = new DirectoryInfo(Path.Combine(Package.DefaultPackagesDirectory.FullName, ".store"));
 
-                    foreach (var package in registry)
+                    if (packagesDirectory.Exists)
                     {
-                        console.Out.WriteLine((await package).PackageName);
+                        foreach (var package in packagesDirectory.GetDirectories())
+                        {
+                            console.Out.WriteLine(package.FullName);
+                        }
+                    }
+                    else
+                    {
+                        console.Out.WriteLine("No Try .NET packages installed");
                     }
                 });
 

@@ -63,7 +63,8 @@ namespace WorkspaceServer.Tests
             using (var webServer = new WebServer(workspace))
             using (webServer.StandardOutput.Subscribe(log.Add))
             {
-                await webServer.EnsureStarted();
+                await webServer.EnsureStarted(); 
+                await Task.Delay(100);
             }
 
             log.ShouldMatch(

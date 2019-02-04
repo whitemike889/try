@@ -10,7 +10,11 @@ namespace WorkspaceServer.Tests
         {
             for (var i = 0; i < expected.Length; i++)
             {
-                actual.ElementAt(i).Should().Match(expected[i]);
+                var item = actual.ElementAtOrDefault(i);
+
+                item.Should().NotBeNull(because: $"expected to match a collection of {expected.Length} lines but only found {i}");
+                
+                item.Should().Match(expected[i]);
             }
         }
 

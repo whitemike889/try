@@ -78,7 +78,11 @@ namespace MLS.Agent.Controllers
 </head>
 
 <body>
+
     <div class=""content"">
+
+    {Header()}
+
     <div class=""documentation-container"">
         <div class=""code-column"">
             {await markdownFile.ToHtmlContentAsync()}
@@ -87,7 +91,11 @@ namespace MLS.Agent.Controllers
             {await SessionControlsHtml(markdownFile)}
         </div>
     </div>
+
     </div>
+
+    {Footer()}
+
     <script>trydotnet.autoEnable(new URL(""{hostUrl}""));</script>
 </body>
 
@@ -104,13 +112,55 @@ namespace MLS.Agent.Controllers
 </head>
 
 <body>
+
     <div class=""content"">
+    
+    {Header()}
+
         <ul class=""code-example-list"">
             {html}
         </ul>
     </div>
+
+    {Footer()}
+
 </body>
 
 </html>";
+
+        private string Header() => @"
+<header class=""header"">
+    <div class=""shimmer"">
+        <a href=""https://dotnet.microsoft.com/platform/try-dotnet"">
+            Powered by Try .NET
+        </a>
+    </div>
+</header>";
+
+        private string Footer() => @"
+<footer class=""footer"">
+  <div class=""content has-text-centered"">
+    <ul>
+        <li>
+            <a href=""https://github.com/dotnet/try/issues"">Report a Bug</a>
+        </li>
+        <li>
+            <a href=""https://dotnet.microsoft.com/platform/support-policy"">Support Policy</a>
+        </li>
+        <li>
+            <a href=""https://go.microsoft.com/fwlink/?LinkId=521839"">Privacy &amp; Cookies</a>
+        </li>
+        <li>
+            <a href=""https://go.microsoft.com/fwlink/?LinkID=206977"">Terms of Use</a>
+        </li>
+        <li>
+            <a href=""https://www.microsoft.com/trademarks"">Trademarks</a>
+        </li>
+        <li>
+            © Microsoft 2019
+        </li>
+    </ul>
+  </div>
+</footer>";
     }
 }

@@ -40,5 +40,10 @@ namespace MLS.Agent
         public string ApplicationInsightsKey { get; set; }
         public bool LogToFile { get; set; }
         public bool IsInHostedMode => RootDirectory == null;
+
+        public string EnvironmentName =>
+            Production || !IsInHostedMode
+                ? Microsoft.AspNetCore.Hosting.EnvironmentName.Production
+                : Microsoft.AspNetCore.Hosting.EnvironmentName.Development;
     }
 }

@@ -18,9 +18,7 @@ namespace MLS.Agent.Tests
             configuration = new Configuration()
                 .UsingExtension("json");
 
-#if !DEBUG
             configuration = configuration.SetInteractive(false);
-#endif
         }
 
         [Fact]

@@ -143,9 +143,7 @@ namespace MLS.Agent
 
                               c.AddSingleton(options);
                           })
-                          .UseEnvironment(options.Production
-                                              ? EnvironmentName.Production
-                                              : EnvironmentName.Development)
+                          .UseEnvironment(options.EnvironmentName)
                           .UseStartup<Startup>()
                           .Build();
 
