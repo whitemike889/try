@@ -47,6 +47,7 @@ namespace WorkspaceServer.Packaging
         private static readonly object _lockObj = new object();
         private readonly AsyncLazy<bool> _created;
         private readonly AsyncLazy<bool> _built;
+        private readonly Lazy<bool> _configurationFileCreated;
         private readonly AsyncLazy<bool> _published;
         private readonly AsyncLazy<CSharpCommandLineArguments> _csharpCommandLineArguments;
         private bool? _isWebProject;
@@ -74,6 +75,7 @@ namespace WorkspaceServer.Packaging
             _created = new AsyncLazy<bool>(VerifyOrCreate);
             _built = new AsyncLazy<bool>(VerifyOrBuild);
             _published = new AsyncLazy<bool>(VerifyOrPublish);
+            _configurationFileCreated = new Lazy<bool>(VerifyOrCreateConfigFile);
             _log = new Logger($"{nameof(Package)}:{Name}");
             _workspaceConfigFilePath = Path.Combine(Directory.FullName, ".trydotnet");
         }
@@ -90,8 +92,7 @@ namespace WorkspaceServer.Packaging
 
         public bool IsCreated { get; private set; }
 
-        public bool IsBuilt =>
-               File.Exists(_workspaceConfigFilePath);
+        public bool IsBuilt { get; private set; }
 
         private bool IsReady { get; set; }
 
@@ -113,7 +114,7 @@ namespace WorkspaceServer.Packaging
         {
             if (_configuration == null)
             {
-                await EnsureBuilt();
+                await EnsureConfigurationFileExists();
 
                 var workspaceConfigFile = new FileInfo(_workspaceConfigFilePath);
                 if (workspaceConfigFile.Exists)
@@ -235,6 +236,19 @@ namespace WorkspaceServer.Packaging
             budget?.RecordEntry();
         }
 
+        public async Task EnsureConfigurationFileExists(Budget budget = null)
+        {
+            await EnsureBuilt(budget);
+            var _ = _configurationFileCreated.Value;
+            budget?.RecordEntry();
+        }
+
+        public bool VerifyOrCreateConfigFile()
+        {
+            CreateWorkspaceConfigurationFile();
+            return true;
+        }
+
         private async Task<bool> VerifyOrBuild()
         {
             using (var operation = _log.OnEnterAndConfirmOnExit())
@@ -246,13 +260,17 @@ namespace WorkspaceServer.Packaging
                     fileStream = File.Create(lockFile.FullName, 1, FileOptions.DeleteOnClose);
                     if (!IsBuilt)
                     {
-                        operation.Info("Building workspace using {_initializer} in {directory}", _initializer, Directory);
-                        var result = await new Dotnet(Directory)
-                                         .Build(args: "/fl /p:ProvideCommandLineArgs=true;append=true");
-                        result.ThrowOnFailure();
-                        CreateWorkspaceConfigurationFile();
-                        BuildTime = Clock.Current.Now();
-                        operation.Info("Workspace built");
+                        if(Directory.GetFiles("msbuild.log").Length == 0)
+                        {
+                            operation.Info("Building workspace using {_initializer} in {directory}", _initializer, Directory);
+                            var result = await new Dotnet(Directory)
+                                             .Build(args: "/fl /p:ProvideCommandLineArgs=true;append=true");
+                            result.ThrowOnFailure();
+                            BuildTime = Clock.Current.Now();
+                            operation.Info("Workspace built");
+                        }
+                        
+                        IsBuilt = true;
                     }
                     else
                     {
