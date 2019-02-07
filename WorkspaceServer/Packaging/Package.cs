@@ -146,6 +146,14 @@ namespace WorkspaceServer.Packaging
             }
         }
 
+        public FileInfo BlazorEntryPointAssemblyPath
+        {
+            get
+            {
+              throw new NotImplementedException();
+            }
+        }
+
         public string TargetFramework
         {
             get

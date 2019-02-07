@@ -52,7 +52,7 @@ namespace WorkspaceServer
             configure(packageBuilder);
             _packageBuilders.TryAdd(name, Task.FromResult(packageBuilder));
         }
-
+      
         public async Task<Package> Get(string packageName, Budget budget = null)
         {
             if (packageName == "script")

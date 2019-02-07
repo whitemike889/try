@@ -21,5 +21,6 @@ namespace WorkspaceServer
         public DateTimeOffset? PublicationTime { get;  }
         public DateTimeOffset? CreationTime { get;  }
         public DateTimeOffset? ReadyTime { get; }
+        public bool BlazorSupported { get; set; }
     }
 }

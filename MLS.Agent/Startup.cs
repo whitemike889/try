@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using MLS.Agent.Blazor;
 using MLS.Agent.Markdown;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
@@ -123,7 +124,7 @@ namespace MLS.Agent
                     .UseMvc();
 
                 var budget = new Budget();
-
+                Configurator.Configure(app, app.ApplicationServices, budget);
                 _disposables.Add(() => budget.Cancel());
 
                 operation.Succeed();
