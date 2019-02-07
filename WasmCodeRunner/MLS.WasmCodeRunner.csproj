@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <IsPackable>true</IsPackable>
+  </PropertyGroup>
+
+  
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    <PackageReference Include="CdpxBuildProps" Version="0.1.6040001">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="VersionSensor" Version="0.1.5650001" />
+  </ItemGroup>
+
+  <ImportGroup>
+    <Import Project="AssemblyInfo.props" Condition="Exists('AssemblyInfo.props')" />
+  </ImportGroup>
+
+</Project>

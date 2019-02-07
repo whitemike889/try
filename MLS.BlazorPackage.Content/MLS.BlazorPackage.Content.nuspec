@@ -1,0 +1,19 @@
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>MLS.BlazorPackage.Content</id>
+    <version>0.1.$versionsuffix$</version>
+    <authors>piotrp</authors>
+    <description>Adds assets to blazor projects</description>
+    <developmentDependency>true</developmentDependency>
+  </metadata>
+  <files>
+    <file src="bootstrap/**/*.cs" 
+          target="contentFiles/cs/any/" />
+    <file src="Pages/**/*" 
+          target="contentFiles/cs/any/" />
+    <file src="wwwroot/**/*" 
+          target="contentFiles/cs/any/" />
+    <file src="Linker.xml" 
+          target="contentFiles/cs/any/" />
+  </files>
+</package>

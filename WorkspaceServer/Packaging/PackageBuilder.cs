@@ -53,6 +53,15 @@ namespace WorkspaceServer.Packaging
             });
         }
 
+        public void EnableBlazor()
+        {
+            _afterCreateActions.Add(async (workspace, budget) =>
+            {
+                var dotnet = new Dotnet(workspace.Directory);
+                await dotnet.AddPackage(packageId, version);
+            });
+        }
+
         public void DeleteFile(string relativePath)
         {
             _afterCreateActions.Add(async (workspace, budget) =>
