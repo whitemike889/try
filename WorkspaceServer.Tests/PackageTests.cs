@@ -198,13 +198,26 @@ namespace WorkspaceServer.Tests
                              "aspnet.webapi.dll"));
         }
 
-
         [Fact]
         public async Task When_workspace_is_built_trydotnet_file_is_created()
         {
             var package = await Create.ConsoleWorkspaceCopy();
             await package.EnsureBuilt();
             package.Directory.GetFiles(".trydotnet").Should().HaveCount(1);
+        }
+
+        [Fact]
+        public async Task If_the_package_has_been_built_and_trydotnetfile_doesnt_exist_it_is_created()
+        {
+            var package = Create.EmptyWorkspace();
+            await new Dotnet(package.Directory).New("console");
+            await new Dotnet(package.Directory).Build(args: "/fl /p:ProvideCommandLineArgs=true;append=true");
+            package.Directory.GetFiles(".trydotnet").Should().BeEmpty();
+
+            var config = await package.GetConfigurationAsync();
+            config.CompilerArgs.Should().Contain("/debug+");
+            config.CompilerArgs.Should().Contain("/target:exe");
+            config.CompilerArgs.Should().Contain("-langversion:7.3");
         }
 
 
