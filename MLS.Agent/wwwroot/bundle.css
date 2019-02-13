@@ -90,92 +90,25 @@ button:disabled {
     background-color: lightgreen;
 }
 
-.dot-net-style-app-visualStudioBanner-4d94d{
+.dot-net-style-app-try-dotnet-banner-50bab {
     float: right;
     position: absolute;
     bottom: 5px;
     right: 16px;
-    visibility: hidden;
 }
 
-.dot-net-style-app-visualStudio-link-minimize-bc1bc{
-    border-style: solid;
-    border-width: thin;
-    opacity: 1;
-    animation-name: dot-net-style-app-fadeIn-8a9ee; 
-    animation-duration: 2s;
-    border-color: #ccc;
-    padding: 12px;
-    background: white;
-}
-
-@keyframes dot-net-style-app-fadeIn-8a9ee {
-    0% {
-      right: -3rem;
-      opacity: 0;
-    }
-  
-    100% {
-      right: 12px;
-      opacity: 1;
-    }
-}
-
-
-@media screen and (min-width: 363px) and (min-height: 436px) {
-    .dot-net-style-app-visualStudioBanner-4d94d {
-        visibility: visible;
-    }
-}
-
-.dot-net-style-app-visualStudioBannerLink-866b9 {
-    font-size: 16px;
+.dot-net-style-app-try-dotnet-banner-link-4d260 {
+    font-size: 12px;
     color: #5C2D91;
     font-family: 'Segoe UI';
-    margin: 16px;
-    padding: 0px;
+    margin: 4px;
     text-decoration: none;
+    font-weight: bold;
 }
 
-.dot-net-style-app-visualStudioBannerLink-866b9:hover {
-    font-size: 16px;
+.dot-net-style-app-try-dotnet-banner-link-4d260:hover {
     color: #32145A;
-    font-family: 'Segoe UI';
-    margin: 16px;
-    padding: 0px;
     text-decoration: underline;
-}
-
-.dot-net-style-app-visualStudioImage-ce9ae{
-    float: right;
-    background: url("/static/vs_windows.png");
-    background-repeat: no-repeat;
-    padding-right: 20px;
-    padding-bottom: 20px;
-}
-
-.dot-net-style-app-visualStudioMinimizeButton-cd2b8{
-    background-color: transparent;
-    font-size: 12px;
-    color: #ccc;
-    font-family: 'Segoe UI';
-    position: absolute;
-    top: 3px;
-    right: 3px;
-    padding: 0px;
-    line-height: 12px;
-}
-
-.dot-net-style-app-visualStudioMinimizeButton-cd2b8:hover{
-    background: color #d5ddde;
-    font-size: 12px;
-    color: black;
-    font-family: 'Segoe UI';
-    position: absolute;
-    top: 3px;
-    right: 3px;
-    padding: 0px;
-    line-height: 12px;
 }
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
