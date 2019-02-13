@@ -4,6 +4,8 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
+using System.Xml.XPath;
 using Clockwise;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -100,9 +102,25 @@ namespace WorkspaceServer.Packaging
             _isUnitTestProject ??
             (_isUnitTestProject = Directory.GetFiles("*.testadapter.dll", SearchOption.AllDirectories).Any()).Value;
 
-        public bool IsWebProject =>
-            _isWebProject ??
-            (_isWebProject = Directory.GetDirectories("wwwroot", SearchOption.AllDirectories).Any()).Value;
+        public bool IsWebProject
+        {
+            get
+            {
+                if (_isWebProject == null &&
+                    Directory.GetFiles("*.csproj").SingleOrDefault() is FileInfo csproj)
+                {
+                    var csprojXml = File.ReadAllText(csproj.FullName);
+
+                    var xml = XElement.Parse(csprojXml);
+
+                    var wut = xml.XPathSelectElement("//ItemGroup/PackageReference[@Include='Microsoft.AspNetCore.App']");
+
+                    _isWebProject = wut != null;
+                }
+
+                return _isWebProject ?? false;
+            }
+        }
 
         public DirectoryInfo Directory { get; }
 
@@ -217,6 +235,8 @@ namespace WorkspaceServer.Packaging
 
             await EnsureBuilt(budget);
 
+            await EnsureConfigurationFileExists(budget);
+
             if (RequiresPublish)
             {
                 await EnsurePublished(budget);
@@ -245,7 +265,22 @@ namespace WorkspaceServer.Packaging
 
         public bool VerifyOrCreateConfigFile()
         {
-            CreateWorkspaceConfigurationFile();
+            var buildLog = Directory.GetFiles("msbuild.log").SingleOrDefault();
+
+            if (buildLog == null)
+            {
+                throw new InvalidOperationException($"msbuild.log not found in {Directory}");
+            }
+
+            var compilerCommandLine = buildLog.FindCompilerCommandLineAndSetLanguageversion(csharpLanguageVersion);
+
+            _configuration = new PackageConfiguration
+                             {
+                                 CompilerArgs = compilerCommandLine
+                             };
+
+            File.WriteAllText(_workspaceConfigFilePath, _configuration.ToJson());
+
             return true;
         }
 
@@ -290,24 +325,6 @@ namespace WorkspaceServer.Packaging
             }
 
             return true;
-        }
-
-        private void CreateWorkspaceConfigurationFile()
-        {
-            var buildLog = Directory.GetFiles("msbuild.log").SingleOrDefault();
-            if (buildLog == null)
-            {
-                throw new InvalidOperationException($"msbuild.log not found in {Directory}");
-            }
-
-            var compilerCommandLine = buildLog.FindCompilerCommandLineAndSetLanguageversion(csharpLanguageVersion);
-
-            _configuration = new PackageConfiguration
-            {
-                CompilerArgs = compilerCommandLine
-            };
-
-            File.WriteAllText(_workspaceConfigFilePath, _configuration.ToJson());
         }
 
         public async Task EnsurePublished(Budget budget = null)

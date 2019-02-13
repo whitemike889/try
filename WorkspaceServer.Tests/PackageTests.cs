@@ -152,7 +152,7 @@ namespace WorkspaceServer.Tests
         {
             var package = await Create.WebApiWorkspaceCopy();
 
-            await package.EnsureCreated();
+            await package.EnsureReady(new TimeBudget(30.Seconds()));
 
             package.IsWebProject.Should().BeTrue();
         }

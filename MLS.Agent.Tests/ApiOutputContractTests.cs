@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using Assent;
+using FluentAssertions;
 using MLS.Protocol;
 using MLS.Protocol.Execution;
 using Recipes;
@@ -69,7 +70,6 @@ namespace MLS.Agent.Tests
             this.Assent(result.FormatJson(), configuration);
         }
 
-
         [Fact]
         public async Task The_Compile_contract_for_compiling_code_has_not_been_broken()
         {
@@ -90,7 +90,18 @@ namespace MLS.Agent.Tests
 
             var result = await response.Content.ReadAsStringAsync();
 
-            this.Assent(result.FormatJson(), configuration);
+            var compileResult = result.FromJsonTo<CompileResult>();
+
+            compileResult.Base64Assembly.Should().NotBeNullOrWhiteSpace();
+            compileResult = new CompileResult(
+                compileResult.Succeeded,
+                "",
+                compileResult.GetFeature<Diagnostics>(),
+                compileResult.RequestId);
+
+            result = compileResult.ToJson().FormatJson();
+
+            this.Assent(result, configuration);
         }
 
         [Fact]
