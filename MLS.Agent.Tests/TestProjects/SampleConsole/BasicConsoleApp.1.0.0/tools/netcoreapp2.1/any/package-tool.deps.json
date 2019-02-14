@@ -1,0 +1,52 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v2.1",
+    "signature": "3db3993a7438308a691aeb029e173cca7cac7e95"
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v2.1": {
+      "package-tool/1.0.0": {
+        "dependencies": {
+          "System.CommandLine.Experimental": "0.1.0-alpha-63710-01"
+        },
+        "runtime": {
+          "package-tool.dll": {}
+        }
+      },
+      "Microsoft.CSharp/4.4.1": {},
+      "System.CommandLine.Experimental/0.1.0-alpha-63710-01": {
+        "dependencies": {
+          "Microsoft.CSharp": "4.4.1"
+        },
+        "runtime": {
+          "lib/netstandard2.0/System.CommandLine.dll": {
+            "assemblyVersion": "0.1.0.0",
+            "fileVersion": "0.1.0.63710"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "package-tool/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Microsoft.CSharp/4.4.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-A5hI3gk6WpcBI0QGZY6/d5CCaYUxJgi7iENn1uYEng+Olo8RfI5ReGVkjXjeu3VR3srLvVYREATXa2M0X7FYJA==",
+      "path": "microsoft.csharp/4.4.1",
+      "hashPath": "microsoft.csharp.4.4.1.nupkg.sha512"
+    },
+    "System.CommandLine.Experimental/0.1.0-alpha-63710-01": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-ceK+trohwNY2n9J4KtbqcPKMM/qFZRJFBGGVsi/V2o0yXt5owWIdaEFNOvWLY1lwr2cHBgh+iheuCnR3IMWbkg==",
+      "path": "system.commandline.experimental/0.1.0-alpha-63710-01",
+      "hashPath": "system.commandline.experimental.0.1.0-alpha-63710-01.nupkg.sha512"
+    }
+  }
+}
