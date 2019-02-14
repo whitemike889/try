@@ -3,16 +3,16 @@ using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 
 namespace MLS.Agent.Markdown
 {
-    public class MarkdownArgumentParser
+    public class CodeFenceOptionsParser
     {
-        Parser _parser;
-        CodeLinkBlockOptions _options;
+        private readonly Parser _parser;
+        private CodeLinkBlockOptions _options;
 
-        public MarkdownArgumentParser(IDirectoryAccessor directoryAccessor)
+        public CodeFenceOptionsParser(IDirectoryAccessor directoryAccessor)
         {
             _parser = CreateOptionsParser(directoryAccessor, o => _options = o);
         }
@@ -101,7 +101,6 @@ namespace MLS.Agent.Markdown
                              new Option("--session", argument: new Argument<string>(defaultValue: "Run"))
                          };
 
-
             csharp.AddAlias("CS");
             csharp.AddAlias("C#");
             csharp.AddAlias("CSHARP");
@@ -111,9 +110,9 @@ namespace MLS.Agent.Markdown
             var binder = new TypeBinder(typeof(CodeLinkBlockOptions));
             var command = new RootCommand { csharp };
 
-            csharp.Handler = CommandHandler.Create<InvocationContext>((context) =>
+            csharp.Handler = CommandHandler.Create<InvocationContext>(context =>
             {
-                var options = (CodeLinkBlockOptions)binder.CreateInstance(context);
+                var options = (CodeLinkBlockOptions) binder.CreateInstance(context);
 
                 var projectResult = context.ParseResult.CommandResult["project"];
                 if (projectResult?.IsImplicit ?? false)
@@ -123,6 +122,11 @@ namespace MLS.Agent.Markdown
                 }
 
                 options = options.ReplaceErrors(context.ParseResult.Errors.Select(e => e.Message));
+
+                options.RunArgs = string.Join(" ", context.ParseResult.UnparsedTokens
+                                                          .Select(t => Regex.IsMatch(t, @".*\s.*")
+                                                                           ? $"\"{t}\""
+                                                                           : t));
 
                 extractOptionsDelegate(options);
                 return 0;

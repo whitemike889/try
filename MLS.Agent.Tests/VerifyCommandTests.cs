@@ -3,9 +3,11 @@ using System.CommandLine;
 using System.IO;
 using System.Threading.Tasks;
 using FluentAssertions;
-using MLS.Project.Generators;
+using WorkspaceServer;
+using WorkspaceServer.Tests;
 using Xunit;
 using Xunit.Abstractions;
+using CodeManipulation = MLS.Project.Generators.CodeManipulation;
 
 namespace MLS.Agent.Tests
 {
@@ -38,12 +40,13 @@ This is some sample code:
                 root,
                 console,
                 () => directoryAccessor,
-                new WorkspaceServer.PackageRegistry());
+                new PackageRegistry(),
+                false);
 
             console.Out
                    .ToString()
                    .Should()
-                   .Match($"{root}doc.md*Line 3:*{root}Program.cs (in project UNKNOWN)*File not found: ./Program.cs*No project file or package specified*");
+                   .Match($"*{root}doc.md*Line 3:*{root}Program.cs (in project UNKNOWN)*File not found: ./Program.cs*No project file or package specified*");
         }
 
         [Fact]
@@ -67,21 +70,21 @@ This is some sample code:
                 root,
                 console,
                 () => directoryAccessor,
-                new WorkspaceServer.PackageRegistry());
+                new PackageRegistry(), 
+                false);
 
             _output.WriteLine(console.Out.ToString());
 
-            console.Out
-                   .ToString()
-                   .Trim()
-                   .EnforceLF()
+            CodeManipulation.EnforceLF(console.Out
+                                     .ToString()
+                                     .Trim())
                    .Should()
                    .Match(
-                       $@"{root}doc.md*Line 2:*{root}Program.cs (in project {root}some.csproj)".EnforceLF());
+                       CodeManipulation.EnforceLF($@"{root}doc.md*Line 2:*{root}Program.cs (in project {root}some.csproj)"));
         }
 
         [Fact]
-        public async Task When_there_are_no_errors_then_return_code_is_0()
+        public async Task When_there_are_no_markdown_errors_then_return_code_is_0()
         {
             var workingDirectory = new DirectoryInfo(".");
 
@@ -101,7 +104,8 @@ This is some sample code:
                                  workingDirectory,
                                  console,
                                  () => directoryAccessor,
-                                new WorkspaceServer.PackageRegistry());
+                                 new PackageRegistry(),
+                                 false);
 
             _output.WriteLine(console.Out.ToString());
 
@@ -109,7 +113,7 @@ This is some sample code:
         }
 
         [Fact]
-        public async Task When_there_are_errors_then_return_code_is_1()
+        public async Task When_there_are_markdown_errors_then_return_code_is_1()
         {
             var rootDirectory = new DirectoryInfo(".");
 
@@ -127,9 +131,94 @@ This is some sample code:
                                  rootDirectory,
                                  console,
                                  () => directoryAccessor,
-                                new WorkspaceServer.PackageRegistry());
+                                 new PackageRegistry(),
+                                 false);
 
             resultCode.Should().Be(1);
+        }
+
+        [Theory]
+        [InlineData(@"
+```cs Program.cs --session one --project a.csproj
+```
+```cs Program.cs --session one --project b.csproj
+```")]
+        [InlineData(@"
+```cs Program.cs --session one --package some-package
+```
+```cs Program.cs --session one --project b.csproj
+```")]
+        public async Task Returns_an_error_when_a_session_has_more_than_one_package_or_project(string mdFileContents)
+        {
+            var rootDirectory = new DirectoryInfo(".");
+
+            var directoryAccessor = new InMemoryDirectoryAccessor(rootDirectory)
+                                    {
+                                        ("doc.md", mdFileContents),
+                                        ("a.csproj", ""),
+                                        ("b.csproj", ""),
+                                    };
+
+            var console = new TestConsole();
+
+            var resultCode = await VerifyCommand.Do(
+                                 rootDirectory,
+                                 console,
+                                 () => directoryAccessor,
+                                 new PackageRegistry(),
+                                 false);
+
+            console.Out.ToString().Should().Contain("Session cannot span projects or packages: --session one");
+
+            resultCode.Should().NotBe(0);
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData("--region mask")]
+        public async Task Verify_shows_diagnostics_for_complation_failures(string args)
+        {
+            var directory = Create.EmptyWorkspace().Directory;
+
+            var directoryAccessor = new InMemoryDirectoryAccessor(directory, directory)
+                                    {
+                                        ("Program.cs", $@"
+    public class Program
+    {{
+        public static void Main(string[] args)
+        {{
+#region mask
+            Console.WriteLine()
+#endregion
+        }}
+    }}"),
+                                        ("sample.md", $@"
+```cs {args} Program.cs
+```"),
+                                        ("sample.csproj",
+                                         @"<Project Sdk=""Microsoft.NET.Sdk"">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+  </PropertyGroup>
+</Project>
+")
+                                    }.CreateFiles();
+
+            var console = new TestConsole();
+
+            var resultCode = await VerifyCommand.Do(
+                                 directory,
+                                 console,
+                                 () => directoryAccessor,
+                                 new PackageRegistry(),
+                                 compile: true);
+
+            _output.WriteLine(console.Out.ToString());
+
+            console.Out.ToString().Should().Contain("Compile failed");
+
+            resultCode.Should().NotBe(0);
         }
     }
 }

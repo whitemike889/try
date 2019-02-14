@@ -261,7 +261,13 @@ namespace WorkspaceServer.Servers.Roslyn
                     return await RunUnitTestsAsync(package, diagnostics, budget, request.RequestId);
                 }
 
-                return await RunConsoleAsync(package, diagnostics, budget, request.RequestId, workspace.IncludeInstrumentation);
+                return await RunConsoleAsync(
+                           package,
+                           diagnostics,
+                           budget,
+                           request.RequestId,
+                           workspace.IncludeInstrumentation,
+                           request.RunArgs);
             }
         }
 
@@ -291,12 +297,18 @@ namespace WorkspaceServer.Servers.Roslyn
             }
         }
 
-        private static async Task<RunResult> RunConsoleAsync(Package package, SerializableDiagnostic[] diagnostics, Budget budget, string requestId, bool includeInstrumentation)
+        private static async Task<RunResult> RunConsoleAsync(
+            Package package,
+            SerializableDiagnostic[] diagnostics,
+            Budget budget,
+            string requestId,
+            bool includeInstrumentation,
+            string commandLineArgs)
         {
             var dotnet = new Dotnet(package.Directory);
 
             var commandLineResult = await dotnet.Execute(
-                                        package.EntryPointAssemblyPath.FullName,
+                                        package.EntryPointAssemblyPath.FullName.AppendArgs(commandLineArgs),
                                         budget);
 
             budget.RecordEntry(UserCodeCompleted);
@@ -312,7 +324,7 @@ namespace WorkspaceServer.Servers.Roslyn
 
             if (commandLineResult.Error.Count > 0)
             {
-                exceptionMessage = String.Join(Environment.NewLine, commandLineResult.Error);
+                exceptionMessage = string.Join(Environment.NewLine, commandLineResult.Error);
             }
 
             var runResult = new RunResult(
@@ -345,7 +357,6 @@ namespace WorkspaceServer.Servers.Roslyn
             {
                 throw new BudgetExceededException(budget);
             }
-
 
             var trex = new FileInfo(
                 Path.Combine(

@@ -36,11 +36,12 @@ namespace MLS.Agent
                                           new GitHubRepoLocator()),
                 pack: PackageCommand.Do,
                 install: InstallCommand.Do,
-                verify: (rootDirectory, console) =>
+                verify: (rootDirectory, console, compile) =>
                     VerifyCommand.Do(rootDirectory,
                                      console,
                                      () => new FileSystemDirectoryAccessor(rootDirectory),
-                                     PackageRegistry.CreateForTryMode(rootDirectory, null)));
+                                     PackageRegistry.CreateForTryMode(rootDirectory, null),
+                                     compile));
 
             return await parser.InvokeAsync(args);
         }

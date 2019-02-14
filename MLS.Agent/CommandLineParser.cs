@@ -17,7 +17,7 @@ namespace MLS.Agent
         public delegate Task TryGitHub(string repo, IConsole console);
         public delegate Task Pack(DirectoryInfo packTarget, IConsole console);
         public delegate Task Install(string packageName, DirectoryInfo addSource, IConsole console);
-        public delegate Task<int> Verify(DirectoryInfo rootDirectory, IConsole console);
+        public delegate Task<int> Verify(DirectoryInfo rootDirectory, IConsole console, bool compile);
 
         public static Parser Create(
             StartServer start,
@@ -200,7 +200,9 @@ namespace MLS.Agent
                                                    }.ExistingOnly()
                                     };
 
-                verifyCommand.Handler = CommandHandler.Create<DirectoryInfo, IConsole>((rootDirectory, console) => verify(rootDirectory, console));
+                verifyCommand.AddOption(new Option("--compile", argument: new Argument<bool>()));
+
+                verifyCommand.Handler = CommandHandler.Create<DirectoryInfo, IConsole, bool>((rootDirectory, console, compile) => verify(rootDirectory, console, compile));
 
                 return verifyCommand;
             }

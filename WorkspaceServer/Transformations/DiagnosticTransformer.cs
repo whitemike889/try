@@ -48,7 +48,7 @@ namespace WorkspaceServer.Transformations
 
             if (activeBufferId == null)
             {
-                throw new ArgumentNullException(nameof(activeBufferId));
+                return diagnostics.Select(d => d.ToSerializableDiagnostic()).ToArray();
             }
 
             if (diagnostics == null  || diagnostics.Length ==0)

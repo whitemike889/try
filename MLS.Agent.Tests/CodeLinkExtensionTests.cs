@@ -9,6 +9,8 @@ using HtmlAgilityPack;
 using System.Threading.Tasks;
 using WorkspaceServer;
 using System.CommandLine;
+using System.Linq;
+using MLS.Agent.Controllers;
 using MLS.Agent.Tools;
 using WorkspaceServer.PackageDiscovery;
 
@@ -457,6 +459,35 @@ $@"```cs --package {package} Program.cs
             var node = htmlDocument.DocumentNode.SelectSingleNode("//div[@class='notification is-danger']");
 
             node.InnerHtml.Should().Contain($"Package named &quot;{package}&quot; not found");
+        }
+
+        [Fact]
+        public async Task Additional_arguments_are_available_to_be_forwarded_to_the_users_program_entry_point()
+        {
+            var directoryAccessor = new InMemoryDirectoryAccessor(TestAssets.SampleConsole)
+                                    {
+                                        ("Program.cs", ""),
+                                        ("sample.csproj", ""),
+                                        ("sample.md",
+                                         @"```cs Program.cs -- one two ""and three""
+```")
+                                    };
+
+            var project = new MarkdownProject(directoryAccessor, new PackageRegistry());
+
+            var markdownFile = project.GetAllMarkdownFiles().Single();
+
+            var html = await DocumentationController.SessionControlsHtml(markdownFile);
+
+            var htmlDocument = new HtmlDocument();
+            htmlDocument.LoadHtml(html.ToString());
+
+            var value = htmlDocument.DocumentNode
+                                    .SelectSingleNode("//button")
+                                    .Attributes["data-trydotnet-run-args"]
+                                    .Value;
+
+            value.Should().Be("one two \"and three\"".HtmlAttributeEncode());
         }
     }
 }

@@ -37,7 +37,6 @@ namespace MLS.Agent.Markdown
                 throw new InvalidOperationException("Attempted to initialize block before adding options");
             }
 
-
             if (await ValidateOptions(_options))
             {
                 await SetSourceCode();
@@ -110,29 +109,29 @@ namespace MLS.Agent.Markdown
             }
             catch (ArgumentException e)
             {
-                this.AddDiagnostic(e.Message);
+                AddDiagnostic(e.Message);
                 return false;
             }
 
             if (options.SourceFile != null && !accessor.FileExists(options.SourceFile))
             {
-                this.AddDiagnostic($"File not found: {options.SourceFile.Value}");
+                AddDiagnostic($"File not found: {options.SourceFile.Value}");
             }
 
             if (string.IsNullOrEmpty(options.Package) && options.Project == null)
             {
-                this.AddDiagnostic("No project file or package specified");
+                AddDiagnostic("No project file or package specified");
             }
 
             if (options.Package != null && !options.IsProjectImplicit)
             {
-                this.AddDiagnostic("Can't specify both --project and --package");
+                AddDiagnostic("Can't specify both --project and --package");
                 succeeded = false;
             }
 
             foreach (var error in options.Errors)
             {
-                this.AddDiagnostic(error);
+                AddDiagnostic(error);
                 succeeded = false;
             }
 
@@ -142,7 +141,7 @@ namespace MLS.Agent.Markdown
 
                 if (packageName == null)
                 {
-                    this.AddDiagnostic(
+                    AddDiagnostic(
                         $"No project file could be found at path {accessor.GetFullyQualifiedPath(new RelativeDirectoryPath("."))}");
                     succeeded = false;
                 }
@@ -188,6 +187,8 @@ namespace MLS.Agent.Markdown
 
         public string Region => _options.Region;
 
+        public string RunArgs => _options.RunArgs;
+
         public string Session => _options.Session;
 
         public string SourceCode
@@ -209,8 +210,6 @@ namespace MLS.Agent.Markdown
         }
 
         public IEnumerable<string> Diagnostics => _diagnostics;
-
-        public RelativeFilePath MarkdownFile { get; internal set; }
 
         public void AddAttribute(string key, string value)
         {

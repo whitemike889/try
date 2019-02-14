@@ -9,7 +9,7 @@ namespace MLS.Agent.Markdown
 {
     public class CodeLinkBlockParser : FencedBlockParserBase<CodeLinkBlock>
     {
-        private readonly MarkdownArgumentParser _csharpLinkParser;
+        private readonly CodeFenceOptionsParser _csharpLinkParser;
         private readonly IDirectoryAccessor _directoryAccessor;
 
         private readonly PackageRegistry _registry;
@@ -20,7 +20,7 @@ namespace MLS.Agent.Markdown
             InfoParser = ParseCodeOptions;
             _directoryAccessor = directoryAccessor ?? throw new ArgumentNullException(nameof(directoryAccessor));
             _registry = registry ?? throw new ArgumentNullException(nameof(registry));
-            _csharpLinkParser = new MarkdownArgumentParser(_directoryAccessor);
+            _csharpLinkParser = new CodeFenceOptionsParser(_directoryAccessor);
         }
 
         protected override CodeLinkBlock CreateFencedBlock(BlockProcessor processor) =>

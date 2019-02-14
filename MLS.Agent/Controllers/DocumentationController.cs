@@ -48,19 +48,18 @@ namespace MLS.Agent.Controllers
                          markdownFile), "text/html");
         }
 
-        private static async Task<IHtmlContent> SessionControlsHtml(MarkdownFile markdownFile)
+        public static async Task<IHtmlContent> SessionControlsHtml(MarkdownFile markdownFile)
         {
             var sessions= (await markdownFile
                    .GetCodeLinkBlocks())
-                   .Select(b => b.Session)
-                   .Distinct();
+                   .GroupBy(b => b.Session);
 
             var sb = new StringBuilder();
 
             foreach (var session in sessions)
             {
-                sb.AppendLine($@"<button class=""run-button"" data-trydotnet-mode=""run"" data-trydotnet-session-id=""{session}"">{session}</button>");
-                sb.AppendLine($@"<div class=""output-panel"" data-trydotnet-mode=""runResult"" data-trydotnet-session-id=""{session}""></div>");
+                sb.AppendLine($@"<button class=""run-button"" data-trydotnet-mode=""run"" data-trydotnet-session-id=""{session.Key}"" data-trydotnet-run-args=""{session.First().RunArgs.HtmlAttributeEncode()}"">{session.Key}</button>");
+                sb.AppendLine($@"<div class=""output-panel"" data-trydotnet-mode=""runResult"" data-trydotnet-session-id=""{session.Key}""></div>");
             }
 
             return new HtmlString(sb.ToString());
