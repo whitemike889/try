@@ -66,6 +66,7 @@ namespace MLS.Agent.Controllers
 
             foreach (var session in sessions)
             {
+                sb.AppendLine($@"<div data-trydotnet-control-group=""true"" data-trydotnet-session-id=""{session}"">");
                 sb.AppendLine($@"<button class=""run-button"" data-trydotnet-mode=""run"" data-trydotnet-session-id=""{session.Key}"" data-trydotnet-run-args=""{session.First().RunArgs.HtmlAttributeEncode()}"">{session.Key}</button>");
                 if (enablePreviewFeatures)
                 {
@@ -88,6 +89,7 @@ namespace MLS.Agent.Controllers
 <head>
     <meta http-equiv=""Content-Type"" content=""text/html;charset=utf-8"">
     <script src=""/api/trydotnet.min.js""></script>
+    <script src=""/api/trydotnet-layout.min.js""></script>
     <link rel=""stylesheet"" href=""/css/trydotnet.css"">
     <title>dotnet try - {markdownFile.Path.Value.HtmlEncode()}</title>
 </head>
@@ -99,7 +101,7 @@ namespace MLS.Agent.Controllers
     {Header()}
 
     <div class=""documentation-container"">
-        <div class=""code-column"">
+        <div id=""documentation-container"" class=""code-column"">
             {await markdownFile.ToHtmlContentAsync()}
         </div>
         <div class=""control-column"">
@@ -111,7 +113,10 @@ namespace MLS.Agent.Controllers
 
     {Footer()}
 
-    <script>trydotnet.autoEnable(new URL(""{hostUrl}""));</script>
+    <script>
+        trydotnet.autoEnable(new URL(""{hostUrl}""));
+        trydotnetLayout.trackTopmostSession(document.getElementById(""documentation-container""), function (e){{ console.log(e); }});
+    </script>
 </body>
 
 </html>";
