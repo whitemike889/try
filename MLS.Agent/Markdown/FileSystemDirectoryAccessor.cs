@@ -29,24 +29,26 @@ namespace MLS.Agent.Markdown
         {
             if (path == null)
             {
-                throw new ArgumentNullException();
+                throw new ArgumentNullException(nameof(path));
             }
 
-            var absolutePath =  Path.Combine(_rootDirectory.FullName, path.Value);
-
-            if (path is RelativeFilePath)
+            switch (path)
             {
-                return new FileInfo(absolutePath);
-            }
-            else
-            {
-                return new DirectoryInfo(absolutePath);
+                case RelativeFilePath file:
+                    return new FileInfo(
+                        _rootDirectory.Combine(file).FullName);
+                case RelativeDirectoryPath dir:
+                    return new DirectoryInfo(
+                        _rootDirectory.Combine(dir).FullName);
+                default:
+                    throw new NotSupportedException($"{path.GetType()} is not supported.");
             }
         }
 
         public IDirectoryAccessor GetDirectoryAccessorForRelativePath(RelativeDirectoryPath relativePath)
-        {   
-            return new FileSystemDirectoryAccessor(new DirectoryInfo(Path.Combine(_rootDirectory.FullName, relativePath.Value)));
+        {
+            var absolutePath = _rootDirectory.Combine(relativePath).FullName;
+            return new FileSystemDirectoryAccessor(new DirectoryInfo(absolutePath));
         }
 
         public IEnumerable<RelativeFilePath> GetAllFilesRecursively()

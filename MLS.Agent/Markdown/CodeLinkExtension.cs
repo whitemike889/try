@@ -12,7 +12,7 @@ namespace MLS.Agent.Markdown
         public CodeLinkExtension(IDirectoryAccessor directoryAccessor, PackageRegistry packageRegistry)
         {
             _directoryAccessor = directoryAccessor;
-            this._packageRegistry = packageRegistry;
+            _packageRegistry = packageRegistry;
         }
 
         public void Setup(MarkdownPipelineBuilder pipeline)

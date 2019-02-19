@@ -41,7 +41,7 @@ namespace ConsoleApp2
     }}
 }}".EnforceLF();
 
-            rewrittenCode.ShouldBeEquivalentTo(expected);
+            rewrittenCode.ShouldMatchLineByLine(expected);
         }
 
         [Fact]
@@ -81,7 +81,7 @@ namespace ConsoleApp2
         }}
     }}
 }}".EnforceLF();
-            actual.ShouldBeEquivalentTo(expected);
+            actual.ShouldMatchLineByLine(expected);
         }
 
         private async Task<string> RewriteCodeWithInstrumentation(string text)

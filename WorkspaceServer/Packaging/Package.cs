@@ -64,14 +64,13 @@ namespace WorkspaceServer.Packaging
         public Package(
             string name = null,
             IPackageInitializer initializer = null,
-            bool requiresPublish = false,
             DirectoryInfo directory = null)
         {
             Name = name ?? directory?.Name ?? throw new ArgumentException($"You must specify {nameof(name)}, {nameof(directory)}, or both.");
             _initializer = initializer ?? new PackageInitializer("console", Name);
             ConstructionTime = Clock.Current.Now();
             Directory = directory ?? new DirectoryInfo(Path.Combine(DefaultPackagesDirectory.FullName, Name));
-            RequiresPublish = requiresPublish;
+            LastBuildErrorLogFile = new FileInfo(Path.Combine(Directory.FullName, ".trydotnet-builderror"));
             _csharpCommandLineArguments = new AsyncLazy<CSharpCommandLineArguments>(CreateCSharpCommandLineArguments);
             _instrumentationEmitterSyntaxTree = new AsyncLazy<SyntaxTree>(CreateInstrumentationEmitterSyntaxTree);
             _created = new AsyncLazy<bool>(VerifyOrCreate);
@@ -245,7 +244,7 @@ namespace WorkspaceServer.Packaging
             IsReady = true;
         }
 
-        public bool RequiresPublish { get; }
+        public bool RequiresPublish => IsWebProject;
 
         public async Task EnsureBuilt(Budget budget = null)
         {
@@ -253,6 +252,7 @@ namespace WorkspaceServer.Packaging
 
             await _built.ValueAsync()
                         .CancelIfExceeds(budget ?? new Budget());
+
             budget?.RecordEntry();
         }
 
@@ -293,18 +293,33 @@ namespace WorkspaceServer.Packaging
                 try
                 {
                     fileStream = File.Create(lockFile.FullName, 1, FileOptions.DeleteOnClose);
+
                     if (!IsBuilt)
                     {
-                        if(Directory.GetFiles("msbuild.log").Length == 0)
+                        var msbuildLog = new FileInfo(Path.Combine(Directory.FullName, "msbuild.log"));
+
+                        if (!msbuildLog.Exists)
                         {
                             operation.Info("Building workspace using {_initializer} in {directory}", _initializer, Directory);
                             var result = await new Dotnet(Directory)
                                              .Build(args: "/fl /p:ProvideCommandLineArgs=true;append=true");
+
+                            if (result.ExitCode != 0)
+                            {
+                                File.WriteAllText(
+                                    LastBuildErrorLogFile.FullName, 
+                                    string.Join(Environment.NewLine, result.Error));
+                            }
+                            else if (LastBuildErrorLogFile.Exists)
+                            {
+                                LastBuildErrorLogFile.Delete();
+                            }
+
                             result.ThrowOnFailure();
                             BuildTime = Clock.Current.Now();
                             operation.Info("Workspace built");
                         }
-                        
+
                         IsBuilt = true;
                     }
                     else
@@ -326,6 +341,8 @@ namespace WorkspaceServer.Packaging
 
             return true;
         }
+
+        private FileInfo LastBuildErrorLogFile { get; }
 
         public async Task EnsurePublished(Budget budget = null)
         {
@@ -444,6 +461,7 @@ namespace WorkspaceServer.Packaging
         private async Task<CSharpCommandLineArguments> CreateCSharpCommandLineArguments()
         {
             await EnsureBuilt();
+
             return CSharpCommandLineParser.Default.Parse(
                 (await GetConfigurationAsync()).CompilerArgs,
                 Directory.FullName,

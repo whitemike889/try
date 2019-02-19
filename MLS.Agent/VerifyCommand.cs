@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using MLS.Agent.Markdown;
 using MLS.Protocol;
+using MLS.Protocol.Diagnostics;
 using MLS.Protocol.Execution;
 using WorkspaceServer;
 using WorkspaceServer.Servers.Roslyn;
@@ -23,8 +24,8 @@ namespace MLS.Agent
             var directoryAccessor = getDirectoryAccessor();
             var markdownProject = new MarkdownProject(directoryAccessor, packageRegistry);
             var returnCode = 0;
-            var workspaceServer =new Lazy<RoslynWorkspaceServer>(() => new RoslynWorkspaceServer(packageRegistry));
-            
+            var workspaceServer = new Lazy<RoslynWorkspaceServer>(() => new RoslynWorkspaceServer(packageRegistry));
+
             foreach (var markdownFile in markdownProject.GetAllMarkdownFiles())
             {
                 var fullName = directoryAccessor.GetFullyQualifiedPath(markdownFile.Path).FullName;
@@ -47,14 +48,14 @@ namespace MLS.Agent
 
                     foreach (var codeLinkBlock in session)
                     {
-                        VerifyCodeLinkage(codeLinkBlock);
+                        ReportCodeLinkageResults(codeLinkBlock);
                     }
 
                     Console.ResetColor();
 
-                    if (compile)
+                    if (compile && !session.Any(block => block.Diagnostics.Any()))
                     {
-                        await VerifyCompilation(session, markdownFile);
+                        await ReportCompileResults(session, markdownFile);
                     }
 
                     Console.ResetColor();
@@ -69,20 +70,13 @@ namespace MLS.Agent
                 returnCode = 1;
             }
 
-            async Task VerifyCompilation(IGrouping<string, CodeLinkBlock> session, MarkdownFile markdownFile)
+            async Task ReportCompileResults(IGrouping<string, CodeLinkBlock> session, MarkdownFile markdownFile)
             {
                 console.Out.WriteLine($"\n  Compiling samples for session \"{session.Key}\"\n");
 
                 var projectOrPackageName = session.First().ProjectOrPackageName();
 
-                var buffers = session.Select(block =>
-                {
-                    var absolutePath = directoryAccessor
-                                       .GetDirectoryAccessorForRelativePath(markdownFile.Path.Directory)
-                                       .GetFullyQualifiedPath(block.SourceFile).FullName;
-                    var bufferId = new BufferId(absolutePath, block.Region);
-                    return new Workspace.Buffer(bufferId, block.SourceCode);
-                }).ToArray();
+                var buffers = await Task.WhenAll(session.Select(block => block.GetBufferAsync(directoryAccessor, markdownFile)).ToArray());
 
                 var workspace = new Workspace(
                     workspaceType: projectOrPackageName,
@@ -90,31 +84,52 @@ namespace MLS.Agent
 
                 var result = await workspaceServer.Value.Compile(new WorkspaceRequest(workspace));
 
-                var symbol = !result.Succeeded
-                                 ? "X"
-                                 : "✓";
-
-                if (result.Succeeded)
-                {
-                    Console.ForegroundColor = ConsoleColor.Green;
-                    console.Out.WriteLine($"    {symbol}  Compiles for session {session.Key}");
-                }
-                else
+                var projectDiagnostics = result.GetFeature<ProjectDiagnostics>()
+                                               .Where(e => e.Severity == DiagnosticSeverity.Error)
+                                               .ToArray();
+                if (projectDiagnostics.Any())
                 {
                     SetError();
 
-                    console.Out.WriteLine($"    {symbol}  Compile failed for session {session.Key}");
+                    console.Out.WriteLine($"    Build failed for project {session.First().ProjectOrPackageName()}");
 
-                    foreach (var diagnostic in result.GetFeature<Diagnostics>())
+                    foreach (var diagnostic in projectDiagnostics)
                     {
-                        console.Out.WriteLine($"\t\t{diagnostic.Message}");
+                        console.Out.WriteLine($"\t\t{diagnostic.Location}: {diagnostic.Message}");
+                    }
+                }
+                else
+                {
+                    var symbol = !result.Succeeded
+                                     ? "X"
+                                     : "✓";
+
+                    if (result.Succeeded)
+                    {
+                        Console.ForegroundColor = ConsoleColor.Green;
+                        console.Out.WriteLine($"    {symbol}  No errors found within samples for session \"{session.Key}\"");
+                    }
+                    else
+                    {
+                        SetError();
+
+                        console.Out.WriteLine($"    {symbol}  Errors found within samples for session \"{session.Key}\"");
+
+                        foreach (var diagnostic in result.GetFeature<Diagnostics>())
+                        {
+                            console.Out.WriteLine($"\t\t{diagnostic.Message}");
+                        }
                     }
                 }
             }
 
-            void VerifyCodeLinkage(CodeLinkBlock codeLinkBlock)
+            void ReportCodeLinkageResults(CodeLinkBlock codeLinkBlock)
             {
                 var diagnostics = codeLinkBlock.Diagnostics.ToArray();
+
+                Console.ResetColor();
+
+                console.Out.WriteLine("  Checking Markdown...");
 
                 if (diagnostics.Any())
                 {
@@ -145,5 +160,4 @@ namespace MLS.Agent
             }
         }
     }
-
 }

@@ -14,6 +14,11 @@ namespace MLS.Agent.Markdown
 
         public CodeFenceOptionsParser(IDirectoryAccessor directoryAccessor)
         {
+            if (directoryAccessor == null)
+            {
+                throw new ArgumentNullException(nameof(directoryAccessor));
+            }
+
             _parser = CreateOptionsParser(directoryAccessor, o => _options = o);
         }
 
@@ -117,13 +122,14 @@ namespace MLS.Agent.Markdown
                 var projectResult = context.ParseResult.CommandResult["project"];
                 if (projectResult?.IsImplicit ?? false)
                 {
-                    options = options.WithIsProjectImplicit(
-                        isProjectFileImplicit: true);
+                    options = options.WithIsProjectImplicit(isProjectFileImplicit: true);
                 }
 
                 options = options.ReplaceErrors(context.ParseResult.Errors.Select(e => e.Message));
 
-                options.RunArgs = string.Join(" ", context.ParseResult.UnparsedTokens
+                options.RunArgs = string.Join(" ", context.ParseResult
+                                                          .Tokens
+                                                          .Skip(1)
                                                           .Select(t => Regex.IsMatch(t, @".*\s.*")
                                                                            ? $"\"{t}\""
                                                                            : t));

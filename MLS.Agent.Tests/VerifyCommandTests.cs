@@ -216,9 +216,90 @@ This is some sample code:
 
             _output.WriteLine(console.Out.ToString());
 
-            console.Out.ToString().Should().Contain("Compile failed");
+            console.Out.ToString().Should().Contain($"Build failed for project {directoryAccessor.GetFullyQualifiedPath(new RelativeFilePath("sample.csproj"))}");
 
             resultCode.Should().NotBe(0);
+        }
+
+        [Fact]
+        public async Task When_there_are_compilation_errors_outside_the_mask_then_they_are_displayed()
+        {
+            var directory = Create.EmptyWorkspace().Directory;
+
+            var directoryAccessor = new InMemoryDirectoryAccessor(directory, directory)
+                                    {
+                                        ("Program.cs", $@"
+    using System;
+
+    public class Program
+    {{
+        public static void Main(string[] args)                         DOES NOT COMPILE
+        {{
+#region mask
+            Console.WriteLine();
+#endregion
+        }}
+    }}"),
+                                        ("sample.md", $@"
+```cs Program.cs --region mask
+```"),
+                                        ("sample.csproj",
+                                         @"<Project Sdk=""Microsoft.NET.Sdk"">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+  </PropertyGroup>
+</Project>
+")
+                                    }.CreateFiles();
+
+            var console = new TestConsole();
+
+            var resultCode = await VerifyCommand.Do(
+                                 directory,
+                                 console,
+                                 () => directoryAccessor,
+                                 new PackageRegistry(),
+                                 compile: true);
+
+            _output.WriteLine(console.Out.ToString());
+
+            console.Out.ToString()
+                   .Should().Contain("Build failed")
+                   .And.Contain("Program.cs(6,72): error CS1002: ; expected");
+
+            resultCode.Should().NotBe(0);
+        }
+        
+        [Fact]
+        public async Task When_there_are_code_fence_options_errors_then_compilation_is_not_attempted()
+        {
+            var root = new DirectoryInfo(Directory.GetDirectoryRoot(Directory.GetCurrentDirectory()));
+
+            var directoryAccessor = new InMemoryDirectoryAccessor(root, root)
+                                    {
+                                        ("doc.md", @"
+This is some sample code:
+```cs Program.cs
+```
+")
+                                    };
+
+            var console = new TestConsole();
+
+            await VerifyCommand.Do(
+                root,
+                console,
+                () => directoryAccessor,
+                new PackageRegistry(),
+                true);
+            
+            _output.WriteLine(console.Out.ToString());
+
+            console.Out
+                   .ToString()
+                   .Should()
+                   .NotContain("Compiling samples for session");
         }
     }
 }

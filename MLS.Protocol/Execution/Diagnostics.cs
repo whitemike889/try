@@ -15,11 +15,7 @@ namespace MLS.Protocol.Execution
 
         public void Apply(FeatureContainer result)
         {
-            var diagnostics =
-                this.OrderBy(d => d.Start)
-                    .ThenBy(d => d.End);
-
-            result.AddProperty("diagnostics", diagnostics);
+            result.AddProperty("diagnostics", this.Sort());
         }
     }
 }

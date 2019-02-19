@@ -2,10 +2,13 @@ using System;
 using System.CommandLine;
 using System.CommandLine.Builder;
 using System.CommandLine.Invocation;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Clockwise;
 using WorkspaceServer.Packaging;
+using CommandHandler = System.CommandLine.Invocation.CommandHandler;
 
 namespace MLS.Agent
 {
@@ -48,6 +51,16 @@ namespace MLS.Agent
 
             return new CommandLineBuilder(rootCommand)
                    .UseDefaults()
+                   .UseMiddleware(async (context, next) =>
+                   {
+                       if (context.ParseResult.Directives.Contains("debug") &&
+                           !(Clock.Current is VirtualClock))
+                       {
+                           VirtualClock.Start();
+                       }
+
+                       await next(context);
+                   })
                    .Build();
 
             RootCommand StartInTryMode()

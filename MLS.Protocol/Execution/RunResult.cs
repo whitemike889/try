@@ -17,7 +17,8 @@ namespace MLS.Protocol.Execution
             bool succeeded,
             IReadOnlyCollection<string> output = null,
             string exception = null,
-            IEnumerable<SerializableDiagnostic> diagnostics = null, string requestId = null)
+            IEnumerable<SerializableDiagnostic> diagnostics = null, 
+            string requestId = null)
         {
             if (output != null)
             {
@@ -37,8 +38,6 @@ namespace MLS.Protocol.Execution
         public IReadOnlyCollection<string> Output => _output;
 
         public string Exception { get; }
-
-
 
         public override string ToString() =>
             $@"{nameof(Succeeded)}: {Succeeded}

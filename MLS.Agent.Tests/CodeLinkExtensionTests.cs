@@ -18,14 +18,13 @@ namespace MLS.Agent.Tests
 {
     public class CodeLinkExtensionTests
     {
-        private readonly TestConsole _console;
         private readonly AsyncLazy<(PackageRegistry, string)> _package;
 
         public CodeLinkExtensionTests()
         {
-            _console = new TestConsole();
+            var console = new TestConsole();
             _package = new AsyncLazy<(PackageRegistry, string)>( async () => {
-                var dir = await LocalToolHelpers.CreateTool(_console);
+                var dir = await LocalToolHelpers.CreateTool(console);
                 var strategy = new LocalToolPackageDiscoveryStrategy(dir, dir);
                 return (new PackageRegistry(strategy), "console");
             }
@@ -462,14 +461,14 @@ $@"```cs --package {package} Program.cs
         }
 
         [Fact]
-        public async Task Additional_arguments_are_available_to_be_forwarded_to_the_users_program_entry_point()
+        public async Task Arguments_are_forwarded_to_the_users_program_entry_point()
         {
             var directoryAccessor = new InMemoryDirectoryAccessor(TestAssets.SampleConsole)
                                     {
                                         ("Program.cs", ""),
                                         ("sample.csproj", ""),
                                         ("sample.md",
-                                         @"```cs Program.cs -- one two ""and three""
+                                         @"```cs --region the-region Program.cs -- one two ""and three""
 ```")
                                     };
 
@@ -487,7 +486,7 @@ $@"```cs --package {package} Program.cs
                                     .Attributes["data-trydotnet-run-args"]
                                     .Value;
 
-            value.Should().Be("one two \"and three\"".HtmlAttributeEncode());
+            value.Should().Be("--region the-region Program.cs -- one two \"and three\"".HtmlAttributeEncode());
         }
     }
 }

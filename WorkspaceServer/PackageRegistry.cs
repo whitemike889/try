@@ -126,7 +126,6 @@ namespace WorkspaceServer
                          workspace =>
                          {
                              workspace.CreateUsingDotnet("webapi");
-                             workspace.RequiresPublish = true;
                          });
 
             registry.Add("xunit",

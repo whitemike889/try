@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -71,7 +70,7 @@ namespace MLS.Agent.Controllers
 <html lang=""en"">
 
 <head>
-    <meta http-equiv=""Content-Type"" content=""text/html;charset=utf-8""></meta>
+    <meta http-equiv=""Content-Type"" content=""text/html;charset=utf-8"">
     <script src=""/api/trydotnet.min.js""></script>
     <link rel=""stylesheet"" href=""/css/trydotnet.css"">
 </head>
@@ -106,7 +105,7 @@ namespace MLS.Agent.Controllers
 <html lang=""en"">
 
 <head>
-    <meta http-equiv=""Content-Type"" content=""text/html;charset=utf-8""></meta>
+    <meta http-equiv=""Content-Type"" content=""text/html;charset=utf-8"">
     <link rel=""stylesheet"" href=""/css/trydotnet.css"">
 </head>
 

@@ -9,6 +9,7 @@ using Markdig.Syntax;
 using Microsoft.CodeAnalysis.Text;
 using MLS.Agent.Tools;
 using MLS.Project.Extensions;
+using MLS.Protocol.Execution;
 
 namespace MLS.Agent.Markdown
 {
@@ -85,10 +86,18 @@ namespace MLS.Agent.Markdown
         private async Task AddAttributes(CodeLinkBlockOptions options)
         {
             AddAttribute("data-trydotnet-mode", "editor");
-            AddAttributeIfNotNull("package", options.Project);
+
+            if (!string.IsNullOrWhiteSpace(Package))
+            {
+                AddAttributeIfNotNull("package", Package);
+            }
+            else if (ProjectFile != null)
+            {
+                AddAttributeIfNotNull("package", ProjectFile.FullName);
+            }
+
             AddAttributeIfNotNull("region", options.Region);
             AddAttributeIfNotNull("session-id", options.Session);
-            AddAttributeIfNotNull("package", Package);
 
             if (options.SourceFile != null)
             {
@@ -174,11 +183,6 @@ namespace MLS.Agent.Markdown
                     return _options.Package;
                 }
 
-                if (_options.Project != null)
-                {
-                    return _options.Project.FullName;
-                }
-
                 return string.Empty;
             }
         }
@@ -218,5 +222,12 @@ namespace MLS.Agent.Markdown
 
         public void AddDiagnostic(string message) =>
             _diagnostics.Add(message);
+
+        public async Task<Workspace.Buffer> GetBufferAsync(IDirectoryAccessor directoryAccessor, MarkdownFile markdownFile)
+        {
+            var absolutePath = (await _directoryAccessor.ValueAsync()).GetFullyQualifiedPath(SourceFile).FullName;
+            var bufferId = new BufferId(absolutePath, Region);
+            return new Workspace.Buffer(bufferId, SourceCode);
+        }
     }
 }

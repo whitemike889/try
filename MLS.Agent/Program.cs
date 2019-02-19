@@ -11,7 +11,6 @@ using Serilog.Sinks.RollingFileAlternate;
 using System;
 using System.CommandLine.Invocation;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;

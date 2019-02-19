@@ -7,8 +7,6 @@ using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Completion;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.Recommendations;
 using MLS.Agent.Tools;
 using MLS.Project.Extensions;
@@ -160,7 +158,7 @@ namespace WorkspaceServer.Servers.Roslyn
                              syntaxNode,
                              absolutePosition);
             result.RequestId = request.RequestId;
-            if (diagnostics?.Count() > 0)
+            if (diagnostics?.Count > 0)
             {
                 result.Diagnostics = diagnostics;
             }
@@ -194,8 +192,6 @@ namespace WorkspaceServer.Servers.Roslyn
             return result;
         }
 
-
-
         public async Task<CompileResult> Compile(WorkspaceRequest request, Budget budget = null)
         {
             var workspace = request.Workspace;
@@ -204,25 +200,34 @@ namespace WorkspaceServer.Servers.Roslyn
             using (Log.OnEnterAndExit())
             using (await locks.GetOrAdd(workspace.WorkspaceType, s => new AsyncLock()).LockAsync())
             {
-                var (compilation, diagnostics) = await CompileWorker(request.Workspace, request.ActiveBufferId, budget);
+                var result = await CompileWorker(request.Workspace, request.ActiveBufferId, budget);
 
-                if (diagnostics.ContainsError())
+                if (result.DiagnosticsWithinBuffers.ContainsError())
                 {
-                    return new CompileResult(
+                    var compileResult = new CompileResult(
                         succeeded: false,
                         base64assembly: null,
-                        diagnostics,
+                        result.DiagnosticsWithinBuffers,
                         requestId: request.RequestId);
+
+                    compileResult.AddFeature(new ProjectDiagnostics(result.ProjectDiagnostics));
+
+                    return compileResult;
                 }
 
                 using (var stream = new MemoryStream())
                 {
-                    compilation.Emit(peStream: stream);
+                    result.Compilation.Emit(peStream: stream);
                     var encodedAssembly = Convert.ToBase64String(stream.ToArray());
-                    return new CompileResult(
+
+                    var compileResult = new CompileResult(
                         succeeded: true,
                         base64assembly: encodedAssembly,
                         requestId: request.RequestId);
+
+                    compileResult.AddFeature(new ProjectDiagnostics(result.ProjectDiagnostics));
+
+                    return compileResult;
                 }
             }
         }
@@ -237,19 +242,26 @@ namespace WorkspaceServer.Servers.Roslyn
             {
                 var package = await getPackageByName(workspace.WorkspaceType);
 
-                var (compilation, diagnostics) = await CompileWorker(request.Workspace, request.ActiveBufferId, budget);
+                var result = await CompileWorker(request.Workspace, request.ActiveBufferId, budget);
 
-                if (diagnostics.ContainsError())
+                if (result.ProjectDiagnostics.ContainsError())
                 {
-                    var compileErrorMessages = diagnostics.GetCompileErrorMessages();
-                    return new RunResult(
+                    var errorMessagesToDisplayInOutput = result.DiagnosticsWithinBuffers.Any()
+                                                             ? result.DiagnosticsWithinBuffers.GetCompileErrorMessages()
+                                                             : result.ProjectDiagnostics.GetCompileErrorMessages();
+
+                    var runResult = new RunResult(
                         false,
-                        compileErrorMessages,
-                        diagnostics: diagnostics,
+                        errorMessagesToDisplayInOutput,
+                        diagnostics: result.DiagnosticsWithinBuffers,
                         requestId: request.RequestId);
+
+                    runResult.AddFeature(new ProjectDiagnostics(result.ProjectDiagnostics));
+
+                    return runResult;
                 }
 
-                await EmitCompilationAsync(compilation, package);
+                await EmitCompilationAsync(result.Compilation, package);
 
                 if (package.IsWebProject)
                 {
@@ -258,12 +270,12 @@ namespace WorkspaceServer.Servers.Roslyn
 
                 if (package.IsUnitTestProject)
                 {
-                    return await RunUnitTestsAsync(package, diagnostics, budget, request.RequestId);
+                    return await RunUnitTestsAsync(package, result.DiagnosticsWithinBuffers, budget, request.RequestId);
                 }
 
                 return await RunConsoleAsync(
                            package,
-                           diagnostics,
+                           result.DiagnosticsWithinBuffers,
                            budget,
                            request.RequestId,
                            workspace.IncludeInstrumentation,
@@ -273,6 +285,11 @@ namespace WorkspaceServer.Servers.Roslyn
 
         private static async Task EmitCompilationAsync(Compilation compilation, Package package)
         {
+            if (package == null)
+            {
+                throw new ArgumentNullException(nameof(package));
+            }
+
             using (var operation = Log.OnEnterAndExit())
             {
                 var numberOfAttempts = 100;
@@ -299,7 +316,7 @@ namespace WorkspaceServer.Servers.Roslyn
 
         private static async Task<RunResult> RunConsoleAsync(
             Package package,
-            SerializableDiagnostic[] diagnostics,
+            IEnumerable<SerializableDiagnostic> diagnostics,
             Budget budget,
             string requestId,
             bool includeInstrumentation,
@@ -343,7 +360,11 @@ namespace WorkspaceServer.Servers.Roslyn
             return runResult;
         }
 
-        private static async Task<RunResult> RunUnitTestsAsync(Package package, SerializableDiagnostic[] diagnostics, Budget budget, string requestId)
+        private static async Task<RunResult> RunUnitTestsAsync(
+            Package package, 
+            IEnumerable<SerializableDiagnostic> diagnostics, 
+            Budget budget, 
+            string requestId)
         {
             var dotnet = new Dotnet(package.Directory);
 
@@ -395,13 +416,37 @@ namespace WorkspaceServer.Servers.Roslyn
             return runResult;
         }
 
-        private async Task<(Compilation, SerializableDiagnostic[])> CompileWorker(Workspace workspace, BufferId activeBufferId, Budget budget)
+        private async Task<CompileWorkerResult> CompileWorker(
+            Workspace workspace,
+            BufferId activeBufferId,
+            Budget budget)
         {
             var package = await getPackageByName(workspace.WorkspaceType);
             workspace = await _transformer.TransformAsync(workspace, budget);
             var compilation = await package.Compile(workspace, budget, activeBufferId);
-            var diagnostics = workspace.MapDiagnostics(activeBufferId, compilation);
-            return (compilation, diagnostics);
+            var (diagnosticsInActiveBuffer, allDiagnostics) = workspace.MapDiagnostics(activeBufferId, compilation.GetDiagnostics());
+
+            return new CompileWorkerResult(
+                compilation,
+                diagnosticsInActiveBuffer,
+                allDiagnostics);
+        }
+
+        private class CompileWorkerResult
+        {
+            public CompileWorkerResult(
+                Compilation compilation,
+                IReadOnlyCollection<SerializableDiagnostic> diagnosticsInActiveBuffer,
+                IReadOnlyCollection<SerializableDiagnostic> allDiagnostics)
+            {
+                Compilation = compilation ?? throw new ArgumentNullException(nameof(compilation));
+                DiagnosticsWithinBuffers = diagnosticsInActiveBuffer ?? throw new ArgumentNullException(nameof(diagnosticsInActiveBuffer));
+                ProjectDiagnostics = allDiagnostics ?? throw new ArgumentNullException(nameof(allDiagnostics));
+            }
+
+            public Compilation Compilation { get; }
+            public IReadOnlyCollection<SerializableDiagnostic> DiagnosticsWithinBuffers { get; }
+            public IReadOnlyCollection<SerializableDiagnostic> ProjectDiagnostics { get; }
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Linq;
 using System.Text;
@@ -85,13 +86,13 @@ namespace WorkspaceServer.Servers.Scripting
                                  .Split(new[] { '\n' });
 
                 output = ProcessOutputLines(output,
-                                            diagnostics.GetCompileErrorMessages());
+                                            diagnostics.DiagnosticsInActiveBuffer.GetCompileErrorMessages());
 
                 var result = new RunResult(
                     succeeded: !userException.IsConsideredRunFailure(),
                     output: output,
                     exception: (userException ?? state?.Exception).ToDisplayString(),
-                    diagnostics: diagnostics,
+                    diagnostics: diagnostics.DiagnosticsInActiveBuffer,
                     requestId: request.RequestId);
 
                 operation.Complete(budget);
@@ -119,7 +120,7 @@ namespace WorkspaceServer.Servers.Scripting
                          .AddReferences(GetReferenceAssemblies())
                          .AddImports(WorkspaceUtilities.DefaultUsings.Concat(request.Usings));
 
-        private async Task<SerializableDiagnostic[]> ExtractDiagnostics(
+        private async Task<(IReadOnlyCollection<SerializableDiagnostic> DiagnosticsInActiveBuffer, IReadOnlyCollection<SerializableDiagnostic> AllDiagnostics)> ExtractDiagnostics(
             Workspace workspace,
             BufferId activeBufferId,
             ScriptOptions options,
@@ -133,7 +134,7 @@ namespace WorkspaceServer.Servers.Scripting
             var compilation = CSharpScript.Create(code, options).GetCompilation();
             return workspace.MapDiagnostics(
                 activeBufferId,
-                compilation);
+                compilation.GetDiagnostics());
         }
 
         private static Task<ScriptState<object>> Run(
