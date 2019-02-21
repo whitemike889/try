@@ -146,14 +146,6 @@ namespace MLS.Agent
 
                 _disposables.Add(() => budget.Cancel());
 
-
-
-                //app.UseBlazor<Blazor.Program>();
-
-               
-
-
-                //app.UseBlazor<MLS.Blazor.Program>();
                 operation.Succeed();
 
                 if (!StartupOptions.IsInHostedMode &&
