@@ -3,27 +3,25 @@
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
     "iisExpress": {
-      "applicationUrl": "http://localhost:4242/",
+      "applicationUrl": "http://localhost:62311/",
       "sslPort": 0
     }
   },
   "profiles": {
     "IIS Express": {
       "commandName": "IISExpress",
-      "commandLineArgs": "hosted",
       "launchBrowser": true,
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
-    "MLS.Agent": {
+    "MLS.Blazor": {
       "commandName": "Project",
-      "commandLineArgs": "verify --compile c:\\dev\\agent\\docs\\gettingstarted",
       "launchBrowser": true,
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
-      "applicationUrl": "http://localhost:4242"
+      "applicationUrl": "http://localhost:62312/"
     }
   }
 }

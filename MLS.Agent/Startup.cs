@@ -1,11 +1,15 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net;
+using System.Net.Mime;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Clockwise;
+using Microsoft.AspNetCore.Blazor.Server;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -70,6 +74,15 @@ namespace MLS.Agent
 
                 services.AddSingleton(c => new RoslynWorkspaceServer(c.GetRequiredService<PackageRegistry>()));
 
+                services.AddResponseCompression(options =>
+                {
+                    options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(new[]
+                    {
+                        MediaTypeNames.Application.Octet,
+                        WasmMediaTypeNames.Application.Wasm
+                    });
+                });
+
                 if (StartupOptions.IsInHostedMode)
                 {
                     services.AddSingleton(_ => PackageRegistry.CreateForHostedMode());
@@ -116,6 +129,13 @@ namespace MLS.Agent
             using (var operation = Log.OnEnterAndConfirmOnExit())
             {
                 lifetime.ApplicationStopping.Register(() => _disposables.Dispose());
+
+                app.UseResponseCompression();
+                app.Map("/LocalCodeRunner/blazor-console", builder =>
+                {
+                    builder.UsePathBase("/LocalCodeRunner/blazor-console/");
+                    builder.UseBlazor<MLS.Blazor.Program>();
+                });
 
                 app.UseDefaultFiles()
                     .UseStaticFilesFromToolLocation()
