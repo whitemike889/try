@@ -700,6 +700,18 @@ namespace FibonacciTest
             response.StatusCode.Should().Be(HttpStatusCode.ExpectationFailed);
         }
 
+
+        [Fact]
+        public async Task Can_serve_blazor_code_runner()
+        {
+            using (var agent = new AgentService())
+            {
+                var response = await agent.GetAsync(@"/LocalCodeRunner/blazor-console");
+
+                response.EnsureSuccessStatusCode();
+                var result = await response.Content.ReadAsStringAsync();
+            }
+        }
         private class FailedRunResult : Exception
         {
             internal FailedRunResult(string message) : base(message)

@@ -1,11 +1,15 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net;
+using System.Net.Mime;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Clockwise;
+using Microsoft.AspNetCore.Blazor.Server;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -74,6 +78,16 @@ namespace MLS.Agent
                 {
                     services.AddSingleton(_ => PackageRegistry.CreateForHostedMode());
                     services.AddSingleton<IHostedService, Warmup>();
+
+                    services.AddResponseCompression(options =>
+                    {
+                        options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(new[]
+                        {
+                        MediaTypeNames.Application.Octet,
+                        WasmMediaTypeNames.Application.Wasm
+                    });
+                    });
+
                 }
                 else
                 {
@@ -125,6 +139,13 @@ namespace MLS.Agent
                 var budget = new Budget();
 
                 _disposables.Add(() => budget.Cancel());
+
+                app.Map("/LocalCodeRunner/blazor-console", builder => {
+                    builder.UsePathBase("/LocalCodeRunner/blazor-console/");
+                    builder.UseBlazor<MLS.Blazor.Program>();
+                });
+
+                app.UseResponseCompression();
 
                 operation.Succeed();
 
