@@ -1,5 +1,8 @@
+using System.IO;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Assent;
+using FluentAssertions;
 using MLS.Protocol;
 using MLS.Protocol.Execution;
 using Recipes;
@@ -18,7 +21,7 @@ namespace MLS.Agent.Tests
             configuration = new Configuration()
                 .UsingExtension("json");
 
-            configuration = configuration.SetInteractive(false);
+            configuration = configuration.SetInteractive(true);
         }
 
         [Fact]
@@ -30,10 +33,10 @@ namespace MLS.Agent.Tests
                 new Workspace(
                     workspaceType: "console",
                     buffers: new[]
-                    {
-                        EntrypointCode(),
-                        viewport
-                    }),
+                             {
+                                 EntrypointCode(),
+                                 viewport
+                             }),
                 activeBufferId: viewport.Id,
                 requestId: "TestRun");
 
@@ -53,10 +56,10 @@ namespace MLS.Agent.Tests
                 new Workspace(
                     workspaceType: "console",
                     buffers: new[]
-                    {
-                        EntrypointCode(),
-                        viewport
-                    }),
+                             {
+                                 EntrypointCode(),
+                                 viewport
+                             }),
                 activeBufferId: viewport.Id,
                 requestId: "TestRun");
 
@@ -66,9 +69,8 @@ namespace MLS.Agent.Tests
 
             var result = await response.Content.ReadAsStringAsync();
 
-            this.Assent(result.FormatJson(), configuration);
+            this.Assent(RemoveMachineSpecificPaths(result).FormatJson(), configuration);
         }
-
 
         [Fact]
         public async Task The_Compile_contract_for_compiling_code_has_not_been_broken()
@@ -79,10 +81,10 @@ namespace MLS.Agent.Tests
                 new Workspace(
                     workspaceType: "console",
                     buffers: new[]
-                    {
-                        EntrypointCode(),
-                        viewport
-                    }),
+                             {
+                                 EntrypointCode(),
+                                 viewport
+                             }),
                 activeBufferId: viewport.Id,
                 requestId: "TestRun");
 
@@ -90,7 +92,18 @@ namespace MLS.Agent.Tests
 
             var result = await response.Content.ReadAsStringAsync();
 
-            this.Assent(result.FormatJson(), configuration);
+            var compileResult = result.FromJsonTo<CompileResult>();
+
+            compileResult.Base64Assembly.Should().NotBeNullOrWhiteSpace();
+            compileResult = new CompileResult(
+                compileResult.Succeeded,
+                "",
+                compileResult.GetFeature<Diagnostics>(),
+                compileResult.RequestId);
+
+            result = compileResult.ToJson().FormatJson();
+
+            this.Assent(result, configuration);
         }
 
         [Fact]
@@ -102,10 +115,10 @@ namespace MLS.Agent.Tests
                 new Workspace(
                     workspaceType: "console",
                     buffers: new[]
-                    {
-                        EntrypointCode(),
-                        viewport
-                    }),
+                             {
+                                 EntrypointCode(),
+                                 viewport
+                             }),
                 activeBufferId: viewport.Id,
                 requestId: "TestRun");
 
@@ -115,8 +128,9 @@ namespace MLS.Agent.Tests
 
             var result = await response.Content.ReadAsStringAsync();
 
-            this.Assent(result.FormatJson(), configuration);
+            this.Assent(RemoveMachineSpecificPaths(result).FormatJson(), configuration);
         }
+
         [Fact]
         public async Task The_Completions_contract_has_not_been_broken()
         {
@@ -126,10 +140,10 @@ namespace MLS.Agent.Tests
                 new Workspace(
                     workspaceType: "console",
                     buffers: new[]
-                    {
-                        EntrypointCode(),
-                        viewport
-                    }),
+                             {
+                                 EntrypointCode(),
+                                 viewport
+                             }),
                 activeBufferId: viewport.Id,
                 requestId: "TestRun").ToJson();
 
@@ -149,10 +163,10 @@ namespace MLS.Agent.Tests
                 new Workspace(
                     workspaceType: "console",
                     buffers: new[]
-                    {
-                        EntrypointCode(),
-                        viewport
-                    }),
+                             {
+                                 EntrypointCode(),
+                                 viewport
+                             }),
                 activeBufferId: viewport.Id,
                 requestId: "TestRun").ToJson();
 
@@ -166,14 +180,13 @@ namespace MLS.Agent.Tests
         [Fact]
         public async Task The_instrumentation_contract_has_not_been_broken()
         {
-
             var requestJson = new WorkspaceRequest(
                 new Workspace(
                     workspaceType: "console",
                     buffers: new[]
-                    {
-                        EntrypointCode("int a = 1; int b = 2; a = 3; b = a;")
-                    },
+                             {
+                                 EntrypointCode("int a = 1; int b = 2; a = 3; b = a;")
+                             },
                     includeInstrumentation: true),
                 requestId: "TestRun"
             ).ToJson();
@@ -182,7 +195,7 @@ namespace MLS.Agent.Tests
 
             var result = await response.Content.ReadAsStringAsync();
 
-            this.Assent(result.FormatJson(), configuration);
+            this.Assent(RemoveMachineSpecificPaths(result).FormatJson(), configuration);
         }
 
         [Fact]
@@ -192,9 +205,9 @@ namespace MLS.Agent.Tests
                 new Workspace(
                     workspaceType: "console",
                     buffers: new[]
-                    {
-                        EntrypointCode("int a = 1; int b = 2; a = 3; b = a;")
-                    },
+                             {
+                                 EntrypointCode("int a = 1; int b = 2; a = 3; b = a;")
+                             },
                     includeInstrumentation: false),
                 requestId: "TestRun"
             ).ToJson();
@@ -203,7 +216,7 @@ namespace MLS.Agent.Tests
 
             var result = await response.Content.ReadAsStringAsync();
 
-            this.Assent(result.FormatJson(), configuration);
+            this.Assent(RemoveMachineSpecificPaths(result).FormatJson(), configuration);
         }
 
         private static Workspace.Buffer EntrypointCode(string mainContent = @"Console.WriteLine(Sample.Method());$$")
@@ -222,13 +235,20 @@ namespace Example
         }}       
     }}
 }}".EnforceLF();
-                
+
             MarkupTestFile.GetPosition(input, out string output, out var position);
 
             return new Workspace.Buffer(
                 "Program.cs",
                 output,
                 position ?? 0);
+        }
+
+        private static string RemoveMachineSpecificPaths(string result)
+        {
+            var regex = new Regex($@"(""location"":\s*"")([^""]*[\\/]+)?([^""]*"")");
+
+            return regex.Replace(result, "$1$3");
         }
 
         private static Workspace.Buffer ViewportCode(string methodContent = @"return ""Hello world!"";$$ ")

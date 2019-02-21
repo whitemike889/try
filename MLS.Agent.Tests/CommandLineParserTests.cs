@@ -19,6 +19,7 @@ namespace MLS.Agent.Tests
         private string _install_packageName;
         private DirectoryInfo _install_packageSource;
         private DirectoryInfo _verify_rootDirectory;
+        private bool _verify_compile;
 
         public CommandLineParserTests(ITestOutputHelper output)
         {
@@ -44,9 +45,10 @@ namespace MLS.Agent.Tests
                     _install_packageSource = addSource;
                     return Task.CompletedTask;
                 },
-                verify: (rootDirectory, console) =>
+                verify: (rootDirectory, console, compile) =>
                 {
                     _verify_rootDirectory = rootDirectory;
+                    _verify_compile = compile;
                     return Task.FromResult(1);
                 });
         }
@@ -224,6 +226,28 @@ namespace MLS.Agent.Tests
 
             _install_packageName.Should().Be("the-package");
             _install_packageSource.FullName.Should().Be(expectedPackageSource);
+        }
+
+        [Fact]
+        public async Task Verify_argument_specifies_root_directory()
+        {
+            var directory = Path.GetDirectoryName(typeof(VerifyCommand).Assembly.Location);
+             await _parser.InvokeAsync($"verify {directory}");
+            _verify_rootDirectory.FullName.Should().Be(directory);
+        }
+
+        [Fact]
+        public async Task Verify_compile_option_defaults_to_false()
+        {
+            await _parser.InvokeAsync("verify");
+            _verify_compile.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task Verify_can_set_compile_to_true()
+        {
+            await _parser.InvokeAsync("verify --compile");
+            _verify_compile.Should().BeTrue();
         }
     }
 }

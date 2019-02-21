@@ -2,7 +2,10 @@
 using System.Threading.Tasks;
 using FluentAssertions;
 using HtmlAgilityPack;
+using Markdig;
+using MLS.Agent.Markdown;
 using Recipes;
+using WorkspaceServer;
 using Xunit;
 
 namespace MLS.Agent.Tests

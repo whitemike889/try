@@ -9,6 +9,7 @@ using Markdig.Syntax;
 using Microsoft.CodeAnalysis.Text;
 using MLS.Agent.Tools;
 using MLS.Project.Extensions;
+using MLS.Protocol.Execution;
 
 namespace MLS.Agent.Markdown
 {
@@ -36,7 +37,6 @@ namespace MLS.Agent.Markdown
             {
                 throw new InvalidOperationException("Attempted to initialize block before adding options");
             }
-
 
             if (await ValidateOptions(_options))
             {
@@ -86,10 +86,18 @@ namespace MLS.Agent.Markdown
         private async Task AddAttributes(CodeLinkBlockOptions options)
         {
             AddAttribute("data-trydotnet-mode", "editor");
-            AddAttributeIfNotNull("package", options.Project);
+
+            if (!string.IsNullOrWhiteSpace(Package))
+            {
+                AddAttributeIfNotNull("package", Package);
+            }
+            else if (ProjectFile != null)
+            {
+                AddAttributeIfNotNull("package", ProjectFile.FullName);
+            }
+
             AddAttributeIfNotNull("region", options.Region);
             AddAttributeIfNotNull("session-id", options.Session);
-            AddAttributeIfNotNull("package", Package);
 
             if (options.SourceFile != null)
             {
@@ -110,29 +118,29 @@ namespace MLS.Agent.Markdown
             }
             catch (ArgumentException e)
             {
-                this.AddDiagnostic(e.Message);
+                AddDiagnostic(e.Message);
                 return false;
             }
 
             if (options.SourceFile != null && !accessor.FileExists(options.SourceFile))
             {
-                this.AddDiagnostic($"File not found: {options.SourceFile.Value}");
+                AddDiagnostic($"File not found: {options.SourceFile.Value}");
             }
 
             if (string.IsNullOrEmpty(options.Package) && options.Project == null)
             {
-                this.AddDiagnostic("No project file or package specified");
+                AddDiagnostic("No project file or package specified");
             }
 
             if (options.Package != null && !options.IsProjectImplicit)
             {
-                this.AddDiagnostic("Can't specify both --project and --package");
+                AddDiagnostic("Can't specify both --project and --package");
                 succeeded = false;
             }
 
             foreach (var error in options.Errors)
             {
-                this.AddDiagnostic(error);
+                AddDiagnostic(error);
                 succeeded = false;
             }
 
@@ -142,7 +150,7 @@ namespace MLS.Agent.Markdown
 
                 if (packageName == null)
                 {
-                    this.AddDiagnostic(
+                    AddDiagnostic(
                         $"No project file could be found at path {accessor.GetFullyQualifiedPath(new RelativeDirectoryPath("."))}");
                     succeeded = false;
                 }
@@ -175,11 +183,6 @@ namespace MLS.Agent.Markdown
                     return _options.Package;
                 }
 
-                if (_options.Project != null)
-                {
-                    return _options.Project.FullName;
-                }
-
                 return string.Empty;
             }
         }
@@ -187,6 +190,8 @@ namespace MLS.Agent.Markdown
         public RelativeFilePath SourceFile => _options.SourceFile;
 
         public string Region => _options.Region;
+
+        public string RunArgs => _options.RunArgs;
 
         public string Session => _options.Session;
 
@@ -210,8 +215,6 @@ namespace MLS.Agent.Markdown
 
         public IEnumerable<string> Diagnostics => _diagnostics;
 
-        public RelativeFilePath MarkdownFile { get; internal set; }
-
         public void AddAttribute(string key, string value)
         {
             this.GetAttributes().AddProperty(key, value);
@@ -219,5 +222,12 @@ namespace MLS.Agent.Markdown
 
         public void AddDiagnostic(string message) =>
             _diagnostics.Add(message);
+
+        public async Task<Workspace.Buffer> GetBufferAsync(IDirectoryAccessor directoryAccessor, MarkdownFile markdownFile)
+        {
+            var absolutePath = (await _directoryAccessor.ValueAsync()).GetFullyQualifiedPath(SourceFile).FullName;
+            var bufferId = new BufferId(absolutePath, Region);
+            return new Workspace.Buffer(bufferId, SourceCode);
+        }
     }
 }

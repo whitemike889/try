@@ -9,6 +9,8 @@ using HtmlAgilityPack;
 using System.Threading.Tasks;
 using WorkspaceServer;
 using System.CommandLine;
+using System.Linq;
+using MLS.Agent.Controllers;
 using MLS.Agent.Tools;
 using WorkspaceServer.PackageDiscovery;
 
@@ -16,14 +18,13 @@ namespace MLS.Agent.Tests
 {
     public class CodeLinkExtensionTests
     {
-        private readonly TestConsole _console;
         private readonly AsyncLazy<(PackageRegistry, string)> _package;
 
         public CodeLinkExtensionTests()
         {
-            _console = new TestConsole();
+            var console = new TestConsole();
             _package = new AsyncLazy<(PackageRegistry, string)>( async () => {
-                var dir = await LocalToolHelpers.CreateTool(_console);
+                var dir = await LocalToolHelpers.CreateTool(console);
                 var strategy = new LocalToolPackageDiscoveryStrategy(dir, dir);
                 return (new PackageRegistry(strategy), "console");
             }
@@ -457,6 +458,35 @@ $@"```cs --package {package} Program.cs
             var node = htmlDocument.DocumentNode.SelectSingleNode("//div[@class='notification is-danger']");
 
             node.InnerHtml.Should().Contain($"Package named &quot;{package}&quot; not found");
+        }
+
+        [Fact]
+        public async Task Arguments_are_forwarded_to_the_users_program_entry_point()
+        {
+            var directoryAccessor = new InMemoryDirectoryAccessor(TestAssets.SampleConsole)
+                                    {
+                                        ("Program.cs", ""),
+                                        ("sample.csproj", ""),
+                                        ("sample.md",
+                                         @"```cs --region the-region Program.cs -- one two ""and three""
+```")
+                                    };
+
+            var project = new MarkdownProject(directoryAccessor, new PackageRegistry());
+
+            var markdownFile = project.GetAllMarkdownFiles().Single();
+
+            var html = await DocumentationController.SessionControlsHtml(markdownFile);
+
+            var htmlDocument = new HtmlDocument();
+            htmlDocument.LoadHtml(html.ToString());
+
+            var value = htmlDocument.DocumentNode
+                                    .SelectSingleNode("//button")
+                                    .Attributes["data-trydotnet-run-args"]
+                                    .Value;
+
+            value.Should().Be("--region the-region Program.cs -- one two \"and three\"".HtmlAttributeEncode());
         }
     }
 }

@@ -152,7 +152,7 @@ namespace WorkspaceServer.Tests
         {
             var package = await Create.WebApiWorkspaceCopy();
 
-            await package.EnsureCreated();
+            await package.EnsureReady(new TimeBudget(30.Seconds()));
 
             package.IsWebProject.Should().BeTrue();
         }
@@ -160,9 +160,9 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task When_package_contains_simple_console_app_then_entry_point_dll_is_in_the_build_directory()
         {
-            var package = await Create.ConsoleWorkspaceCopy();
+            var package = Create.EmptyWorkspace(initializer: new PackageInitializer("console", "empty"));
 
-            await package.EnsurePublished();
+            await package.EnsureReady(new TimeBudget(30.Seconds()));
 
             package.EntryPointAssemblyPath.Exists.Should().BeTrue();
 
@@ -174,28 +174,28 @@ namespace WorkspaceServer.Tests
                              "bin",
                              "Debug",
                              package.TargetFramework,
-                             "console.dll"));
+                             "empty.dll"));
         }
 
         [Fact]
         public async Task When_package_contains_aspnet_project_then_entry_point_dll_is_in_the_publish_directory()
         {
-            var package = await Create.WebApiWorkspaceCopy();
+            var package = Create.EmptyWorkspace(initializer: new PackageInitializer("webapi", "aspnet.webapi"));
 
-            await package.EnsurePublished();
+            await package.EnsureReady(new TimeBudget(30.Seconds()));
 
             package.EntryPointAssemblyPath.Exists.Should().BeTrue();
 
             package.EntryPointAssemblyPath
-                     .FullName
-                     .Should()
-                     .Be(Path.Combine(
-                             package.Directory.FullName,
-                             "bin",
-                             "Debug",
-                             package.TargetFramework,
-                             "publish",
-                             "aspnet.webapi.dll"));
+                   .FullName
+                   .Should()
+                   .Be(Path.Combine(
+                           package.Directory.FullName,
+                           "bin",
+                           "Debug",
+                           package.TargetFramework,
+                           "publish",
+                           "aspnet.webapi.dll"));
         }
 
         [Fact]
@@ -219,7 +219,6 @@ namespace WorkspaceServer.Tests
             config.CompilerArgs.Should().Contain("/target:exe");
             config.CompilerArgs.Should().Contain("-langversion:7.3");
         }
-
 
         [Fact(Skip = "Not yet implemented")]
         public async Task When_the_project_file_has_been_modified_the_package_is_rebuilt()

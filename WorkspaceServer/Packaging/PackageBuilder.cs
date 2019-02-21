@@ -27,8 +27,6 @@ namespace WorkspaceServer.Packaging
 
         public IPackageInitializer PackageInitializer { get; private set; }
 
-        public bool RequiresPublish { get; set; }
-
         public DirectoryInfo Directory { get; set; }
 
         public void AfterCreate(Func<Package, Budget, Task> action)
@@ -99,7 +97,6 @@ namespace WorkspaceServer.Packaging
             package = new Package(
                 PackageName,
                 PackageInitializer,
-                RequiresPublish,
                 Directory);
 
             await package.EnsureReady(budget);

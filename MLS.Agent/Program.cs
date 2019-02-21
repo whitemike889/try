@@ -11,7 +11,6 @@ using Serilog.Sinks.RollingFileAlternate;
 using System;
 using System.CommandLine.Invocation;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
@@ -36,11 +35,12 @@ namespace MLS.Agent
                                           new GitHubRepoLocator()),
                 pack: PackageCommand.Do,
                 install: InstallCommand.Do,
-                verify: (rootDirectory, console) =>
+                verify: (rootDirectory, console, compile) =>
                     VerifyCommand.Do(rootDirectory,
                                      console,
                                      () => new FileSystemDirectoryAccessor(rootDirectory),
-                                     PackageRegistry.CreateForTryMode(rootDirectory, null)));
+                                     PackageRegistry.CreateForTryMode(rootDirectory, null),
+                                     compile));
 
             return await parser.InvokeAsync(args);
         }

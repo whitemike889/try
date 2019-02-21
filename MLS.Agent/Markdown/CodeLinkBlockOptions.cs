@@ -7,13 +7,14 @@ namespace MLS.Agent.Markdown
     public class CodeLinkBlockOptions
     {
         public CodeLinkBlockOptions(
-            RelativeFilePath sourceFile = null, 
-            FileInfo project = null, 
-            string package = null, 
-            string region = null, 
+            RelativeFilePath sourceFile = null,
+            FileInfo project = null,
+            string package = null,
+            string region = null,
             string session = null,
             bool isProjectFileImplicit = false,
-            IEnumerable<string> errors = null)
+            IEnumerable<string> errors = null,
+            string runArgs = null)
         {
             SourceFile = sourceFile;
             Project = project;
@@ -21,39 +22,43 @@ namespace MLS.Agent.Markdown
             Region = region;
             Session = session;
             IsProjectImplicit = isProjectFileImplicit;
+            RunArgs = runArgs;
             Errors = errors ?? Enumerable.Empty<string>();
         }
 
         public CodeLinkBlockOptions WithIsProjectImplicit(bool isProjectFileImplicit)
         {
             return new CodeLinkBlockOptions(
-                        SourceFile,
-                        Project,
-                        Package,
-                        Region,
-                        Session,
-                        isProjectFileImplicit: isProjectFileImplicit,
-                        errors: Errors);
+                SourceFile,
+                Project,
+                Package,
+                Region,
+                Session,
+                isProjectFileImplicit,
+                Errors,
+                RunArgs);
         }
 
         public CodeLinkBlockOptions ReplaceErrors(IEnumerable<string> errors)
         {
             return new CodeLinkBlockOptions(
-                        SourceFile,
-                        Project,
-                        Package,
-                        Region,
-                        Session,
-                        IsProjectImplicit,
-                        errors: errors);
+                SourceFile,
+                Project,
+                Package,
+                Region,
+                Session,
+                IsProjectImplicit,
+                errors,
+                RunArgs);
         }
 
         public FileInfo Project { get; }
         public string Package { get; }
         public RelativeFilePath SourceFile { get; }
         public string Region { get; }
+        public string RunArgs { get; set; }
         public string Session { get; }
-        public bool IsProjectImplicit { get; internal set; }
+        public bool IsProjectImplicit { get; }
         public IEnumerable<string> Errors { get; }
     }
 }

@@ -9,6 +9,8 @@ namespace MLS.Protocol
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string RequestId { get; }
 
+        public string RunArgs { get; }
+
         public Workspace Workspace { get; }
 
         public HttpRequest HttpRequest { get; }
@@ -20,11 +22,13 @@ namespace MLS.Protocol
             BufferId activeBufferId = null,
             HttpRequest httpRequest = null,
             int? position = null,
-            string requestId = null)
+            string requestId = null,
+            string runArgs = "")
         {
             Workspace = workspace ?? throw new ArgumentNullException(nameof(workspace));
 
             RequestId = requestId;
+            RunArgs = runArgs;
 
             HttpRequest = httpRequest;
 

@@ -4,6 +4,8 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
+using System.Xml.XPath;
 using Clockwise;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -62,14 +64,13 @@ namespace WorkspaceServer.Packaging
         public Package(
             string name = null,
             IPackageInitializer initializer = null,
-            bool requiresPublish = false,
             DirectoryInfo directory = null)
         {
             Name = name ?? directory?.Name ?? throw new ArgumentException($"You must specify {nameof(name)}, {nameof(directory)}, or both.");
             _initializer = initializer ?? new PackageInitializer("console", Name);
             ConstructionTime = Clock.Current.Now();
             Directory = directory ?? new DirectoryInfo(Path.Combine(DefaultPackagesDirectory.FullName, Name));
-            RequiresPublish = requiresPublish;
+            LastBuildErrorLogFile = new FileInfo(Path.Combine(Directory.FullName, ".trydotnet-builderror"));
             _csharpCommandLineArguments = new AsyncLazy<CSharpCommandLineArguments>(CreateCSharpCommandLineArguments);
             _instrumentationEmitterSyntaxTree = new AsyncLazy<SyntaxTree>(CreateInstrumentationEmitterSyntaxTree);
             _created = new AsyncLazy<bool>(VerifyOrCreate);
@@ -100,9 +101,25 @@ namespace WorkspaceServer.Packaging
             _isUnitTestProject ??
             (_isUnitTestProject = Directory.GetFiles("*.testadapter.dll", SearchOption.AllDirectories).Any()).Value;
 
-        public bool IsWebProject =>
-            _isWebProject ??
-            (_isWebProject = Directory.GetDirectories("wwwroot", SearchOption.AllDirectories).Any()).Value;
+        public bool IsWebProject
+        {
+            get
+            {
+                if (_isWebProject == null &&
+                    Directory.GetFiles("*.csproj").SingleOrDefault() is FileInfo csproj)
+                {
+                    var csprojXml = File.ReadAllText(csproj.FullName);
+
+                    var xml = XElement.Parse(csprojXml);
+
+                    var wut = xml.XPathSelectElement("//ItemGroup/PackageReference[@Include='Microsoft.AspNetCore.App']");
+
+                    _isWebProject = wut != null;
+                }
+
+                return _isWebProject ?? false;
+            }
+        }
 
         public DirectoryInfo Directory { get; }
 
@@ -217,6 +234,8 @@ namespace WorkspaceServer.Packaging
 
             await EnsureBuilt(budget);
 
+            await EnsureConfigurationFileExists(budget);
+
             if (RequiresPublish)
             {
                 await EnsurePublished(budget);
@@ -225,7 +244,7 @@ namespace WorkspaceServer.Packaging
             IsReady = true;
         }
 
-        public bool RequiresPublish { get; }
+        public bool RequiresPublish => IsWebProject;
 
         public async Task EnsureBuilt(Budget budget = null)
         {
@@ -233,6 +252,7 @@ namespace WorkspaceServer.Packaging
 
             await _built.ValueAsync()
                         .CancelIfExceeds(budget ?? new Budget());
+
             budget?.RecordEntry();
         }
 
@@ -245,7 +265,22 @@ namespace WorkspaceServer.Packaging
 
         public bool VerifyOrCreateConfigFile()
         {
-            CreateWorkspaceConfigurationFile();
+            var buildLog = Directory.GetFiles("msbuild.log").SingleOrDefault();
+
+            if (buildLog == null)
+            {
+                throw new InvalidOperationException($"msbuild.log not found in {Directory}");
+            }
+
+            var compilerCommandLine = buildLog.FindCompilerCommandLineAndSetLanguageversion(csharpLanguageVersion);
+
+            _configuration = new PackageConfiguration
+                             {
+                                 CompilerArgs = compilerCommandLine
+                             };
+
+            File.WriteAllText(_workspaceConfigFilePath, _configuration.ToJson());
+
             return true;
         }
 
@@ -258,18 +293,33 @@ namespace WorkspaceServer.Packaging
                 try
                 {
                     fileStream = File.Create(lockFile.FullName, 1, FileOptions.DeleteOnClose);
+
                     if (!IsBuilt)
                     {
-                        if(Directory.GetFiles("msbuild.log").Length == 0)
+                        var msbuildLog = new FileInfo(Path.Combine(Directory.FullName, "msbuild.log"));
+
+                        if (!msbuildLog.Exists)
                         {
                             operation.Info("Building workspace using {_initializer} in {directory}", _initializer, Directory);
                             var result = await new Dotnet(Directory)
                                              .Build(args: "/fl /p:ProvideCommandLineArgs=true;append=true");
+
+                            if (result.ExitCode != 0)
+                            {
+                                File.WriteAllText(
+                                    LastBuildErrorLogFile.FullName, 
+                                    string.Join(Environment.NewLine, result.Error));
+                            }
+                            else if (LastBuildErrorLogFile.Exists)
+                            {
+                                LastBuildErrorLogFile.Delete();
+                            }
+
                             result.ThrowOnFailure();
                             BuildTime = Clock.Current.Now();
                             operation.Info("Workspace built");
                         }
-                        
+
                         IsBuilt = true;
                     }
                     else
@@ -292,23 +342,7 @@ namespace WorkspaceServer.Packaging
             return true;
         }
 
-        private void CreateWorkspaceConfigurationFile()
-        {
-            var buildLog = Directory.GetFiles("msbuild.log").SingleOrDefault();
-            if (buildLog == null)
-            {
-                throw new InvalidOperationException($"msbuild.log not found in {Directory}");
-            }
-
-            var compilerCommandLine = buildLog.FindCompilerCommandLineAndSetLanguageversion(csharpLanguageVersion);
-
-            _configuration = new PackageConfiguration
-            {
-                CompilerArgs = compilerCommandLine
-            };
-
-            File.WriteAllText(_workspaceConfigFilePath, _configuration.ToJson());
-        }
+        private FileInfo LastBuildErrorLogFile { get; }
 
         public async Task EnsurePublished(Budget budget = null)
         {
@@ -427,6 +461,7 @@ namespace WorkspaceServer.Packaging
         private async Task<CSharpCommandLineArguments> CreateCSharpCommandLineArguments()
         {
             await EnsureBuilt();
+
             return CSharpCommandLineParser.Default.Parse(
                 (await GetConfigurationAsync()).CompilerArgs,
                 Directory.FullName,

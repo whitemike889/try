@@ -1,8 +1,5 @@
 ﻿using FluentAssertions;
-using System;
-using System.Collections.Generic;
 using System.CommandLine;
-using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -25,6 +22,5 @@ namespace MLS.Agent.Tests
             asset.GetFiles()
                 .Should().Contain(f => f.Name.Contains("nupkg"));
         }
-
     }
 }

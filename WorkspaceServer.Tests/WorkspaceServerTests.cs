@@ -119,13 +119,24 @@ Console.Write(s);", build);
             var request = CreateWorkspaceWithMainContaining(@"
 Console.WriteLine(banana);", build);
 
+            var result = await server.Run(new WorkspaceRequest(request));
+            result.Succeeded.Should().BeFalse();
+            result.Exception.Should().BeNull();
+        }
+
+        [Fact]
+        public async Task When_compile_is_unsuccessful_then_diagnostics_are_displayed_in_output()
+        {
+            var (server, build) = await GetRunnerAndWorkspaceBuild();
+
+            var request = CreateWorkspaceWithMainContaining(@"
+Console.WriteLine(banana);", build);
 
             var result = await server.Run(new WorkspaceRequest(request));
             result.Succeeded.Should().BeFalse();
             result.Output
                   .ShouldMatch(
                       "*(2,19): error CS0103: The name \'banana\' does not exist in the current context");
-            result.Exception.Should().BeNull();
         }
 
         [Fact]

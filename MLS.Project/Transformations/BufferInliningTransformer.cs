@@ -80,7 +80,7 @@ namespace MLS.Project.Transformations
                     }
                     else
                     {
-                        throw new ArgumentException($"Could not find specified viewport {sourceBuffer.Id}");
+                        throw new ArgumentException($"Could not find specified buffer: {sourceBuffer.Id}");
                     }
                 }
                 else
