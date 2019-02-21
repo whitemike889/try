@@ -142,7 +142,6 @@ namespace WorkspaceServer
                          {
                              workspace.CreateUsingDotnet("classlib");
                              workspace.AddPackageReference("Newtonsoft.Json");
-                             workspace.EnableBlazor();
                          });
 
             registry.Add("blazor-nodatime",
