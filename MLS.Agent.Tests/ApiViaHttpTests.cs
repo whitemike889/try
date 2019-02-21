@@ -710,6 +710,7 @@ namespace FibonacciTest
 
                 response.EnsureSuccessStatusCode();
                 var result = await response.Content.ReadAsStringAsync();
+                result.Should().Contain("Loading...");
             }
         }
         private class FailedRunResult : Exception

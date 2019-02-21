@@ -74,20 +74,19 @@ namespace MLS.Agent
 
                 services.AddSingleton(c => new RoslynWorkspaceServer(c.GetRequiredService<PackageRegistry>()));
 
+                services.AddResponseCompression(options =>
+                {
+                    options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(new[]
+                    {
+                        MediaTypeNames.Application.Octet,
+                        WasmMediaTypeNames.Application.Wasm
+                    });
+                });
+
                 if (StartupOptions.IsInHostedMode)
                 {
                     services.AddSingleton(_ => PackageRegistry.CreateForHostedMode());
                     services.AddSingleton<IHostedService, Warmup>();
-
-                    services.AddResponseCompression(options =>
-                    {
-                        options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(new[]
-                        {
-                        MediaTypeNames.Application.Octet,
-                        WasmMediaTypeNames.Application.Wasm
-                    });
-                    });
-
                 }
                 else
                 {
@@ -131,6 +130,13 @@ namespace MLS.Agent
             {
                 lifetime.ApplicationStopping.Register(() => _disposables.Dispose());
 
+                app.UseResponseCompression();
+                app.Map("/LocalCodeRunner/blazor-console", builder =>
+                {
+                    builder.UsePathBase("/LocalCodeRunner/blazor-console/");
+                    builder.UseBlazor<MLS.Blazor.Program>();
+                });
+
                 app.UseDefaultFiles()
                     .UseStaticFilesFromToolLocation()
                     .UseRouter(new StaticFilesProxyRouter())
@@ -140,13 +146,14 @@ namespace MLS.Agent
 
                 _disposables.Add(() => budget.Cancel());
 
-                app.Map("/LocalCodeRunner/blazor-console", builder => {
-                    builder.UsePathBase("/LocalCodeRunner/blazor-console/");
-                    builder.UseBlazor<MLS.Blazor.Program>();
-                });
 
-                app.UseResponseCompression();
 
+                //app.UseBlazor<Blazor.Program>();
+
+               
+
+
+                //app.UseBlazor<MLS.Blazor.Program>();
                 operation.Succeed();
 
                 if (!StartupOptions.IsInHostedMode &&
