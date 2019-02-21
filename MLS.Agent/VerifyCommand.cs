@@ -1,8 +1,8 @@
 ﻿using System;
 using System.CommandLine;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using MLS.Agent.CommandLine;
 using MLS.Agent.Markdown;
 using MLS.Protocol;
 using MLS.Protocol.Diagnostics;
@@ -15,11 +15,10 @@ namespace MLS.Agent
     public static class VerifyCommand
     {
         public static async Task<int> Do(
-            DirectoryInfo rootDirectory,
+            VerifyOptions options,
             IConsole console,
             Func<IDirectoryAccessor> getDirectoryAccessor,
-            PackageRegistry packageRegistry,
-            bool compile)
+            PackageRegistry packageRegistry)
         {
             var directoryAccessor = getDirectoryAccessor();
             var markdownProject = new MarkdownProject(directoryAccessor, packageRegistry);
@@ -53,7 +52,7 @@ namespace MLS.Agent
 
                     Console.ResetColor();
 
-                    if (compile && !session.Any(block => block.Diagnostics.Any()))
+                    if (options.Compile && !session.Any(block => block.Diagnostics.Any()))
                     {
                         await ReportCompileResults(session, markdownFile);
                     }

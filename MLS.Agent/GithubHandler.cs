@@ -2,20 +2,21 @@
 using System.CommandLine;
 using System.Linq;
 using System.Threading.Tasks;
+using MLS.Agent.CommandLine;
 
 namespace MLS.Agent
 {
     public static class GitHubHandler
     {
-        public static async Task Handler(string repo, IConsole console, IRepoLocator locator)
+        public static async Task Handler(TryGitHubOptions options, IConsole console, IRepoLocator locator)
         {
-            var repos = (await locator.LocateRepo(repo)).ToArray();
+            var repos = (await locator.LocateRepo(options.Repo)).ToArray();
 
             if (repos.Length == 0)
             {
-                console.Out.WriteLine($"Didn't find any repos called `{repo}`");
+                console.Out.WriteLine($"Didn't find any repos called `{options.Repo}`");
             }
-            else if (repos[0].Name == repo)
+            else if (repos[0].Name == options.Repo)
             {
                 console.Out.WriteLine(GenerateCommandExample(repos[0].Name, repos[0].CloneUrl));
 

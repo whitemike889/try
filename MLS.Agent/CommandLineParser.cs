@@ -2,11 +2,11 @@ using System;
 using System.CommandLine;
 using System.CommandLine.Builder;
 using System.CommandLine.Invocation;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Clockwise;
+using MLS.Agent.CommandLine;
 using WorkspaceServer.Packaging;
 using CommandHandler = System.CommandLine.Invocation.CommandHandler;
 
@@ -14,25 +14,23 @@ namespace MLS.Agent
 {
     public static class CommandLineParser
     {
-        private static readonly TypeBinder _typeBinder = new TypeBinder(typeof(StartupOptions));
-
         public delegate void StartServer(StartupOptions options, InvocationContext context);
-        public delegate Task TryGitHub(string repo, IConsole console);
-        public delegate Task Pack(DirectoryInfo packTarget, IConsole console);
-        public delegate Task Install(string packageName, DirectoryInfo addSource, IConsole console);
-        public delegate Task<int> Verify(DirectoryInfo rootDirectory, IConsole console, bool compile);
+        public delegate Task Demo(DemoOptions options);
+        public delegate Task TryGitHub(TryGitHubOptions options, IConsole console);
+        public delegate Task Pack(PackOptions options, IConsole console);
+        public delegate Task Install(InstallOptions options, IConsole console);
+        public delegate Task<int> Verify(VerifyOptions options, IConsole console);
 
         public static Parser Create(
             StartServer start,
+            Demo demo,
             TryGitHub tryGithub,
             Pack pack,
             Install install,
             Verify verify)
         {
-            var startHandler = CommandHandler.Create<InvocationContext>(context =>
+            var startHandler = CommandHandler.Create<InvocationContext, StartupOptions>((context, options) =>
             {
-                var options = (StartupOptions) _typeBinder.CreateInstance(context);
-
                 start(options, context);
             });
 
@@ -43,6 +41,7 @@ namespace MLS.Agent
             startInHostedMode.Handler = startHandler;
 
             rootCommand.AddCommand(startInHostedMode);
+            rootCommand.AddCommand(Demo());
             rootCommand.AddCommand(ListPackages());
             rootCommand.AddCommand(GitHub());
             rootCommand.AddCommand(Pack());
@@ -152,19 +151,32 @@ namespace MLS.Agent
                 return run;
             }
 
+            Command Demo()
+            {
+                var demoCommand = new Command("demo")
+                                  {
+                                      new Option("--output", argument: new Argument<DirectoryInfo>())
+                                  };
+
+                demoCommand.Handler = CommandHandler.Create<DemoOptions, bool>((options, b) => 
+                {
+                    demo(options);
+                });
+
+                return demoCommand;
+            }
+
             Command GitHub()
             {
                 var argument = new Argument<string>();
 
                 // System.CommandLine parameter binding does lookup by name,
                 // so name the argument after the github command's string param
-                argument.Name = tryGithub.Method.GetParameters()
-                                         .First(p => p.ParameterType == typeof(string))
-                                         .Name;
+                argument.Name = nameof(TryGitHubOptions.Repo);
 
                 var github = new Command("github", "Try a GitHub repo", argument: argument);
 
-                github.Handler = CommandHandler.Create<string, IConsole>((repo, console) => tryGithub(repo, console));
+                github.Handler = CommandHandler.Create<TryGitHubOptions, IConsole>((repo, console) => tryGithub(repo, console));
 
                 return github;
             }
@@ -173,13 +185,13 @@ namespace MLS.Agent
             {
                 var packCommand = new Command("pack", "create a package");
                 packCommand.Argument = new Argument<DirectoryInfo>();
-                packCommand.Argument.Name = typeof(PackageCommand).GetMethods()
-                                            .First(m => m.Name == nameof(PackageCommand.Do)).GetParameters()
-                                         .First(p => p.ParameterType == typeof(DirectoryInfo))
-                                         .Name;
+                packCommand.Argument.Name = "packTarget";
 
-                packCommand.Handler = CommandHandler.Create<DirectoryInfo, IConsole>(
-                    (packTarget, console) => pack(packTarget, console));
+                packCommand.Handler = CommandHandler.Create<PackOptions, IConsole>(
+                    (options, console) =>
+                    {
+                        return pack(options, console);
+                    });
 
                 return packCommand;
             }
@@ -188,17 +200,15 @@ namespace MLS.Agent
             {
                 var installCommand = new Command("install", "install a package");
                 installCommand.Argument = new Argument<string>();
-                installCommand.Argument.Name = typeof(InstallCommand).GetMethods()
-                    .First(m => m.Name == nameof(InstallCommand.Do)).GetParameters()
-                                         .First(p => p.ParameterType == typeof(string))
-                                         .Name;
+                installCommand.Argument.Name = nameof(InstallOptions.PackageName);
 
                 var option = new Option("--add-source",
                                         argument: new Argument<DirectoryInfo>().ExistingOnly());
 
                 installCommand.AddOption(option);
 
-                installCommand.Handler = CommandHandler.Create<string, DirectoryInfo, IConsole>((packageName, addSource, console) => install(packageName, addSource, console));
+                installCommand.Handler = CommandHandler.Create<InstallOptions, IConsole>((options, console) => install(options, console));
+
                 return installCommand;
             }
 
@@ -208,14 +218,17 @@ namespace MLS.Agent
                                     {
                                         Argument = new Argument<DirectoryInfo>(() => new DirectoryInfo(Directory.GetCurrentDirectory()))
                                                    {
-                                                       Name = "rootDirectory",
+                                                       Name = nameof(VerifyOptions.RootDirectory),
                                                        Description = "Specify the path to the root directory"
                                                    }.ExistingOnly()
                                     };
 
                 verifyCommand.AddOption(new Option("--compile", argument: new Argument<bool>()));
 
-                verifyCommand.Handler = CommandHandler.Create<DirectoryInfo, IConsole, bool>((rootDirectory, console, compile) => verify(rootDirectory, console, compile));
+                verifyCommand.Handler = CommandHandler.Create<VerifyOptions, IConsole>((options, console) =>
+                {
+                    return verify(options, console);
+                });
 
                 return verifyCommand;
             }

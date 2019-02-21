@@ -3,6 +3,7 @@ using System.CommandLine;
 using System.IO;
 using System.Threading.Tasks;
 using FluentAssertions;
+using MLS.Agent.CommandLine;
 using WorkspaceServer;
 using WorkspaceServer.Tests;
 using Xunit;
@@ -37,11 +38,10 @@ This is some sample code:
             var console = new TestConsole();
 
             await VerifyCommand.Do(
-                root,
+                new VerifyOptions(root, false),
                 console,
                 () => directoryAccessor,
-                new PackageRegistry(),
-                false);
+                new PackageRegistry());
 
             console.Out
                    .ToString()
@@ -67,11 +67,10 @@ This is some sample code:
             var console = new TestConsole();
 
             await VerifyCommand.Do(
-                root,
+                new VerifyOptions(root, false),
                 console,
                 () => directoryAccessor,
-                new PackageRegistry(), 
-                false);
+                new PackageRegistry());
 
             _output.WriteLine(console.Out.ToString());
 
@@ -86,9 +85,9 @@ This is some sample code:
         [Fact]
         public async Task When_there_are_no_markdown_errors_then_return_code_is_0()
         {
-            var workingDirectory = new DirectoryInfo(".");
+            var rootDirectory = new DirectoryInfo(".");
 
-            var directoryAccessor = new InMemoryDirectoryAccessor(workingDirectory)
+            var directoryAccessor = new InMemoryDirectoryAccessor(rootDirectory)
                                     {
                                         ("some.csproj", ""),
                                         ("Program.cs", ""),
@@ -101,11 +100,10 @@ This is some sample code:
             var console = new TestConsole();
 
             var resultCode = await VerifyCommand.Do(
-                                 workingDirectory,
+                                 new VerifyOptions(rootDirectory, false),
                                  console,
                                  () => directoryAccessor,
-                                 new PackageRegistry(),
-                                 false);
+                                 new PackageRegistry());
 
             _output.WriteLine(console.Out.ToString());
 
@@ -128,11 +126,10 @@ This is some sample code:
             var console = new TestConsole();
 
             var resultCode = await VerifyCommand.Do(
-                                 rootDirectory,
+                                 new VerifyOptions(rootDirectory, false),
                                  console,
                                  () => directoryAccessor,
-                                 new PackageRegistry(),
-                                 false);
+                                 new PackageRegistry());
 
             resultCode.Should().Be(1);
         }
@@ -162,11 +159,10 @@ This is some sample code:
             var console = new TestConsole();
 
             var resultCode = await VerifyCommand.Do(
-                                 rootDirectory,
+                                 new VerifyOptions(rootDirectory, false),
                                  console,
                                  () => directoryAccessor,
-                                 new PackageRegistry(),
-                                 false);
+                                 new PackageRegistry());
 
             console.Out.ToString().Should().Contain("Session cannot span projects or packages: --session one");
 
@@ -208,11 +204,10 @@ This is some sample code:
             var console = new TestConsole();
 
             var resultCode = await VerifyCommand.Do(
-                                 directory,
+                                 new VerifyOptions(directory, true),
                                  console,
                                  () => directoryAccessor,
-                                 new PackageRegistry(),
-                                 compile: true);
+                                 new PackageRegistry());
 
             _output.WriteLine(console.Out.ToString());
 
@@ -224,9 +219,9 @@ This is some sample code:
         [Fact]
         public async Task When_there_are_compilation_errors_outside_the_mask_then_they_are_displayed()
         {
-            var directory = Create.EmptyWorkspace().Directory;
+            var rootDirectory = Create.EmptyWorkspace().Directory;
 
-            var directoryAccessor = new InMemoryDirectoryAccessor(directory, directory)
+            var directoryAccessor = new InMemoryDirectoryAccessor(rootDirectory, rootDirectory)
                                     {
                                         ("Program.cs", $@"
     using System;
@@ -256,11 +251,10 @@ This is some sample code:
             var console = new TestConsole();
 
             var resultCode = await VerifyCommand.Do(
-                                 directory,
+                                 new VerifyOptions(rootDirectory, true),
                                  console,
                                  () => directoryAccessor,
-                                 new PackageRegistry(),
-                                 compile: true);
+                                 new PackageRegistry());
 
             _output.WriteLine(console.Out.ToString());
 
@@ -288,11 +282,10 @@ This is some sample code:
             var console = new TestConsole();
 
             await VerifyCommand.Do(
-                root,
+                new VerifyOptions(root, true),
                 console,
                 () => directoryAccessor,
-                new PackageRegistry(),
-                true);
+                new PackageRegistry());
             
             _output.WriteLine(console.Out.ToString());
 

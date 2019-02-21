@@ -1,7 +1,7 @@
 ﻿using FluentAssertions;
-using MLS.Agent.Tools;
 using System.CommandLine;
 using System.Threading.Tasks;
+using MLS.Agent.CommandLine;
 using WorkspaceServer;
 using WorkspaceServer.PackageDiscovery;
 using Xunit;
@@ -18,8 +18,8 @@ namespace MLS.Agent.Tests
                 var console = new TestConsole();
                 var temp = directory.Directory;
                 var asset = TestAssets.SampleConsole;
-                await PackageCommand.Do(asset, temp, console);
-                var result = await CommandLine.Execute("dotnet", $"tool install --add-source {temp.FullName} BasicConsoleApp --tool-path {temp.FullName}");
+                await PackCommand.Do(new PackOptions(asset, temp), console);
+                var result = await Tools.CommandLine.Execute("dotnet", $"tool install --add-source {temp.FullName} BasicConsoleApp --tool-path {temp.FullName}");
                 result.ExitCode.Should().Be(0);
 
                 var strategy = new LocalToolPackageDiscoveryStrategy(temp, null);

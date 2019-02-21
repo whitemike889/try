@@ -29,18 +29,18 @@ namespace MLS.Agent
             var parser = CommandLineParser.Create(
                 start: (options, console) =>
                     ConstructWebHost(options).Run(),
+                demo: DemoCommand.Do,
                 tryGithub: (repo, console) =>
                     GitHubHandler.Handler(repo,
                                           console,
                                           new GitHubRepoLocator()),
-                pack: PackageCommand.Do,
+                pack: PackCommand.Do,
                 install: InstallCommand.Do,
-                verify: (rootDirectory, console, compile) =>
-                    VerifyCommand.Do(rootDirectory,
+                verify: (options, console) =>
+                    VerifyCommand.Do(options,
                                      console,
-                                     () => new FileSystemDirectoryAccessor(rootDirectory),
-                                     PackageRegistry.CreateForTryMode(rootDirectory, null),
-                                     compile));
+                                     () => new FileSystemDirectoryAccessor(options.RootDirectory),
+                                     PackageRegistry.CreateForTryMode(options.RootDirectory, null)));
 
             return await parser.InvokeAsync(args);
         }

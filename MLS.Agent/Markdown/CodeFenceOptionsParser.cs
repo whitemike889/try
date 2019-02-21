@@ -1,5 +1,6 @@
 ﻿using System;
 using System.CommandLine;
+using System.CommandLine.Binding;
 using System.CommandLine.Invocation;
 using System.IO;
 using System.Linq;
@@ -10,7 +11,7 @@ namespace MLS.Agent.Markdown
     public class CodeFenceOptionsParser
     {
         private readonly Parser _parser;
-        private CodeLinkBlockOptions _options;
+        private readonly ModelBinder<CodeLinkBlockOptions> _modelBinder= new ModelBinder<CodeLinkBlockOptions>();
 
         public CodeFenceOptionsParser(IDirectoryAccessor directoryAccessor)
         {
@@ -19,12 +20,11 @@ namespace MLS.Agent.Markdown
                 throw new ArgumentNullException(nameof(directoryAccessor));
             }
 
-            _parser = CreateOptionsParser(directoryAccessor, o => _options = o);
+            _parser = CreateOptionsParser(directoryAccessor);
         }
 
         public CodeLinkBlockOptions Parse(string line)
         {
-            _options = null;
             var result = _parser.Parse(line);
 
             if (result.CommandResult.Name != "csharp")
@@ -37,11 +37,27 @@ namespace MLS.Agent.Markdown
                 return new CodeLinkBlockOptions().ReplaceErrors(result.Errors.Select(e => e.Message));
             }
 
-            _parser.InvokeAsync(line).Wait();
-            return _options;
+            var options = (CodeLinkBlockOptions) _modelBinder.CreateInstance(new BindingContext(result));
+
+            var projectResult = result.CommandResult["project"];
+            if (projectResult?.IsImplicit ?? false)
+            {
+                options = options.WithIsProjectImplicit(isProjectFileImplicit: true);
+            }
+
+            options = options.ReplaceErrors(result.Errors.Select(e => e.Message));
+
+            options.RunArgs = string.Join(" ", result
+                                               .Tokens
+                                               .Select(t => t.Value)
+                                               .Skip(1)
+                                               .Select(t => Regex.IsMatch(t, @".*\s.*")
+                                                                ? $"\"{t}\""
+                                                                : t));
+            return options;
         }
 
-        private static Parser CreateOptionsParser(IDirectoryAccessor directoryAccessor, Action<CodeLinkBlockOptions> extractOptionsDelegate)
+        private static Parser CreateOptionsParser(IDirectoryAccessor directoryAccessor)
         {
             var sourceFileArg = new Argument<RelativeFilePath>(
                                     result =>
@@ -112,33 +128,7 @@ namespace MLS.Agent.Markdown
             csharp.AddAlias("cs");
             csharp.AddAlias("c#");
 
-            var binder = new TypeBinder(typeof(CodeLinkBlockOptions));
-            var command = new RootCommand { csharp };
-
-            csharp.Handler = CommandHandler.Create<InvocationContext>(context =>
-            {
-                var options = (CodeLinkBlockOptions) binder.CreateInstance(context);
-
-                var projectResult = context.ParseResult.CommandResult["project"];
-                if (projectResult?.IsImplicit ?? false)
-                {
-                    options = options.WithIsProjectImplicit(isProjectFileImplicit: true);
-                }
-
-                options = options.ReplaceErrors(context.ParseResult.Errors.Select(e => e.Message));
-
-                options.RunArgs = string.Join(" ", context.ParseResult
-                                                          .Tokens
-                                                          .Skip(1)
-                                                          .Select(t => Regex.IsMatch(t, @".*\s.*")
-                                                                           ? $"\"{t}\""
-                                                                           : t));
-
-                extractOptionsDelegate(options);
-                return 0;
-            });
-
-            return new Parser(command);
+            return new Parser(new RootCommand { csharp });
         }
     }
 }

@@ -4,31 +4,28 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Threading.Tasks;
+using MLS.Agent.CommandLine;
 using MLS.Agent.Tools;
 using WorkspaceServer;
 
 namespace MLS.Agent
 {
-    public static class PackageCommand
+    public static class PackCommand
     {
-        public static Task Do(DirectoryInfo packTarget, IConsole console)
+     
+        public static async Task Do(PackOptions options, IConsole console)
         {
-            return Do(packTarget, packTarget, console);
-        }
-
-        public static async Task Do(DirectoryInfo packTarget, DirectoryInfo outputDirectory, IConsole console)
-        {
-            console.Out.WriteLine($"Creating package-tool from {packTarget.FullName}");
+            console.Out.WriteLine($"Creating package-tool from {options.PackTarget.FullName}");
 
             using (var disposableDirectory = DisposableDirectory.Create())
             {
                 var tempDir = disposableDirectory.Directory;
                 var archivePath = Path.Combine(tempDir.FullName, "packagey.zip");
 
-                ZipFile.CreateFromDirectory(packTarget.FullName, archivePath);
+                ZipFile.CreateFromDirectory(options.PackTarget.FullName, archivePath);
                 console.Out.WriteLine(archivePath);
 
-                var files = packTarget.GetFiles();
+                var files = options.PackTarget.GetFiles();
                 var csproj = files.Single(f => f.Extension.Contains("csproj"));
                 var name = Path.GetFileNameWithoutExtension(csproj.Name);
 
@@ -46,7 +43,7 @@ namespace MLS.Agent
 
                 result.ThrowOnFailure("Failed to build intermediate project.");
 
-                result = await dotnet.Pack($"/p:PackageId={name} /p:ToolCommandName={name} {projectFilePath} -o {outputDirectory.FullName}");
+                result = await dotnet.Pack($"/p:PackageId={name} /p:ToolCommandName={name} {projectFilePath} -o {options.OutputDirectory.FullName}");
 
                 result.ThrowOnFailure("Package build failed.");
             }

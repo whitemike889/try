@@ -1,6 +1,7 @@
 ﻿using FluentAssertions;
 using System.CommandLine;
 using System.Threading.Tasks;
+using MLS.Agent.CommandLine;
 using Xunit;
 
 namespace MLS.Agent.Tests
@@ -18,7 +19,7 @@ namespace MLS.Agent.Tests
             }
 
             var console = new TestConsole();
-            await PackageCommand.Do(asset, console);
+            await PackCommand.Do(new PackOptions(asset), console);
             asset.GetFiles()
                 .Should().Contain(f => f.Name.Contains("nupkg"));
         }
