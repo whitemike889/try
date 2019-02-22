@@ -4,6 +4,7 @@ using System.Linq;
 using Xunit;
 using WorkspaceServer;
 using System.Threading.Tasks;
+using MLS.Agent.Markdown;
 
 namespace MLS.Agent.Tests
 {

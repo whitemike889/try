@@ -2,11 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using Markdig;
-using MLS.Agent.Markdown;
 using Recipes;
 using WorkspaceServer;
 
-namespace MLS.Agent
+namespace MLS.Agent.Markdown
 {
     public class MarkdownProject
     {

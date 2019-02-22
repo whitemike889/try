@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 
-namespace MLS.Agent
+namespace MLS.Agent.CommandLine
 {
     public class StartupOptions
     {

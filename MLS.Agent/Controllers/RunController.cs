@@ -12,6 +12,7 @@ using WorkspaceServer.Servers.Roslyn;
 using WorkspaceServer.Servers.Scripting;
 using WorkspaceServer.Features;
 using static Pocket.Logger<MLS.Agent.Controllers.RunController>;
+using MLS.Agent.CommandLine;
 
 namespace MLS.Agent.Controllers
 {

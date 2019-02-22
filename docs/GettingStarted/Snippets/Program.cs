@@ -1,16 +1,27 @@
 ﻿using System;
 using System.Linq;
-using System.CommandLine.DragonFruit;
+using System.CommandLine;
 
 namespace Snippets
 {
     partial class Program
-    {{
-        static void Main(
-            string region,
-            string project,
-            string session)
+    {
+        static void Main(string[] args)
         {
+            var rootCommand = new RootCommand()
+            {
+                new Option("--region", argument: new Argument<string>()),
+                new Option("--session", argument: new Argument<string>()),
+                new Option("--package", argument: new Argument<string>()),
+                new Option("--project", argument: new Argument<string>())
+            };
+            rootCommand.Argument = new Argument<string>
+            {
+                Arity = ArgumentArity.ZeroOrMore
+            };
+            var parser = new Parser(rootCommand);
+            var region = parser.Parse(args).ValueForOption<string>("--region");
+            
             switch (region)
             {
                 case "run1":

@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using HtmlAgilityPack;
 using Markdig;
+using MLS.Agent.CommandLine;
 using MLS.Agent.Markdown;
 using Recipes;
 using WorkspaceServer;

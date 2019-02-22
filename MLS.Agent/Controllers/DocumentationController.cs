@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc;
+using MLS.Agent.CommandLine;
+using MLS.Agent.Markdown;
 
 namespace MLS.Agent.Controllers
 {

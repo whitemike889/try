@@ -4,15 +4,13 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Threading.Tasks;
-using MLS.Agent.CommandLine;
 using MLS.Agent.Tools;
 using WorkspaceServer;
 
-namespace MLS.Agent
+namespace MLS.Agent.CommandLine
 {
     public static class PackCommand
     {
-     
         public static async Task Do(PackOptions options, IConsole console)
         {
             console.Out.WriteLine($"Creating package-tool from {options.PackTarget.FullName}");
@@ -33,7 +31,7 @@ namespace MLS.Agent
                 var contentFilePath = Path.Combine(tempDir.FullName, "program.cs");
 
                 await File.WriteAllTextAsync(
-                    projectFilePath, 
+                    projectFilePath,
                     FixCsproj(ReadManifestResource("MLS.Agent.MLS.PackageTool.csproj")));
 
                 await File.WriteAllTextAsync(contentFilePath, ReadManifestResource("MLS.Agent.Program.cs"));
@@ -58,7 +56,7 @@ namespace MLS.Agent
         {
             var assembly = typeof(Program).Assembly;
             using (var reader = new StreamReader(assembly.GetManifestResourceStream(resourceName)))
-            { 
+            {
                 return reader.ReadToEnd();
             }
         }

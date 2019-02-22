@@ -3,9 +3,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Pocket;
-using static Pocket.Logger<MLS.Agent.ExceptionFilter>;
+using static Pocket.Logger<MLS.Agent.Middleware.ExceptionFilter>;
 
-namespace MLS.Agent
+namespace MLS.Agent.Middleware
 {
     public class ExceptionFilter : IExceptionFilter
     {

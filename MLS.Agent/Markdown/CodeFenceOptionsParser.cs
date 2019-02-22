@@ -37,7 +37,7 @@ namespace MLS.Agent.Markdown
                 return new CodeLinkBlockOptions().ReplaceErrors(result.Errors.Select(e => e.Message));
             }
 
-            var options = (CodeLinkBlockOptions) _modelBinder.CreateInstance(new BindingContext(result));
+            var options = (CodeLinkBlockOptions)_modelBinder.CreateInstance(new BindingContext(result));
 
             var projectResult = result.CommandResult["project"];
             if (projectResult?.IsImplicit ?? false)
@@ -47,15 +47,18 @@ namespace MLS.Agent.Markdown
 
             options = options.ReplaceErrors(result.Errors.Select(e => e.Message));
 
-            options.RunArgs = string.Join(" ", result
-                                               .Tokens
-                                               .Select(t => t.Value)
-                                               .Skip(1)
-                                               .Select(t => Regex.IsMatch(t, @".*\s.*")
-                                                                ? $"\"{t}\""
-                                                                : t));
+            options.RunArgs = Untokenize(result);
+
             return options;
         }
+
+        private static string Untokenize(ParseResult result) =>
+            string.Join(" ", result.Tokens
+                                   .Select(t => t.Value)
+                                   .Skip(1)
+                                   .Select(t => Regex.IsMatch(t, @".*\s.*")
+                                                    ? $"\"{t}\""
+                                                    : t));
 
         private static Parser CreateOptionsParser(IDirectoryAccessor directoryAccessor)
         {

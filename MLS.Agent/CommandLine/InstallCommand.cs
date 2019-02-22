@@ -1,12 +1,11 @@
 ﻿using System.CommandLine;
-using System.IO;
 using System.Threading.Tasks;
 using MLS.Agent.CommandLine;
 using MLS.Agent.Tools;
 using WorkspaceServer;
 using WorkspaceServer.Packaging;
 
-namespace MLS.Agent
+namespace MLS.Agent.CommandLine
 {
     public static class InstallCommand
     {

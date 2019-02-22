@@ -5,7 +5,7 @@ using System.CommandLine;
 using System.Threading.Tasks;
 using MLS.Agent.CommandLine;
 using Xunit;
-using static MLS.Agent.GitHubHandler;
+using static MLS.Agent.CommandLine.GitHubHandler;
 
 namespace MLS.Agent.Tests
 {

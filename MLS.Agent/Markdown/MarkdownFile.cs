@@ -1,12 +1,9 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Markdig.Renderers;
 using Microsoft.AspNetCore.Html;
-using MLS.Agent.Markdown;
 
-namespace MLS.Agent
+namespace MLS.Agent.Markdown
 {
     public class MarkdownFile
     {

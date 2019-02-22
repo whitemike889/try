@@ -6,7 +6,7 @@ using Xunit;
 
 namespace MLS.Agent.Tests
 {
-    public class PackagingTests
+    public class PackCommandTests
     {
         [Fact]
         public async Task Pack_project_works()

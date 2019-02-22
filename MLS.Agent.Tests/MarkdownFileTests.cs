@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using HtmlAgilityPack;
+using MLS.Agent.Markdown;
 using MLS.Project.Generators;
 using WorkspaceServer;
 using WorkspaceServer.PackageDiscovery;

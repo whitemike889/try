@@ -10,7 +10,7 @@ using MLS.Protocol.Execution;
 using WorkspaceServer;
 using WorkspaceServer.Servers.Roslyn;
 
-namespace MLS.Agent
+namespace MLS.Agent.CommandLine
 {
     public static class VerifyCommand
     {

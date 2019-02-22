@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using MLS.Agent.CommandLine;
 
-namespace MLS.Agent
+namespace MLS.Agent.CommandLine
 {
     public static class GitHubHandler
     {

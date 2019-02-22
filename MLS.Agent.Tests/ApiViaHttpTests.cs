@@ -21,6 +21,7 @@ using Xunit;
 using Xunit.Abstractions;
 using static Pocket.Logger<MLS.Agent.Tests.ApiViaHttpTests>;
 using Workspace = MLS.Protocol.Execution.Workspace;
+using MLS.Agent.CommandLine;
 
 namespace MLS.Agent.Tests
 {

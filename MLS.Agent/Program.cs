@@ -19,6 +19,7 @@ using WorkspaceServer.Servers.Roslyn;
 using static Pocket.Logger<MLS.Agent.Program>;
 using SerilogLoggerConfiguration = Serilog.LoggerConfiguration;
 using WorkspaceServer;
+using MLS.Agent.CommandLine;
 
 namespace MLS.Agent
 {
