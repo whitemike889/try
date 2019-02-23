@@ -89,6 +89,8 @@
   <ItemGroup>
     <EmbeddedResource Include="..\MLS.PackageTool\MLS.PackageTool.csproj" />
     <EmbeddedResource Include="..\MLS.PackageTool\Program.cs" />
+    <EmbeddedResource Include="..\docs\GettingStarted\Snippets\Snippets.csproj" />
+    <!-- <EmbeddedResource Include="..\docs\GettingStarted\Snippets\Program.cs"> -->
   </ItemGroup>
   <Target Name="PublishClient" BeforeTargets="PrepareForPublish">
     <Exec Command="npm i" WorkingDirectory="..\MLS.Styles" />

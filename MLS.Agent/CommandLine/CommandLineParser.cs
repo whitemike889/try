@@ -3,19 +3,17 @@ using System.CommandLine;
 using System.CommandLine.Builder;
 using System.CommandLine.Invocation;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Clockwise;
-using MLS.Agent.CommandLine;
 using WorkspaceServer.Packaging;
 using CommandHandler = System.CommandLine.Invocation.CommandHandler;
 
-namespace MLS.Agent
+namespace MLS.Agent.CommandLine
 {
     public static class CommandLineParser
     {
         public delegate void StartServer(StartupOptions options, InvocationContext context);
-        public delegate Task Demo(DemoOptions options);
+        public delegate Task Demo(DemoOptions options, IConsole console);
         public delegate Task TryGitHub(TryGitHubOptions options, IConsole console);
         public delegate Task Pack(PackOptions options, IConsole console);
         public delegate Task Install(InstallOptions options, IConsole console);
@@ -158,9 +156,9 @@ namespace MLS.Agent
                                       new Option("--output", argument: new Argument<DirectoryInfo>())
                                   };
 
-                demoCommand.Handler = CommandHandler.Create<DemoOptions, bool>((options, b) => 
+                demoCommand.Handler = CommandHandler.Create<DemoOptions, IConsole>((options, console) =>
                 {
-                    demo(options);
+                    demo(options, console);
                 });
 
                 return demoCommand;
@@ -222,8 +220,6 @@ namespace MLS.Agent
                                                        Description = "Specify the path to the root directory"
                                                    }.ExistingOnly()
                                     };
-
-                verifyCommand.AddOption(new Option("--compile", argument: new Argument<bool>()));
 
                 verifyCommand.Handler = CommandHandler.Create<VerifyOptions, IConsole>((options, console) =>
                 {

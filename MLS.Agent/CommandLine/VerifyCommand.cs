@@ -25,7 +25,14 @@ namespace MLS.Agent.CommandLine
             var returnCode = 0;
             var workspaceServer = new Lazy<RoslynWorkspaceServer>(() => new RoslynWorkspaceServer(packageRegistry));
 
-            foreach (var markdownFile in markdownProject.GetAllMarkdownFiles())
+            var markdownFiles = markdownProject.GetAllMarkdownFiles().ToArray();
+
+            if (markdownFiles.Length == 0)
+            {
+                return -1;
+            }
+
+            foreach (var markdownFile in markdownFiles)
             {
                 var fullName = directoryAccessor.GetFullyQualifiedPath(markdownFile.Path).FullName;
 
@@ -52,7 +59,7 @@ namespace MLS.Agent.CommandLine
 
                     Console.ResetColor();
 
-                    if (options.Compile && !session.Any(block => block.Diagnostics.Any()))
+                    if (!session.Any(block => block.Diagnostics.Any()))
                     {
                         await ReportCompileResults(session, markdownFile);
                     }

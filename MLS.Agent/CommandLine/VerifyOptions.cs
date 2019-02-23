@@ -4,13 +4,10 @@ namespace MLS.Agent.CommandLine
 {
     public class VerifyOptions
     {
-        public VerifyOptions(DirectoryInfo rootDirectory, bool compile)
+        public VerifyOptions(DirectoryInfo rootDirectory)
         {
-            Compile = compile;
             RootDirectory = rootDirectory;
         }
-
-        public bool Compile { get; }
 
         public DirectoryInfo RootDirectory { get; }
     }

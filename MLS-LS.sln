@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.168
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28616.25
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MLS.Agent", "MLS.Agent\MLS.Agent.csproj", "{5D63B3BA-9C25-4F06-91F0-6B0E1091FCD3}"
 EndProject
@@ -43,6 +43,10 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MLS.WasmCodeRunner", "WasmCodeRunner\MLS.WasmCodeRunner.csproj", "{9DAE862E-C8AE-452B-B27E-C6DEB1403E81}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MLS.WasmCodeRunnerTests", "WasmCodeRunnerTests\MLS.WasmCodeRunnerTests.csproj", "{AAEF5063-5D4C-4CA7-8E22-0DAE1ADBBCD1}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{E4DF1F27-3AB3-4226-B2B4-D3AC9F17CA96}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Snippets", "docs\GettingStarted\Snippets\Snippets.csproj", "{DCAA2918-F0CA-429E-86DA-C8315E23082F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -110,6 +114,10 @@ Global
 		{AAEF5063-5D4C-4CA7-8E22-0DAE1ADBBCD1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AAEF5063-5D4C-4CA7-8E22-0DAE1ADBBCD1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AAEF5063-5D4C-4CA7-8E22-0DAE1ADBBCD1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DCAA2918-F0CA-429E-86DA-C8315E23082F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DCAA2918-F0CA-429E-86DA-C8315E23082F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DCAA2918-F0CA-429E-86DA-C8315E23082F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DCAA2918-F0CA-429E-86DA-C8315E23082F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -131,6 +139,7 @@ Global
 		{F228EC10-315A-41CF-A51E-FC8369552632} = {6EE8F484-DFA2-4F0F-939F-400CE78DFAC2}
 		{9DAE862E-C8AE-452B-B27E-C6DEB1403E81} = {6EE8F484-DFA2-4F0F-939F-400CE78DFAC2}
 		{AAEF5063-5D4C-4CA7-8E22-0DAE1ADBBCD1} = {8192FEAD-BCE6-4E62-97E5-2E9EA884BD71}
+		{DCAA2918-F0CA-429E-86DA-C8315E23082F} = {E4DF1F27-3AB3-4226-B2B4-D3AC9F17CA96}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D6CD99BA-B16B-4570-8910-225CBDFFA3AD}

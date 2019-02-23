@@ -9,14 +9,4 @@ namespace WorkspaceServer
     {
         Task<PackageBuilder> Locate(PackageDescriptor packageInfo, Budget budget = null);
     }
-
-    public class PackageDescriptor
-    {
-        public PackageDescriptor(string name)
-        {
-            Name = name;
-        }
-
-        public string Name { get; }
-    }
 }
