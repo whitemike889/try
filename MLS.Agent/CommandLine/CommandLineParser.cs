@@ -153,7 +153,11 @@ namespace MLS.Agent.CommandLine
             {
                 var demoCommand = new Command("demo")
                                   {
-                                      new Option("--output", argument: new Argument<DirectoryInfo>())
+                                      new Option("--output", "Where should the demo project be written to?")
+                                      {
+                                          Argument = new Argument<DirectoryInfo>(
+                                              defaultValue: () => new DirectoryInfo(Directory.GetCurrentDirectory()))
+                                      }
                                   };
 
                 demoCommand.Handler = CommandHandler.Create<DemoOptions, IConsole>((options, console) =>
