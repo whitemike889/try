@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace MLS.Agent.Tests
+namespace MLS.Agent.Tests.TestUtility
 {
     public static class TestAssets
     {

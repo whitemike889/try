@@ -3,6 +3,7 @@ using WorkspaceServer.PackageDiscovery;
 using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
+using MLS.Agent.Tests.TestUtility;
 using WorkspaceServer;
 
 namespace MLS.Agent.Tests

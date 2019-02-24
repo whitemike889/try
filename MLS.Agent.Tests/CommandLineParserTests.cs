@@ -4,6 +4,7 @@ using System.IO;
 using FluentAssertions;
 using System.Threading.Tasks;
 using MLS.Agent.CommandLine;
+using MLS.Agent.Tests.TestUtility;
 using Xunit;
 using Xunit.Abstractions;
 

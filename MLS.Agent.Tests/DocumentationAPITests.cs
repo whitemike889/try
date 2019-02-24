@@ -5,6 +5,7 @@ using HtmlAgilityPack;
 using Markdig;
 using MLS.Agent.CommandLine;
 using MLS.Agent.Markdown;
+using MLS.Agent.Tests.TestUtility;
 using Recipes;
 using WorkspaceServer;
 using Xunit;
