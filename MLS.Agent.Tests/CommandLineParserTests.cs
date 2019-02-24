@@ -31,7 +31,7 @@ namespace MLS.Agent.Tests
                 {
                     _start_options = options;
                 },
-                demo: (options, console) =>
+                demo: (options, console, context, startOptions) =>
                 {
                     _demoOptions = options;
                     return Task.CompletedTask;

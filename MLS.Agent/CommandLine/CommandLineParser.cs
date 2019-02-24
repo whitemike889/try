@@ -12,12 +12,31 @@ namespace MLS.Agent.CommandLine
 {
     public static class CommandLineParser
     {
-        public delegate void StartServer(StartupOptions options, InvocationContext context);
-        public delegate Task Demo(DemoOptions options, IConsole console);
-        public delegate Task TryGitHub(TryGitHubOptions options, IConsole console);
-        public delegate Task Pack(PackOptions options, IConsole console);
-        public delegate Task Install(InstallOptions options, IConsole console);
-        public delegate Task<int> Verify(VerifyOptions options, IConsole console);
+        public delegate void StartServer(
+            StartupOptions options,
+            InvocationContext context);
+
+        public delegate Task Demo(
+            DemoOptions options,
+            IConsole console,
+            StartServer startServer = null,
+            InvocationContext invocationContext = null);
+
+        public delegate Task TryGitHub(
+            TryGitHubOptions options,
+            IConsole console);
+
+        public delegate Task Pack(
+            PackOptions options,
+            IConsole console);
+
+        public delegate Task Install(
+            InstallOptions options,
+            IConsole console);
+
+        public delegate Task<int> Verify(
+            VerifyOptions options,
+            IConsole console);
 
         public static Parser Create(
             StartServer start,
@@ -67,14 +86,14 @@ namespace MLS.Agent.CommandLine
                                   Description = "Try out a .NET project with interactive documentation in your browser",
                                   Argument = new Argument<DirectoryInfo>(() => new DirectoryInfo(Directory.GetCurrentDirectory()))
                                              {
-                                                 Name = "rootDirectory",
-                                                 Description = "Specify the path to the root directory"
+                                                 Name = nameof(StartupOptions.RootDirectory),
+                                                 Description = "Specify the path to the root directory to run samples from"
                                              }.ExistingOnly()
                               };
 
                 command.AddOption(new Option(
                                      "--add-source",
-                                     "Specify an additional nuget package source",
+                                     "Specify an additional NuGet package source",
                                      new Argument<DirectoryInfo>(new DirectoryInfo(Directory.GetCurrentDirectory())).ExistingOnly()));
 
                 command.AddOption(new Option(
@@ -151,7 +170,7 @@ namespace MLS.Agent.CommandLine
 
             Command Demo()
             {
-                var demoCommand = new Command("demo")
+                var demoCommand = new Command("demo", "Learn how to create Try .NET content with an interactive demo")
                                   {
                                       new Option("--output", "Where should the demo project be written to?")
                                       {
@@ -160,9 +179,9 @@ namespace MLS.Agent.CommandLine
                                       }
                                   };
 
-                demoCommand.Handler = CommandHandler.Create<DemoOptions, IConsole>((options, console) =>
+                demoCommand.Handler = CommandHandler.Create<DemoOptions, InvocationContext>((options, context) =>
                 {
-                    demo(options, console);
+                    demo(options, context.Console, start, context);
                 });
 
                 return demoCommand;
@@ -185,9 +204,9 @@ namespace MLS.Agent.CommandLine
 
             Command Pack()
             {
-                var packCommand = new Command("pack", "create a package");
+                var packCommand = new Command("pack", "Create a Try .NET package");
                 packCommand.Argument = new Argument<DirectoryInfo>();
-                packCommand.Argument.Name = "packTarget";
+                packCommand.Argument.Name = nameof(PackOptions.PackTarget);
 
                 packCommand.Handler = CommandHandler.Create<PackOptions, IConsole>(
                     (options, console) =>
@@ -200,7 +219,7 @@ namespace MLS.Agent.CommandLine
 
             Command Install()
             {
-                var installCommand = new Command("install", "install a package");
+                var installCommand = new Command("install", "Install a Try .NET package");
                 installCommand.Argument = new Argument<string>();
                 installCommand.Argument.Name = nameof(InstallOptions.PackageName);
 
@@ -216,7 +235,7 @@ namespace MLS.Agent.CommandLine
 
             Command Verify()
             {
-                var verifyCommand = new Command("verify")
+                var verifyCommand = new Command("verify", "Verify that a Markdown project and referenced samples build correctly.")
                                     {
                                         Argument = new Argument<DirectoryInfo>(() => new DirectoryInfo(Directory.GetCurrentDirectory()))
                                                    {

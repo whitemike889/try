@@ -1,5 +1,6 @@
 ﻿using System;
 using System.CommandLine;
+using System.CommandLine.Invocation;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -11,7 +12,9 @@ namespace MLS.Agent.CommandLine
     {
         public static async Task<int> Do(
             DemoOptions options,
-            IConsole console)
+            IConsole console,
+            CommandLineParser.StartServer startServer = null,
+            InvocationContext context = null)
         {
             if (!options.Output.Exists)
             {
@@ -42,6 +45,11 @@ namespace MLS.Agent.CommandLine
                     ZipFile.ExtractToDirectory(zipPath, options.Output.FullName);
                 }
             }
+
+            startServer?.Invoke(new StartupOptions(uri: new Uri("intro.md", UriKind.Relative))
+                                {
+                                    RootDirectory = options.Output
+                                }, context);
 
             return 0;
         }

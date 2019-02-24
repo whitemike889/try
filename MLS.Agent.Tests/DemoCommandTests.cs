@@ -14,7 +14,7 @@ namespace MLS.Agent.Tests
 {
     public class DemoCommandTests
     {
-        private ITestOutputHelper _output;
+        private readonly ITestOutputHelper _output;
 
         public DemoCommandTests(ITestOutputHelper output)
         {
@@ -52,7 +52,10 @@ namespace MLS.Agent.Tests
                     Create.EmptyWorkspace().Directory.FullName,
                     Guid.NewGuid().ToString("N")));
 
-            await DemoCommand.Do(new DemoOptions(outputDirectory), console);
+            await DemoCommand.Do(
+                new DemoOptions(outputDirectory),
+                console,
+                startServer: (options, context) => { });
 
             outputDirectory.Refresh();
 
@@ -61,13 +64,17 @@ namespace MLS.Agent.Tests
 
         [Fact]
         public async Task Demo_returns_an_error_if_the_output_directory_is_not_empty()
-        { var console = new TestConsole();
+        {
+            var console = new TestConsole();
 
             var outputDirectory = Create.EmptyWorkspace().Directory;
 
             File.WriteAllText(Path.Combine(outputDirectory.FullName, "a file.txt"), "");
 
-            await DemoCommand.Do(new DemoOptions(outputDirectory), console);
+            await DemoCommand.Do(
+                new DemoOptions(outputDirectory),
+                console,
+                startServer: (options, context) => { });
 
             var resultCode = await VerifyCommand.Do(
                                  new VerifyOptions(outputDirectory),
@@ -76,6 +83,31 @@ namespace MLS.Agent.Tests
                                  new PackageRegistry());
 
             resultCode.Should().NotBe(0);
+        }
+
+        [Fact]
+        public async Task Demo_starts_the_server_if_there_are_no_errors()
+        {
+            var console = new TestConsole();
+
+            var outputDirectory = Create.EmptyWorkspace().Directory;
+
+            StartupOptions startupOptions = null;
+            await DemoCommand.Do(
+                new DemoOptions(outputDirectory),
+                console,
+                (options, context) => startupOptions = options);
+
+            await VerifyCommand.Do(
+                new VerifyOptions(outputDirectory),
+                console,
+                () => new FileSystemDirectoryAccessor(outputDirectory),
+                new PackageRegistry());
+
+            _output.WriteLine(console.Out.ToString());
+            _output.WriteLine(console.Error.ToString());
+
+            startupOptions.Uri.Should().Be(new Uri("intro.md", UriKind.Relative));
         }
     }
 }
