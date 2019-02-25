@@ -191,7 +191,7 @@ namespace MLS.Agent.Tests
         {
             var console = new TestConsole();
             await _parser.InvokeAsync("pack", console);
-            console.Out.ToString().Should().Contain("pack <packTarget>");
+            console.Out.ToString().Should().Contain("pack <PackTarget>");
             _packOptions.Should().BeNull();
         }
 

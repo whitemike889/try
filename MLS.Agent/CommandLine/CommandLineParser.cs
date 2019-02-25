@@ -235,7 +235,7 @@ namespace MLS.Agent.CommandLine
 
             Command Verify()
             {
-                var verifyCommand = new Command("verify", "Verify that a Markdown project and referenced samples build correctly.")
+                var verifyCommand = new Command("verify", "Verify Markdown files in the target directory and its children.")
                                     {
                                         Argument = new Argument<DirectoryInfo>(() => new DirectoryInfo(Directory.GetCurrentDirectory()))
                                                    {
