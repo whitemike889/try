@@ -2,6 +2,7 @@
 using System.CommandLine;
 using System.Threading.Tasks;
 using MLS.Agent.CommandLine;
+using MLS.Agent.Tests.TestUtility;
 using WorkspaceServer;
 using WorkspaceServer.PackageDiscovery;
 using Xunit;

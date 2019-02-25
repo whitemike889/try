@@ -11,6 +11,7 @@ using WorkspaceServer;
 using System.CommandLine;
 using System.Linq;
 using MLS.Agent.Controllers;
+using MLS.Agent.Tests.TestUtility;
 using MLS.Agent.Tools;
 using WorkspaceServer.PackageDiscovery;
 

@@ -32,9 +32,9 @@ namespace MLS.Agent.CommandLine
 
                 await File.WriteAllTextAsync(
                     projectFilePath,
-                    FixCsproj(ReadManifestResource("MLS.Agent.MLS.PackageTool.csproj")));
+                    Resources.ReadManifestResource("MLS.Agent.MLS.PackageTool.csproj"));
 
-                await File.WriteAllTextAsync(contentFilePath, ReadManifestResource("MLS.Agent.Program.cs"));
+                await File.WriteAllTextAsync(contentFilePath, Resources.ReadManifestResource("MLS.Agent.Program.cs"));
 
                 var dotnet = new Dotnet(tempDir);
                 var result = await dotnet.Build();
@@ -44,20 +44,6 @@ namespace MLS.Agent.CommandLine
                 result = await dotnet.Pack($"/p:PackageId={name} /p:ToolCommandName={name} {projectFilePath} -o {options.OutputDirectory.FullName}");
 
                 result.ThrowOnFailure("Package build failed.");
-            }
-        }
-
-        private static string FixCsproj(string v)
-        {
-            return v.Replace("<!--", "").Replace("-->", "");
-        }
-
-        private static string ReadManifestResource(string resourceName)
-        {
-            var assembly = typeof(Program).Assembly;
-            using (var reader = new StreamReader(assembly.GetManifestResourceStream(resourceName)))
-            {
-                return reader.ReadToEnd();
             }
         }
     }

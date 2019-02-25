@@ -4,6 +4,7 @@ using System.IO;
 using FluentAssertions;
 using System.Threading.Tasks;
 using MLS.Agent.CommandLine;
+using MLS.Agent.Tests.TestUtility;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -17,11 +18,10 @@ namespace MLS.Agent.Tests
         private readonly Parser _parser;
         private TryGitHubOptions _tryGitHubOptions;
         private PackOptions _packOptions;
-        private string _install_packageName;
+        private InstallOptions _installOptions;
         private DirectoryInfo _install_packageSource;
-        private DirectoryInfo _verify_rootDirectory;
-        private bool _verify_compile;
-        private DemoOptions _demo_options;
+        private VerifyOptions _verifyOptions;
+        private DemoOptions _demoOptions;
 
         public CommandLineParserTests(ITestOutputHelper output)
         {
@@ -31,9 +31,9 @@ namespace MLS.Agent.Tests
                 {
                     _start_options = options;
                 },
-                demo: options =>
+                demo: (options, console, context, startOptions) =>
                 {
-                    _demo_options = options;
+                    _demoOptions = options;
                     return Task.CompletedTask;
                 },
                 tryGithub: (options, c) =>
@@ -48,14 +48,13 @@ namespace MLS.Agent.Tests
                 },
                 install: (options, console) =>
                 {
-                    _install_packageName = options.PackageName;
+                    _installOptions = options;
                     _install_packageSource = options.AddSource;
                     return Task.CompletedTask;
                 },
                 verify: (options, console) =>
                 {
-                    _verify_rootDirectory = options.RootDirectory;
-                    _verify_compile = options.Compile;
+                    _verifyOptions = options;
                     return Task.FromResult(1);
                 });
         }
@@ -192,7 +191,7 @@ namespace MLS.Agent.Tests
         {
             var console = new TestConsole();
             await _parser.InvokeAsync("pack", console);
-            console.Out.ToString().Should().Contain("pack <packTarget>");
+            console.Out.ToString().Should().Contain("pack <PackTarget>");
             _packOptions.Should().BeNull();
         }
 
@@ -210,24 +209,21 @@ namespace MLS.Agent.Tests
         public async Task Install_not_run_if_argument_is_missing()
         {
             var console = new TestConsole();
-            _install_packageName = null;
             await _parser.InvokeAsync("install", console);
             console.Out.ToString().Should().Contain("install [options] <PackageName>");
-            _install_packageName.Should().BeNull();
+            _installOptions.Should().BeNull();
         }
 
         [Fact]
         public async Task Install_parses_source_option()
         {
             var console = new TestConsole();
-            _install_packageName = null;
-            _install_packageSource = null;
 
             var expectedPackageSource = Path.GetDirectoryName(typeof(PackCommand).Assembly.Location);
 
             await _parser.InvokeAsync($"install --add-source {expectedPackageSource} the-package", console);
 
-            _install_packageName.Should().Be("the-package");
+            _installOptions.PackageName.Should().Be("the-package");
             _install_packageSource.FullName.Should().Be(expectedPackageSource);
         }
 
@@ -236,21 +232,7 @@ namespace MLS.Agent.Tests
         {
             var directory = Path.GetDirectoryName(typeof(VerifyCommand).Assembly.Location);
              await _parser.InvokeAsync($"verify {directory}");
-            _verify_rootDirectory.FullName.Should().Be(directory);
-        }
-
-        [Fact]
-        public async Task Verify_compile_option_defaults_to_false()
-        {
-            await _parser.InvokeAsync("verify");
-            _verify_compile.Should().BeFalse();
-        }
-
-        [Fact]
-        public async Task Verify_can_set_compile_to_true()
-        {
-            await _parser.InvokeAsync("verify --compile");
-            _verify_compile.Should().BeTrue();
+            _verifyOptions.RootDirectory.FullName.Should().Be(directory);
         }
 
         [Fact]
@@ -260,7 +242,7 @@ namespace MLS.Agent.Tests
 
             await _parser.InvokeAsync($"demo --output {expected}");
 
-            _demo_options
+            _demoOptions
                 .Output
                 .FullName
                 .Should()

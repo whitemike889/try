@@ -31,6 +31,8 @@ namespace MLS.Agent.Tests
             _disposables.Add(_client);
         }
 
+        public FakeBrowerLauncher BrowserLauncher { get; } = new FakeBrowerLauncher();
+
         public void Dispose() => _disposables.Dispose();
 
         private TestServer CreateTestServer() => new TestServer(CreateWebHostBuilder());
@@ -38,7 +40,11 @@ namespace MLS.Agent.Tests
         private IWebHostBuilder CreateWebHostBuilder()
         {
             var builder = new WebHostBuilder()
-                          .ConfigureServices(c => { c.AddSingleton(_options); })
+                          .ConfigureServices(c =>
+                          {
+                              c.AddSingleton(_options);
+                              c.AddSingleton<IBrowserLauncher>(_ => BrowserLauncher);
+                          })
                           .UseTestEnvironment()
                           .UseStartup<Startup>();
 
@@ -47,13 +53,5 @@ namespace MLS.Agent.Tests
 
         public Task<HttpResponseMessage> SendAsync(HttpRequestMessage request) =>
             _client.SendAsync(request);
-    }
-
-    public static class AgentServiceExtensions
-    {
-        public static Task<HttpResponseMessage> GetAsync(
-            this AgentService service,
-            string uri) =>
-            service.SendAsync(new HttpRequestMessage(HttpMethod.Get, uri));
     }
 }
