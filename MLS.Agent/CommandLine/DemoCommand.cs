@@ -16,6 +16,8 @@ namespace MLS.Agent.CommandLine
             CommandLineParser.StartServer startServer = null,
             InvocationContext context = null)
         {
+            var extractDemoFiles = true;
+
             if (!options.Output.Exists)
             {
                 options.Output.Create();
@@ -24,25 +26,35 @@ namespace MLS.Agent.CommandLine
             {
                 if (options.Output.GetFiles().Any())
                 {
-                    console.Out.WriteLine($"Directory {options.Output} must be empty.");
-                    return -1;
+                    if (!options.Output.GetFiles().Any(f => f.Name == "QuickStart.md"))
+                    {
+                        console.Out.WriteLine($"Directory {options.Output} must be empty. To specify a directory to create the demo sample in, use: dotnet try demo --output <dir>");
+                        return -1;
+                    }
+                    else
+                    {
+                        extractDemoFiles = false;
+                    }
                 }
             }
 
-            var assembly = typeof(Program).Assembly;
-
-            using (var disposableDirectory = DisposableDirectory.Create())
+            if (extractDemoFiles)
             {
-                using (var resourceStream = assembly.GetManifestResourceStream("demo.zip"))
+                using (var disposableDirectory = DisposableDirectory.Create())
                 {
-                    var zipPath = Path.Combine(disposableDirectory.Directory.FullName, "demo.zip");
+                    var assembly = typeof(Program).Assembly;
 
-                    using (var fileStream = new FileStream(zipPath, FileMode.Create, FileAccess.Write))
+                    using (var resourceStream = assembly.GetManifestResourceStream("demo.zip"))
                     {
-                        resourceStream.CopyTo(fileStream);
-                    }
+                        var zipPath = Path.Combine(disposableDirectory.Directory.FullName, "demo.zip");
 
-                    ZipFile.ExtractToDirectory(zipPath, options.Output.FullName);
+                        using (var fileStream = new FileStream(zipPath, FileMode.Create, FileAccess.Write))
+                        {
+                            resourceStream.CopyTo(fileStream);
+                        }
+
+                        ZipFile.ExtractToDirectory(zipPath, options.Output.FullName);
+                    }
                 }
             }
 
