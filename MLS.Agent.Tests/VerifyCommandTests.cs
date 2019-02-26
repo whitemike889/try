@@ -14,6 +14,27 @@ namespace MLS.Agent.Tests
 {
     public class VerifyCommandTests
     {
+        private const string CompilingProgramCs = @"
+using System;
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        Console.WriteLine();
+    }
+}";
+
+        private const string CsprojContents = @"<Project Sdk=""Microsoft.NET.Sdk"">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+  </PropertyGroup>
+</Project>
+";
+
+
+
         private readonly ITestOutputHelper _output;
 
         public VerifyCommandTests(ITestOutputHelper output)
@@ -38,7 +59,7 @@ This is some sample code:
             var console = new TestConsole();
 
             await VerifyCommand.Do(
-                new VerifyOptions(root, false),
+                new VerifyOptions(root),
                 console,
                 () => directoryAccessor,
                 new PackageRegistry());
@@ -52,22 +73,22 @@ This is some sample code:
         [Fact]
         public async Task Files_are_listed()
         {
-            var root = new DirectoryInfo(Directory.GetDirectoryRoot(Directory.GetCurrentDirectory()));
+            var root = Create.EmptyWorkspace().Directory;
 
             var directoryAccessor = new InMemoryDirectoryAccessor(root, root)
                                     {
-                                        ("some.csproj", ""),
-                                        ("Program.cs", ""),
+                                        ("some.csproj", CsprojContents),
+                                        ("Program.cs", CompilingProgramCs),
                                         ("doc.md", @"
 ```cs Program.cs
 ```
 ")
-                                    };
+                                    }.CreateFiles();
 
             var console = new TestConsole();
 
             await VerifyCommand.Do(
-                new VerifyOptions(root, false),
+                new VerifyOptions(root),
                 console,
                 () => directoryAccessor,
                 new PackageRegistry());
@@ -79,28 +100,28 @@ This is some sample code:
                                      .Trim())
                    .Should()
                    .Match(
-                       CodeManipulation.EnforceLF($@"{root}doc.md*Line 2:*{root}Program.cs (in project {root}some.csproj)"));
+                       CodeManipulation.EnforceLF($@"{root}{Path.DirectorySeparatorChar}doc.md*Line 2:*{root}{Path.DirectorySeparatorChar}Program.cs (in project {root}{Path.DirectorySeparatorChar}some.csproj)*"));
         }
 
         [Fact]
         public async Task When_there_are_no_markdown_errors_then_return_code_is_0()
         {
-            var rootDirectory = new DirectoryInfo(".");
+            var rootDirectory = Create.EmptyWorkspace().Directory;
 
-            var directoryAccessor = new InMemoryDirectoryAccessor(rootDirectory)
+            var directoryAccessor = new InMemoryDirectoryAccessor(rootDirectory, rootDirectory)
                                     {
-                                        ("some.csproj", ""),
-                                        ("Program.cs", ""),
+                                        ("some.csproj", CsprojContents),
+                                        ("Program.cs", CompilingProgramCs),
                                         ("doc.md", @"
 ```cs Program.cs
 ```
 ")
-                                    };
+                                    }.CreateFiles();
 
             var console = new TestConsole();
 
             var resultCode = await VerifyCommand.Do(
-                                 new VerifyOptions(rootDirectory, false),
+                                 new VerifyOptions(rootDirectory),
                                  console,
                                  () => directoryAccessor,
                                  new PackageRegistry());
@@ -111,7 +132,7 @@ This is some sample code:
         }
 
         [Fact]
-        public async Task When_there_are_markdown_errors_then_return_code_is_1()
+        public async Task When_there_are_markdown_errors_then_return_code_is_nonzero()
         {
             var rootDirectory = new DirectoryInfo(".");
 
@@ -126,12 +147,31 @@ This is some sample code:
             var console = new TestConsole();
 
             var resultCode = await VerifyCommand.Do(
-                                 new VerifyOptions(rootDirectory, false),
+                                 new VerifyOptions(rootDirectory),
                                  console,
                                  () => directoryAccessor,
                                  new PackageRegistry());
 
-            resultCode.Should().Be(1);
+            resultCode.Should().NotBe(0);
+        }
+
+        
+        [Fact]
+        public async Task When_there_are_no_files_found_then_return_code_is_nonzero()
+        {
+            var rootDirectory = Create.EmptyWorkspace().Directory;
+
+            var directoryAccessor = new InMemoryDirectoryAccessor(rootDirectory);          
+
+            var console = new TestConsole();
+
+            var resultCode = await VerifyCommand.Do(
+                                 new VerifyOptions(rootDirectory),
+                                 console,
+                                 () => directoryAccessor,
+                                 new PackageRegistry());
+
+            resultCode.Should().NotBe(0);
         }
 
         [Theory]
@@ -159,7 +199,7 @@ This is some sample code:
             var console = new TestConsole();
 
             var resultCode = await VerifyCommand.Do(
-                                 new VerifyOptions(rootDirectory, false),
+                                 new VerifyOptions(rootDirectory),
                                  console,
                                  () => directoryAccessor,
                                  new PackageRegistry());
@@ -204,7 +244,7 @@ This is some sample code:
             var console = new TestConsole();
 
             var resultCode = await VerifyCommand.Do(
-                                 new VerifyOptions(directory, true),
+                                 new VerifyOptions(directory),
                                  console,
                                  () => directoryAccessor,
                                  new PackageRegistry());
@@ -239,19 +279,13 @@ This is some sample code:
 ```cs Program.cs --region mask
 ```"),
                                         ("sample.csproj",
-                                         @"<Project Sdk=""Microsoft.NET.Sdk"">
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
-  </PropertyGroup>
-</Project>
-")
+                                         CsprojContents)
                                     }.CreateFiles();
 
             var console = new TestConsole();
 
             var resultCode = await VerifyCommand.Do(
-                                 new VerifyOptions(rootDirectory, true),
+                                 new VerifyOptions(rootDirectory),
                                  console,
                                  () => directoryAccessor,
                                  new PackageRegistry());
@@ -282,7 +316,7 @@ This is some sample code:
             var console = new TestConsole();
 
             await VerifyCommand.Do(
-                new VerifyOptions(root, true),
+                new VerifyOptions(root),
                 console,
                 () => directoryAccessor,
                 new PackageRegistry());

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using HtmlAgilityPack;
 using MLS.Agent.Markdown;
+using MLS.Agent.Tests.TestUtility;
 using MLS.Project.Generators;
 using WorkspaceServer;
 using WorkspaceServer.PackageDiscovery;
@@ -100,7 +101,7 @@ namespace BasicConsoleApp
                 htmlDocument.LoadHtml((await markdownFile.ToHtmlContentAsync()).ToString());
                 var output = htmlDocument.DocumentNode
                                          .SelectSingleNode("//pre/code").InnerHtml.EnforceLF();
-                output.Should().Be($"\n{fencedCode}\n");
+                output.Should().Be($"{fencedCode}\n");
             }
 
             [Fact]

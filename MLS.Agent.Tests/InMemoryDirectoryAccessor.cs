@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using MLS.Agent.Markdown;
+using MLS.Agent.Tests.TestUtility;
 
 namespace MLS.Agent.Tests
 {

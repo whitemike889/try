@@ -5,6 +5,7 @@ using Xunit;
 using WorkspaceServer;
 using System.Threading.Tasks;
 using MLS.Agent.Markdown;
+using MLS.Agent.Tests.TestUtility;
 
 namespace MLS.Agent.Tests
 {

@@ -8,6 +8,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Clockwise;
 using MLS.Agent.CommandLine;
+using MLS.Agent.Tests.TestUtility;
 using WorkspaceServer.Packaging;
 using WorkspaceServer.Tests;
 using Xunit;

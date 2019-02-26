@@ -13,11 +13,13 @@ namespace MLS.Agent.Controllers
     public class DocumentationController : Controller
     {
         private readonly MarkdownProject _markdownProject;
+        private readonly StartupOptions _startupOptions;
 
         public DocumentationController(MarkdownProject markdownProject, StartupOptions startupOptions)
         {
             _markdownProject = markdownProject ??
                                throw new ArgumentNullException(nameof(markdownProject));
+            _startupOptions = startupOptions;
         }
 
         [HttpGet]

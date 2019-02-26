@@ -37,6 +37,11 @@ namespace MLS.Agent.Markdown
                 return new CodeLinkBlockOptions().ReplaceErrors(result.Errors.Select(e => e.Message));
             }
 
+            if (result.Tokens.Count == 1)
+            {
+                return null;
+            }
+
             var options = (CodeLinkBlockOptions)_modelBinder.CreateInstance(new BindingContext(result));
 
             var projectResult = result.CommandResult["project"];

@@ -11,6 +11,7 @@ using WorkspaceServer;
 using System.CommandLine;
 using System.Linq;
 using MLS.Agent.Controllers;
+using MLS.Agent.Tests.TestUtility;
 using MLS.Agent.Tools;
 using WorkspaceServer.PackageDiscovery;
 
@@ -80,6 +81,25 @@ $@"```{language} Program.cs
             var document = @"
 ```js Program.cs
 console.log(""Hello World"");
+```";
+            var html = (await pipeline.RenderHtmlAsync(document)).EnforceLF();
+            html.Should().Contain(expectedValue);
+        }
+
+        [Fact]
+        public async Task Does_not_insert_code_when_csharp_is_specified_but_no_additional_options()
+        {
+            string expectedValue =
+@"<pre><code class=""language-cs"">Console.WriteLine(&quot;Hello World&quot;);
+</code></pre>
+".EnforceLF();
+
+            var testDir = TestAssets.SampleConsole;
+            var directoryAccessor = new InMemoryDirectoryAccessor(testDir);
+            var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor, PackageRegistry.CreateForHostedMode()).Build();
+            var document = @"
+```cs
+Console.WriteLine(""Hello World"");
 ```";
             var html = (await pipeline.RenderHtmlAsync(document)).EnforceLF();
             html.Should().Contain(expectedValue);
