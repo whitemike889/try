@@ -15,14 +15,12 @@ namespace WorkspaceServer
     {
         private readonly ConcurrentDictionary<string, Task<PackageBuilder>> _packageBuilders = new ConcurrentDictionary<string, Task<PackageBuilder>>();
         private readonly IEnumerable<IPackageDiscoveryStrategy> _strategies;
+        private bool _createRebuildablePackage;
 
-        public static PackageRegistry CreateWithOneStrategy(IPackageDiscoveryStrategy strategy)
-        {
-            var collection = (IEnumerable<IPackageDiscoveryStrategy>)(new[] { strategy });
-            return new PackageRegistry(collection);
-        }
-
-        public PackageRegistry(params IPackageDiscoveryStrategy[] additionalStrategies) : this(new IPackageDiscoveryStrategy[]
+        public PackageRegistry(
+            bool createRebuildablePackage = false,
+            params IPackageDiscoveryStrategy[] additionalStrategies)
+            : this(createRebuildablePackage, new IPackageDiscoveryStrategy[]
             {
                 new ProjectFilePackageDiscoveryStrategy(),
                 new DirectoryPackageDiscoveryStrategy(),
@@ -31,8 +29,9 @@ namespace WorkspaceServer
         {
         }
 
-        private PackageRegistry(IEnumerable<IPackageDiscoveryStrategy> strategies)
+        private PackageRegistry(bool createRebuildablePackage, IEnumerable<IPackageDiscoveryStrategy> strategies)
         {
+            _createRebuildablePackage = createRebuildablePackage;
             _strategies = strategies;
         }
 
@@ -66,7 +65,7 @@ namespace WorkspaceServer
                             {
                                 foreach (var strategy in _strategies)
                                 {
-                                    var builder = await strategy.Locate(new PackageDescriptor(packageName), budget);
+                                    var builder = await strategy.Locate(new PackageDescriptor(packageName, _createRebuildablePackage), budget);
                                     if (builder != null)
                                     {
                                         return builder;
@@ -78,7 +77,7 @@ namespace WorkspaceServer
 
 
             await package.EnsureReady(budget);
-            
+
             return package;
         }
 
@@ -89,9 +88,23 @@ namespace WorkspaceServer
             return packageInfos;
         }
 
+        public static PackageRegistry CreateForVerifyMode(DirectoryInfo project, DirectoryInfo addSource)
+        {
+            var registry = new PackageRegistry(true,
+               new LocalToolPackageDiscoveryStrategy(Package.DefaultPackagesDirectory, addSource));
+
+            registry.Add(project.Name, builder =>
+            {
+                builder.CreateRebuildablePackage = true;
+                builder.Directory = project;
+            });
+
+            return registry;
+        }
+
         public static PackageRegistry CreateForTryMode(DirectoryInfo project, DirectoryInfo addSource)
         {
-            var registry = new PackageRegistry(
+            var registry = new PackageRegistry(false,
                 new LocalToolPackageDiscoveryStrategy(Package.DefaultPackagesDirectory, addSource));
 
             registry.Add(project.Name, builder =>

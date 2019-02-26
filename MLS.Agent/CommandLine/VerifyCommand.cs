@@ -2,7 +2,6 @@
 using System.CommandLine;
 using System.Linq;
 using System.Threading.Tasks;
-using MLS.Agent.CommandLine;
 using MLS.Agent.Markdown;
 using MLS.Protocol;
 using MLS.Protocol.Diagnostics;

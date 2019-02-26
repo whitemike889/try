@@ -18,7 +18,7 @@ using static Pocket.Logger<WorkspaceServer.Packaging.Package>;
 
 namespace WorkspaceServer.Packaging
 {
-    public class Package
+    public abstract class Package
     {
         const string csharpLanguageVersion = "7.3";
 
@@ -47,21 +47,14 @@ namespace WorkspaceServer.Packaging
 
         private readonly IPackageInitializer _initializer;
         private static readonly object _lockObj = new object();
-        private readonly AsyncLazy<bool> _created;
-        private readonly AsyncLazy<bool> _built;
-        private readonly Lazy<bool> _configurationFileCreated;
-        private readonly AsyncLazy<bool> _published;
-        private readonly AsyncLazy<CSharpCommandLineArguments> _csharpCommandLineArguments;
         private bool? _isWebProject;
         private bool? _isUnitTestProject;
         private FileInfo _entryPointAssemblyPath;
         private static string _targetFramework;
         private readonly Logger _log;
-        private readonly string _workspaceConfigFilePath;
-        private PackageConfiguration _configuration;
-        private readonly AsyncLazy<SyntaxTree> _instrumentationEmitterSyntaxTree;
+        protected readonly string _workspaceConfigFilePath;
 
-        public Package(
+        protected Package(
             string name = null,
             IPackageInitializer initializer = null,
             DirectoryInfo directory = null)
@@ -71,17 +64,12 @@ namespace WorkspaceServer.Packaging
             ConstructionTime = Clock.Current.Now();
             Directory = directory ?? new DirectoryInfo(Path.Combine(DefaultPackagesDirectory.FullName, Name));
             LastBuildErrorLogFile = new FileInfo(Path.Combine(Directory.FullName, ".trydotnet-builderror"));
-            _csharpCommandLineArguments = new AsyncLazy<CSharpCommandLineArguments>(CreateCSharpCommandLineArguments);
-            _instrumentationEmitterSyntaxTree = new AsyncLazy<SyntaxTree>(CreateInstrumentationEmitterSyntaxTree);
-            _created = new AsyncLazy<bool>(VerifyOrCreate);
-            _built = new AsyncLazy<bool>(VerifyOrBuild);
-            _published = new AsyncLazy<bool>(VerifyOrPublish);
-            _configurationFileCreated = new Lazy<bool>(VerifyOrCreateConfigFile);
             _log = new Logger($"{nameof(Package)}:{Name}");
             _workspaceConfigFilePath = Path.Combine(Directory.FullName, ".trydotnet");
         }
 
         private bool IsDirectoryCreated { get; set; }
+        private FileInfo LastBuildErrorLogFile { get; }
 
         public DateTimeOffset? ConstructionTime { get; }
 
@@ -90,12 +78,6 @@ namespace WorkspaceServer.Packaging
         public DateTimeOffset? BuildTime { get; private set; }
 
         public DateTimeOffset? PublicationTime { get; private set; }
-
-        public bool IsCreated { get; private set; }
-
-        public bool IsBuilt { get; private set; }
-
-        private bool IsReady { get; set; }
 
         public bool IsUnitTestProject =>
             _isUnitTestProject ??
@@ -127,40 +109,11 @@ namespace WorkspaceServer.Packaging
 
         public static DirectoryInfo DefaultPackagesDirectory { get; }
 
-        public async Task<PackageConfiguration> GetConfigurationAsync()
-        {
-            if (_configuration == null)
-            {
-                await EnsureConfigurationFileExists();
-
-                var workspaceConfigFile = new FileInfo(_workspaceConfigFilePath);
-                if (workspaceConfigFile.Exists)
-                {
-                    var json = await workspaceConfigFile.ReadAsync();
-
-                    _configuration = json.FromJsonTo<PackageConfiguration>();
-                }
-                else
-                {
-                    throw new InvalidOperationException($"{workspaceConfigFile.Name} not found in {Directory}");
-                }
-            }
-
-            return _configuration;
-        }
-
-        public bool IsPublished { get; private set; }
-
         public FileInfo EntryPointAssemblyPath
         {
             get
             {
-                if (_entryPointAssemblyPath == null)
-                {
-                    _entryPointAssemblyPath = GetEntryPointAssemblyPath(Directory, IsWebProject);
-                }
-
-                return _entryPointAssemblyPath;
+                return _entryPointAssemblyPath ?? (_entryPointAssemblyPath = GetEntryPointAssemblyPath(Directory, IsWebProject));
             }
         }
 
@@ -168,29 +121,17 @@ namespace WorkspaceServer.Packaging
         {
             get
             {
-                if (_targetFramework == null)
-                {
-                    _targetFramework = GetTargetFramework(Directory);
-                }
-
-                return _targetFramework;
+                return _targetFramework ?? (_targetFramework = GetTargetFramework(Directory));
             }
         }
 
         public DateTimeOffset? ReadyTime { get; set; }
 
-        public async Task EnsureCreated(Budget budget = null)
-        {
-            await _created
-                .ValueAsync()
-                .CancelIfExceeds(budget ?? new Budget());
-            budget?.RecordEntry();
-        }
-
-        private async Task<bool> VerifyOrCreate()
+        protected async Task<bool> Create()
         {
             using (var operation = _log.OnEnterAndConfirmOnExit())
             {
+                //to do: identify if this flag is needed
                 if (!IsDirectoryCreated)
                 {
                     Directory.Refresh();
@@ -205,65 +146,56 @@ namespace WorkspaceServer.Packaging
                     IsDirectoryCreated = true;
                 }
 
-                if (!IsCreated)
+                if (Directory.GetFiles().Length == 0)
                 {
-                    if (Directory.GetFiles().Length == 0)
-                    {
-                        operation.Info("Initializing package using {_initializer} in {directory}", _initializer, Directory);
-                        await _initializer.Initialize(Directory);
-                    }
-
-                    IsCreated = true;
-                    CreationTime = Clock.Current.Now();
+                    operation.Info("Initializing package using {_initializer} in {directory}", _initializer, Directory);
+                    await _initializer.Initialize(Directory);
                 }
 
+                CreationTime = Clock.Current.Now();
                 operation.Succeed();
+                return true;
             }
-
-            return true;
         }
 
-        public async Task EnsureReady(Budget budget)
+        public virtual async Task EnsureReady(Budget budget)
         {
-            if (IsReady)
-            {
-                return;
-            }
+            budget = budget ?? new Budget();
 
-            await EnsureCreated(budget);
+            await EnsureCreated().CancelIfExceeds(budget);
 
-            await EnsureBuilt(budget);
+            await EnsureBuilt().CancelIfExceeds(budget);
 
-            await EnsureConfigurationFileExists(budget);
+            await EnsureConfigurationFileExists().CancelIfExceeds(budget);
 
             if (RequiresPublish)
             {
-                await EnsurePublished(budget);
+                await EnsurePublished().CancelIfExceeds(budget);
             }
 
-            IsReady = true;
+            budget.RecordEntry();
+        }
+
+        private async Task EnsureConfigurationFileExists(Budget budget = null)
+        {
+            await EnsureBuilt();
+            CreateConfigFile();
+            budget?.RecordEntry();
+        }
+
+        protected virtual async Task<bool> EnsureCreated() => await Create();
+
+        protected virtual async Task<bool> EnsureBuilt() => await EnsureCreated() && await Build();
+
+        public virtual async Task<bool> EnsurePublished()
+        {
+            return (await EnsureBuilt()) &&
+            ((await Publish()).ExitCode == 0);
         }
 
         public bool RequiresPublish => IsWebProject;
 
-        public async Task EnsureBuilt(Budget budget = null)
-        {
-            await EnsureCreated(budget);
-
-            await _built.ValueAsync()
-                        .CancelIfExceeds(budget ?? new Budget());
-
-            budget?.RecordEntry();
-        }
-
-        public async Task EnsureConfigurationFileExists(Budget budget = null)
-        {
-            await EnsureBuilt(budget);
-            var _ = _configurationFileCreated.Value;
-            budget?.RecordEntry();
-        }
-
-        public bool VerifyOrCreateConfigFile()
+        public bool CreateConfigFile()
         {
             var buildLog = Directory.GetFiles("msbuild.log").SingleOrDefault();
 
@@ -274,17 +206,17 @@ namespace WorkspaceServer.Packaging
 
             var compilerCommandLine = buildLog.FindCompilerCommandLineAndSetLanguageversion(csharpLanguageVersion);
 
-            _configuration = new PackageConfiguration
-                             {
-                                 CompilerArgs = compilerCommandLine
-                             };
+            var configuration = new PackageConfiguration
+            {
+                CompilerArgs = compilerCommandLine
+            };
 
-            File.WriteAllText(_workspaceConfigFilePath, _configuration.ToJson());
+            File.WriteAllText(_workspaceConfigFilePath, configuration.ToJson());
 
             return true;
         }
 
-        private async Task<bool> VerifyOrBuild()
+        protected async Task<bool> Build()
         {
             using (var operation = _log.OnEnterAndConfirmOnExit())
             {
@@ -293,98 +225,71 @@ namespace WorkspaceServer.Packaging
                 try
                 {
                     fileStream = File.Create(lockFile.FullName, 1, FileOptions.DeleteOnClose);
+                    var msbuildLog = new FileInfo(Path.Combine(Directory.FullName, "msbuild.log"));
 
-                    if (!IsBuilt)
+                    if (!msbuildLog.Exists)
                     {
-                        var msbuildLog = new FileInfo(Path.Combine(Directory.FullName, "msbuild.log"));
+                        operation.Info("Building workspace using {_initializer} in {directory}", _initializer, Directory);
+                        var result = await new Dotnet(Directory)
+                                         .Build(args: "/fl /p:ProvideCommandLineArgs=true;append=true");
 
-                        if (!msbuildLog.Exists)
+                        if (result.ExitCode != 0)
                         {
-                            operation.Info("Building workspace using {_initializer} in {directory}", _initializer, Directory);
-                            var result = await new Dotnet(Directory)
-                                             .Build(args: "/fl /p:ProvideCommandLineArgs=true;append=true");
-
-                            if (result.ExitCode != 0)
-                            {
-                                File.WriteAllText(
-                                    LastBuildErrorLogFile.FullName, 
-                                    string.Join(Environment.NewLine, result.Error));
-                            }
-                            else if (LastBuildErrorLogFile.Exists)
-                            {
-                                LastBuildErrorLogFile.Delete();
-                            }
-
-                            result.ThrowOnFailure();
-                            BuildTime = Clock.Current.Now();
-                            operation.Info("Workspace built");
+                            File.WriteAllText(
+                                LastBuildErrorLogFile.FullName,
+                                string.Join(Environment.NewLine, result.Error));
+                        }
+                        else if (LastBuildErrorLogFile.Exists)
+                        {
+                            LastBuildErrorLogFile.Delete();
                         }
 
-                        IsBuilt = true;
+                        result.ThrowOnFailure();
+                        BuildTime = Clock.Current.Now();
+                        operation.Info("Workspace built");
                     }
                     else
                     {
                         operation.Info("Workspace already built");
                     }
+                    operation.Succeed();
+                    return true;
                 }
                 catch (Exception exception)
                 {
                     operation.Error("Exception building workspace", exception);
+                    return false;
                 }
                 finally
                 {
                     fileStream?.Dispose();
                 }
 
-                operation.Succeed();
+                
             }
-
-            return true;
         }
 
-        private FileInfo LastBuildErrorLogFile { get; }
-
-        public async Task EnsurePublished(Budget budget = null)
-        {
-            await EnsureBuilt(budget);
-
-            await _published.ValueAsync()
-                            .CancelIfExceeds(budget ?? new Budget());
-        }
-
-        private async Task<bool> VerifyOrPublish()
+        protected async Task<CommandLineResult> Publish()
         {
             using (var operation = _log.OnEnterAndConfirmOnExit())
             {
-                if (!IsPublished)
-                {
-                    operation.Info("Publishing workspace");
-                    if (Directory.GetDirectories("publish", SearchOption.AllDirectories).Length == 0)
-                    {
-                        operation.Info("Publishing workspace in {directory}", Directory);
-                        var result = await new Dotnet(Directory)
-                            .Publish("--no-dependencies --no-restore");
-                        result.ThrowOnFailure();
-                    }
+                CommandLineResult result;
+                operation.Info("Publishing workspace in {directory}", Directory);
+                result = await new Dotnet(Directory)
+                    .Publish("--no-dependencies --no-restore");
+                result.ThrowOnFailure();
 
-                    IsPublished = true;
-                    PublicationTime = Clock.Current.Now();
-                    operation.Info("Workspace published");
-                }
-                else
-                {
-                    operation.Info("Workspace already published");
-                }
-
+                PublicationTime = Clock.Current.Now();
+                operation.Info("Workspace published");
                 operation.Succeed();
+                return result;
             }
-
-            return true;
         }
 
         public static async Task<Package> Copy(
             Package fromPackage,
-            string folderNameStartsWith = null)
+            string folderNameStartsWith = null,
+            bool isRebuildable = false)
         {
             if (fromPackage == null)
             {
@@ -398,12 +303,13 @@ namespace WorkspaceServer.Packaging
 
             var destination = CreateDirectory(folderNameStartsWith, parentDirectory);
 
-            return await Copy(fromPackage, destination);
+            return await Copy(fromPackage, destination, isRebuildable);
         }
 
-        public static async Task<Package> Copy(
+        private static async Task<Package> Copy(
             Package fromPackage,
-            DirectoryInfo destination)
+            DirectoryInfo destination,
+            bool isRebuildable)
         {
             if (fromPackage == null)
             {
@@ -414,13 +320,21 @@ namespace WorkspaceServer.Packaging
 
             fromPackage.Directory.CopyTo(destination);
 
-            var copy = new Package(directory: destination, name: destination.Name)
+            Package copy;
+            if (isRebuildable)
             {
-                IsCreated = fromPackage.IsCreated,
-                IsPublished = fromPackage.IsPublished,
-                IsReady = fromPackage.IsReady,
-                IsDirectoryCreated = true
-            };
+                copy = new RebuildablePackage(directory: destination, name: destination.Name)
+                {
+                    IsDirectoryCreated = true
+                };
+            }
+            else
+            {
+                copy = new NonrebuildablePackage(directory: destination, name: destination.Name)
+                {
+                    IsDirectoryCreated = true
+                };
+            }
 
             Log.Info(
                 "Copied workspace {from} to {to}",
@@ -455,40 +369,58 @@ namespace WorkspaceServer.Packaging
 
         public override string ToString()
         {
-            return $"{Name} ({Directory.FullName}) ({new { IsCreated, CreationTime, IsBuilt, BuildTime, IsPublished, PublicationTime, IsReady }})";
+            return $"{Name} ({Directory.FullName}) ({new { CreationTime, BuildTime, PublicationTime }})";
         }
 
-        private async Task<CSharpCommandLineArguments> CreateCSharpCommandLineArguments()
-        {
-            await EnsureBuilt();
-
-            return CSharpCommandLineParser.Default.Parse(
-                (await GetConfigurationAsync()).CompilerArgs,
-                Directory.FullName,
-                RuntimeEnvironment.GetRuntimeDirectory());
-        }
-
-        private async Task<SyntaxTree> CreateInstrumentationEmitterSyntaxTree()
+        protected async Task<SyntaxTree> CreateInstrumentationEmitterSyntaxTree()
         {
             var resourceName = "WorkspaceServer.Servers.Roslyn.Instrumentation.InstrumentationEmitter.cs";
 
-            var assembly = typeof(WorkspaceBuildExtensions).Assembly;
+            var assembly = typeof(PackageExtensions).Assembly;
 
             using (var stream = assembly.GetManifestResourceStream(resourceName))
             using (var reader = new StreamReader(stream ?? throw new InvalidOperationException($"Resource \"{resourceName}\" not found"), Encoding.UTF8))
             {
                 var source = reader.ReadToEnd();
 
-                var parseOptions = (await _csharpCommandLineArguments.ValueAsync()).ParseOptions;
+                var parseOptions = (await GetCommandLineArguments()).ParseOptions;
                 var syntaxTree = CSharpSyntaxTree.ParseText(SourceText.From(source), parseOptions);
 
                 return syntaxTree;
             }
         }
 
-        public Task<CSharpCommandLineArguments> GetCommandLineArguments() => _csharpCommandLineArguments.ValueAsync();
+        public virtual Task<CSharpCommandLineArguments> GetCommandLineArguments() =>
+            CreateCSharpCommandLineArguments();
 
-        public Task<SyntaxTree> GetInstrumentationEmitterSyntaxTree() => _instrumentationEmitterSyntaxTree.ValueAsync();
+        protected async Task<CSharpCommandLineArguments> CreateCSharpCommandLineArguments()
+        {
+            await EnsureBuilt();
+            var configuration = await GetConfigurationAsync();
+            return CSharpCommandLineParser.Default.Parse(
+                                configuration.CompilerArgs,
+                                Directory.FullName,
+                                RuntimeEnvironment.GetRuntimeDirectory());
+        }
+
+        protected virtual async Task<PackageConfiguration> GetConfigurationAsync()
+        {
+            await EnsureConfigurationFileExists();
+            var workspaceConfigFile = new FileInfo(_workspaceConfigFilePath);
+            if (workspaceConfigFile.Exists)
+            {
+                var json = await workspaceConfigFile.ReadAsync();
+
+                return json.FromJsonTo<PackageConfiguration>();
+            }
+            else
+            {
+                throw new InvalidOperationException($"{workspaceConfigFile.Name} not found in {Directory}");
+            }
+        }
+
+        public virtual Task<SyntaxTree> GetInstrumentationEmitterSyntaxTree() =>
+            CreateInstrumentationEmitterSyntaxTree();
 
         private static string GetTargetFramework(DirectoryInfo directory)
         {

@@ -9,7 +9,7 @@ using Pocket;
 using Xunit;
 using Xunit.Abstractions;
 using WorkspaceServer.Packaging;
-using System.Linq;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace WorkspaceServer.Tests
 {
@@ -34,8 +34,8 @@ namespace WorkspaceServer.Tests
 
             var package = Create.EmptyWorkspace(initializer: initializer);
 
-            await package.EnsureCreated();
-            await package.EnsureCreated();
+            await package.EnsureReady(new TimeBudget(30.Seconds()));
+            await package.EnsureReady(new TimeBudget(30.Seconds()));
 
             initializer.InitializeCount.Should().Be(1);
         }
@@ -56,8 +56,8 @@ namespace WorkspaceServer.Tests
 
             var package = Create.EmptyWorkspace(initializer: initializer);
 
-            await package.EnsureCreated();
-            await package.EnsureCreated();
+            await package.EnsureReady(new TimeBudget(30.Seconds()));
+            await package.EnsureReady(new TimeBudget(30.Seconds()));
 
             afterCreateCallCount.Should().Be(1);
         }
@@ -71,70 +71,13 @@ namespace WorkspaceServer.Tests
 
             var original = Create.EmptyWorkspace(initializer: initializer);
 
-            await original.EnsureCreated();
+            await original.EnsureReady(new TimeBudget(30.Seconds()));
 
             var copy = await Package.Copy(original);
 
-            await copy.EnsureCreated();
+            await copy.EnsureReady(new TimeBudget(30.Seconds()));
 
             initializer.InitializeCount.Should().Be(1);
-        }
-
-        [Fact]
-        public async Task EnsureBuilt_is_safe_for_concurrency()
-        {
-            var workspace = Create.EmptyWorkspace();
-
-            var barrier = new Barrier(2);
-
-            async Task EnsureBuilt()
-            {
-                await Task.Yield();
-                barrier.SignalAndWait(20.Seconds());
-                await workspace.EnsureBuilt();
-            }
-
-            await Task.WhenAll(
-                EnsureBuilt(),
-                EnsureBuilt());
-        }
-
-        [Fact]
-        public async Task EnsureCreated_is_safe_for_concurrency()
-        {
-            var workspace = Create.EmptyWorkspace();
-
-            var barrier = new Barrier(2);
-
-            async Task EnsureCreated()
-            {
-                await Task.Yield();
-                barrier.SignalAndWait(20.Seconds());
-                await workspace.EnsureCreated();
-            }
-
-            await Task.WhenAll(
-                EnsureCreated(),
-                EnsureCreated());
-        }
-
-        [Fact]
-        public async Task EnsurePublished_is_safe_for_concurrency()
-        {
-            var workspace = Create.EmptyWorkspace();
-
-            var barrier = new Barrier(2);
-
-            async Task EnsurePublished()
-            {
-                await Task.Yield();
-                barrier.SignalAndWait(20.Seconds());
-                await workspace.EnsurePublished();
-            }
-
-            await Task.WhenAll(
-                EnsurePublished(),
-                EnsurePublished());
         }
 
         [Fact]
@@ -142,7 +85,7 @@ namespace WorkspaceServer.Tests
         {
             var package = await Create.ConsoleWorkspaceCopy();
 
-            await package.EnsureCreated();
+            await package.EnsureReady(new TimeBudget(30.Seconds()));
 
             package.IsWebProject.Should().BeFalse();
         }
@@ -202,7 +145,7 @@ namespace WorkspaceServer.Tests
         public async Task When_workspace_is_built_trydotnet_file_is_created()
         {
             var package = await Create.ConsoleWorkspaceCopy();
-            await package.EnsureBuilt();
+            await package.EnsureReady(new TimeBudget(30.Seconds()));
             package.Directory.GetFiles(".trydotnet").Should().HaveCount(1);
         }
 
@@ -214,22 +157,9 @@ namespace WorkspaceServer.Tests
             await new Dotnet(package.Directory).Build(args: "/fl /p:ProvideCommandLineArgs=true;append=true");
             package.Directory.GetFiles(".trydotnet").Should().BeEmpty();
 
-            var config = await package.GetConfigurationAsync();
-            config.CompilerArgs.Should().Contain("/debug+");
-            config.CompilerArgs.Should().Contain("/target:exe");
-            config.CompilerArgs.Should().Contain("-langversion:7.3");
-        }
-
-        [Fact(Skip = "Not yet implemented")]
-        public async Task When_the_project_file_has_been_modified_the_package_is_rebuilt()
-        {
-            var package = await Create.ConsoleWorkspaceCopy();
-            await package.EnsureBuilt();
-            var modifiedTime = package.Directory.GetFiles(".trydotnet").Single().LastWriteTimeUtc;
-
-            await new Dotnet(package.Directory).AddPackage("jquery");
-            await package.EnsureBuilt();
-            package.Directory.GetFiles(".trydotnet").Single().LastWriteTimeUtc.Should().BeAfter(modifiedTime);
+            var config = await package.GetCommandLineArguments();
+            config.CompilationOptions.Language.Should().Be("C#");
+            config.ParseOptions.LanguageVersion.Should().Be(LanguageVersion.CSharp7_3);
         }
     }
 }

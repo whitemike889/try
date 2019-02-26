@@ -17,7 +17,9 @@ namespace WorkspaceServer.PackageDiscovery
 
             if (directory.Exists)
             {
-                return Task.FromResult(new PackageBuilder(packageDescriptor.Name));
+                var packageBuilder = new PackageBuilder(packageDescriptor.Name);
+                packageBuilder.CreateRebuildablePackage = packageDescriptor.IsRebuildable;
+                return Task.FromResult(packageBuilder);
             }
 
             return Task.FromResult<PackageBuilder>(null);

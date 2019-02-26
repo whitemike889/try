@@ -14,6 +14,7 @@ namespace WorkspaceServer.PackageDiscovery
             if(Path.GetExtension(projectFile) == ".csproj" && File.Exists(projectFile))
             {
                 PackageBuilder packageBuilder = new PackageBuilder(packageDescriptor.Name);
+                packageBuilder.CreateRebuildablePackage = packageDescriptor.IsRebuildable;
                 packageBuilder.Directory = new DirectoryInfo(Path.GetDirectoryName(projectFile));
                 return Task.FromResult(packageBuilder);
             }

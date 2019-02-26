@@ -62,7 +62,7 @@ This is some sample code:
                 new VerifyOptions(root),
                 console,
                 () => directoryAccessor,
-                new PackageRegistry());
+                PackageRegistry.CreateForVerifyMode(root, null));
 
             console.Out
                    .ToString()
@@ -73,7 +73,7 @@ This is some sample code:
         [Fact]
         public async Task Files_are_listed()
         {
-            var root = Create.EmptyWorkspace().Directory;
+            var root = Create.EmptyWorkspace(isRebuildablePackage: true).Directory;
 
             var directoryAccessor = new InMemoryDirectoryAccessor(root, root)
                                     {
@@ -91,7 +91,7 @@ This is some sample code:
                 new VerifyOptions(root),
                 console,
                 () => directoryAccessor,
-                new PackageRegistry());
+                PackageRegistry.CreateForVerifyMode(root, null));
 
             _output.WriteLine(console.Out.ToString());
 
@@ -106,7 +106,7 @@ This is some sample code:
         [Fact]
         public async Task When_there_are_no_markdown_errors_then_return_code_is_0()
         {
-            var rootDirectory = Create.EmptyWorkspace().Directory;
+            var rootDirectory = Create.EmptyWorkspace(isRebuildablePackage: true).Directory;
 
             var directoryAccessor = new InMemoryDirectoryAccessor(rootDirectory, rootDirectory)
                                     {
@@ -124,7 +124,7 @@ This is some sample code:
                                  new VerifyOptions(rootDirectory),
                                  console,
                                  () => directoryAccessor,
-                                 new PackageRegistry());
+                                 PackageRegistry.CreateForVerifyMode(rootDirectory, null));
 
             _output.WriteLine(console.Out.ToString());
 
@@ -150,7 +150,7 @@ This is some sample code:
                                  new VerifyOptions(rootDirectory),
                                  console,
                                  () => directoryAccessor,
-                                 new PackageRegistry());
+                                 PackageRegistry.CreateForVerifyMode(rootDirectory, null));
 
             resultCode.Should().NotBe(0);
         }
@@ -159,7 +159,7 @@ This is some sample code:
         [Fact]
         public async Task When_there_are_no_files_found_then_return_code_is_nonzero()
         {
-            var rootDirectory = Create.EmptyWorkspace().Directory;
+            var rootDirectory = Create.EmptyWorkspace(isRebuildablePackage: true).Directory;
 
             var directoryAccessor = new InMemoryDirectoryAccessor(rootDirectory);          
 
@@ -169,7 +169,7 @@ This is some sample code:
                                  new VerifyOptions(rootDirectory),
                                  console,
                                  () => directoryAccessor,
-                                 new PackageRegistry());
+                                 PackageRegistry.CreateForVerifyMode(rootDirectory, null));
 
             resultCode.Should().NotBe(0);
         }
@@ -202,7 +202,7 @@ This is some sample code:
                                  new VerifyOptions(rootDirectory),
                                  console,
                                  () => directoryAccessor,
-                                 new PackageRegistry());
+                                 PackageRegistry.CreateForVerifyMode(rootDirectory, null));
 
             console.Out.ToString().Should().Contain("Session cannot span projects or packages: --session one");
 
@@ -214,7 +214,7 @@ This is some sample code:
         [InlineData("--region mask")]
         public async Task Verify_shows_diagnostics_for_complation_failures(string args)
         {
-            var directory = Create.EmptyWorkspace().Directory;
+            var directory = Create.EmptyWorkspace(isRebuildablePackage: true).Directory;
 
             var directoryAccessor = new InMemoryDirectoryAccessor(directory, directory)
                                     {
@@ -247,7 +247,7 @@ This is some sample code:
                                  new VerifyOptions(directory),
                                  console,
                                  () => directoryAccessor,
-                                 new PackageRegistry());
+                                 PackageRegistry.CreateForVerifyMode(directory, null));
 
             _output.WriteLine(console.Out.ToString());
 
@@ -259,7 +259,7 @@ This is some sample code:
         [Fact]
         public async Task When_there_are_compilation_errors_outside_the_mask_then_they_are_displayed()
         {
-            var rootDirectory = Create.EmptyWorkspace().Directory;
+            var rootDirectory = Create.EmptyWorkspace(isRebuildablePackage: true).Directory;
 
             var directoryAccessor = new InMemoryDirectoryAccessor(rootDirectory, rootDirectory)
                                     {
@@ -288,7 +288,7 @@ This is some sample code:
                                  new VerifyOptions(rootDirectory),
                                  console,
                                  () => directoryAccessor,
-                                 new PackageRegistry());
+                                 PackageRegistry.CreateForVerifyMode(rootDirectory, null));
 
             _output.WriteLine(console.Out.ToString());
 
@@ -319,7 +319,7 @@ This is some sample code:
                 new VerifyOptions(root),
                 console,
                 () => directoryAccessor,
-                new PackageRegistry());
+                PackageRegistry.CreateForVerifyMode(root, null));
             
             _output.WriteLine(console.Out.ToString());
 
@@ -327,6 +327,62 @@ This is some sample code:
                    .ToString()
                    .Should()
                    .NotContain("Compiling samples for session");
+        }
+
+
+        [Fact]
+        public async Task If_a_new_file_is_added_and_verify_is_called_the_compile_errors_in_it_are_emitted()
+        {
+            var rootDirectory = Create.EmptyWorkspace(isRebuildablePackage:true).Directory;
+
+            var directoryAccessor = new InMemoryDirectoryAccessor(rootDirectory, rootDirectory)
+                                    {
+                                        ("Program.cs", $@"
+    using System;
+
+    public class Program
+    {{
+        public static void Main(string[] args)
+        {{
+#region mask
+            Console.WriteLine();
+#endregion
+        }}
+    }}"),
+                                        ("sample.md", $@"
+```cs Program.cs --region mask
+```"),
+                                        ("sample.csproj",
+                                         CsprojContents)
+                                    }.CreateFiles();
+
+            var console = new TestConsole();
+
+            PackageRegistry packageRegistry = PackageRegistry.CreateForVerifyMode(rootDirectory, null);
+            var resultCode = await VerifyCommand.Do(
+                                 new VerifyOptions(rootDirectory),
+                                 console,
+                                 () => directoryAccessor,
+                                 packageRegistry);
+
+            _output.WriteLine(console.Out.ToString());
+            resultCode.Should().Be(0);
+
+            File.WriteAllText(directoryAccessor.GetFullyQualifiedPath(new RelativeFilePath("Sample.cs")).FullName, "DOES NOT COMPILE");
+            
+            resultCode = await VerifyCommand.Do(
+                                 new VerifyOptions(rootDirectory),
+                                 console,
+                                 () => directoryAccessor,
+                                 packageRegistry);
+
+            _output.WriteLine(console.Out.ToString());
+
+            console.Out.ToString()
+                   .Should().Contain("Build failed")
+                   .And.Contain("Sample.cs(1,10): error CS1002: ; expected");
+
+            resultCode.Should().NotBe(0);
         }
     }
 }

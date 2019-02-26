@@ -259,7 +259,7 @@ This is the end of the file")
             {
                 var console = new TestConsole();
                 var asset = await LocalToolHelpers.CreateTool(console);
-                var registry = new PackageRegistry(new LocalToolPackageDiscoveryStrategy(asset, asset));
+                var registry = new PackageRegistry(false, new LocalToolPackageDiscoveryStrategy(asset, asset));
 
                 var project = new MarkdownProject(
                     new InMemoryDirectoryAccessor(new DirectoryInfo(Directory.GetCurrentDirectory()))

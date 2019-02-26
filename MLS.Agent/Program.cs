@@ -41,7 +41,7 @@ namespace MLS.Agent
                     VerifyCommand.Do(options,
                                      console,
                                      () => new FileSystemDirectoryAccessor(options.RootDirectory),
-                                     PackageRegistry.CreateForTryMode(options.RootDirectory, null)));
+                                     PackageRegistry.CreateForVerifyMode(options.RootDirectory, null)));
 
             return await parser.InvokeAsync(args);
         }

@@ -15,19 +15,19 @@ using Workspace = MLS.Protocol.Execution.Workspace;
 
 namespace WorkspaceServer.Servers.Roslyn
 {
-    public static class WorkspaceBuildExtensions
+    public static class PackageExtensions
     {
         public static async Task<Compilation> Compile(
-            this Package build, 
+            this Package package, 
             Workspace workspace, 
             Budget budget, 
             BufferId activeBufferId)
         {
-            await build.EnsureReady(budget);
+            await package.EnsureReady(budget);
 
             var sourceFiles = workspace.GetSourceFiles().ToArray();
 
-            var (compilation, documents) = await build.GetCompilation(sourceFiles, SourceCodeKind.Regular, workspace.Usings, budget);
+            var (compilation, documents) = await package.GetCompilation(sourceFiles, SourceCodeKind.Regular, workspace.Usings, budget);
 
             var viewports = workspace.ExtractViewPorts();
 
@@ -36,7 +36,7 @@ namespace WorkspaceServer.Servers.Roslyn
             if (workspace.IncludeInstrumentation && !diagnostics.ContainsError())
             {
                 var activeDocument = GetActiveDocument(documents, activeBufferId);
-                compilation = await AugmentCompilationAsync(viewports, compilation, activeDocument, activeBufferId, build);
+                compilation = await AugmentCompilationAsync(viewports, compilation, activeDocument, activeBufferId, package);
             }
 
             return compilation;

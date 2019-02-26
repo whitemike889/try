@@ -27,7 +27,7 @@ namespace MLS.Agent.Tests
             _package = new AsyncLazy<(PackageRegistry, string)>( async () => {
                 var dir = await LocalToolHelpers.CreateTool(console);
                 var strategy = new LocalToolPackageDiscoveryStrategy(dir, dir);
-                return (new PackageRegistry(strategy), "console");
+                return (new PackageRegistry(false, strategy), "console");
             }
             );
         }

@@ -28,6 +28,7 @@ namespace WorkspaceServer.Packaging
         public IPackageInitializer PackageInitializer { get; private set; }
 
         public DirectoryInfo Directory { get; set; }
+        public bool CreateRebuildablePackage { get; internal set; }
 
         public void AfterCreate(Func<Package, Budget, Task> action)
         {
@@ -94,10 +95,20 @@ namespace WorkspaceServer.Packaging
         {
             budget = budget ?? new Budget();
 
-            package = new Package(
-                PackageName,
-                PackageInitializer,
-                Directory);
+            if (CreateRebuildablePackage)
+            {
+                package = new RebuildablePackage(
+                        PackageName,
+                        PackageInitializer,
+                        Directory);
+            }
+            else
+            {
+                package = new NonrebuildablePackage(
+                        PackageName,
+                        PackageInitializer,
+                        Directory);
+            }
 
             await package.EnsureReady(budget);
 
