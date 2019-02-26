@@ -98,6 +98,11 @@ namespace MLS.Agent
                     services.AddSingleton(_ => CreateDirectoryAccessor());
                 }
 
+                services.Configure<ForwardedHeadersOptions>(options =>
+                {
+                    options.ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.All;
+                });
+
                 operation.Succeed();
             }
         }
@@ -137,7 +142,8 @@ namespace MLS.Agent
             {
                 lifetime.ApplicationStopping.Register(() => _disposables.Dispose());
 
-                app.UseResponseCompression();
+                ConfigureForOrchestratorProxy(app);
+
                 app.Map("/LocalCodeRunner/blazor-console", builder =>
                 {
                     builder.UsePathBase("/LocalCodeRunner/blazor-console/");
@@ -161,6 +167,22 @@ namespace MLS.Agent
                          .Schedule(_ => LaunchBrowser(browserLauncher), TimeSpan.FromSeconds(1));
                 }
             }
+        }
+
+        private static void ConfigureForOrchestratorProxy(IApplicationBuilder app)
+        {
+            app.UseForwardedHeaders();
+
+            app.Use(async (context, next) =>
+            {
+                var forwardedPath = context.Request.Headers["X-Forwarded-PathBase"].FirstOrDefault();
+                if (!string.IsNullOrEmpty(forwardedPath))
+                {
+                    context.Request.Path = forwardedPath + context.Request.Path;
+                }
+
+                await next();
+            });
         }
 
         private void LaunchBrowser(IBrowserLauncher browserLauncher)
