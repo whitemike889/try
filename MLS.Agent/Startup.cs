@@ -99,7 +99,6 @@ namespace MLS.Agent
 
                 services.Configure<ForwardedHeadersOptions>(options =>
                 {
-                    
                     options.ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.All;
                 });
 
