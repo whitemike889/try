@@ -161,11 +161,6 @@ namespace MLS.Agent
                     Environment.EnvironmentName != "test" &&
                     !Debugger.IsAttached)
                 {
-                    Console.WriteLine($"" +
-                        $"{StartupOptions.IsInHostedMode}" +
-                        $"{Environment.EnvironmentName}" +
-                        $"{Debugger.IsAttached}"
-                        );
                     Task.Delay(TimeSpan.FromSeconds(1))
                         .ContinueWith(task =>
                         {
