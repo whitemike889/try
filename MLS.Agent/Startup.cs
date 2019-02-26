@@ -132,7 +132,7 @@ namespace MLS.Agent
             {
                 lifetime.ApplicationStopping.Register(() => _disposables.Dispose());
 
-                app.UseResponseCompression();
+                //app.UseResponseCompression();
                 app.Map("/LocalCodeRunner/blazor-console", builder =>
                 {
                     builder.UsePathBase("/LocalCodeRunner/blazor-console/");
