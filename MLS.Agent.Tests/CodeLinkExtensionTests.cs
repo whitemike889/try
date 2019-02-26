@@ -87,6 +87,25 @@ console.log(""Hello World"");
         }
 
         [Fact]
+        public async Task Does_not_insert_code_when_csharp_is_specified_but_no_additional_options()
+        {
+            string expectedValue =
+@"<pre><code class=""language-cs"">Console.WriteLine(&quot;Hello World&quot;);
+</code></pre>
+".EnforceLF();
+
+            var testDir = TestAssets.SampleConsole;
+            var directoryAccessor = new InMemoryDirectoryAccessor(testDir);
+            var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor, PackageRegistry.CreateForHostedMode()).Build();
+            var document = @"
+```cs
+Console.WriteLine(""Hello World"");
+```";
+            var html = (await pipeline.RenderHtmlAsync(document)).EnforceLF();
+            html.Should().Contain(expectedValue);
+        }
+
+        [Fact]
         public async Task Error_messsage_is_displayed_when_the_linked_file_does_not_exist()
         {
             var testDir = TestAssets.SampleConsole;

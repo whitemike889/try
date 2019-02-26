@@ -8,16 +8,24 @@
 ```
 3. Go back to the terminal and run `dotnet try mydoc`. *(make sure you run `dotnet try mydoc` in \GettingStarted not in \mydoc)*
 
-**Tada!** You have created your first C# interactive developer experience.Using the `--project` option we are able to pull code from the backing `C#` project. The code fence now looks like this `cs --project .\mydoc\mydoc.csproj .\mydoc\Program.cs`
+**Tada!** You have created your first C# interactive developer experience.Using the `--project` option we are able to pull code from the backing C# project. The code fence now looks like this:
 
-As you might have noticed you see the full Program.cs file.Suppose you would like to show your user only the `Console.WriteLine("Hello World");`. 
+<pre>
+    <code>
+        ```cs --project .\mydoc\mydoc.csproj .\mydoc\Program.cs
+        ```
+    </code>
+</pre>
+
+As you might have noticed you see the full Program.cs file.Suppose you would like to show your user only the `Console.WriteLine("Hello World!");`. 
 This is done using the `--region` option and [C# regions](https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/preprocessor-directives/preprocessor-region)
 
 ### Defining Regions
 1. Open `Program.cs` in your `mydoc` app.
-2. Open the code block region by placing `#region run1` above `Console.WriteLine("Hello World");` then, place ` #endregion` to close the block.
-Your Program.cs should look like this 
-```
+2. Open the code block region by placing `#region run1` above `Console.WriteLine("Hello World!");` then, place ` #endregion` to close the block.
+Your Program.cs should look like this:
+
+```cs
 using System;
 namespace HelloWorld
 {
@@ -32,14 +40,17 @@ namespace HelloWorld
     }
 }
 ```
-3. In this Markdown file `GettingStarted\NewProject.md` and you are going to add the snippet below. Notice we have appended the **region option**.
+
+3. In this Markdown file `GettingStarted\NewProject.md`, add the snippet below. Notice we have appended the `--region` option.
+
 <pre>
     <code>
-    ```cs --project .\mydoc\mydoc.csproj .\mydoc\Program.cs --region run1```
+    ```cs --project .\mydoc\mydoc.csproj .\mydoc\Program.cs --region run1
+    ```
     </code>
 </pre>
 
-By now you should be seeing an interactive code snippet that only shows `Console.WriteLine("Hello World!");`. In our next tutorial we are going to learn about `--sessions` option. 
+By now you should be seeing an interactive code snippet that only shows `Console.WriteLine("Hello World!");`. In our next tutorial, we are going to learn about the `--session` option. 
 
 #### [Back - Basics](./Introduction.md) <----> [Next - Defining sessions](./Sessions.md)
 

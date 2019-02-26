@@ -55,7 +55,7 @@ namespace MLS.Agent.Markdown
             if (package != null)
             {
                 var installedPackage = await registry.Get(package);
-                if (installedPackage != null && installedPackage.Directory != null)
+                if (installedPackage?.Directory != null)
                 {
                     return new FileSystemDirectoryAccessor(installedPackage.Directory);
                 }
@@ -95,7 +95,7 @@ namespace MLS.Agent.Markdown
             var codeBlock = block as CodeLinkBlock;
 
             //if we already have the source code discard the lines that are inside the fenced code
-            if (codeBlock != null && codeBlock.SourceFile != null)
+            if (codeBlock?.SourceFile != null)
             {
                 return BlockState.ContinueDiscard;
             }

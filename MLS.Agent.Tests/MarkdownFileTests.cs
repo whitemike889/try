@@ -101,7 +101,7 @@ namespace BasicConsoleApp
                 htmlDocument.LoadHtml((await markdownFile.ToHtmlContentAsync()).ToString());
                 var output = htmlDocument.DocumentNode
                                          .SelectSingleNode("//pre/code").InnerHtml.EnforceLF();
-                output.Should().Be($"\n{fencedCode}\n");
+                output.Should().Be($"{fencedCode}\n");
             }
 
             [Fact]

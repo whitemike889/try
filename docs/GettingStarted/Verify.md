@@ -1,8 +1,8 @@
 ### Document Verification
 
-`dotnet try verify` is a compiler for documentation. With this command,you can make sure that every code snippet will work and is in sync with the backing project.
+`dotnet try verify` is a compiler for documentation. With this command, you can make sure that every code snippet will work and is in sync with the backing project.
 
-You can see `dotnet try verify` at work in two ways: In the document UI and using `dotnet try verify` command. Let's see in practice.
+You can see `dotnet try verify` at work in two ways: In the document UI and using `dotnet try verify` command. Let's see it in practice.
 
 Exercise 
 
@@ -11,13 +11,16 @@ In the `Verify.md` file you are going to remove the `<pre>` and `<code>`around t
 Once you have remove the HTML tags, you will notice a `No Project Found` warning in your document UI.This is a clear way to indicate that your document and your backing project are out of sync.
 <pre>
 <code>
-```cs --project .\mydoc2\mydoc2.csproj .\mydoc2\Program.cs --session "Run 1" --region run1
+```cs --project .\mydoc2\mydoc2.csproj .\mydoc2\Program.cs --session "Run example 1" --region run1
 ``` 
 </code>
 </pre>
-2. Using the `dotnet try verify`. 
-The first thing you need to shut down the app in the terminal. *Rerun the `dotnet try demo` command right after the next step.*
-- Go to your terminal and run `dotnet try verify`. You should see something similar to the below. 
+
+2. Using the `dotnet try verify` command. 
+
+Stop the app in the terminal by pressing `Ctrl+C`. Rerun the `dotnet try demo` command right after the next step.
+
+- Go to your terminal and run `dotnet try verify`. You should see something similar to this: 
 
 ![dotnet verify -errorproject](https://user-images.githubusercontent.com/2546640/53291265-8f3c2000-377e-11e9-9b82-b7ea3ce1ab05.PNG)
 

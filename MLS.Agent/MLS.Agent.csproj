@@ -64,7 +64,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="system.commandline.experimental" Version="0.1.0-alpha-63820-02" />
+    <PackageReference Include="system.commandline.experimental" Version="0.1.0-alpha-63826-02" />
     <PackageReference Include="System.Reactive" Version="4.0.0" />
     <PackageReference Include="TaskExtensions" Version="0.1.5650001" />
     <PackageReference Include="VersionSensor" Version="0.1.5650001" />
@@ -101,21 +101,14 @@
 
   <Target Name="CopyDemoFiles" BeforeTargets="ZipDemo;PrepareForBuild">
     <ItemGroup>
-      <DemoFiles Include="$(MSBuildProjectDirectory)/../docs/GettingStarted/**/*.cs;$(MSBuildProjectDirectory)/../docs/GettingStarted/**/*.md;$(MSBuildProjectDirectory)/../docs/GettingStarted/**/*.csproj;" 
-                 Exclude="**/bin/**; **/obj/**"
-                 SkipUnchangedFiles="true" />
+      <DemoFiles Include="$(MSBuildProjectDirectory)/../docs/GettingStarted/**/*.cs;$(MSBuildProjectDirectory)/../docs/GettingStarted/**/*.md;$(MSBuildProjectDirectory)/../docs/GettingStarted/**/*.csproj;" Exclude="**/bin/**; **/obj/**" SkipUnchangedFiles="true" />
     </ItemGroup>
 
-    <Copy
-        SourceFiles="@(DemoFiles)"
-        DestinationFolder="$(OutputPath)/demo/%(RecursiveDir)" />
+    <Copy SourceFiles="@(DemoFiles)" DestinationFolder="$(OutputPath)/demo/%(RecursiveDir)" />
   </Target>
 
   <Target Name="ZipDemo" BeforeTargets="PrepareForBuild">
-    <ZipDirectory
-        SourceDirectory="$(OutputPath)/demo"
-        DestinationFile="$(OutputPath)/demo.zip" 
-        Overwrite="true" />
+    <ZipDirectory SourceDirectory="$(OutputPath)/demo" DestinationFile="$(OutputPath)/demo.zip" Overwrite="true" />
   </Target>
 
 </Project>

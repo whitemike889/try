@@ -2,67 +2,72 @@
 
 Congratulations! You just ran `dotnet try demo`.  This an interactive getting starting guide to get you familiar with the `dotnet try` tool.  
 
-**What is dotnet try?**  `dotnet try ` is a tool that allows you to create interactive documentation for your users. 
+## What is dotnet try?
 
-### Getting familiar with `dotnet try` 
-Let's start your journey by getting familiar with this new interactive documentation experience.
+`dotnet try` is a tool that allows you to create interactive documentation for your users. 
 
-
-**Run & Edit**
-
-Let's at start the beginning.  Try running and editing the code in the editor below.
+Let's start your journey by getting familiar with this new interactive documentation experience. Try editing and running the code in the editor below.
 
 **Example 1**
-```csharp --project .\Snippets\Snippets.csproj .\Snippets\Program.cs --session "Run #1" --region run1
+```csharp .\Snippets\Program.cs --project .\Snippets\Snippets.csproj --session "Run example 1" --region run1
 ```
-**What's happening behind the scenes?**
+## What's happening behind the scenes?
 
-The content for this page is in a Markdown file, `QuickStart.md`, which you can find in the folder where you just ran `dotnet try demo` command. The sample code that you see in the editor is in the Snippets subfolder, in a regular C# project that was created using `dotnet new console`.
+The content for this page is in a Markdown file, `QuickStart.md`, which you can find in the folder where you just ran `dotnet try demo`. The sample code that you see in the editor is in the Snippets subfolder, in a regular C# project that was created using `dotnet new console`.
 
-**Extending the code fence**
+## Code fence options
 
-The code fence in the Markdown pulls the sample code from the backing project, allowing the code rather than the documentation to be the source of truth. This removes the need to copy and paste code snippets from a code sample into your Markdown file.
+The term "code fence" refers to the Markdown delimiters around a multi-line block of code. Here's an example:
+
+<pre>
+    <code>
+        ```cs 
+        Console.WriteLine("Hello World!");
+        ```
+    </code>
+</pre>
+
+The `dotnet try` tool extends Markdown using a set of options that can be added after the language keyword in the code fence. This lets you reference sample code from the backing project, allowing a normal C# project, rather than the documentation, to be the source of truth. This removes the need to copy and paste code snippets from a code sample into your Markdown file.
 
 **Example 2**
-```cs --project .\Snippets\Snippets.csproj .\Snippets\Program.cs --session "Run #2" --region run2
+```cs --project .\Snippets\Snippets.csproj .\Snippets\Program.cs --session "Run example 2" --region run2
 ```
-
-`dotnet try` extends Markdown using a set of options that can be added after the language keyword in the code fence. 
 
 For example, the code snippet above was extended using `dotnet try`. So, your code fence will look like the snippet out below. 
 
 <pre>
     <code>
-        ```cs --project .\Snippets\Snippets.csproj .\Snippets\Program.cs --session "Run #2" --region run2
+        ```cs .\Snippets\Program.cs  --project .\Snippets\Snippets.csproj --session "Run example 2" --region run2
         ```
     </code>
 </pre>
 
-**Code Fence Breakdown**
+## Code Fence Options Breakdown
 
-|Code Fence option  | What it does  |
-|---|---|
-|`--project .\Snippets\Snippets.csproj .\Snippets\Program.cs`   | Points to a specific file. |
-| `--session "Run #2"`  | Creates a new session and is the name of the run button. |  
-|  `--region run2` |identifes and displays the code in the editor. |
+| Option                                 | What it does                                             |
+|----------------------------------------|----------------------------------------------------------|
+| `.\Snippets\Program.cs`                | Points to the file where the sample code is found.       |
+| `--region run2`                        | Identifes a C# code `#region` to focus on.               |
+| `--project .\Snippets\Snippets.csproj` | Points to the project that the sample is part of.        |
+| `--session "Run example 2"`            | Creates a new session and is the name of the run button. |  
 
-**Document Verification**
+### Document Verification
 
-Verifying that your code snippets and samples are in sync is vital to your user experience.  That's why we added `dotnet try verify` to the toolset. 
-`dotnet try verify` is a compiler for documentation. With this command, you can make sure that every code snippet will work and is in sync with the backing project. 
-You can see `dotnet try verify` at work in two ways.
-1. In the document UI. Let's give it a try,  rename the region in Example 1 `--region run1` to `--region run5` . Save the changes and refresh the page. You'll now see a *Region not found* error.'
+Verifying that your code samples work is vital to your user experience, so `dotnet try` acts as a compiler for your documentation. Change the `--region` option in Example 1 from `--region run1` to `--region run5`. This change will break the sample, and you can see this error in two different ways:
 
-2. Using the `dotnet try verify`. Open a new terminal and navigate to the `GettingStarted` folder.
-- Run `dotnet try verify` command. You see something similar to the below. 
+1. Refresh the browser. You'll now see an error like this:
+
+    ![image](https://user-images.githubusercontent.com/547415/53391389-14743000-394b-11e9-8305-1f2a3b72f95a.png)
+
+
+2. Since it's also important to be able to verify your documentation using automation, we added the `dotnet try verify` command. At the command line, navigate to the root of your samples directory and run `dotnet try verify`. You will see something similar to this:
+
 ![dotnet verify -error](https://user-images.githubusercontent.com/2546640/53290283-c8b95f00-376f-11e9-8350-1a3e470267b5.PNG)
 
-- Change the region name back to `run1`. Save the changes. If you re-run the  `dotnet try verify` you see all green check marks and the *Region not found* error is gone from the UI. 
+Now change the region option back to `--region run1`. Save the changes. If you re-run the  `dotnet try verify` you'll see all green check marks and the *Region not found* error is gone in the. 
 
-#### Exercise   
+## Exercise   
 Below we have created a quick exercise that will teach you how to: create a new snippet, specify a region in an existing back project, and define a new session. 
-
-Steps 
 
 1. Go to  `\Snippets\Program.cs`  in the `GettingStarted` folder.
 2. Find the `Run3` method and add the code below makes sure to leave the C# regions in place.
@@ -75,7 +80,7 @@ Console.WriteLine(primes);
 
 ***Results for your code snippet should go here.***
 
-*Hint* Look at the static code snippet under **Extending the code fence**. Make sure to update the `--session name` and `--region name`
+*Hint* Look at the static code snippet under **Code fence options**. Make sure to update the `--session` and `--region` options.
 
 #### [Next: A beginners guide to getting started with `dotnet try` from scratch](./Introduction.md)
 

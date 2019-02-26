@@ -107,7 +107,7 @@ namespace MLS.Agent.Tests
             _output.WriteLine(console.Out.ToString());
             _output.WriteLine(console.Error.ToString());
 
-            startupOptions.Uri.Should().Be(new Uri("intro.md", UriKind.Relative));
+            startupOptions.Uri.Should().Be(new Uri("QuickStart.md", UriKind.Relative));
         }
     }
 }
