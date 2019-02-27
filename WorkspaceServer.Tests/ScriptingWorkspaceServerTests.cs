@@ -25,7 +25,7 @@ namespace WorkspaceServer.Tests
 
         protected override Task<(ICodeRunner runner, Package workspace)> GetRunnerAndWorkspaceBuild(
             [CallerMemberName] string testName = null) =>
-            Task.FromResult<(ICodeRunner , Package )>((new ScriptingWorkspaceServer(), new Package("script")));
+            Task.FromResult<(ICodeRunner , Package )>((new ScriptingWorkspaceServer(), new NonrebuildablePackage("script")));
 
         protected override ILanguageService GetLanguageService([CallerMemberName] string testName = null) =>
             throw new NotImplementedException();

@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Mvc;
 using MLS.Agent.Middleware;
 using MLS.Protocol;
 using Pocket;
-using WorkspaceServer;
 using WorkspaceServer.Servers.Roslyn;
 using static Pocket.Logger<MLS.Agent.Controllers.CompileController>;
 

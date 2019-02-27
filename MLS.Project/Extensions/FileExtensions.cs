@@ -73,7 +73,7 @@ namespace MLS.Project.Extensions
                             {
                                 stack.Push(currentTrivia);
                             }
-                            else if (currentTrivia.Kind() == SyntaxKind.EndRegionDirectiveTrivia)
+                            else if (currentTrivia.Kind() == SyntaxKind.EndRegionDirectiveTrivia && stack.Count > 0)
                             {
                                 var start = stack.Pop();
                                 var regionName = start.ToFullString().Replace("#region", string.Empty).Trim();

@@ -11,7 +11,6 @@ using Serilog.Sinks.RollingFileAlternate;
 using System;
 using System.CommandLine.Invocation;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
@@ -20,6 +19,7 @@ using WorkspaceServer.Servers.Roslyn;
 using static Pocket.Logger<MLS.Agent.Program>;
 using SerilogLoggerConfiguration = Serilog.LoggerConfiguration;
 using WorkspaceServer;
+using MLS.Agent.CommandLine;
 
 namespace MLS.Agent
 {
@@ -30,17 +30,18 @@ namespace MLS.Agent
             var parser = CommandLineParser.Create(
                 start: (options, console) =>
                     ConstructWebHost(options).Run(),
+                demo: DemoCommand.Do,
                 tryGithub: (repo, console) =>
                     GitHubHandler.Handler(repo,
                                           console,
                                           new GitHubRepoLocator()),
-                pack: PackageCommand.Do,
+                pack: PackCommand.Do,
                 install: InstallCommand.Do,
-                verify: (rootDirectory, console) =>
-                    VerifyCommand.Do(rootDirectory,
+                verify: (options, console) =>
+                    VerifyCommand.Do(options,
                                      console,
-                                     () => new FileSystemDirectoryAccessor(rootDirectory),
-                                     PackageRegistry.CreateForTryMode(rootDirectory, null)));
+                                     () => new FileSystemDirectoryAccessor(options.RootDirectory),
+                                     PackageRegistry.CreateForVerifyMode(options.RootDirectory, null)));
 
             return await parser.InvokeAsync(args);
         }

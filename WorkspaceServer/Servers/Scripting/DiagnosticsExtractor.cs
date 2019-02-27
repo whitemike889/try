@@ -9,7 +9,7 @@ using Workspace = MLS.Protocol.Execution.Workspace;
 
 namespace WorkspaceServer.Servers.Scripting
 {
-    internal static class DiagnosticsExtractor
+    internal static class DiazgnosticsExtractor
     {
         public static async Task<SerializableDiagnostic[]> ExtractSerializableDiagnosticsFromDocument(BufferId bufferId, Budget budget, Document selectedDocument, Workspace workspace)
         {
@@ -19,8 +19,9 @@ namespace WorkspaceServer.Servers.Scripting
 
         public static SerializableDiagnostic[] ExtractSerializableDiagnosticsFromSemanticModel(BufferId bufferId, Budget budget, SemanticModel semanticModel, Workspace workspace)
         {
-            var diagnostics = workspace.MapDiagnostics(bufferId, semanticModel.GetDiagnostics().ToArray(), budget);
-            return diagnostics;
+            return null;
+            // var diagnostics = workspace.MapDiagnostics(bufferId, semanticModel.GetDiagnostics().ToArray(), budget);
+            // return diagnostics;
         }
     }
 }

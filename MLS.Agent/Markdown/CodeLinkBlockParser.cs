@@ -9,7 +9,7 @@ namespace MLS.Agent.Markdown
 {
     public class CodeLinkBlockParser : FencedBlockParserBase<CodeLinkBlock>
     {
-        private readonly MarkdownArgumentParser _csharpLinkParser;
+        private readonly CodeFenceOptionsParser _csharpLinkParser;
         private readonly IDirectoryAccessor _directoryAccessor;
 
         private readonly PackageRegistry _registry;
@@ -20,7 +20,7 @@ namespace MLS.Agent.Markdown
             InfoParser = ParseCodeOptions;
             _directoryAccessor = directoryAccessor ?? throw new ArgumentNullException(nameof(directoryAccessor));
             _registry = registry ?? throw new ArgumentNullException(nameof(registry));
-            _csharpLinkParser = new MarkdownArgumentParser(_directoryAccessor);
+            _csharpLinkParser = new CodeFenceOptionsParser(_directoryAccessor);
         }
 
         protected override CodeLinkBlock CreateFencedBlock(BlockProcessor processor) =>
@@ -55,7 +55,7 @@ namespace MLS.Agent.Markdown
             if (package != null)
             {
                 var installedPackage = await registry.Get(package);
-                if (installedPackage != null && installedPackage.Directory != null)
+                if (installedPackage?.Directory != null)
                 {
                     return new FileSystemDirectoryAccessor(installedPackage.Directory);
                 }
@@ -95,7 +95,7 @@ namespace MLS.Agent.Markdown
             var codeBlock = block as CodeLinkBlock;
 
             //if we already have the source code discard the lines that are inside the fenced code
-            if (codeBlock != null && codeBlock.SourceFile != null)
+            if (codeBlock?.SourceFile != null)
             {
                 return BlockState.ContinueDiscard;
             }

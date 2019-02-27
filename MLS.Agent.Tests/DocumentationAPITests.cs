@@ -1,8 +1,16 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
+using Clockwise;
 using FluentAssertions;
+using FluentAssertions.Extensions;
 using HtmlAgilityPack;
+using Markdig;
+using MLS.Agent.CommandLine;
+using MLS.Agent.Markdown;
+using MLS.Agent.Tests.TestUtility;
 using Recipes;
+using WorkspaceServer;
 using Xunit;
 
 namespace MLS.Agent.Tests
@@ -117,6 +125,26 @@ namespace MLS.Agent.Tests
                                      .FirstOrDefault();
 
                 script.InnerHtml.Should().Be(@"trydotnet.autoEnable(new URL(""http://localhost""));");
+            }
+        }
+
+        [Fact]
+        public async Task When_relative_uri_is_specified_then_it_opens_to_that_page()
+        {
+            var launchUri = new Uri("something.md", UriKind.Relative);
+
+            using (var clock = VirtualClock.Start())
+            using (var agent = new AgentService(new StartupOptions(
+                                                    rootDirectory: TestAssets.SampleConsole,
+                                                    uri: launchUri)))
+            {
+                await clock.Wait(5.Seconds());
+
+                agent.BrowserLauncher
+                     .LaunchedUri
+                     .ToString()
+                     .Should()
+                     .Match("http://localhost:*/something.md");
             }
         }
     }

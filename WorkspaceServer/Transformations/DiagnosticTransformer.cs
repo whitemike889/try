@@ -8,7 +8,6 @@ using Microsoft.CodeAnalysis.Text;
 using MLS.Project.Execution;
 using MLS.Project.Extensions;
 using MLS.Project.Transformations;
-using MLS.Protocol;
 using MLS.Protocol.Diagnostics;
 using MLS.Protocol.Execution;
 using Workspace = MLS.Protocol.Execution.Workspace;
@@ -17,28 +16,10 @@ namespace WorkspaceServer.Transformations
 {
     public static class DiagnosticTransformer
     {
-        public static SerializableDiagnostic[] MapDiagnostics(
+        internal static (IReadOnlyCollection<SerializableDiagnostic> DiagnosticsInActiveBuffer, IReadOnlyCollection<SerializableDiagnostic> AllDiagnostics) MapDiagnostics(
             this Workspace workspace,
             BufferId activeBufferId,
-            Compilation compilation,
-            Budget budget = null)
-        {
-            if (compilation == null)
-            {
-                throw new ArgumentNullException(nameof(compilation));
-            }
-            var diagnostics = compilation.GetDiagnostics()
-                .Where(d => d.Id != "CS7022")
-                .ToArray();
-
-            return workspace.MapDiagnostics(activeBufferId, diagnostics, budget);
-        }
-
-
-        public static SerializableDiagnostic[] MapDiagnostics(
-            this Workspace workspace,
-            BufferId activeBufferId,
-            Diagnostic[] diagnostics,
+            IReadOnlyCollection<Diagnostic> diagnostics,
             Budget budget = null)
         {
             if (workspace == null)
@@ -46,14 +27,13 @@ namespace WorkspaceServer.Transformations
                 throw new ArgumentNullException(nameof(workspace));
             }
 
-            if (activeBufferId == null)
+            if (diagnostics == null || diagnostics.Count == 0)
             {
-                throw new ArgumentNullException(nameof(activeBufferId));
+                return (Array.Empty<SerializableDiagnostic>(), Array.Empty<SerializableDiagnostic>());
             }
-
-            if (diagnostics == null  || diagnostics.Length ==0)
+            else
             {
-                return null;
+                diagnostics = diagnostics.RemoveSuppressed();
             }
 
             budget = budget ?? new Budget();
@@ -64,11 +44,14 @@ namespace WorkspaceServer.Transformations
 
             var paddingSize = BufferInliningTransformer.PaddingSize;
 
-            return ReconstructDiagnosticLocations().ToArray();
+            return (
+                       ReconstructDiagnosticLocations().ToArray(),
+                       diagnostics.Select(d => d.ToSerializableDiagnostic()).ToArray()
+                   );
 
             IEnumerable<SerializableDiagnostic> ReconstructDiagnosticLocations()
             {
-                foreach (var diagnostic in diagnostics.Where(d => d.Id != "CS7022"))
+                foreach (var diagnostic in diagnostics)
                 {
                     var filePath = diagnostic.Location.SourceTree?.FilePath;
 
@@ -76,7 +59,7 @@ namespace WorkspaceServer.Transformations
                     if (!diagnostic.IsError() &&
                         !string.IsNullOrWhiteSpace(filePath))
                     {
-                        if (Path.GetFileName(filePath) != Path.GetFileName(activeBufferId.FileName))
+                        if (Path.GetFileName(filePath) != Path.GetFileName(activeBufferId?.FileName))
                         {
                             continue;
                         }
@@ -89,7 +72,7 @@ namespace WorkspaceServer.Transformations
                     {
                         var errorMessage = RelativizeDiagnosticMessage();
 
-                        yield return diagnostic.ToSerializableDiagnostic(errorMessage);
+                        yield return diagnostic.ToSerializableDiagnostic(errorMessage, activeBufferId);
                     }
                     else
                     {
@@ -168,7 +151,8 @@ namespace WorkspaceServer.Transformations
                         end,
                         errorMessage,
                         diagnostic.ConvertSeverity(),
-                        diagnostic.Id);
+                        diagnostic.Id,
+                        viewport.BufferId);
                 }
 
                 lineOffset++;
@@ -176,5 +160,16 @@ namespace WorkspaceServer.Transformations
 
             return null;
         }
+
+        private static readonly HashSet<string> _suppressedDiagnosticIds =
+            new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                "CS7022", // The entry point of the program is global script code; ignoring 'Main()' entry point.
+                "CS8019", // unused using directive
+            };
+
+        public static IReadOnlyCollection<Diagnostic> RemoveSuppressed(this IEnumerable<Diagnostic> o) =>
+            o.Where(d => !_suppressedDiagnosticIds.Contains(d.Id))
+             .ToArray();
     }
 }

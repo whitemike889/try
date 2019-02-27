@@ -10,6 +10,8 @@ using WorkspaceServer.Tests;
 using Xunit;
 using MLS.Agent.Tools;
 using System.IO;
+using MLS.Agent.Tests.TestUtility;
+using MLS.Agent.CommandLine;
 
 namespace MLS.Agent.Tests
 {
@@ -26,7 +28,7 @@ namespace MLS.Agent.Tests
             }
 
             var console = new TestConsole();
-            await PackageCommand.Do(asset, console);
+            await PackCommand.Do(new PackOptions(asset), console);
             asset.GetFiles()
                 .Should().Contain(f => f.Name.Contains("nupkg"));
         }

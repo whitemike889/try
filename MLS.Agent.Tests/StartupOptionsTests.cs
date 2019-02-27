@@ -1,6 +1,7 @@
 using System.IO;
 using FluentAssertions;
 using Microsoft.AspNetCore.Hosting;
+using MLS.Agent.CommandLine;
 using Xunit;
 
 namespace MLS.Agent.Tests

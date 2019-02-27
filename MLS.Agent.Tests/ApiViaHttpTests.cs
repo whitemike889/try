@@ -21,6 +21,7 @@ using Xunit;
 using Xunit.Abstractions;
 using static Pocket.Logger<MLS.Agent.Tests.ApiViaHttpTests>;
 using Workspace = MLS.Protocol.Execution.Workspace;
+using MLS.Agent.CommandLine;
 
 namespace MLS.Agent.Tests
 {
@@ -530,7 +531,7 @@ namespace FibonacciTest
         [Fact]
         public async Task When_aspnet_webapi_workspace_request_succeeds_then_output_shows_web_response()
         {
-            var workspaceType = await Package.Copy(await Default.WebApiWorkspace);
+            var workspaceType = await Create.WebApiWorkspaceCopy();
             var workspace = WorkspaceFactory.CreateWorkspaceFromDirectory(
                 workspaceType.Directory, 
                 workspaceType.Directory.Name);
@@ -700,6 +701,19 @@ namespace FibonacciTest
             response.StatusCode.Should().Be(HttpStatusCode.ExpectationFailed);
         }
 
+
+        [Fact]
+        public async Task Can_serve_blazor_code_runner()
+        {
+            using (var agent = new AgentService())
+            {
+                var response = await agent.GetAsync(@"/LocalCodeRunner/blazor-console");
+
+                response.EnsureSuccessStatusCode();
+                var result = await response.Content.ReadAsStringAsync();
+                result.Should().Contain("Loading...");
+            }
+        }
         private class FailedRunResult : Exception
         {
             internal FailedRunResult(string message) : base(message)

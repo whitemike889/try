@@ -1,16 +1,21 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net;
-using System.Runtime.InteropServices;
+using System.Net.Mime;
 using System.Threading.Tasks;
 using Clockwise;
+using Microsoft.AspNetCore.Blazor.Server;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using MLS.Agent.Blazor;
+using MLS.Agent.CommandLine;
 using MLS.Agent.Markdown;
+using MLS.Agent.Middleware;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Pocket;
@@ -71,6 +76,17 @@ namespace MLS.Agent
 
                 services.AddSingleton(c => new RoslynWorkspaceServer(c.GetRequiredService<PackageRegistry>()));
 
+                services.TryAddSingleton<IBrowserLauncher>(c => new BrowserLauncher());
+
+                services.AddResponseCompression(options =>
+                {
+                    options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(new[]
+                    {
+                        MediaTypeNames.Application.Octet,
+                        WasmMediaTypeNames.Application.Wasm
+                    });
+                });
+
                 if (StartupOptions.IsInHostedMode)
                 {
                     services.AddSingleton(_ => PackageRegistry.CreateForHostedMode());
@@ -83,6 +99,11 @@ namespace MLS.Agent
                     services.AddSingleton(_ => CreateDirectoryAccessor());
                 }
 
+                services.Configure<ForwardedHeadersOptions>(options =>
+                {
+                    options.ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.All;
+                });
+
                 operation.Succeed();
             }
         }
@@ -91,20 +112,23 @@ namespace MLS.Agent
         {
             if (StartupOptions.Uri != null)
             {
-                var client = new WebClient();
-                var tempDirPath = Path.Combine(
-                    Path.GetTempPath(),
-                    Path.GetRandomFileName());
+                if (StartupOptions.Uri.IsAbsoluteUri)
+                {
+                    var client = new WebClient();
+                    var tempDirPath = Path.Combine(
+                        Path.GetTempPath(),
+                        Path.GetRandomFileName());
 
-                var tempDir = Directory.CreateDirectory(tempDirPath);
+                    var tempDir = Directory.CreateDirectory(tempDirPath);
 
-                var temp = Path.Combine(
-                    tempDir.FullName,
-                    Path.GetFileName(StartupOptions.Uri.LocalPath));
+                    var temp = Path.Combine(
+                        tempDir.FullName,
+                        Path.GetFileName(StartupOptions.Uri.LocalPath));
 
-                client.DownloadFile(StartupOptions.Uri, temp);
-                var fileInfo = new FileInfo(temp);
-                return new FileSystemDirectoryAccessor(fileInfo.Directory);
+                    client.DownloadFile(StartupOptions.Uri, temp);
+                    var fileInfo = new FileInfo(temp);
+                    return new FileSystemDirectoryAccessor(fileInfo.Directory);
+                }
             }
 
             return new FileSystemDirectoryAccessor(StartupOptions.RootDirectory);
@@ -112,11 +136,20 @@ namespace MLS.Agent
 
         public void Configure(
             IApplicationBuilder app,
-            IApplicationLifetime lifetime)
+            IApplicationLifetime lifetime,
+            IBrowserLauncher browserLauncher)
         {
             using (var operation = Log.OnEnterAndConfirmOnExit())
             {
                 lifetime.ApplicationStopping.Register(() => _disposables.Dispose());
+
+                ConfigureForOrchestratorProxy(app);
+
+                app.Map("/LocalCodeRunner/blazor-console", builder =>
+                {
+                    builder.UsePathBase("/LocalCodeRunner/blazor-console/");
+                    builder.UseBlazor<MLS.Blazor.Program>();
+                });
 
                 app.UseDefaultFiles()
                     .UseStaticFilesFromToolLocation()
@@ -129,35 +162,46 @@ namespace MLS.Agent
 
                 operation.Succeed();
 
-                if (!StartupOptions.IsInHostedMode &&
-                    Environment.EnvironmentName != "test" &&
-                    !Debugger.IsAttached)
+                if (!StartupOptions.IsInHostedMode)
                 {
-                    Task.Delay(TimeSpan.FromSeconds(1))
-                        .ContinueWith(task =>
-                        {
-                            var processName = Process.GetCurrentProcess().ProcessName;
-
-                            var launchUrl = processName == "dotnet" ||
-                                            processName == "dotnet.exe"
-                                                ? "http://localhost:4242"
-                                                : "http://localhost:5000";
-
-                            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                            {
-                                Process.Start(new ProcessStartInfo("cmd", $"/c start {launchUrl}"));
-                            }
-                            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                            {
-                                Process.Start("xdg-open", launchUrl);
-                            }
-                            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                            {
-                                Process.Start("open", launchUrl);
-                            }
-                        });
+                    Clock.Current
+                         .Schedule(_ => LaunchBrowser(browserLauncher), TimeSpan.FromSeconds(1));
                 }
             }
+        }
+
+        private static void ConfigureForOrchestratorProxy(IApplicationBuilder app)
+        {
+            app.UseForwardedHeaders();
+
+            app.Use(async (context, next) =>
+            {
+                var forwardedPath = context.Request.Headers["X-Forwarded-PathBase"].FirstOrDefault();
+                if (!string.IsNullOrEmpty(forwardedPath))
+                {
+                    context.Request.Path = forwardedPath + context.Request.Path;
+                }
+
+                await next();
+            });
+        }
+
+        private void LaunchBrowser(IBrowserLauncher browserLauncher)
+        {
+            var processName = Process.GetCurrentProcess().ProcessName;
+
+            var uri = processName == "dotnet" ||
+                      processName == "dotnet.exe"
+                          ? new Uri("http://localhost:4242")
+                          : new Uri("http://localhost:5000");
+
+            if (StartupOptions.Uri != null &&
+                !StartupOptions.Uri.IsAbsoluteUri)
+            {
+                uri = new Uri(uri, StartupOptions.Uri);
+            }
+
+            browserLauncher.LaunchBrowser(uri);
         }
     }
 }

@@ -39,7 +39,7 @@ namespace WorkspaceServer.PackageDiscovery
             var directory = Path.GetDirectoryName(output);
             var projectDirectory = Path.Combine(directory, "project");
             Console.WriteLine($"Project: {projectDirectory}");
-            var package = new Package(name, directory: new DirectoryInfo(projectDirectory));
+            var package = new NonrebuildablePackage(name, directory: new DirectoryInfo(projectDirectory));
             return package;
         }
     }

@@ -2,6 +2,7 @@
 using MLS.Agent.Markdown;
 using System;
 using System.IO;
+using MLS.Agent.Tests.TestUtility;
 using Xunit;
 
 namespace MLS.Agent.Tests

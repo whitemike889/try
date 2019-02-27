@@ -8,6 +8,7 @@ using FluentAssertions;
 using Microsoft.CodeAnalysis.Text;
 using MLS.Protocol;
 using MLS.Protocol.Execution;
+using Pocket;
 using WorkspaceServer.Models.Instrumentation;
 using WorkspaceServer.Servers.Roslyn;
 using WorkspaceServer.Servers.Roslyn.Instrumentation;
@@ -15,6 +16,7 @@ using WorkspaceServer.Tests.CodeSamples;
 using WorkspaceServer.Packaging;
 using Xunit;
 using Xunit.Abstractions;
+using static Pocket.Logger<WorkspaceServer.Tests.RoslynWorkspaceServerConsoleProjectTests>;
 
 namespace WorkspaceServer.Tests
 {
@@ -266,6 +268,150 @@ namespace FibonacciTest
             var result = await server.Run(request);
 
             result.GetFeature<Diagnostics>().Should().BeEmpty();
+        }
+
+        [Fact]
+        public async Task When_compile_is_unsuccessful_and_there_are_multiple_buffers_with_errors_then_diagnostics_for_both_buffers_are_displayed_in_output()
+        {
+            #region bufferSources
+
+            const string programWithCompileError = @"using System;
+using System.Linq;
+
+namespace FibonacciTest
+{
+    public class Program
+    {
+        public static void Main()
+        {
+            foreach (var i in FibonacciGenerator.Fibonacci().Take(20))
+            {
+                Console.WriteLine(i)          DOES NOT COMPILE
+            }
+        }
+    }
+}";
+            const string generatorWithCompileError = @"using System.Collections.Generic;
+namespace FibonacciTest
+{
+    public static class FibonacciGenerator
+    {
+        public  static IEnumerable<int> Fibonacci()
+        {
+            int current = 1, next = 1;        DOES NOT COMPILE
+            while (true)
+            {
+                yield return current;
+                next = current + (current = next);
+            }
+        }
+    }
+}";
+            #endregion
+
+            var (server, build) = await GetRunnerAndWorkspaceBuild();
+
+            var request = new WorkspaceRequest(
+                new Workspace(
+                    workspaceType: build.Name,
+                    buffers: new[]
+                             {
+                                 new Workspace.Buffer("Program.cs", programWithCompileError),
+                                 new Workspace.Buffer("FibonacciGenerator.cs", generatorWithCompileError)
+                             },
+                    includeInstrumentation: true),
+                new BufferId("FibonacciGenerator.cs"));
+
+            var result = await server.Run(request);
+            result.Succeeded.Should().BeFalse();
+
+            result.Output
+                  .Should()
+                  .BeEquivalentTo(
+"FibonacciGenerator.cs(8,47): error CS0246: The type or namespace name 'DOES' could not be found (are you missing a using directive or an assembly reference?)",
+"FibonacciGenerator.cs(8,56): error CS0103: The name 'COMPILE' does not exist in the current context",
+"FibonacciGenerator.cs(8,56): error CS1002: ; expected",
+"FibonacciGenerator.cs(8,63): error CS1002: ; expected",
+"Program.cs(12,47): error CS1002: ; expected",
+"Program.cs(12,47): error CS0246: The type or namespace name 'DOES' could not be found (are you missing a using directive or an assembly reference?)",
+"Program.cs(12,56): error CS0103: The name 'COMPILE' does not exist in the current context",
+"Program.cs(12,56): error CS1002: ; expected",
+"Program.cs(12,63): error CS1002: ; expected");
+        }
+
+        [Fact]
+        public async Task When_compile_is_unsuccessful_and_there_are_multiple_masked_buffers_with_errors_then_diagnostics_for_both_buffers_are_displayed_in_output()
+        {
+            #region bufferSources
+
+            const string programWithCompileError = @"using System;
+using System.Linq;
+
+namespace FibonacciTest
+{
+    public class Program
+    {
+        public static void Main()
+        {
+#region mask
+            foreach (var i in FibonacciGenerator.Fibonacci().Take(20))
+            {
+                Console.WriteLine(i);
+            }
+#endregion
+        }
+    }
+}";
+            const string generatorWithCompileError = @"using System.Collections.Generic;
+namespace FibonacciTest
+{
+    public static class FibonacciGenerator
+    {
+        public static IEnumerable<int> Fibonacci()           
+        {
+#region mask
+            int current = 1, next = 1;
+            while (true)
+            {
+                yield return current;
+                next = current + (current = next);
+            }
+#endregion
+        }
+    }
+}";
+            #endregion
+
+            var (server, build) = await GetRunnerAndWorkspaceBuild();
+
+            var request = new WorkspaceRequest(
+                new Workspace(
+                    workspaceType: build.Name,
+
+                    files: new[]
+                             {
+                                 new Workspace.File("Program.cs", programWithCompileError),
+                                 new Workspace.File("FibonacciGenerator.cs", generatorWithCompileError),
+                             },
+                    buffers: new[]
+                             {
+                                 new Workspace.Buffer("Program.cs@mask", "WAT"),
+                                 new Workspace.Buffer("FibonacciGenerator.cs@mask", "HUH"),
+                             },
+
+                    includeInstrumentation: true),
+                new BufferId("FibonacciGenerator.cs", "mask2"));
+
+            var result = await server.Run(request);
+            result.Succeeded.Should().BeFalse();
+
+            Logger.Log.Info("OUTPUT:\n{output}", result.Output);
+
+            result.Output
+                  .Should()
+                  .Contain(line => line.Contains("WAT"))
+                  .And
+                  .Contain(line => line.Contains("HUH"));
         }
 
         [Fact]

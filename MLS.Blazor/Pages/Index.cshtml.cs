@@ -17,6 +17,13 @@ namespace MLS.Blazor.Pages
         {
         }
 
+        protected override void OnAfterRender()
+        {
+            base.OnAfterRender();
+
+            PostMessage(JObject.FromObject(new { ready = true }).ToString());
+        }
+
         public static Task<string> PostMessage(string message)
         {
             // Implemented in interop.js
@@ -28,10 +35,16 @@ namespace MLS.Blazor.Pages
         [JSInvokable]
         public static async Task<bool> PostMessageAsync(string message)
         {
-            var result = CodeRunner.ProcessCompileResult(message);
-            if (result != null)
+            try
             {
-                await PostMessage(JObject.FromObject(result).ToString());
+                var result = CodeRunner.ProcessCompileResult(message);
+                if (result != null)
+                {
+                    await PostMessage(JObject.FromObject(result).ToString());
+                }
+            }
+            catch
+            {
             }
 
             return true;

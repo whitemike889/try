@@ -9,10 +9,11 @@ namespace WorkspaceServer.Tests
 {
     public static class Create
     {
-        public static async Task<Package> ConsoleWorkspaceCopy([CallerMemberName] string testName = null) =>
+        public static async Task<Package> ConsoleWorkspaceCopy([CallerMemberName] string testName = null, bool isRebuildable =false) =>
             await Package.Copy(
                 await Default.ConsoleWorkspace,
-                testName);
+                testName,
+                isRebuildable);
 
         public static async Task<Package> WebApiWorkspaceCopy([CallerMemberName] string testName = null) =>
             await Package.Copy(
@@ -29,8 +30,16 @@ namespace WorkspaceServer.Tests
                 await Default.NetstandardWorkspace,
                 testName);
 
-        public static Package EmptyWorkspace([CallerMemberName] string testName = null, IPackageInitializer initializer = null) =>
-            new Package(directory: Package.CreateDirectory(testName), initializer: initializer);
+        public static Package EmptyWorkspace([CallerMemberName] string testName = null, IPackageInitializer initializer = null, bool isRebuildablePackage = false)
+        {
+            if(!isRebuildablePackage)
+            {
+                return new NonrebuildablePackage(directory: Package.CreateDirectory(testName), initializer: initializer);
+            }
+
+            return new RebuildablePackage(directory: Package.CreateDirectory(testName), initializer: initializer);
+        }
+            
 
         public static string SimpleWorkspaceRequestAsJson(
             string consoleOutput = "Hello!",

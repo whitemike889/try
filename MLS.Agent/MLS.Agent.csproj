@@ -36,15 +36,13 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
     <PackageReference Include="LoggerExtensions" Version="0.1.5650001" />
-    <PackageReference Include="markdig" Version="0.15.5" />
+    <PackageReference Include="markdig" Version="0.16.0" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.3.0" />
     <PackageReference Include="Microsoft.AspNetCore.App" Version="2.1.7" />
     <PackageReference Include="Microsoft.AspNetCore.Blazor.Server" Version="0.7.0" />
     <PackageReference Include="Microsoft.AspNetCore.WebSockets" Version="2.1.7" />
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Core" Version="2.1.7" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="2.1.1" />
-    <PackageReference Include="nodatime" Version="2.3.0" />
-    <PackageReference Include="nodatime.testing" Version="2.3.0" />
     <PackageReference Include="Serilog.Sinks.RollingFileAlternate" Version="2.0.9" />
     <PackageReference Include="pocket.disposable" Version="1.0.5">
       <PrivateAssets>all</PrivateAssets>
@@ -64,7 +62,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="system.commandline.experimental" Version="0.1.0-alpha-63801-01" />
+    <PackageReference Include="system.commandline.experimental" Version="0.1.0-alpha-63826-02" />
     <PackageReference Include="System.Reactive" Version="4.0.0" />
     <PackageReference Include="TaskExtensions" Version="0.1.5650001" />
     <PackageReference Include="VersionSensor" Version="0.1.5650001" />
@@ -77,6 +75,7 @@
   </ImportGroup>
   <ItemGroup>
     <ProjectReference Include="..\MLS.Agent.Tools\MLS.Agent.Tools.csproj" />
+    <ProjectReference Include="..\MLS.Blazor\MLS.Blazor.csproj" />
     <ProjectReference Include="..\MLS.Repositories\MLS.Repositories.csproj" />
     <ProjectReference Include="..\WorkspaceServer\WorkspaceServer.csproj" />
   </ItemGroup>
@@ -88,9 +87,26 @@
   <ItemGroup>
     <EmbeddedResource Include="..\MLS.PackageTool\MLS.PackageTool.csproj" />
     <EmbeddedResource Include="..\MLS.PackageTool\Program.cs" />
+    <EmbeddedResource Include="$(OutputPath)/demo.zip">
+         <LogicalName>demo.zip</LogicalName>
+    </EmbeddedResource>
   </ItemGroup>
+
   <Target Name="PublishClient" BeforeTargets="PrepareForPublish">
     <Exec Command="npm i" WorkingDirectory="..\MLS.Styles" />
     <Exec Command="npm run release -- $(ProjectDir)/wwwroot/css/trydotnet.css" WorkingDirectory="..\MLS.Styles" />
   </Target>
+
+  <Target Name="CopyDemoFiles" BeforeTargets="ZipDemo;PrepareForBuild">
+    <ItemGroup>
+      <DemoFiles Include="$(MSBuildProjectDirectory)/../docs/GettingStarted/**/*.cs;$(MSBuildProjectDirectory)/../docs/GettingStarted/**/*.md;$(MSBuildProjectDirectory)/../docs/GettingStarted/**/*.csproj;" Exclude="**/bin/**; **/obj/**" SkipUnchangedFiles="true" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(DemoFiles)" DestinationFolder="$(OutputPath)/demo/%(RecursiveDir)" />
+  </Target>
+
+  <Target Name="ZipDemo" BeforeTargets="PrepareForBuild">
+    <ZipDirectory SourceDirectory="$(OutputPath)/demo" DestinationFile="$(OutputPath)/demo.zip" Overwrite="true" />
+  </Target>
+
 </Project>

@@ -62,7 +62,7 @@ namespace WorkspaceServer.Servers.Roslyn
         /// <summary>
         /// Ensures a trailing directory separator character
         /// </summary>
-        public static string EnsureTrailingSeparator(string s)
+        public static string EnsureTrailingSeparator(this string s)
         {
             if (s.Length == 0 || IsAnyDirectorySeparator(s[s.Length - 1]))
             {

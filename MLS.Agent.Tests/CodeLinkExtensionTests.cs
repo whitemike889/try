@@ -9,6 +9,9 @@ using HtmlAgilityPack;
 using System.Threading.Tasks;
 using WorkspaceServer;
 using System.CommandLine;
+using System.Linq;
+using MLS.Agent.Controllers;
+using MLS.Agent.Tests.TestUtility;
 using MLS.Agent.Tools;
 using WorkspaceServer.PackageDiscovery;
 
@@ -16,16 +19,15 @@ namespace MLS.Agent.Tests
 {
     public class CodeLinkExtensionTests
     {
-        private readonly TestConsole _console;
         private readonly AsyncLazy<(PackageRegistry, string)> _package;
 
         public CodeLinkExtensionTests()
         {
-            _console = new TestConsole();
+            var console = new TestConsole();
             _package = new AsyncLazy<(PackageRegistry, string)>( async () => {
-                var dir = await LocalToolHelpers.CreateTool(_console);
+                var dir = await LocalToolHelpers.CreateTool(console);
                 var strategy = new LocalToolPackageDiscoveryStrategy(dir, dir);
-                return (new PackageRegistry(strategy), "console");
+                return (new PackageRegistry(false, strategy), "console");
             }
             );
         }
@@ -79,6 +81,25 @@ $@"```{language} Program.cs
             var document = @"
 ```js Program.cs
 console.log(""Hello World"");
+```";
+            var html = (await pipeline.RenderHtmlAsync(document)).EnforceLF();
+            html.Should().Contain(expectedValue);
+        }
+
+        [Fact]
+        public async Task Does_not_insert_code_when_csharp_is_specified_but_no_additional_options()
+        {
+            string expectedValue =
+@"<pre><code class=""language-cs"">Console.WriteLine(&quot;Hello World&quot;);
+</code></pre>
+".EnforceLF();
+
+            var testDir = TestAssets.SampleConsole;
+            var directoryAccessor = new InMemoryDirectoryAccessor(testDir);
+            var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor, PackageRegistry.CreateForHostedMode()).Build();
+            var document = @"
+```cs
+Console.WriteLine(""Hello World"");
 ```";
             var html = (await pipeline.RenderHtmlAsync(document)).EnforceLF();
             html.Should().Contain(expectedValue);
@@ -457,6 +478,35 @@ $@"```cs --package {package} Program.cs
             var node = htmlDocument.DocumentNode.SelectSingleNode("//div[@class='notification is-danger']");
 
             node.InnerHtml.Should().Contain($"Package named &quot;{package}&quot; not found");
+        }
+
+        [Fact]
+        public async Task Arguments_are_forwarded_to_the_users_program_entry_point()
+        {
+            var directoryAccessor = new InMemoryDirectoryAccessor(TestAssets.SampleConsole)
+                                    {
+                                        ("Program.cs", ""),
+                                        ("sample.csproj", ""),
+                                        ("sample.md",
+                                         @"```cs --region the-region Program.cs -- one two ""and three""
+```")
+                                    };
+
+            var project = new MarkdownProject(directoryAccessor, new PackageRegistry());
+
+            var markdownFile = project.GetAllMarkdownFiles().Single();
+
+            var html = await DocumentationController.SessionControlsHtml(markdownFile);
+
+            var htmlDocument = new HtmlDocument();
+            htmlDocument.LoadHtml(html.ToString());
+
+            var value = htmlDocument.DocumentNode
+                                    .SelectSingleNode("//button")
+                                    .Attributes["data-trydotnet-run-args"]
+                                    .Value;
+
+            value.Should().Be("--region the-region Program.cs -- one two \"and three\"".HtmlAttributeEncode());
         }
     }
 }

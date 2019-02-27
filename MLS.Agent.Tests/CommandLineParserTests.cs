@@ -3,6 +3,8 @@ using System.CommandLine.Invocation;
 using System.IO;
 using FluentAssertions;
 using System.Threading.Tasks;
+using MLS.Agent.CommandLine;
+using MLS.Agent.Tests.TestUtility;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -14,11 +16,12 @@ namespace MLS.Agent.Tests
         private readonly TestConsole _console = new TestConsole();
         private StartupOptions _start_options;
         private readonly Parser _parser;
-        private string _tryGitHub_repo;
-        private DirectoryInfo _pack_packTarget;
-        private string _install_packageName;
+        private TryGitHubOptions _tryGitHubOptions;
+        private PackOptions _packOptions;
+        private InstallOptions _installOptions;
         private DirectoryInfo _install_packageSource;
-        private DirectoryInfo _verify_rootDirectory;
+        private VerifyOptions _verifyOptions;
+        private DemoOptions _demoOptions;
 
         public CommandLineParserTests(ITestOutputHelper output)
         {
@@ -28,25 +31,30 @@ namespace MLS.Agent.Tests
                 {
                     _start_options = options;
                 },
-                tryGithub: (repo, c) =>
+                demo: (options, console, context, startOptions) =>
                 {
-                    _tryGitHub_repo = repo;
+                    _demoOptions = options;
                     return Task.CompletedTask;
                 },
-                pack: (packTarget, console) =>
+                tryGithub: (options, c) =>
                 {
-                    _pack_packTarget = packTarget;
+                    _tryGitHubOptions = options;
                     return Task.CompletedTask;
                 },
-                install: (packageName, addSource, console) =>
+                pack: (options, console) =>
                 {
-                    _install_packageName = packageName;
-                    _install_packageSource = addSource;
+                    _packOptions = options;
                     return Task.CompletedTask;
                 },
-                verify: (rootDirectory, console) =>
+                install: (options, console) =>
                 {
-                    _verify_rootDirectory = rootDirectory;
+                    _installOptions = options;
+                    _install_packageSource = options.AddSource;
+                    return Task.CompletedTask;
+                },
+                verify: (options, console) =>
+                {
+                    _verifyOptions = options;
                     return Task.FromResult(1);
                 });
         }
@@ -167,63 +175,78 @@ namespace MLS.Agent.Tests
         [Fact]
         public async Task GitHub_handler_not_run_if_argument_is_missing()
         {
-            _tryGitHub_repo = "value";
             await _parser.InvokeAsync("github");
-            _tryGitHub_repo.Should().Be("value");
+            _tryGitHubOptions.Should().BeNull();
         }
 
         [Fact]
         public async Task GitHub_handler_run_if_argument_is_present()
         {
-            _tryGitHub_repo = "value";
             await _parser.InvokeAsync("github roslyn");
-            _tryGitHub_repo.Should().Be("roslyn");
+            _tryGitHubOptions.Repo.Should().Be("roslyn");
         }
 
         [Fact]
         public async Task Pack_not_run_if_argument_is_missing()
         {
             var console = new TestConsole();
-            _pack_packTarget = null;
             await _parser.InvokeAsync("pack", console);
-            console.Out.ToString().Should().Contain("pack <packTarget>");
-            _pack_packTarget.Should().BeNull();
+            console.Out.ToString().Should().Contain("pack <PackTarget>");
+            _packOptions.Should().BeNull();
         }
 
         [Fact]
         public async Task Pack_parses_directory_info()
         {
             var console = new TestConsole();
-            _pack_packTarget = null;
-            var expected = Path.GetDirectoryName(typeof(PackageCommand).Assembly.Location);
+            var expected = Path.GetDirectoryName(typeof(PackCommand).Assembly.Location);
 
             await _parser.InvokeAsync($"pack {expected}", console);
-            _pack_packTarget.FullName.Should().Be(expected);
+            _packOptions.PackTarget.FullName.Should().Be(expected);
         }
 
         [Fact]
         public async Task Install_not_run_if_argument_is_missing()
         {
             var console = new TestConsole();
-            _install_packageName = null;
             await _parser.InvokeAsync("install", console);
-            console.Out.ToString().Should().Contain("install [options] <packageName>");
-            _install_packageName.Should().BeNull();
+            console.Out.ToString().Should().Contain("install [options] <PackageName>");
+            _installOptions.Should().BeNull();
         }
 
         [Fact]
         public async Task Install_parses_source_option()
         {
             var console = new TestConsole();
-            _install_packageName = null;
-            _install_packageSource = null;
 
-            var expectedPackageSource = Path.GetDirectoryName(typeof(PackageCommand).Assembly.Location);
+            var expectedPackageSource = Path.GetDirectoryName(typeof(PackCommand).Assembly.Location);
 
             await _parser.InvokeAsync($"install --add-source {expectedPackageSource} the-package", console);
 
-            _install_packageName.Should().Be("the-package");
+            _installOptions.PackageName.Should().Be("the-package");
             _install_packageSource.FullName.Should().Be(expectedPackageSource);
+        }
+
+        [Fact]
+        public async Task Verify_argument_specifies_root_directory()
+        {
+            var directory = Path.GetDirectoryName(typeof(VerifyCommand).Assembly.Location);
+             await _parser.InvokeAsync($"verify {directory}");
+            _verifyOptions.RootDirectory.FullName.Should().Be(directory);
+        }
+
+        [Fact]
+        public async Task Demo_allows_output_path_to_be_specified()
+        {
+            var expected = Path.GetTempPath();
+
+            await _parser.InvokeAsync($"demo --output {expected}");
+
+            _demoOptions
+                .Output
+                .FullName
+                .Should()
+                .Be(expected);
         }
     }
 }

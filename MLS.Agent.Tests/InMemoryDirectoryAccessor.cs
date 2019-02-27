@@ -4,22 +4,23 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using MLS.Agent.Markdown;
-using WorkspaceServer.Servers.Roslyn;
+using MLS.Agent.Tests.TestUtility;
 
 namespace MLS.Agent.Tests
 {
     internal class InMemoryDirectoryAccessor : IDirectoryAccessor, IEnumerable
     {
         private readonly DirectoryInfo _rootDirToAddFiles;
-        private readonly DirectoryInfo _workingDirectory;
         private Dictionary<string, string> _files;
 
         public InMemoryDirectoryAccessor(DirectoryInfo workingDirectory, DirectoryInfo rootDirectoryToAddFiles = null)
         {
             _rootDirToAddFiles = rootDirectoryToAddFiles ?? TestAssets.SampleConsole;
-            _workingDirectory = workingDirectory;
+            WorkingDirectory = workingDirectory;
             _files = new Dictionary<string, string>();
         }
+
+        public DirectoryInfo WorkingDirectory { get; }
 
         public void Add((string path, string content) file)
         {
@@ -48,9 +49,9 @@ namespace MLS.Agent.Tests
             switch (path)
             {
                 case RelativeFilePath rfp:
-                    return _workingDirectory.Combine(rfp);
+                    return WorkingDirectory.Combine(rfp);
                 case RelativeDirectoryPath rdp:
-                    return _workingDirectory.Combine(rdp);
+                    return WorkingDirectory.Combine(rdp);
                 default:
                     throw new NotSupportedException();
             }
@@ -63,7 +64,7 @@ namespace MLS.Agent.Tests
 
         public IDirectoryAccessor GetDirectoryAccessorForRelativePath(RelativeDirectoryPath relativePath)
         {
-            var newPath = _workingDirectory.Combine(relativePath);
+            var newPath = WorkingDirectory.Combine(relativePath);
             return new InMemoryDirectoryAccessor(newPath)
             {
                 _files = _files
@@ -73,7 +74,7 @@ namespace MLS.Agent.Tests
         public IEnumerable<RelativeFilePath> GetAllFilesRecursively()
         {
             return _files.Keys.Select(key => new RelativeFilePath(
-                Path.GetRelativePath(_workingDirectory.FullName, key)));
+                                          Path.GetRelativePath(WorkingDirectory.FullName, key)));
         }
     }
 }

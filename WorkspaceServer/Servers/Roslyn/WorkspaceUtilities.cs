@@ -184,9 +184,11 @@ namespace WorkspaceServer.Servers.Roslyn
             CSharpCommandLineArguments csharpCommandLineArguments = await package.GetCommandLineArguments();
 
             var projectInfo = CommandLineProject.CreateProjectInfo(
-                projectId, package.Name,
+                projectId, 
+                package.Name,
                 csharpCommandLineArguments.CompilationOptions.Language,
-                csharpCommandLineArguments, package.Directory.FullName);
+                csharpCommandLineArguments, 
+                package.Directory.FullName);
 
             var workspace = new AdhocWorkspace(MefHostServices.DefaultHost);
 

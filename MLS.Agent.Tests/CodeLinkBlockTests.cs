@@ -1,7 +1,5 @@
 ﻿using MLS.Agent.Markdown;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using Xunit;
 using FluentAssertions;
 using System.Threading.Tasks;

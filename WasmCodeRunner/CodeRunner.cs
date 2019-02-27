@@ -55,8 +55,18 @@ namespace MLS.WasmCodeRunner
                 else
                 {
                     var main = assembly.GetTypes().
-                       SelectMany(t => t.GetMethods())
-                       .First(m => m.Name == "Main");
+                       SelectMany(t => t.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance))
+                       .FirstOrDefault(m => m.Name == "Main");
+
+                    if (main == null)
+                    {
+                        var result = new RunResponse(succeeded: false, exception: null,
+                            output: new[] { "error CS5001: Program does not contain a static 'Main' method suitable for an entry point" },
+                            diagnostics: Array.Empty<SerializableDiagnostic>(),
+                            runnerException: null);
+
+                        return new InteropMessage<RunResponse>(sequence, result);
+                    }
 
                     var args = main.GetParameters().Length > 0
                         ? new[] { new string[] { } }

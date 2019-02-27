@@ -127,7 +127,7 @@ namespace FibonacciTest
 
             var workspace = new Workspace(workspaceType: "console", buffers: new[]
             {
-                new Workspace.Buffer("Program.cs", CodeManipulation.EnforceLF(program)),
+                new Workspace.Buffer("Program.cs", program.EnforceLF()),
                 new Workspace.Buffer("generators/FibonacciGenerator.cs", processed, position)
             });
 
@@ -259,11 +259,11 @@ namespace FibonacciTest
                 workspaceType: "console",
                 buffers: new[]
                 {
-                    new Workspace.Buffer("Program.cs", CodeManipulation.EnforceLF(program)),
+                    new Workspace.Buffer("Program.cs", program.EnforceLF()),
                     new Workspace.Buffer("generators/FibonacciGenerator.cs@codeRegion", processed, position)
                 }, files: new[]
                 {
-                    new Workspace.File("generators/FibonacciGenerator.cs", CodeManipulation.EnforceLF(generator)),
+                    new Workspace.File("generators/FibonacciGenerator.cs", generator.EnforceLF())
                 });
 
             var request = new WorkspaceRequest(workspace, activeBufferId: "generators/FibonacciGenerator.cs@codeRegion");
@@ -333,7 +333,7 @@ namespace FibonacciTest
                     new Workspace.Buffer("generators/FibonacciGenerator.cs@codeRegion", processed, position)
                 }, files: new[]
                 {
-                    new Workspace.File("generators/FibonacciGenerator.cs", generator),
+                    new Workspace.File("generators/FibonacciGenerator.cs", generator)
                 });
 
             var request = new WorkspaceRequest(workspace, activeBufferId: "generators/FibonacciGenerator.cs@codeRegion");
@@ -383,7 +383,7 @@ namespace FibonacciTest
                     new Workspace.Buffer("Program.cs", program),
                     new Workspace.Buffer("generators/FibonacciGenerator.cs@codeRegion", processed, position)
                 }, files: new[] {
-                    new Workspace.File("generators/FibonacciGenerator.cs",generator),
+                    new Workspace.File("generators/FibonacciGenerator.cs", generator)
                 });
 
             var request = new WorkspaceRequest(workspace, activeBufferId: "generators/FibonacciGenerator.cs@codeRegion");
@@ -394,7 +394,7 @@ namespace FibonacciTest
 
         private static bool HasDuplicatedCompletionItems(CompletionResult result)
         {
-            var g = result.Items.GroupBy(ci => ci.Kind + ci.InsertText).Select(cig => new { Key = cig.Key, Count = cig.Count() });
+            var g = result.Items.GroupBy(ci => ci.Kind + ci.InsertText).Select(cig => new { cig.Key, Count = cig.Count() });
             var duplicatedEntries = g.Where(cig => cig.Count > 1);
             return duplicatedEntries.Any();
         }

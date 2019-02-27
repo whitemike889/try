@@ -7,6 +7,8 @@ using System.CommandLine;
 using System.IO;
 using System.Threading.Tasks;
 using Clockwise;
+using MLS.Agent.CommandLine;
+using MLS.Agent.Tests.TestUtility;
 using WorkspaceServer.Packaging;
 using WorkspaceServer.Tests;
 using Xunit;
@@ -74,14 +76,14 @@ namespace MLS.Agent.Tests
             var packageLocation = new DirectoryInfo(
                 Path.Combine(copy.Directory.FullName, "pack-output"));
 
-            await PackageCommand.Do(
-                copy.Directory,
-                packageLocation,
+            await PackCommand.Do(
+                new PackOptions(
+                    copy.Directory,
+                    packageLocation),
                 console);
 
             await InstallCommand.Do(
-                projectName,
-                packageLocation,
+                new InstallOptions(packageLocation, projectName),
                 console);
 
             return copy;

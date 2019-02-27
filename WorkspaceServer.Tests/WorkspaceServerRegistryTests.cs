@@ -10,6 +10,7 @@ using WorkspaceServer.Servers.Roslyn;
 using WorkspaceServer.Packaging;
 using Xunit;
 using Xunit.Abstractions;
+using FluentAssertions.Extensions;
 
 namespace WorkspaceServer.Tests
 {
@@ -36,7 +37,7 @@ namespace WorkspaceServer.Tests
 
             var workspace = await registry.Get(workspaceId);
 
-            await workspace.EnsureCreated();
+            await workspace.EnsureReady(new TimeBudget(30.Seconds()));
 
             workspace.Directory.GetFiles().Length.Should().BeGreaterThan(1);
         }
@@ -88,8 +89,7 @@ namespace Twilio_try.dot.net_sample
             var resolvedWorkspace = await registry.Get(unregisteredWorkspace.Name);
 
             resolvedWorkspace.Directory.FullName.Should().Be(unregisteredWorkspace.Directory.FullName);
-            resolvedWorkspace.IsCreated.Should().BeTrue();
-            resolvedWorkspace.IsBuilt.Should().BeTrue();
+            resolvedWorkspace.GetCommandLineArguments().Should().NotBeNull();
         }
 
         [Fact]
