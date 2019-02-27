@@ -36,7 +36,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
     <PackageReference Include="LoggerExtensions" Version="0.1.5650001" />
-    <PackageReference Include="markdig" Version="0.15.5" />
+    <PackageReference Include="markdig" Version="0.16.0" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.3.0" />
     <PackageReference Include="Microsoft.AspNetCore.App" Version="2.1.7" />
     <PackageReference Include="Microsoft.AspNetCore.Blazor.Server" Version="0.7.0" />
