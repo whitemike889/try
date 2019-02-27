@@ -43,18 +43,27 @@ namespace MLS.Agent.Tests
             var result = await dotnet.New("-i Microsoft.AspNetCore.Blazor.Templates");
             result.ThrowOnFailure();
 
-            result = await dotnet.New("blazor");
+            result = await dotnet.New("blazor  -n MLS.Blazor");
             result.ThrowOnFailure();
+
+            var root = Path.Combine(asset.Directory.FullName, "MLS.Blazor");
+            dotnet = new Dotnet(new DirectoryInfo(root));
 
             var toDelete = new[] { "Pages", "Shared", "wwwroot", "_ViewImports.cshtml" };
             foreach (var thing in toDelete)
             {
-                var path = Path.Combine(asset.Directory.FullName, thing);
+                var path = Path.Combine(root, thing);
                 Delete(path);
             }
 
-            result = await dotnet.AddPackage("MLS.BlazorSource", "0.1.0");
-            result.ThrowOnFailure();
+
+            var wwwRootFiles = new [] { "index.html", "interop.js" };
+            var pagesFiles = new[] { "Index.cshtml", "Index.cshtml.cs" };
+            var rootFiles = new[] { "Program.cs", "Startup.cs" };
+
+            WriteAll(wwwRootFiles, "wwwroot", root);
+            WriteAll(pagesFiles, "Pages", root);
+            WriteAll(rootFiles, "", root);
 
             result = await dotnet.AddPackage("MLS.WasmCodeRunner", "1.0.0--00000001.1");
             result.ThrowOnFailure();
@@ -64,6 +73,33 @@ namespace MLS.Agent.Tests
 
             result = await dotnet.Publish("");
             result.ThrowOnFailure();
+        }
+
+        private static void WriteAll(string[] resources, string targetDirectory, string root)
+        {
+            foreach (var resource in resources)
+            {
+                WriteResource(resource, targetDirectory, root);
+            }
+        }
+
+        private static void WriteResource(string resourceName, string targetDirectory, string root)
+        {
+            var text = ReadManifestResource(resourceName);
+            var directory = Path.Combine(root, targetDirectory);
+            Directory.CreateDirectory(directory);
+            var path = Path.Combine(directory, resourceName);
+            File.WriteAllText(path, text);
+        }
+
+        private static string ReadManifestResource(string resourceName)
+        {
+            var assembly = typeof(PackagingTests).Assembly;
+            var resoures = assembly.GetManifestResourceNames();
+            using (var reader = new StreamReader(assembly.GetManifestResourceStream($"MLS.Agent.Tests.{resourceName}")))
+            {
+                return reader.ReadToEnd();
+            }
         }
 
         private void Delete(string path)
