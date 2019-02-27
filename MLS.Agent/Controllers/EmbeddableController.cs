@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Net.Http;
 using System.Web;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -23,7 +22,7 @@ namespace MLS.Agent.Controllers
     <meta http-equiv=""X-UA-Compatible"" content=""IE=edge"" />
     <meta name=""robots"" content=""noindex"" />
     <meta http-equiv=""Content-Type"" content=""text/html;charset=utf-8"">
-        <link rel=""styleSheet"" href=""/bundle.css?v={VersionSensor.Version().AssemblyVersion}"" type=""text/css""/>
+        <link rel=""styleSheet"" href=""/client/bundle.css?v={VersionSensor.Version().AssemblyVersion}"" type=""text/css""/>
     </head>
 
     <body>
@@ -31,7 +30,7 @@ namespace MLS.Agent.Controllers
 
         <script id=""bundlejs""
             data-client-parameters=""{GetClientParameters()}""
-            src=""/bundle.js?v={VersionSensor.Version().AssemblyVersion}""></script>
+            src=""/client/bundle.js?v={VersionSensor.Version().AssemblyVersion}""></script>
     </body>
 </html>
 ", "text/html");
@@ -50,10 +49,8 @@ namespace MLS.Agent.Controllers
 
                 return HttpUtility.HtmlAttributeEncode(parameters.ToJson());
             }
-            else
-            {
-                return new object().ToJson();
-            }
+
+            return new object().ToJson();
         }
 
         public class ClientParameters
