@@ -1,63 +1,70 @@
-### Defining Sessions
+# Step-by-step tutorial: Define Sessions
 
-Let's make this a little more interesting.  
+Let's make this a little more interesting. Your project probably has more than one snippet you want people to be able to run. Sessions allow you to run these code snippets independently of one another.
 
-1. Go to the `mydoc` app you created and add a new file called `Cat.cs` and add the following code:
+1. In your `MyConsoleApp` folder, add a new file called `Cat.cs` and add the following code:
 
-```cs
-using System;
+    ```cs
+    using System;
 
-namespace mydoc
-{
-    class Cat
+    namespace MyConsoleApp
     {
-        public string Say() 
+        class Cat
         {
-            #region run2
-            return "meow!";
-            #endregion
+    #region what_the_cat_says
+            public string Say() 
+            {
+                return "meow!";
+            }
+    #endregion
         }
     }
-}
-```
+    ```
 
-2. Update your `Program.cs`as follows 
+2. Update your `Program.cs`, replacing the contents of the `hello` region with this:
 
-```cs
-   Console.WriteLine(new Cat().Say());
-```
+    ```cs
+    Console.WriteLine(new Cat().Say());
+    ```
 
-3. In this markdown`GettingStarted\Session`, create two separate snippets with one pointing to `Program.cs` and the `run1` region and the other pointing to `Cat.cs` and the `run2` region. 
+3. In `doc.md`, create two separate snippets with one pointing to `Program.cs` and the `say_hello` region and the other pointing to `Cat.cs` and the `what_the_cat_says` region. 
 
-*Cheat Sheet*
-<pre>
-<code>
-```cs --project .\mydoc\mydoc.csproj .\mydoc\Program.cs --region run1
-```
-```cs --project .\mydoc\mydoc.csproj .\mydoc\Cat.cs --region run2
-```
-</code>
-</pre>
-
-Once you have added the above, refresh the page and hit run.
-
-These code snippets are in two separate files and compile and execute together. If we wanted to execute them independently, we would use a `--session` option, providing a new session name for each snippet.
-
-4. Copy the code fence snippets we created in step 3 and add the `--session` option.
-
-<pre>
+    <pre>
     <code>
-```cs --project .\mydoc\mydoc.csproj .\mydoc\Program.cs --session "Run example 1" --region run1
-```
-```cs --project .\mydoc\mydoc.csproj .\mydoc\Cat.cs --session "Run example 2" --region run2
-```
+    # My code sample:
+    ```cs --project .\MyConsoleApp\MyConsoleApp.csproj .\MyConsoleApp\Program.cs --region say_hello
+    ```
+    ```cs --project .\MyConsoleApp\MyConsoleApp.csproj .\MyConsoleApp\Cat.cs --region what_the_cat_says
+    ```
     </code>
-</pre>
+    </pre>
 
-Once you have added the above refresh the page and, you should see two separate output panels and run buttons.
+    _**Workaround alert!** We're working on automatically detecting changes in your backing project and rebuilding it for you, but we're not there yet. For now, stop `dotnet try` and in your `MyConsoleApp` folder, delete the `bin` and `obj` folders as well as the `.trydotnet` and `msbuild.log` files, and then run `dotnet try` again._
 
-Well done! Now, you have a project that you are almost ready to share with others. A big part of good documentation is making sure everything works. In `dotnet try` we do this by using `dotnet try verify` which we will explore in the last module.
+    Once you've made these changes, refresh the page and hit `Run`.
 
-#### [Back - Defining Regions](./NewProject.md)<----> [Next - Document verification](./Verify.md)
+    These code snippets compile and execute together. You can see this by editing the method name in the second editor. After a moment, you'll see a red squiggle indicating a compile error:
 
-[Resources Glossary](./Glossary.md) | [Ask questions or file bugs here](https://teams.microsoft.com/l/channel/19%3a32c2f8c34d4b4136b4adf554308363fc%40thread.skype/Try%2520.NET?groupId=fdff90ed-0b3b-4caa-a30a-efb4dd47665f&tenantId=72f988bf-86f1-41af-91ab-2d7cd011db47)
+    ![image](https://user-images.githubusercontent.com/547415/53462150-afc2df00-39f7-11e9-8a22-7ed5b2825cb6.png)
+
+    But you might want them to be able to compile and execute independently of one another. To do this, you can use a `--session` option, providing a new session name for each snippet. Any snippets that share a session name will compile together.
+
+4. Go back to the code fence snippets we created in step 3 and add the `--session` option.
+
+    <pre>
+    <code>
+     # My code sample:
+    ```cs .\MyConsoleApp\Program.cs --project .\MyConsoleApp\MyConsoleApp.csproj --region say_hello --session one
+    ```
+    ```cs .\MyConsoleApp\Cat.cs --project .\MyConsoleApp\MyConsoleApp.csproj --region what_the_cat_says --session two 
+    ```
+    </code>
+    </pre>
+
+    Once you've made this change, refresh the page. You should see two separate output panels and two run buttons containing the text that you specified for the session names.
+
+    In the second editor, change `"meow"` to `"purrrr"`. Click `one` and then click `two`.
+
+Well done! Now, you have a project that you are almost ready to share with others. A big part of good documentation is making sure everything works. In `dotnet try` we do this by using `dotnet try verify` which we will explore in the next module.
+
+**[< Define Regions](./Regions.md) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  [Verify your project >](./Verify.md)**

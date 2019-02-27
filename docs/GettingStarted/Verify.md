@@ -1,37 +1,24 @@
-### Document Verification
+# Step-by-step tutorial: Verify your project
 
-`dotnet try verify` is a compiler for documentation. With this command, you can make sure that every code snippet will work and is in sync with the backing project.
+`dotnet try verify` is a compiler for your documentation. With this command, you can make sure that every code snippet will work and is in sync with the backing project. The goal of `dotnet try verify` is to enable you to check the correctness of your documentation as you work, and to enable the same checks inside of your build pipeline.
 
-You can see `dotnet try verify` at work in two ways: In the document UI and using `dotnet try verify` command. Let's see it in practice.
+In the `doc.md` file in your `MyDocProject`, change the `--project` option in one of the code fences to a nonexistent file name, like `./nonexistent.csproj`. Then refresh your browser.
 
-Exercise 
+Where the code editor was, you will now see a warning (_"No project or package specified"_). This is a clear way to indicate that your Markdown document is incorrectly configured.
 
-1. Using the document UI. 
-In the `Verify.md` file you are going to remove the `<pre>` and `<code>`around the code fence. 
-Once you have remove the HTML tags, you will notice a `No Project Found` warning in your document UI.This is a clear way to indicate that your document and your backing project are out of sync.
-<pre>
-<code>
-```cs --project .\mydoc2\mydoc2.csproj .\mydoc2\Program.cs --session "Run example 1" --region run1
-``` 
-</code>
-</pre>
-
-2. Using the `dotnet try verify` command. 
-
-Stop the app in the terminal by pressing `Ctrl+C`. Rerun the `dotnet try demo` command right after the next step.
-
-- Go to your terminal and run `dotnet try verify`. You should see something similar to this: 
+You can see this same error in your terminal by running the `dotnet try verify` command. You can run this command in the `MyDocProject` folder, or from elsewhere using `dotnet try verify <path-to-folder>`. It should look similar to this: 
 
 ![dotnet verify -errorproject](https://user-images.githubusercontent.com/2546640/53291265-8f3c2000-377e-11e9-9b82-b7ea3ce1ab05.PNG)
 
-- Change the project name back to `mydoc`. Save the changes. If you re-run the  `dotnet try verify` you see all green check marks and the *No project* error is gone from the UI. 
+Try making other changes to the code fence options. Mistype an option name, specify a nonexistent code region, or make a non-compiling change in your backing project. You'll see different errors pointing out the various problems.
 
-Congrats! You have finished the `dotnet try` interactive walkthrough. 
+When `dotnet try verify` detects errors, it will return a non-zero exit code. When everything looks good, it returns `0`. You can use this in your continuous integration scripts to prevent code changes from breaking your documentation.
 
-### [Back - Defining sessions](./Sessions.md)
+**[< Define sessions](./Sessions.md) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [ Passing arguments to your sample project >](./PassingArgs.md)**
+
 
 Resources
 
 - [Quick Start](./QuickStart.md)
-- [Getting started from stratch](./Introduction.md) - Short 4 part tutorial. 
-- [Questions and Feedback](https://teams.microsoft.com/l/channel/19%3a32c2f8c34d4b4136b4adf554308363fc%40thread.skype/Try%2520.NET?groupId=fdff90ed-0b3b-4caa-a30a-efb4dd47665f&tenantId=72f988bf-86f1-41af-91ab-2d7cd011db47)
+- [Gossary](./Glossary.md)
+- [Step-by-step tutorial](./Introduction.md) 

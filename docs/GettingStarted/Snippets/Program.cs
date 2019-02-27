@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Linq;
-using System.CommandLine;
 
 namespace Snippets
 {
-    partial class Program
+    public class Program
     {
         static void Main(
             string region = null,
@@ -54,7 +52,6 @@ namespace Snippets
         public static void Run3()
         {
             #region run3
-            
             #endregion
         }
     }

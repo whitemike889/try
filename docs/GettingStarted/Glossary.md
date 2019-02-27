@@ -23,9 +23,3 @@ If you shut down this project and type the command `dotnet try -h` you will see 
 | `--session`  | allows you create a seperate session in single file. |  
 |  `--region` |lets you specify the block of code that you want to display in the editor.   |  
 
-Resources
-
-- [`dotnet try` overview](./QuickStart.md)
-- [Getting started from stratch](./Introduction.md) - Short 4 part tutorial. 
-- [Questions and Feedback](https://teams.microsoft.com/l/channel/19%3a32c2f8c34d4b4136b4adf554308363fc%40thread.skype/Try%2520.NET?groupId=fdff90ed-0b3b-4caa-a30a-efb4dd47665f&tenantId=72f988bf-86f1-41af-91ab-2d7cd011db47)
-

@@ -130,13 +130,14 @@ namespace MLS.Agent.Controllers
 
 </html>";
 
-        private string Header() => @"
+        private string Header() => $@"
 <header class=""header"">
     <div class=""shimmer"">
         <a href=""https://dotnet.microsoft.com/platform/try-dotnet"">
             Powered by Try .NET
         </a>
     </div>
+    <div>{_startupOptions.RootDirectory.FullName.HtmlEncode()}</div>
 </header>";
 
         private string Footer() => @"
