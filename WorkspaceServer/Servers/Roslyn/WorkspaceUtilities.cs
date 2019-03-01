@@ -4,9 +4,11 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Buildalyzer;
+using Buildalyzer.Workspaces;
+using Clockwise;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Host.Mef;
 using WorkspaceServer.Packaging;
 
 namespace WorkspaceServer.Servers.Roslyn
@@ -173,28 +175,22 @@ namespace WorkspaceServer.Servers.Roslyn
             "NodaTime.Testing",
         };
 
-        public static async Task<AdhocWorkspace> CreateRoslynWorkspace(this Package package, ProjectId projectId = null)
+        public static async Task<Workspace> CreateRoslynWorkspaceAsync(this Package package, Budget budget)
         {
             if (package == null)
             {
                 throw new ArgumentNullException(nameof(package));
             }
 
-            projectId = projectId ?? ProjectId.CreateNewId(package.Name);
-            CSharpCommandLineArguments csharpCommandLineArguments = await package.GetCommandLineArguments();
+            await package.EnsureReady(budget);
 
-            var projectInfo = CommandLineProject.CreateProjectInfo(
-                projectId, 
-                package.Name,
-                csharpCommandLineArguments.CompilationOptions.Language,
-                csharpCommandLineArguments, 
-                package.Directory.FullName);
+            var analyzerResult = package.AnalyzerResult;
+            var ws = analyzerResult.GetWorkspace();
+            var projectId = ws.CurrentSolution.ProjectIds.FirstOrDefault();
+            ws.TryApplyChanges(ws.CurrentSolution.WithProjectMetadataReferences(projectId,
+                analyzerResult.References.GetMetadataReferences()));
 
-            var workspace = new AdhocWorkspace(MefHostServices.DefaultHost);
-
-            workspace.AddProject(projectInfo);
-
-            return workspace;
+            return ws;
         }
     }
 }

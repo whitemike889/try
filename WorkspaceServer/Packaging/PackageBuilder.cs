@@ -80,7 +80,7 @@ namespace WorkspaceServer.Packaging
             {
                 info = new PackageInfo(
                     package.Name,
-                    package.BuildTime,
+                    package.LastSuccessfulBuildTime,
                     package.ConstructionTime,
                     package.PublicationTime,
                     package.CreationTime,

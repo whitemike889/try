@@ -62,7 +62,7 @@ This is some sample code:
                 new VerifyOptions(root),
                 console,
                 () => directoryAccessor,
-                PackageRegistry.CreateForVerifyMode(root, null));
+                PackageRegistry.CreateForTryMode(root, null));
 
             console.Out
                    .ToString()
@@ -91,7 +91,7 @@ This is some sample code:
                 new VerifyOptions(root),
                 console,
                 () => directoryAccessor,
-                PackageRegistry.CreateForVerifyMode(root, null));
+                PackageRegistry.CreateForTryMode(root, null));
 
             _output.WriteLine(console.Out.ToString());
 
@@ -124,7 +124,7 @@ This is some sample code:
                                  new VerifyOptions(rootDirectory),
                                  console,
                                  () => directoryAccessor,
-                                 PackageRegistry.CreateForVerifyMode(rootDirectory, null));
+                                 PackageRegistry.CreateForTryMode(rootDirectory, null));
 
             _output.WriteLine(console.Out.ToString());
 
@@ -150,7 +150,7 @@ This is some sample code:
                                  new VerifyOptions(rootDirectory),
                                  console,
                                  () => directoryAccessor,
-                                 PackageRegistry.CreateForVerifyMode(rootDirectory, null));
+                                 PackageRegistry.CreateForTryMode(rootDirectory, null));
 
             resultCode.Should().NotBe(0);
         }
@@ -169,7 +169,7 @@ This is some sample code:
                                  new VerifyOptions(rootDirectory),
                                  console,
                                  () => directoryAccessor,
-                                 PackageRegistry.CreateForVerifyMode(rootDirectory, null));
+                                 PackageRegistry.CreateForTryMode(rootDirectory, null));
 
             resultCode.Should().NotBe(0);
         }
@@ -202,7 +202,7 @@ This is some sample code:
                                  new VerifyOptions(rootDirectory),
                                  console,
                                  () => directoryAccessor,
-                                 PackageRegistry.CreateForVerifyMode(rootDirectory, null));
+                                 PackageRegistry.CreateForTryMode(rootDirectory, null));
 
             console.Out.ToString().Should().Contain("Session cannot span projects or packages: --session one");
 
@@ -212,7 +212,7 @@ This is some sample code:
         [Theory]
         [InlineData("")]
         [InlineData("--region mask")]
-        public async Task Verify_shows_diagnostics_for_complation_failures(string args)
+        public async Task Verify_shows_diagnostics_for_compilation_failures(string args)
         {
             var directory = Create.EmptyWorkspace(isRebuildablePackage: true).Directory;
 
@@ -247,7 +247,7 @@ This is some sample code:
                                  new VerifyOptions(directory),
                                  console,
                                  () => directoryAccessor,
-                                 PackageRegistry.CreateForVerifyMode(directory, null));
+                                 PackageRegistry.CreateForTryMode(directory, null));
 
             _output.WriteLine(console.Out.ToString());
 
@@ -288,7 +288,7 @@ This is some sample code:
                                  new VerifyOptions(rootDirectory),
                                  console,
                                  () => directoryAccessor,
-                                 PackageRegistry.CreateForVerifyMode(rootDirectory, null));
+                                 PackageRegistry.CreateForTryMode(rootDirectory, null));
 
             _output.WriteLine(console.Out.ToString());
 
@@ -319,7 +319,7 @@ This is some sample code:
                 new VerifyOptions(root),
                 console,
                 () => directoryAccessor,
-                PackageRegistry.CreateForVerifyMode(root, null));
+                PackageRegistry.CreateForTryMode(root, null));
             
             _output.WriteLine(console.Out.ToString());
 
@@ -358,7 +358,7 @@ This is some sample code:
 
             var console = new TestConsole();
 
-            PackageRegistry packageRegistry = PackageRegistry.CreateForVerifyMode(rootDirectory, null);
+            PackageRegistry packageRegistry = PackageRegistry.CreateForTryMode(rootDirectory, null);
             var resultCode = await VerifyCommand.Do(
                                  new VerifyOptions(rootDirectory),
                                  console,
@@ -381,6 +381,75 @@ This is some sample code:
             console.Out.ToString()
                    .Should().Contain("Build failed")
                    .And.Contain("Sample.cs(1,10): error CS1002: ; expected");
+
+            resultCode.Should().NotBe(0);
+        }
+
+        [Fact]
+        public async Task When_the_file_is_modified_and_errors_are_added_verify_command_shows_the_errors()
+        {
+            var rootDirectory = Create.EmptyWorkspace(isRebuildablePackage: true).Directory;
+
+            string validCode = $@"
+    using System;
+
+    public class Program
+    {{
+        public static void Main(string[] args)
+        {{
+#region mask
+            Console.WriteLine();
+#endregion
+        }}
+    }}";
+
+            string invalidCode = $@"
+    using System;
+
+    public class Program
+    {{
+        public static void Main(string[] args)                         DOES NOT COMPILE
+        {{
+#region mask
+            Console.WriteLine();
+#endregion
+        }}
+    }}";
+
+            var directoryAccessor = new InMemoryDirectoryAccessor(rootDirectory, rootDirectory)
+                                    {
+                                        ("Program.cs", validCode),
+                                        ("sample.md", $@"
+```cs Program.cs --region mask
+```"),
+                                        ("sample.csproj",
+                                         CsprojContents)
+                                    }.CreateFiles();
+
+            var console = new TestConsole();
+
+            var packageRegistry = PackageRegistry.CreateForTryMode(rootDirectory, null);
+            var resultCode = await VerifyCommand.Do(
+                                 new VerifyOptions(rootDirectory),
+                                 console,
+                                 () => directoryAccessor,
+                                 packageRegistry);
+
+            resultCode.Should().Be(0);
+
+            File.WriteAllText(directoryAccessor.GetFullyQualifiedPath(new RelativeFilePath("Program.cs")).FullName, invalidCode);
+
+            resultCode = await VerifyCommand.Do(
+                                 new VerifyOptions(rootDirectory),
+                                 console,
+                                 () => directoryAccessor,
+                                 packageRegistry);
+
+            _output.WriteLine(console.Out.ToString());
+
+            console.Out.ToString()
+                   .Should().Contain("Build failed")
+                   .And.Contain("Program.cs(6,72): error CS1002: ; expected");
 
             resultCode.Should().NotBe(0);
         }
