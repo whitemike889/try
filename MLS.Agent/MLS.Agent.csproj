@@ -108,5 +108,4 @@
   <Target Name="ZipDemo" BeforeTargets="PrepareForBuild">
     <ZipDirectory SourceDirectory="$(OutputPath)/demo" DestinationFile="$(OutputPath)/demo.zip" Overwrite="true" />
   </Target>
-
 </Project>

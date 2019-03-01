@@ -117,13 +117,7 @@ namespace WorkspaceServer.Packaging
             }
         }
 
-        public FileInfo BlazorEntryPointAssemblyPath
-        {
-            get
-            {
-              throw new NotImplementedException();
-            }
-        }
+        public FileInfo BlazorEntryPointAssemblyPath { get; set; }
 
         public string TargetFramework
         {

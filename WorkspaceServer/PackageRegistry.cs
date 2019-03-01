@@ -130,9 +130,10 @@ namespace WorkspaceServer
                          workspace =>
                          {
                              workspace.CreateUsingDotnet("console");
-                             workspace.AddPackageReference("NodaTime", "2.3.0");
-                             workspace.AddPackageReference("NodaTime.Testing", "2.3.0");
+                             workspace.AddPackageReference("NodaTime", "2.4.4");
+                             workspace.AddPackageReference("NodaTime.Testing", "2.4.4");
                              workspace.AddPackageReference("Newtonsoft.Json");
+                             workspace.EnableBlazor();
                          });
 
             registry.Add("aspnet.webapi",

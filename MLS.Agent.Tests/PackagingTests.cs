@@ -65,10 +65,11 @@ namespace MLS.Agent.Tests
             WriteAll(pagesFiles, "Pages", root);
             WriteAll(rootFiles, "", root);
 
-            result = await dotnet.AddPackage("MLS.WasmCodeRunner", "1.0.0--00000001.1");
+            result = await dotnet.AddPackage("MLS.WasmCodeRunner", "1.0.7880001-alpha-c895bf25");
             result.ThrowOnFailure();
 
-            result = await dotnet.AddPackage("NodaTime", "2.3.0");
+            result = await dotnet.AddPackage("NodaTime");
+            result = await dotnet.AddPackage("NodaTime.Testing");
             result.ThrowOnFailure();
 
             result = await dotnet.Publish("");
