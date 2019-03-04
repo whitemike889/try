@@ -29,14 +29,14 @@ namespace WorkspaceServer.Tests
         public async Task If_a_new_file_is_added_and_ensure_ready_is_called_the_analyzer_result_includes_the_file()
         {
             var package = (RebuildablePackage) await Create.ConsoleWorkspaceCopy(isRebuildable: true);
-            await package.EnsureReady(new TimeBudget(30.Seconds()));
+            await package.CreateRoslynWorkspaceAsync(new TimeBudget(30.Seconds()));
 
             var newFile = Path.Combine(package.Directory.FullName, "Sample.cs");
             package.AnalyzerResult.SourceFiles.Should().NotContain(newFile);
 
             File.WriteAllText(newFile, "//this is a new file");
 
-            await package.EnsureReady(new TimeBudget(30.Seconds()));
+            await package.CreateRoslynWorkspaceAsync(new TimeBudget(30.Seconds()));
 
             package.AnalyzerResult.SourceFiles.Should().Contain(newFile);
         }
@@ -45,13 +45,13 @@ namespace WorkspaceServer.Tests
         public async Task If_the_project_file_is_changed_and_ensure_ready_is_called_analyzer_result_reflects_the_changes()
         {
             var package = (RebuildablePackage)await Create.ConsoleWorkspaceCopy(isRebuildable: true);
-            await package.EnsureReady(new TimeBudget(30.Seconds()));
+            await package.CreateRoslynWorkspaceAsync(new TimeBudget(30.Seconds()));
 
             package.AnalyzerResult.PackageReferences.Keys.Should().NotContain("Microsoft.CodeAnalysis");
 
             await new Dotnet(package.Directory).AddPackage("Microsoft.CodeAnalysis", "2.8.2");
 
-            await package.EnsureReady(new TimeBudget(30.Seconds()));
+            await package.CreateRoslynWorkspaceAsync(new TimeBudget(30.Seconds()));
             package.AnalyzerResult.PackageReferences.TryGetValue("Microsoft.CodeAnalysis", out var reference);
             reference.Should().NotBeNull();
             reference["Version"].Should().Be("2.8.2");
@@ -61,14 +61,14 @@ namespace WorkspaceServer.Tests
         public async Task If_an_existing_file_is_deleted_and_ensure_ready_is_called_then_the_analyzer_result_doesnt_include_the_file()
         {
             var package = (RebuildablePackage)await Create.ConsoleWorkspaceCopy(isRebuildable: true);
-            await package.EnsureReady(new TimeBudget(30.Seconds()));
+            await package.CreateRoslynWorkspaceAsync(new TimeBudget(30.Seconds()));
 
             var existingFile = Path.Combine(package.Directory.FullName, "Program.cs");
             package.AnalyzerResult.SourceFiles.Should().Contain(existingFile);
 
             File.Delete(existingFile);
 
-            await package.EnsureReady(new TimeBudget(30.Seconds()));
+            await package.CreateRoslynWorkspaceAsync(new TimeBudget(30.Seconds()));
 
             package.AnalyzerResult.SourceFiles.Should().NotContain(existingFile);
         }
@@ -77,13 +77,13 @@ namespace WorkspaceServer.Tests
         public async Task If_an_existing_file_is_modified_and_ensure_ready_is_called_then_the_analyzer_result_is_updated()
         {
             var package = (RebuildablePackage)await Create.ConsoleWorkspaceCopy(isRebuildable: true);
-            await package.EnsureReady(new TimeBudget(30.Seconds()));
+            await package.CreateRoslynWorkspaceAsync(new TimeBudget(30.Seconds()));
 
             var existingFile = Path.Combine(package.Directory.FullName, "Program.cs");
             var oldAnalyzerResult = package.AnalyzerResult;
             File.WriteAllText(existingFile, "//this is Program.cs");
 
-            await package.EnsureReady(new TimeBudget(30.Seconds()));
+            await package.CreateRoslynWorkspaceAsync(new TimeBudget(30.Seconds()));
 
             package.AnalyzerResult.Should().NotBeSameAs(oldAnalyzerResult);
         }

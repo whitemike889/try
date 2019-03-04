@@ -44,8 +44,8 @@ namespace WorkspaceServer.Packaging
                 if (!CompilerInputs.TryGetValue(analyzerResult, out files))
                 {
                     var projectDirectory = Path.GetDirectoryName(analyzerResult.ProjectFilePath);
-                    var inputs = analyzerResult.Items["Compile"];
-                    files = inputs.Select(pi => Path.Combine(projectDirectory, pi.ItemSpec)).ToArray();
+                    var found = analyzerResult.Items.TryGetValue("Compile", out var inputFiles);
+                    files = found? inputFiles.Select(pi => Path.Combine(projectDirectory, pi.ItemSpec)).ToArray() : Array.Empty<string>();
                     CompilerInputs.Add(analyzerResult,files);
                 }
             }
