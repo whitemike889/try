@@ -86,7 +86,7 @@ namespace WorkspaceServer.Transformations
                     {
                         var target = viewPorts
                                      .Where(e => e.BufferId.RegionName != null &&
-                                                 (lineSpanPath.EndsWith(e.Destination.Name)))
+                                                 (string.IsNullOrWhiteSpace(lineSpanPath) || lineSpanPath.EndsWith(e.Destination.Name)))
                                      .FirstOrDefault(e => e.Region.Contains(diagnostic.Location.SourceSpan.Start));
 
                         if (target != null && !target.Region.IsEmpty)
