@@ -10,7 +10,6 @@ namespace WorkspaceServer.Packaging
 {
     public class NonrebuildablePackage : Package
     {
-        private readonly AsyncLazy<bool> _created;
         private readonly AsyncLazy<bool> _built;
         private readonly AsyncLazy<bool> _published;
         private readonly Lazy<SyntaxTree> _instrumentationEmitterSyntaxTree;
@@ -19,8 +18,6 @@ namespace WorkspaceServer.Packaging
         public NonrebuildablePackage(string name = null, IPackageInitializer initializer = null, DirectoryInfo directory = null, IScheduler buildThrottleScheduler = null) 
             : base(name, initializer, directory, buildThrottleScheduler)
         {
-            
-            _created = new AsyncLazy<bool>(base.EnsureCreated);
             _built = new AsyncLazy<bool>(base.EnsureBuilt);
             _published = new AsyncLazy<bool>(base.EnsurePublished);
             _instrumentationEmitterSyntaxTree = new Lazy<SyntaxTree>(CreateInstrumentationEmitterSyntaxTree);
@@ -41,8 +38,6 @@ namespace WorkspaceServer.Packaging
         }
 
         protected async override Task<bool> EnsureBuilt() => await _built.ValueAsync();
-
-        protected async override Task<bool> EnsureCreated() => await _created.ValueAsync();
 
         public async override Task<bool> EnsurePublished() => await _published.ValueAsync();
     }

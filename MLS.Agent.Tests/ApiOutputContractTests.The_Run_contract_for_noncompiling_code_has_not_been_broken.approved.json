@@ -5,7 +5,6 @@
     "(1,18): error CS1002: ; expected",
     "(1,18): error CS1010: Newline in constant",
     "(1,18): error CS1012: Too many characters in character literal",
-    "(1,1): error CS1002: ; expected",
     "(1,13): error CS0103: The name 'doesn' does not exist in the current context"
   ],
   "exception": null,
@@ -35,13 +34,6 @@
       "start": 17,
       "end": 27,
       "message": "(1,18): error CS1002: ; expected",
-      "severity": 3,
-      "id": "CS1002"
-    },
-    {
-      "start": 27,
-      "end": 27,
-      "message": "(1,1): error CS1002: ; expected",
       "severity": 3,
       "id": "CS1002"
     }

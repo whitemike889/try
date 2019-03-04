@@ -1,8 +1,6 @@
 ﻿using System.IO;
 using System.Linq;
 using System.Reactive.Concurrency;
-using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.CSharp;
 
 namespace WorkspaceServer.Packaging
 {
@@ -25,11 +23,18 @@ namespace WorkspaceServer.Packaging
                 {
                     return true;
                 }
-                if (!newAnalyzerResult.SourceFiles.SequenceEqual(AnalyzerResult.SourceFiles))
+
+                var analyzerInputs = AnalyzerResult.GetCompileInputs();
+                var newInputs = newAnalyzerResult.GetCompileInputs();
+
+                if (!newInputs.SequenceEqual(analyzerInputs))
                 {
                     return true;
                 }
-                if (newAnalyzerResult.SourceFiles.Any(f => new FileInfo(f).LastWriteTimeUtc > LastSuccessfulBuildTime))
+
+                var lastWriteTimes = analyzerInputs.Select(f => new FileInfo(f)).Where(fi => fi.LastWriteTimeUtc > LastSuccessfulBuildTime).ToArray();
+
+                if (lastWriteTimes.Any())
                 {
                     return true;
                 }
@@ -38,4 +43,6 @@ namespace WorkspaceServer.Packaging
             return shouldBuild;
         }
     }
+
+ 
 }

@@ -61,6 +61,7 @@ namespace WorkspaceServer.Packaging
         private TaskCompletionSource<Workspace> _workspaceCompletionSource;
         private readonly IScheduler _buildThrottleScheduler;
         private SerialDisposable _buildThrottlerSubscription;
+        private AsyncLazy<bool> _lazyCreation;
 
         protected Package(
             string name = null,
@@ -79,6 +80,7 @@ namespace WorkspaceServer.Packaging
             _buildThrottlerSubscription = new SerialDisposable();
             SetupWorkspaceCreationChannel();
             TryDiscoverPreviousBuild();
+            _lazyCreation = new AsyncLazy<bool>(Create);
         }
 
 
@@ -201,7 +203,6 @@ namespace WorkspaceServer.Packaging
 
         private void SetupWorkspaceCreationChannel()
         {
-
             _buildThrottlerSubscription.Disposable = _buildRequestChannel
                 .Throttle(TimeSpan.FromSeconds(0.5), _buildThrottleScheduler)
                 .Subscribe(
@@ -256,7 +257,7 @@ namespace WorkspaceServer.Packaging
             budget.RecordEntry();
         }
 
-        protected virtual async Task<bool> EnsureCreated() => await Create();
+        protected  Task<bool> EnsureCreated() => _lazyCreation.ValueAsync();
 
         protected virtual async Task<bool> EnsureBuilt() => await EnsureCreated() && await Build();
 
@@ -276,7 +277,6 @@ namespace WorkspaceServer.Packaging
                 FileStream fileStream = null;
                 try
                 {
-                    fileStream = File.Create(lockFile.FullName, 1, FileOptions.DeleteOnClose);
                     if (ShouldBuild())
                     {
                         AnalyzerResult = CreateAnalyzerResult();
@@ -288,6 +288,7 @@ namespace WorkspaceServer.Packaging
                         }
                         else
                         {
+                            fileStream = File.Create(lockFile.FullName, 1, FileOptions.DeleteOnClose);
                             operation.Info("Building workspace using {_initializer} in {directory}", _initializer, Directory);
                             var result = await new Dotnet(Directory)
                                              .Build(args: "/bl");
@@ -491,10 +492,8 @@ namespace WorkspaceServer.Packaging
             {
                 return RuntimeConfig.GetTargetFramework(runtimeConfig);
             }
-            else
-            {
-                return "netstandard2.0";
-            }
+
+            return "netstandard2.0";
         }
 
         private static FileInfo GetEntryPointAssemblyPath(DirectoryInfo directory, bool isWebProject)
