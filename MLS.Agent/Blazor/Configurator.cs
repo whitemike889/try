@@ -21,8 +21,9 @@ namespace MLS.Agent.Blazor
                     var package = builder.GetPackage().Result;
                     var readyTask = package.EnsureReady(budget);
                     readyTask.Wait();
-                    // if is a normal nuget package should we emit a special loader to run in blazor?
-                    var path = $"/LocalCodeRunner/{builder.PackageName}";
+                    var name = builder.PackageName.Remove(0, "runner-".Length);
+                    //var name = builder.PackageName;
+                    var path = $"/LocalCodeRunner/{name}";
                     app.Map(path, appBuilder =>
                     {
                         var blazorEntryPoint = package.BlazorEntryPointAssemblyPath;

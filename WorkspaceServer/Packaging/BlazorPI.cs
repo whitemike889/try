@@ -9,15 +9,17 @@ namespace WorkspaceServer.Packaging
 {
     public partial class PackageBuilder
     {
-        class BlazorPI : PackageInitializer
+        class BlazorPackageInitializer : PackageInitializer
         {
+            private readonly string _name;
             private readonly List<Func<Task>> _addPackages;
 
             public string EP { get; private set; }
 
-            public BlazorPI(List<Func<Task>> addPackages) : 
+            public BlazorPackageInitializer(string name, List<Func<Task>> addPackages) : 
                 base("blazor", "MLS.Blazor")
             {
+                this._name = name;
                 _addPackages = addPackages;
             }
 
@@ -56,7 +58,7 @@ namespace WorkspaceServer.Packaging
                 WriteAll(pagesFiles, "Pages", root);
                 WriteAll(rootFiles, "", root);
 
-                Modify(root, "wwwroot\\index.html", "/LocalCodeRunner/blazor-console", "/LocalCodeRunner/blazor-nodatime.api");
+                Modify(root, "wwwroot\\index.html", "/LocalCodeRunner/blazor-console", $"/LocalCodeRunner/{_name.Remove(0, "runner-".Length)}");
 
                 var result = await dotnet.AddPackage("MLS.WasmCodeRunner", "1.0.7880001-alpha-c895bf25");
                 result.ThrowOnFailure();

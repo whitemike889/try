@@ -120,7 +120,6 @@ namespace WorkspaceServer
                              workspace.AddPackageReference("NodaTime", "2.4.4");
                              workspace.AddPackageReference("NodaTime.Testing", "2.4.4");
                              workspace.AddPackageReference("Newtonsoft.Json");
-                             workspace.EnableBlazor(registry);
                          });
 
             registry.Add("aspnet.webapi",
@@ -144,13 +143,14 @@ namespace WorkspaceServer
                              workspace.AddPackageReference("Newtonsoft.Json");
                          });
 
-            registry.Add("blazor-nodatime",
+            registry.Add("blazor-nodatime.api",
                          workspace =>
                          {
                              workspace.CreateUsingDotnet("classlib");
-                             workspace.AddPackageReference("NodaTime", "2.3.0");
-                             workspace.AddPackageReference("NodaTime.Testing", "2.3.0");
+                             workspace.AddPackageReference("NodaTime", "2.4.4");
+                             workspace.AddPackageReference("NodaTime.Testing", "2.4.4");
                              workspace.AddPackageReference("Newtonsoft.Json");
+                             workspace.EnableBlazor(registry);
                          });
 
             return registry;

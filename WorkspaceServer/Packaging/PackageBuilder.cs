@@ -63,30 +63,16 @@ namespace WorkspaceServer.Packaging
 
         public void EnableBlazor(PackageRegistry registry)
         {
-            var name = $"blazor-{this.PackageName}";
+            var name = $"runner-{this.PackageName}";
             registry.Add(name, pb =>
             {
 
-                var initializer = new BlazorPI(_addPackages);
+                var initializer = new BlazorPackageInitializer(name, _addPackages);
                 pb.PackageInitializer = initializer;
                  pb.BlazorSupported = true;
                 pb.Directory = new DirectoryInfo(Path.Combine(Package.DefaultPackagesDirectory.FullName, pb.PackageName, "MLS.Blazor"));
             });
-
-            _afterCreateActions.Add(async (package, budget) =>
-            {
-                await registry.Get("blazor-nodatime.api");
-                //var directory = package.Directory.Parent;
-                //var subdir = directory.CreateSubdirectory(name);
-
-                //var entryPoint = await MakeBlazorProject(subdir, budget);
-                //package.BlazorEntryPointAssemblyPath = new FileInfo(entryPoint);
-            });
         }
-
-        
-
-        
 
         public void DeleteFile(string relativePath)
         {
@@ -132,7 +118,7 @@ namespace WorkspaceServer.Packaging
         {
             budget = budget ?? new Budget();
 
-            if (PackageInitializer is BlazorPI)
+            if (PackageInitializer is BlazorPackageInitializer)
             {
                 package = new BlazorPackage(
                         PackageName,
