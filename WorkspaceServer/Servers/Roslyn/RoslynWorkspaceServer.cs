@@ -36,7 +36,6 @@ namespace WorkspaceServer.Servers.Roslyn
         private const int defaultBudgetInSeconds = 30;
         private readonly ConcurrentDictionary<string, AsyncLock> locks = new ConcurrentDictionary<string, AsyncLock>();
         private readonly BufferInliningTransformer _transformer = new BufferInliningTransformer();
-        private readonly ConcurrentDictionary<string,Task<Package>> _packageCache = new ConcurrentDictionary<string, Task<Package>>();
         private static readonly string UserCodeCompleted = nameof(UserCodeCompleted);
 
         private delegate Task<Package> GetPackageByName(string name);
@@ -58,10 +57,7 @@ namespace WorkspaceServer.Servers.Roslyn
                 throw new ArgumentNullException(nameof(registry));
             }
             
-            getPackageByName = s =>
-            {
-                return _packageCache.GetOrAdd(s, name => registry.Get(name));
-            };
+            getPackageByName = s => registry.Get(s);
         }
 
         public async Task<CompletionResult> GetCompletionList(WorkspaceRequest request, Budget budget)

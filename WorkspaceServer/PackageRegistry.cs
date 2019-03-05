@@ -14,6 +14,7 @@ namespace WorkspaceServer
     public class PackageRegistry : IEnumerable<Task<PackageBuilder>>
     {
         private readonly ConcurrentDictionary<string, Task<PackageBuilder>> _packageBuilders = new ConcurrentDictionary<string, Task<PackageBuilder>>();
+        private readonly ConcurrentDictionary<string, Task<Package>> _packages = new ConcurrentDictionary<string, Task<Package>>();
         private readonly IEnumerable<IPackageDiscoveryStrategy> _strategies;
         private bool _createRebuildablePackage;
 
@@ -59,24 +60,29 @@ namespace WorkspaceServer
                 packageName = "console";
             }
 
-            var package = await (await _packageBuilders.GetOrAdd(
-                            packageName,
-                            async name =>
+            var package = await _packages.GetOrAdd(packageName, async name =>
+            {
+                var packageBuilder = _packageBuilders.GetOrAdd(
+                    name,
+                    async name2 =>
+                    {
+                        foreach (var strategy in _strategies)
+                        {
+                            var builder = await strategy.Locate(new PackageDescriptor(name2, _createRebuildablePackage), budget);
+                            if (builder != null)
                             {
-                                foreach (var strategy in _strategies)
-                                {
-                                    var builder = await strategy.Locate(new PackageDescriptor(packageName, _createRebuildablePackage), budget);
-                                    if (builder != null)
-                                    {
-                                        return builder;
-                                    }
-                                }
+                                return builder;
+                            }
+                        }
 
-                                throw new ArgumentException($"Package named \"{name}\" not found.");
-                            })).GetPackage(budget);
+                        throw new ArgumentException($"Package named \"{name2}\" not found.");
+                    }).Result;
 
+                var p = packageBuilder.GetPackage(budget).Result;
 
-            await package.EnsureReady(budget);
+                await p.EnsureReady(budget);
+                return p;
+            });
 
             return package;
         }

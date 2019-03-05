@@ -122,6 +122,7 @@ namespace WorkspaceServer.Tests
                              "empty.dll"));
         }
 
+
         [Fact]
         public async Task When_package_contains_aspnet_project_then_entry_point_dll_is_in_the_publish_directory()
         {

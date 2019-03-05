@@ -11,7 +11,6 @@ using WorkspaceServer.Packaging;
 using Xunit;
 using Xunit.Abstractions;
 using FluentAssertions.Extensions;
-using Buildalyzer.Workspaces;
 
 namespace WorkspaceServer.Tests
 {
