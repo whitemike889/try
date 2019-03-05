@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using FluentAssertions;
 using FluentAssertions.Extensions;
@@ -170,14 +171,16 @@ namespace WorkspaceServer.Tests
         public async Task If_a_build_is_in_fly_the_second_one_will_wait_and_do_not_continue()
         {
             var buildEvents = new LogEntryList();
+            var buildEventsMessages = new List<string>();
             var package = await Create.ConsoleWorkspaceCopy(isRebuildable: true);
             var barrier = new Barrier(2);
             using (LogEvents.Subscribe(e =>
             {
                 buildEvents.Add(e);
+                buildEventsMessages.Add(e.Evaluate().Message);
                 if (e.Evaluate().Message.StartsWith("Attempting building package "))
                 {
-                    barrier.SignalAndWait(30.Seconds());
+                    barrier.SignalAndWait(1.Minutes());
                 }
             }))
             {
@@ -187,10 +190,10 @@ namespace WorkspaceServer.Tests
             }
 
 
-            buildEvents.Should()
-                .Contain(e => e.Evaluate().Message.StartsWith("Building workspace using "))
+            buildEventsMessages.Should()
+                .Contain(e => e.StartsWith("Building workspace using "))
                 .And
-                .Contain(e => e.Evaluate().Message.StartsWith("Skipping build for package "));
+                .Contain(e => e.StartsWith("Skipping build for package "));
         }
     }
 }
