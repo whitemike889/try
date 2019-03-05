@@ -1,3 +1,4 @@
+using System.Reactive.Concurrency;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using MLS.Protocol;
@@ -9,11 +10,12 @@ namespace WorkspaceServer.Tests
 {
     public static class Create
     {
-        public static async Task<Package> ConsoleWorkspaceCopy([CallerMemberName] string testName = null, bool isRebuildable =false) =>
+        public static async Task<Package> ConsoleWorkspaceCopy([CallerMemberName] string testName = null, bool isRebuildable =false, IScheduler buildThrottleScheduler = null) =>
             await Package.Copy(
                 await Default.ConsoleWorkspace,
                 testName,
-                isRebuildable);
+                isRebuildable,
+                buildThrottleScheduler);
 
         public static async Task<Package> WebApiWorkspaceCopy([CallerMemberName] string testName = null) =>
             await Package.Copy(

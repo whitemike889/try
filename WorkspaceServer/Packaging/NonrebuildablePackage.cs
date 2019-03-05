@@ -1,33 +1,32 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
+using System.Reactive.Concurrency;
 using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using MLS.Agent.Tools;
 
 namespace WorkspaceServer.Packaging
 {
     public class NonrebuildablePackage : Package
     {
-        private readonly AsyncLazy<CSharpCommandLineArguments> _csharpCommandLineArguments;
         private readonly AsyncLazy<bool> _created;
         private readonly AsyncLazy<bool> _built;
         private readonly AsyncLazy<bool> _published;
-        private readonly AsyncLazy<SyntaxTree> _instrumentationEmitterSyntaxTree;
+        private readonly Lazy<SyntaxTree> _instrumentationEmitterSyntaxTree;
         private bool _isReady;
 
-        public NonrebuildablePackage(string name = null, IPackageInitializer initializer = null, DirectoryInfo directory = null) : base(name, initializer, directory)
+        public NonrebuildablePackage(string name = null, IPackageInitializer initializer = null, DirectoryInfo directory = null, IScheduler buildThrottleScheduler = null) 
+            : base(name, initializer, directory, buildThrottleScheduler)
         {
-            _csharpCommandLineArguments = new AsyncLazy<CSharpCommandLineArguments>(CreateCSharpCommandLineArguments);
+            
             _created = new AsyncLazy<bool>(base.EnsureCreated);
             _built = new AsyncLazy<bool>(base.EnsureBuilt);
             _published = new AsyncLazy<bool>(base.EnsurePublished);
-            _instrumentationEmitterSyntaxTree = new AsyncLazy<SyntaxTree>(CreateInstrumentationEmitterSyntaxTree);
+            _instrumentationEmitterSyntaxTree = new Lazy<SyntaxTree>(CreateInstrumentationEmitterSyntaxTree);
         }
 
-        public override Task<CSharpCommandLineArguments> GetCommandLineArguments() => _csharpCommandLineArguments.ValueAsync();
-
-        public override Task<SyntaxTree> GetInstrumentationEmitterSyntaxTree() => _instrumentationEmitterSyntaxTree.ValueAsync();
+        public override SyntaxTree GetInstrumentationEmitterSyntaxTree() => _instrumentationEmitterSyntaxTree.Value;
 
         public async override Task EnsureReady(Budget budget)
         {

@@ -85,7 +85,7 @@ namespace WorkspaceServer.Servers.Roslyn
                 newCompilation = newCompilation.ReplaceSyntaxTree(tree, newTree);
             }
 
-            var instrumentationSyntaxTree = await build.GetInstrumentationEmitterSyntaxTree();
+            var instrumentationSyntaxTree = build.GetInstrumentationEmitterSyntaxTree();
             newCompilation = newCompilation.AddSyntaxTrees(instrumentationSyntaxTree);
 
             var augmentedDiagnostics = newCompilation.GetDiagnostics();
@@ -113,12 +113,12 @@ Source
             IEnumerable<string> defaultUsings,
             Budget budget)
         {
-            var projectId = ProjectId.CreateNewId();
 
-            var workspace = await package.CreateRoslynWorkspace(projectId);
+            var workspace = await package.CreateRoslynWorkspaceAsync(budget);
 
             var currentSolution = workspace.CurrentSolution;
-
+            var project = currentSolution.Projects.First();
+            var projectId = project.Id;
             foreach (var source in sources)
             {
                 if (currentSolution.Projects
@@ -139,7 +139,8 @@ Source
                 }
             }
 
-            var project = currentSolution.GetProject(projectId);
+
+            project = currentSolution.GetProject(projectId);
             var options = (CSharpCompilationOptions)project.CompilationOptions;
             project = project.WithCompilationOptions(options.WithUsings(defaultUsings));
 

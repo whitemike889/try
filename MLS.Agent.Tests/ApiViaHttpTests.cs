@@ -714,6 +714,20 @@ namespace FibonacciTest
                 result.Should().Contain("Loading...");
             }
         }
+
+        [Fact]
+        public async Task Can_serve_nodatime_code_runner()
+        {
+            using (var agent = new AgentService())
+            {
+                var response = await agent.GetAsync(@"/LocalCodeRunner/blazor-nodatime.api");
+
+                response.EnsureSuccessStatusCode();
+                var result = await response.Content.ReadAsStringAsync();
+                result.Should().Contain("Loading...");
+            }
+        }
+
         private class FailedRunResult : Exception
         {
             internal FailedRunResult(string message) : base(message)

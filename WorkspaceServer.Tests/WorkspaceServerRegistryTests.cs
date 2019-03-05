@@ -11,6 +11,7 @@ using WorkspaceServer.Packaging;
 using Xunit;
 using Xunit.Abstractions;
 using FluentAssertions.Extensions;
+using Buildalyzer.Workspaces;
 
 namespace WorkspaceServer.Tests
 {
@@ -89,7 +90,7 @@ namespace Twilio_try.dot.net_sample
             var resolvedWorkspace = await registry.Get(unregisteredWorkspace.Name);
 
             resolvedWorkspace.Directory.FullName.Should().Be(unregisteredWorkspace.Directory.FullName);
-            resolvedWorkspace.GetCommandLineArguments().Should().NotBeNull();
+            resolvedWorkspace.AnalyzerResult.SourceFiles.Should().NotBeEmpty();
         }
 
         [Fact]

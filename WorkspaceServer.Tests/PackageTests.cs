@@ -10,6 +10,8 @@ using Xunit;
 using Xunit.Abstractions;
 using WorkspaceServer.Packaging;
 using Microsoft.CodeAnalysis.CSharp;
+using System.Linq;
+using System.Xml.Linq;
 
 namespace WorkspaceServer.Tests
 {
@@ -142,24 +144,27 @@ namespace WorkspaceServer.Tests
         }
 
         [Fact]
-        public async Task When_workspace_is_built_trydotnet_file_is_created()
+        public async Task If_the_package_has_been_built_before_calling_ensure_ready_we_still_get_the_analyzer_result()
         {
-            var package = await Create.ConsoleWorkspaceCopy();
+            DirectoryInfo directory = Create.EmptyWorkspace().Directory;
+            await new Dotnet(directory).New("console");
+            var projectFile = directory.GetFiles("*.csproj").FirstOrDefault();
+            var projectFileDom = XElement.Load(projectFile.FullName);
+            projectFileDom.DescendantsAndSelf("PropertyGroup").First().Add(new XElement("LangVersion", "7.3"));
+            projectFileDom.Save(projectFile.FullName);
+
+            await new Dotnet(directory).Build(args: "/bl");
+            var dllFile = directory.GetFiles($"{directory.Name}.dll", SearchOption.AllDirectories).FirstOrDefault();
+            dllFile.Should().NotBeNull();
+            var lastBuildTime = dllFile.LastWriteTimeUtc;
+            var package = new NonrebuildablePackage(directory: directory);
+
             await package.EnsureReady(new TimeBudget(30.Seconds()));
-            package.Directory.GetFiles(".trydotnet").Should().HaveCount(1);
-        }
+            dllFile = package.Directory.GetFiles($"{directory.Name}.dll", SearchOption.AllDirectories).FirstOrDefault();
+            dllFile.Should().NotBeNull();
+            dllFile.LastWriteTimeUtc.Should().Be(lastBuildTime);
 
-        [Fact]
-        public async Task If_the_package_has_been_built_and_trydotnetfile_doesnt_exist_it_is_created()
-        {
-            var package = Create.EmptyWorkspace();
-            await new Dotnet(package.Directory).New("console");
-            await new Dotnet(package.Directory).Build(args: "/fl /p:ProvideCommandLineArgs=true;append=true");
-            package.Directory.GetFiles(".trydotnet").Should().BeEmpty();
-
-            var config = await package.GetCommandLineArguments();
-            config.CompilationOptions.Language.Should().Be("C#");
-            config.ParseOptions.LanguageVersion.Should().Be(LanguageVersion.CSharp7_3);
+            package.AnalyzerResult.GetProperty("langVersion").Should().Be("7.3");
         }
     }
 }

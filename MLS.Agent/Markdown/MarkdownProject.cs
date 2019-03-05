@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Markdig;
 using Recipes;
@@ -9,10 +10,43 @@ namespace MLS.Agent.Markdown
 {
     public class MarkdownProject
     {
+        private class NullDirectoryAccessor : IDirectoryAccessor
+        {
+            public bool FileExists(RelativeFilePath filePath)
+            {
+                return false;
+            }
+
+            public string ReadAllText(RelativeFilePath filePath)
+            {
+                return string.Empty;
+            }
+
+            public IEnumerable<RelativeFilePath> GetAllFilesRecursively()
+            {
+                return Enumerable.Empty<RelativeFilePath>();
+            }
+
+            public FileSystemInfo GetFullyQualifiedPath(RelativePath path)
+            {
+                return null;
+            }
+
+            public IDirectoryAccessor GetDirectoryAccessorForRelativePath(RelativeDirectoryPath relativePath)
+            {
+                return this;
+            }
+        }
+      
         internal IDirectoryAccessor DirectoryAccessor { get; }
         private readonly PackageRegistry _packageRegistry;
 
         private readonly Dictionary<RelativeFilePath, MarkdownPipeline> _markdownPipelines = new Dictionary<RelativeFilePath, MarkdownPipeline>();
+
+        internal MarkdownProject(PackageRegistry packageRegistry) : this(new NullDirectoryAccessor(), packageRegistry)
+        {
+
+        }
 
         public MarkdownProject(IDirectoryAccessor directoryAccessor, PackageRegistry packageRegistry)
         {

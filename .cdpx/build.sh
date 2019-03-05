@@ -27,6 +27,7 @@ dotnet pack $REPO_ROOT/MLS.Agent/MLS.Agent.csproj -c Release -o $PACKAGE_ROOT /p
 dotnet pack $REPO_ROOT/MLS.Agent.Tools/MLS.Agent.Tools.csproj -c Release -o $PACKAGE_ROOT /p:NoPackageAnalysis=true
 dotnet pack $REPO_ROOT/MLS.Protocol/MLS.Protocol.csproj -c Release -o $PACKAGE_ROOT /p:NoPackageAnalysis=true
 dotnet pack $REPO_ROOT/MLS.Project/MLS.Project.csproj -c Release -o $PACKAGE_ROOT /p:NoPackageAnalysis=true
+dotnet pack $REPO_ROOT/WasmCodeRunner/MLS.WasmCodeRunner.csproj -c Release -o $PACKAGE_ROOT /p:NoPackageAnalysis=true
 
 noLeadingZeros=$(echo $CDP_BUILD_NUMBER | sed 's/^0*//')
 finalVersion="$CDP_MAJOR_NUMBER_ONLY.$CDP_MINOR_NUMBER_ONLY.$noLeadingZeros-$CDP_VERSION_TAG_ONLY-$CDP_COMMIT_ID"

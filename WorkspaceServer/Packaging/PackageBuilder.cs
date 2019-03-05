@@ -3,11 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Clockwise;
-using MLS.Agent.Tools;
 
 namespace WorkspaceServer.Packaging
 {
-    public class PackageBuilder
+    public partial class PackageBuilder
     {
         private Package package;
         private bool _blazorEnabled;
@@ -62,111 +61,32 @@ namespace WorkspaceServer.Packaging
             });
         }
 
-        public void EnableBlazor()
+        public void EnableBlazor(PackageRegistry registry)
         {
-            BlazorSupported = true;
+            var name = $"blazor-{this.PackageName}";
+            registry.Add(name, pb =>
+            {
+
+                var initializer = new BlazorPI(_addPackages);
+                pb.PackageInitializer = initializer;
+                 pb.BlazorSupported = true;
+                pb.Directory = pb.Directory.CreateSubdirectory("MLS.Blazor");
+            });
 
             _afterCreateActions.Add(async (package, budget) =>
             {
-                var name = $"blazor-{package.Name}";
-                var directory = package.Directory.Parent;
-                var subdir = directory.CreateSubdirectory(name);
+                await registry.Get("blazor-nodatime.api");
+                //var directory = package.Directory.Parent;
+                //var subdir = directory.CreateSubdirectory(name);
 
-                var entryPoint = await MakeBlazorProject(budget, subdir);
-                package.BlazorEntryPointAssemblyPath = new FileInfo(entryPoint);
+                //var entryPoint = await MakeBlazorProject(subdir, budget);
+                //package.BlazorEntryPointAssemblyPath = new FileInfo(entryPoint);
             });
         }
 
-        private async Task<string> MakeBlazorProject(Budget budget, DirectoryInfo directory)
-        {
-            directory = directory.CreateSubdirectory("MLS.Blazor");
-            var initializer = new PackageInitializer("blazor", "MLS.Blazor");
-            await initializer.Initialize(directory, budget);
+        
 
-            var dotnet = new Dotnet(directory);
-            var root = directory.FullName;
-
-            var toDelete = new[] { "Pages", "Shared", "wwwroot", "_ViewImports.cshtml" };
-            foreach (var thing in toDelete)
-            {
-                var path = Path.Combine(root, thing);
-                Delete(path);
-            }
-
-            var wwwRootFiles = new[] { "index.html", "interop.js" };
-            var pagesFiles = new[] { "Index.cshtml", "Index.cshtml.cs" };
-            var rootFiles = new[] { "Program.cs", "Startup.cs" };
-
-            WriteAll(wwwRootFiles, "wwwroot", root);
-            WriteAll(pagesFiles, "Pages", root);
-            WriteAll(rootFiles, "", root);
-
-            var result = await dotnet.AddPackage("MLS.WasmCodeRunner", "1.0.7880001-alpha-c895bf25");
-            result.ThrowOnFailure();
-
-            foreach (var addPackage in _addPackages)
-            {
-                await addPackage();
-            }
-
-            result = await dotnet.AddPackage("NodaTime");
-            result = await dotnet.AddPackage("NodaTime.Testing");
-            result.ThrowOnFailure();
-
-            result = await dotnet.Build("");
-            result.ThrowOnFailure();
-
-            return Path.Combine(directory.FullName,
-                "bin\\Debug\\netstandard2.0\\MLS.Blazor.dll");
-        }
-
-        private static void WriteAll(string[] resources, string targetDirectory, string root)
-        {
-            foreach (var resource in resources)
-            {
-                WriteResource(resource, targetDirectory, root);
-            }
-        }
-
-        private static void WriteResource(string resourceName, string targetDirectory, string root)
-        {
-            var text = ReadManifestResource(resourceName);
-            var directory = Path.Combine(root, targetDirectory);
-            System.IO.Directory.CreateDirectory(directory);
-            var path = Path.Combine(directory, resourceName);
-            File.WriteAllText(path, text);
-        }
-
-        private static string ReadManifestResource(string resourceName)
-        {
-            var assembly = typeof(PackageBuilder).Assembly;
-            var resoures = assembly.GetManifestResourceNames();
-            using (var reader = new StreamReader(assembly.GetManifestResourceStream($"WorkspaceServer.{resourceName}")))
-            {
-                return reader.ReadToEnd();
-            }
-        }
-
-        private void Delete(string path)
-        {
-            try
-            {
-                System.IO.Directory.Delete(path, recursive: true);
-            }
-            catch
-            {
-
-            }
-
-            try
-            {
-                File.Delete(path);
-            }
-            catch
-            {
-
-            }
-        }
+        
 
         public void DeleteFile(string relativePath)
         {
@@ -196,7 +116,7 @@ namespace WorkspaceServer.Packaging
             {
                 info = new PackageInfo(
                     package.Name,
-                    package.BuildTime,
+                    package.LastSuccessfulBuildTime,
                     package.ConstructionTime,
                     package.PublicationTime,
                     package.CreationTime,

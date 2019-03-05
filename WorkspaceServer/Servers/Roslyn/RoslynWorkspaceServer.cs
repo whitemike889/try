@@ -426,6 +426,7 @@ namespace WorkspaceServer.Servers.Roslyn
             var compilation = await package.Compile(workspace, budget, activeBufferId);
             var (diagnosticsInActiveBuffer, allDiagnostics) = workspace.MapDiagnostics(activeBufferId, compilation.GetDiagnostics());
 
+            budget.RecordEntryAndThrowIfBudgetExceeded();
             return new CompileWorkerResult(
                 compilation,
                 diagnosticsInActiveBuffer,

@@ -90,6 +90,7 @@ namespace MLS.Agent
                 if (StartupOptions.IsInHostedMode)
                 {
                     services.AddSingleton(_ => PackageRegistry.CreateForHostedMode());
+                    services.AddSingleton(c => new MarkdownProject(c.GetRequiredService<PackageRegistry>()));
                     services.AddSingleton<IHostedService, Warmup>();
                 }
                 else

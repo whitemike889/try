@@ -26,6 +26,11 @@ namespace MLS.Agent.Controllers
         [Route("{*path}")]
         public async Task<IActionResult> ShowMarkdownFile(string path)
         {
+            if (_startupOptions.IsInHostedMode)
+            {
+                return Ok();
+            }
+
             if (string.IsNullOrEmpty(path))
             {
                 var links = string.Join(

@@ -88,7 +88,7 @@ namespace WorkspaceServer
             return packageInfos;
         }
 
-        public static PackageRegistry CreateForVerifyMode(DirectoryInfo project, DirectoryInfo addSource)
+        public static PackageRegistry CreateForTryMode(DirectoryInfo project, DirectoryInfo addSource)
         {
             var registry = new PackageRegistry(true,
                new LocalToolPackageDiscoveryStrategy(Package.DefaultPackagesDirectory, addSource));
@@ -96,19 +96,6 @@ namespace WorkspaceServer
             registry.Add(project.Name, builder =>
             {
                 builder.CreateRebuildablePackage = true;
-                builder.Directory = project;
-            });
-
-            return registry;
-        }
-
-        public static PackageRegistry CreateForTryMode(DirectoryInfo project, DirectoryInfo addSource)
-        {
-            var registry = new PackageRegistry(false,
-                new LocalToolPackageDiscoveryStrategy(Package.DefaultPackagesDirectory, addSource));
-
-            registry.Add(project.Name, builder =>
-            {
                 builder.Directory = project;
             });
 
@@ -133,7 +120,7 @@ namespace WorkspaceServer
                              workspace.AddPackageReference("NodaTime", "2.4.4");
                              workspace.AddPackageReference("NodaTime.Testing", "2.4.4");
                              workspace.AddPackageReference("Newtonsoft.Json");
-                             workspace.EnableBlazor();
+                             workspace.EnableBlazor(registry);
                          });
 
             registry.Add("aspnet.webapi",

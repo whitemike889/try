@@ -22,6 +22,7 @@ namespace MLS.Agent.Blazor
                     app.Map(path, async a =>
                     {
                         var package = await builder.GetPackage();
+                        await package.EnsureReady(budget);
                         var blazorEntryPoint = package.BlazorEntryPointAssemblyPath;
                         app.UsePathBase(path);
                         // this is will cause the addition of a new static file provider, might cause issues
