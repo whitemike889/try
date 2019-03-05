@@ -213,10 +213,14 @@ namespace WorkspaceServer.Packaging
 
         public Task<Workspace> CreateRoslynWorkspaceAsync(Budget budget, WorkspaceUsage usage = WorkspaceUsage.CompileOrRun )
         {
-            if (!ShouldBuild())
+            var shouldBuild = usage == WorkspaceUsage.CompileOrRun ? ShouldDoFullBuild() : ShouldDoDesignTimeFullBuild();
+            if (!shouldBuild)
             {
                 var ws = RoslynWorkspace?? CreateRoslynWorkspace();
-                return Task.FromResult(ws);
+                if (ws != null)
+                {
+                    return Task.FromResult(ws);
+                }
             }
 
             switch (usage)
@@ -311,6 +315,11 @@ namespace WorkspaceServer.Packaging
         private Workspace CreateRoslynWorkspace()
         {
             var build = DesignTimeBuildResult;
+            if (build == null)
+            {
+                return null;
+
+            }
             var ws = build.GetWorkspace();
             var projectId = ws.CurrentSolution.ProjectIds.FirstOrDefault();
             var references = build.References;
@@ -347,7 +356,7 @@ namespace WorkspaceServer.Packaging
             await EnsureCreated();
             using (var operation = _log.OnEnterAndConfirmOnExit())
             {
-                if (ShouldBuild())
+                if (ShouldDoFullBuild())
                 {
                     await Build();
                 }
@@ -562,11 +571,16 @@ namespace WorkspaceServer.Packaging
 
         protected AnalyzerResult DesignTimeBuildResult { get; set; }
 
-        protected virtual bool ShouldBuild()
+        protected virtual bool ShouldDoFullBuild()
         {
-            return DesignTimeBuildResult == null 
-                   || (DesignTimeBuildResult.Succeeded == false) 
+            return ShouldDoDesignTimeFullBuild()
                    || (LastDesignTimeBuild > LastSuccessfulBuildTime);
+        }
+
+        protected virtual bool ShouldDoDesignTimeFullBuild()
+        {
+            return DesignTimeBuildResult == null
+                   || (DesignTimeBuildResult.Succeeded == false);
         }
 
         protected AnalyzerResult DesignTimeBuild()
