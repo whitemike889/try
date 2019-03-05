@@ -2,7 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Linq;
 
-namespace MLS.Agent.Tests
+namespace WorkspaceServer.Tests
 {
     public class LogEntryList : ConcurrentQueue<(
         byte LogLevel,

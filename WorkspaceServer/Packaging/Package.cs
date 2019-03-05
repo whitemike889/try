@@ -16,9 +16,12 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 using MLS.Agent.Tools;
 using System.Reactive.Linq;
+using System.Runtime.CompilerServices;
+using System.Threading;
 using Pocket;
 using WorkspaceServer.Servers.Roslyn;
 using static Pocket.Logger<WorkspaceServer.Packaging.Package>;
+using Disposable = System.Reactive.Disposables.Disposable;
 
 namespace WorkspaceServer.Packaging
 {
@@ -55,7 +58,6 @@ namespace WorkspaceServer.Packaging
         private bool? _isUnitTestProject;
         private FileInfo _entryPointAssemblyPath;
         private static string _targetFramework;
-        private string _lastDesignTimeBuildError;
         private readonly Logger _log;
         private readonly Subject<Budget> _buildRequestChannel;
         private TaskCompletionSource<Workspace> _workspaceCompletionSource;
@@ -79,12 +81,12 @@ namespace WorkspaceServer.Packaging
             _buildRequestChannel = new Subject<Budget>();
             _buildThrottlerSubscription = new SerialDisposable();
             SetupWorkspaceCreationChannel();
-            TryDiscoverPreviousBuild();
+            TryLoadDesignTimeBuildFromBuildLog();
             _lazyCreation = new AsyncLazy<bool>(Create);
         }
 
 
-        private void TryDiscoverPreviousBuild()
+        private void TryLoadDesignTimeBuildFromBuildLog()
         {
             if (Directory.Exists)
             {
@@ -96,15 +98,18 @@ namespace WorkspaceServer.Packaging
                     {
                         var manager = new AnalyzerManager();
                         var result = manager.Analyze(binLog.FullName).FirstOrDefault(p => p.ProjectFilePath == projectFile.FullName);
-                        if (result != null && result.Succeeded)
+                        if (result != null)
                         {
-                            AnalyzerResult = result;
+                            DesignTimeBuildResult = result;
+                            LastDesignTimeBuild = binLog.LastWriteTimeUtc;
                             LastSuccessfulBuildTime = binLog.LastWriteTimeUtc;
                         }
                     }
                 }
             }
         }
+
+        private DateTimeOffset? LastDesignTimeBuild { get; set; }
 
         private bool IsDirectoryCreated { get; set; }
         private FileInfo LastBuildErrorLogFile { get; }
@@ -234,14 +239,18 @@ namespace WorkspaceServer.Packaging
 
         private Workspace CreateRoslynWorkspace()
         {
-            var ws = AnalyzerResult.GetWorkspace();
+            var build = DesignTimeBuildResult;
+            var ws = build.GetWorkspace();
             var projectId = ws.CurrentSolution.ProjectIds.FirstOrDefault();
-            ws.TryApplyChanges(ws.CurrentSolution.WithProjectMetadataReferences(projectId,
-                AnalyzerResult.References.GetMetadataReferences()));
+            var references = build.References;
+            var metadataReferences = references.GetMetadataReferences();
+            var solution = ws.CurrentSolution;
+            solution = solution.WithProjectMetadataReferences(projectId, metadataReferences);
+            ws.TryApplyChanges(solution);
             return ws;
         }
 
-        public virtual async Task EnsureReady(Budget budget)
+        public async Task EnsureReady(Budget budget)
         {
             budget = budget ?? new Budget();
 
@@ -257,91 +266,96 @@ namespace WorkspaceServer.Packaging
             budget.RecordEntry();
         }
 
-        protected  Task<bool> EnsureCreated() => _lazyCreation.ValueAsync();
+        protected Task<bool> EnsureCreated() => _lazyCreation.ValueAsync();
 
-        protected virtual async Task<bool> EnsureBuilt() => await EnsureCreated() && await Build();
-
-        public virtual async Task<bool> EnsurePublished()
+        protected async Task EnsureBuilt([CallerMemberName] string caller = null)
         {
-            return (await EnsureBuilt()) &&
-            ((await Publish()).ExitCode == 0);
+            await EnsureCreated();
+            using (var operation = _log.OnEnterAndConfirmOnExit())
+            {
+                if (ShouldBuild())
+                {
+                    await Build();
+                }
+                else
+                {
+                    operation.Info("Workspace already built");
+                }
+
+                operation.Succeed();
+            }
+        }
+
+        public virtual async Task EnsurePublished()
+        {
+            await EnsureBuilt();
+            await Publish();
         }
 
         public bool RequiresPublish => IsWebProject;
 
-        protected async Task<bool> Build()
+        private readonly SemaphoreSlim buildSemaphore = new SemaphoreSlim(1, 1);
+        public async Task Build()
         {
             using (var operation = _log.OnEnterAndConfirmOnExit())
             {
-                var lockFile = new FileInfo(Path.Combine(Directory.FullName, ".trydotnet-lock"));
-                FileStream fileStream = null;
                 try
                 {
-                    if (ShouldBuild())
-                    {
-                        AnalyzerResult = CreateAnalyzerResult();
-                        if (AnalyzerResult?.Succeeded == false)
-                        {
-                            File.WriteAllText(
-                                LastBuildErrorLogFile.FullName,
-                                _lastDesignTimeBuildError);
-                        }
-                        else
-                        {
-                            fileStream = File.Create(lockFile.FullName, 1, FileOptions.DeleteOnClose);
-                            operation.Info("Building workspace using {_initializer} in {directory}", _initializer, Directory);
-                            var result = await new Dotnet(Directory)
-                                             .Build(args: "/bl");
+                    operation.Info("Attempting building package {name}", Name);
 
-                            if (result.ExitCode != 0)
-                            {
-                                File.WriteAllText(
-                                    LastBuildErrorLogFile.FullName,
-                                    string.Join(Environment.NewLine, result.Error));
-                            }
-                            else if (LastBuildErrorLogFile.Exists)
-                            {
-                                LastBuildErrorLogFile.Delete();
-                            }
-
-                            result.ThrowOnFailure();
-                            LastSuccessfulBuildTime = Directory.GetFiles("*.binlog").FirstOrDefault().LastWriteTimeUtc;
-                            operation.Info("Workspace built");
-                        }
-                    }
-                    else
+                    var buildInProgress = buildSemaphore.CurrentCount == 0;
+                    await buildSemaphore.WaitAsync();
+                    CommandLineResult result;
+                    using (Disposable.Create(() => buildSemaphore.Release()))
                     {
-                        operation.Info("Workspace already built");
+                        if (buildInProgress)
+                        {
+                            operation.Info("Skipping build for package {name}", Name);
+                            return;
+                        }
+
+                        operation.Info("Building workspace using {_initializer} in {directory}", _initializer, Directory);
+                        result = await new Dotnet(Directory)
+                            .Build(args: "/bl");
                     }
+
+                    if (result.ExitCode != 0)
+                    {
+                        File.WriteAllText(
+                            LastBuildErrorLogFile.FullName,
+                            string.Join(Environment.NewLine, result.Error));
+                    }
+                    else if (LastBuildErrorLogFile.Exists)
+                    {
+                        LastBuildErrorLogFile.Delete();
+                    }
+
+                    TryLoadDesignTimeBuildFromBuildLog();
+                    result.ThrowOnFailure();
+                    operation.Info("Workspace built");
 
                     operation.Succeed();
-                    return true;
                 }
                 catch (Exception exception)
                 {
                     operation.Error("Exception building workspace", exception);
-                    return false;
                 }
-                finally
-                {
-                    fileStream?.Dispose();
-                }
+
             }
         }
 
-        protected async Task<CommandLineResult> Publish()
+        protected async Task Publish()
         {
             using (var operation = _log.OnEnterAndConfirmOnExit())
             {
                 operation.Info("Publishing workspace in {directory}", Directory);
                 var result = await new Dotnet(Directory)
-                    .Publish("--no-dependencies --no-restore");
+                    .Publish("--no-dependencies --no-restore --no-build");
                 result.ThrowOnFailure();
 
                 PublicationTime = Clock.Current.Now();
                 operation.Info("Workspace published");
                 operation.Succeed();
-                return result;
             }
         }
 
@@ -443,42 +457,54 @@ namespace WorkspaceServer.Packaging
             {
                 var source = reader.ReadToEnd();
 
-                var parseOptions = AnalyzerResult.GetCSharpParseOptions();
+                var parseOptions = DesignTimeBuildResult.GetCSharpParseOptions();
                 var syntaxTree = CSharpSyntaxTree.ParseText(SourceText.From(source), parseOptions);
 
                 return syntaxTree;
             }
         }
 
-        public AnalyzerResult AnalyzerResult { get; protected set; }
+        public AnalyzerResult DesignTimeBuildResult { get; protected set; }
 
         protected virtual bool ShouldBuild()
         {
-            return AnalyzerResult == null || (AnalyzerResult.Succeeded == false);
+            return DesignTimeBuildResult == null 
+                   || (DesignTimeBuildResult.Succeeded == false) 
+                   || (LastDesignTimeBuild > LastSuccessfulBuildTime);
         }
 
-        protected AnalyzerResult CreateAnalyzerResult()
+        protected AnalyzerResult DesignTimeBuild()
         {
-            var csProj = Directory.GetFiles("*.csproj").FirstOrDefault();
-            var logWriter = new StringWriter();
-            var manager = new AnalyzerManager(new AnalyzerManagerOptions
+            using (var operation = _log.OnEnterAndConfirmOnExit())
             {
-                LogWriter = logWriter
-            });
+                var csProj = Directory.GetFiles("*.csproj").FirstOrDefault();
+                var logWriter = new StringWriter();
+                var manager = new AnalyzerManager(new AnalyzerManagerOptions
+                {
+                    LogWriter = logWriter
+                });
 
-            var analyzer = manager.GetProject(csProj.FullName);
-            analyzer.SetGlobalProperty("langVersion", csharpLanguageVersion);
-            var result = analyzer.Build().Results.First();
-            if (result.Succeeded == false)
-            {
-                _lastDesignTimeBuildError = logWriter.ToString();
-            }
-            else
-            {
-                _lastDesignTimeBuildError = string.Empty;
-            }
+                var analyzer = manager.GetProject(csProj.FullName);
+                analyzer.SetGlobalProperty("langVersion", csharpLanguageVersion);
+                var result = analyzer.Build().Results.First();
 
-            return result;
+                if (result.Succeeded == false)
+                {
+                    File.WriteAllText(
+                        LastBuildErrorLogFile.FullName,
+                        string.Join(Environment.NewLine, logWriter.ToString()));
+                }
+                else if (LastBuildErrorLogFile.Exists)
+                {
+                    LastBuildErrorLogFile.Delete();
+                }
+
+                LastDesignTimeBuild = Clock.Current.Now();
+
+                operation.Succeed();
+
+                return result;
+            }
         }
 
         public virtual SyntaxTree GetInstrumentationEmitterSyntaxTree() =>

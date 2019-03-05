@@ -184,7 +184,7 @@ namespace WorkspaceServer.Servers.Roslyn
 
             await package.EnsureReady(budget);
 
-            var analyzerResult = package.AnalyzerResult;
+            var analyzerResult = package.DesignTimeBuildResult;
             var ws = analyzerResult.GetWorkspace();
             var projectId = ws.CurrentSolution.ProjectIds.FirstOrDefault();
             ws.TryApplyChanges(ws.CurrentSolution.WithProjectMetadataReferences(projectId,

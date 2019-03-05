@@ -90,7 +90,7 @@ namespace Twilio_try.dot.net_sample
             var resolvedWorkspace = await registry.Get(unregisteredWorkspace.Name);
 
             resolvedWorkspace.Directory.FullName.Should().Be(unregisteredWorkspace.Directory.FullName);
-            resolvedWorkspace.AnalyzerResult.SourceFiles.Should().NotBeEmpty();
+            resolvedWorkspace.DesignTimeBuildResult.SourceFiles.Should().NotBeEmpty();
         }
 
         [Fact]
