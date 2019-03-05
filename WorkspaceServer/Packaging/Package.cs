@@ -367,14 +367,16 @@ namespace WorkspaceServer.Packaging
         {
             using (var operation = _log.OnEnterAndConfirmOnExit())
             {
+                operation.Info("Attempting to publish package {name}", Name);
                 var buildInProgress = publishSemaphore.CurrentCount == 0;
                 await publishSemaphore.WaitAsync();
+
                 if (buildInProgress)
                 {
-                    operation.Info("Skipping build for package {name}", Name);
+                    operation.Info("Skipping publish for package {name}", Name);
                     return;
                 }
-                operation.Info("Attempting to publish package {name}", Name);
+
                 CommandLineResult result;
                 using (Disposable.Create(() => publishSemaphore.Release()))
                 {
