@@ -25,6 +25,12 @@ using Disposable = System.Reactive.Disposables.Disposable;
 
 namespace WorkspaceServer.Packaging
 {
+
+    public enum WorkspaceUsage
+    {
+        CompileOrRun,
+        Intellisense
+    }
     public abstract class Package
     {
         const string csharpLanguageVersion = "7.3";
@@ -59,11 +65,15 @@ namespace WorkspaceServer.Packaging
         private FileInfo _entryPointAssemblyPath;
         private static string _targetFramework;
         private readonly Logger _log;
-        private readonly Subject<Budget> _buildRequestChannel;
+        private Subject<Budget> _fullBuildRequestChannel;
         private TaskCompletionSource<Workspace> _workspaceCompletionSource;
         private readonly IScheduler _buildThrottleScheduler;
         private SerialDisposable _buildThrottlerSubscription;
         private AsyncLazy<bool> _lazyCreation;
+
+        private readonly SemaphoreSlim buildSemaphore = new SemaphoreSlim(1, 1);
+        private readonly Subject<Budget> _designTimeBuildRequestChannel;
+        private readonly SerialDisposable _designTimeBuildThrottlerSubscription;
 
         protected Package(
             string name = null,
@@ -78,13 +88,18 @@ namespace WorkspaceServer.Packaging
             LastBuildErrorLogFile = new FileInfo(Path.Combine(Directory.FullName, ".trydotnet-builderror"));
             _log = new Logger($"{nameof(Package)}:{Name}");
             _buildThrottleScheduler = buildThrottleScheduler ?? TaskPoolScheduler.Default;
-            _buildRequestChannel = new Subject<Budget>();
+
+            _fullBuildRequestChannel = new Subject<Budget>();
             _buildThrottlerSubscription = new SerialDisposable();
+
+            _designTimeBuildRequestChannel = new Subject<Budget>();
+            _designTimeBuildThrottlerSubscription = new SerialDisposable();
+
             SetupWorkspaceCreationChannel();
             TryLoadDesignTimeBuildFromBuildLog();
             _lazyCreation = new AsyncLazy<bool>(Create);
         }
-
+        
 
         private void TryLoadDesignTimeBuildFromBuildLog()
         {
@@ -100,6 +115,7 @@ namespace WorkspaceServer.Packaging
                         var result = manager.Analyze(binLog.FullName).FirstOrDefault(p => p.ProjectFilePath == projectFile.FullName);
                         if (result != null)
                         {
+                            RoslynWorkspace = null;
                             DesignTimeBuildResult = result;
                             LastDesignTimeBuild = binLog.LastWriteTimeUtc;
                             LastSuccessfulBuildTime = binLog.LastWriteTimeUtc;
@@ -193,7 +209,7 @@ namespace WorkspaceServer.Packaging
         {
             if (!ShouldBuild())
             {
-                var ws = CreateRoslynWorkspace();
+                var ws = RoslynWorkspace?? CreateRoslynWorkspace();
                 return Task.FromResult(ws);
             }
 
@@ -202,13 +218,13 @@ namespace WorkspaceServer.Packaging
                 _workspaceCompletionSource = new TaskCompletionSource<Workspace>();
             }
 
-            _buildRequestChannel.OnNext(budget);
+            _fullBuildRequestChannel.OnNext(budget);
             return _workspaceCompletionSource.Task;
         }
 
         private void SetupWorkspaceCreationChannel()
         {
-            _buildThrottlerSubscription.Disposable = _buildRequestChannel
+            _buildThrottlerSubscription.Disposable = _fullBuildRequestChannel
                 .Throttle(TimeSpan.FromSeconds(0.5), _buildThrottleScheduler)
                 .Subscribe(
                       async (budget) =>
@@ -247,8 +263,11 @@ namespace WorkspaceServer.Packaging
             var solution = ws.CurrentSolution;
             solution = solution.WithProjectMetadataReferences(projectId, metadataReferences);
             ws.TryApplyChanges(solution);
+            RoslynWorkspace = ws;
             return ws;
         }
+
+        protected AdhocWorkspace RoslynWorkspace { get; set; }
 
         public async Task EnsureReady(Budget budget)
         {
@@ -294,7 +313,6 @@ namespace WorkspaceServer.Packaging
 
         public bool RequiresPublish => IsWebProject;
 
-        private readonly SemaphoreSlim buildSemaphore = new SemaphoreSlim(1, 1);
         public async Task Build()
         {
             using (var operation = _log.OnEnterAndConfirmOnExit())

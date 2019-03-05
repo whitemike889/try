@@ -32,7 +32,7 @@ namespace WorkspaceServer.Packaging
         {
             if (e.Name.EndsWith(".csproj") || e.Name.EndsWith(".cs"))
             {
-                DesignTimeBuildResult = null;
+                Reset();
             }
         }
 
@@ -47,17 +47,23 @@ namespace WorkspaceServer.Packaging
             {
                 if (fileName.EndsWith(".csproj"))
                 {
-                    DesignTimeBuildResult = null;
+                    Reset();
                 }
                 else if (fileName.EndsWith(".cs"))
                 {
                     var analyzerInputs = DesignTimeBuildResult.GetCompileInputs();
                     if (analyzerInputs.Any(sourceFile => sourceFile.EndsWith(fileName)))
                     {
-                        DesignTimeBuildResult = null;
+                        Reset();
                     }
                 }
             }
+        }
+
+        private void Reset()
+        {
+            DesignTimeBuildResult = null;
+            RoslynWorkspace = null;
         }
 
         private void FileSystemWatcherOnChangedOrDeleted(object sender, FileSystemEventArgs e)
