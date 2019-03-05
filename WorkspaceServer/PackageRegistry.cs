@@ -62,7 +62,7 @@ namespace WorkspaceServer
 
             var package = await _packages.GetOrAdd(packageName, async name =>
             {
-                var packageBuilder = _packageBuilders.GetOrAdd(
+                var packageBuilder = await _packageBuilders.GetOrAdd(
                     name,
                     async name2 =>
                     {
@@ -76,11 +76,9 @@ namespace WorkspaceServer
                         }
 
                         throw new ArgumentException($"Package named \"{name2}\" not found.");
-                    }).Result;
+                    });
 
-                var p = packageBuilder.GetPackage(budget).Result;
-
-                await p.EnsureReady(budget);
+                var p = await packageBuilder.GetPackage(budget);
                 return p;
             });
 

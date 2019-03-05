@@ -233,7 +233,36 @@ namespace WorkspaceServer.Packaging
                 default:
                     throw new ArgumentOutOfRangeException(nameof(usage), usage, null);
             }
-           
+        }
+
+        public Task<Workspace> CreateRoslynWorkspaceForRunAsync(Budget budget)
+        {
+            var shouldBuild =  ShouldDoFullBuild();
+            if (!shouldBuild)
+            {
+                var ws = RoslynWorkspace ?? CreateRoslynWorkspace();
+                if (ws != null)
+                {
+                    return Task.FromResult(ws);
+                }
+            }
+
+            return RequestFullBuild(budget);
+        }
+
+        public Task<Workspace> CreateRoslynWorkspaceForLanguageServicesAsync(Budget budget)
+        {
+            var shouldBuild = ShouldDoDesignTimeFullBuild();
+            if (!shouldBuild)
+            {
+                var ws = RoslynWorkspace ?? CreateRoslynWorkspace();
+                if (ws != null)
+                {
+                    return Task.FromResult(ws);
+                }
+            }
+
+            return RequestDesignTimeBuild(budget);
         }
 
         private Task<Workspace> RequestFullBuild(Budget budget)
@@ -311,15 +340,14 @@ namespace WorkspaceServer.Packaging
             _designTimeBuildCompletionSource = null;
         }
 
-
         private Workspace CreateRoslynWorkspace()
         {
             var build = DesignTimeBuildResult;
             if (build == null)
             {
                 return null;
-
             }
+
             var ws = build.GetWorkspace();
             var projectId = ws.CurrentSolution.ProjectIds.FirstOrDefault();
             var references = build.References;
@@ -358,7 +386,7 @@ namespace WorkspaceServer.Packaging
             {
                 if (ShouldDoFullBuild())
                 {
-                    await Build();
+                    await FullBuild();
                 }
                 else
                 {
@@ -384,7 +412,7 @@ namespace WorkspaceServer.Packaging
 
         public bool RequiresPublish => IsWebProject;
 
-        public async Task Build()
+        public async Task FullBuild()
         {
             using (var operation = _log.OnEnterAndConfirmOnExit())
             {
