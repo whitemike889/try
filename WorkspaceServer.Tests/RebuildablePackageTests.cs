@@ -71,6 +71,7 @@ namespace WorkspaceServer.Tests
             ws.CurrentSolution.Projects.First().Documents.Should().Contain(d => d.FilePath == existingFile);
 
             File.Delete(existingFile);
+            await Task.Delay(1000);
 
             ws = await package.CreateRoslynWorkspaceAsync(new TimeBudget(30.Seconds()));
             ws.CurrentSolution.Projects.First().Documents.Should().NotContain(d => d.FilePath == existingFile);
@@ -84,6 +85,7 @@ namespace WorkspaceServer.Tests
 
             var existingFile = Path.Combine(package.Directory.FullName, "Program.cs");
             File.WriteAllText(existingFile, "//this is Program.cs");
+            await Task.Delay(1000);
 
             var newWorkspace = await package.CreateRoslynWorkspaceAsync(new TimeBudget(30.Seconds()));
 

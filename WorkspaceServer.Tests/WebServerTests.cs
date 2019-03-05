@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Clockwise;
 using FluentAssertions;
+using FluentAssertions.Extensions;
 using Pocket;
 using Recipes;
 using WorkspaceServer.Features;
@@ -27,15 +29,19 @@ namespace WorkspaceServer.Tests
         public async Task Multiple_WebServer_instances_can_be_run_concurrently_in_the_same_folder()
         {
             var workspace = await Package.Copy(await Default.WebApiWorkspace);
-
-            using (var webServer1 = new WebServer(workspace))
-            using (var webServer2 = new WebServer(workspace))
+            using (var clock = VirtualClock.Start())
             {
-                var response1 = await webServer1.SendAsync(new HttpRequestMessage(HttpMethod.Get, "/api/values"));
-                var response2 = await webServer2.SendAsync(new HttpRequestMessage(HttpMethod.Get, "/api/values"));
+                _disposables.Add(clock);
+                await workspace.EnsurePublished();
+                using (var webServer1 = new WebServer(workspace))
+                using (var webServer2 = new WebServer(workspace))
+                {
+                    var response1 = await webServer1.SendAsync(new HttpRequestMessage(HttpMethod.Get, "/api/values"));
+                    var response2 = await webServer2.SendAsync(new HttpRequestMessage(HttpMethod.Get, "/api/values"));
 
-                response1.EnsureSuccess();
-                response2.EnsureSuccess();
+                    response1.EnsureSuccess();
+                    response2.EnsureSuccess();
+                }
             }
         }
 

@@ -307,8 +307,12 @@ namespace WorkspaceServer.Packaging
 
         public virtual async Task EnsurePublished()
         {
+            var latestBuild = LastSuccessfulBuildTime;
             await EnsureBuilt();
-            await Publish();
+            if (latestBuild == null || latestBuild < LastSuccessfulBuildTime)
+            {
+                await Publish();
+            }
         }
 
         public bool RequiresPublish => IsWebProject;
