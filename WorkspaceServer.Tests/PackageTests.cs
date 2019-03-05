@@ -143,7 +143,7 @@ namespace WorkspaceServer.Tests
         }
 
         [Fact]
-        public async Task If_the_package_has_been_built_before_calling_ensure_ready_we_still_get_the_analyzer_result()
+        public async Task If_the_package_has_been_built_before_calling_create_roslyn_workspace_we_still_get_workspace()
         {
             var directory = Create.EmptyWorkspace().Directory;
             await new Dotnet(directory).New("console");
@@ -158,12 +158,12 @@ namespace WorkspaceServer.Tests
             var lastBuildTime = dllFile.LastWriteTimeUtc;
             var package = new NonrebuildablePackage(directory: directory);
 
-            await package.EnsureReady(new TimeBudget(FluentTimeSpanExtensions.Seconds(30)));
+            var ws = await package.CreateRoslynWorkspaceAsync(new TimeBudget(30.Seconds()));
             dllFile = package.Directory.GetFiles($"{directory.Name}.dll", SearchOption.AllDirectories).FirstOrDefault();
             dllFile.Should().NotBeNull();
             dllFile.LastWriteTimeUtc.Should().Be(lastBuildTime);
 
-            package.DesignTimeBuildResult.GetProperty("langVersion").Should().Be("7.3");
+            ws.CurrentSolution.Projects.First().Language.Should().Be("C#");
         }
 
         [Fact]

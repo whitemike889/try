@@ -174,23 +174,5 @@ namespace WorkspaceServer.Servers.Roslyn
             "NodaTime",
             "NodaTime.Testing",
         };
-
-        public static async Task<Workspace> CreateRoslynWorkspaceAsync(this Package package, Budget budget)
-        {
-            if (package == null)
-            {
-                throw new ArgumentNullException(nameof(package));
-            }
-
-            await package.EnsureReady(budget);
-
-            var analyzerResult = package.DesignTimeBuildResult;
-            var ws = analyzerResult.GetWorkspace();
-            var projectId = ws.CurrentSolution.ProjectIds.FirstOrDefault();
-            ws.TryApplyChanges(ws.CurrentSolution.WithProjectMetadataReferences(projectId,
-                analyzerResult.References.GetMetadataReferences()));
-
-            return ws;
-        }
     }
 }
