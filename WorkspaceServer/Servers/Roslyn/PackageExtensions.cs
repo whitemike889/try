@@ -27,7 +27,7 @@ namespace WorkspaceServer.Servers.Roslyn
 
             var sourceFiles = workspace.GetSourceFiles().ToArray();
 
-            var (compilation, documents) = await package.GetCompilation(sourceFiles, SourceCodeKind.Regular, workspace.Usings, budget);
+            var (compilation, documents) = await package.GetCompilation(sourceFiles, SourceCodeKind.Regular, workspace.Usings, budget, WorkspaceUsage.CompileOrRun);
 
             var viewports = workspace.ExtractViewPorts();
 
@@ -111,10 +111,11 @@ Source
             IReadOnlyCollection<SourceFile> sources,
             SourceCodeKind sourceCodeKind,
             IEnumerable<string> defaultUsings,
-            Budget budget)
+            Budget budget, 
+            WorkspaceUsage usage)
         {
 
-            var workspace = await package.CreateRoslynWorkspaceAsync(budget);
+            var workspace = await package.CreateRoslynWorkspaceAsync(budget, usage);
 
             var currentSolution = workspace.CurrentSolution;
             var project = currentSolution.Projects.First();

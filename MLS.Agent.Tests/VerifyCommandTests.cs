@@ -358,7 +358,7 @@ This is some sample code:
 
             var console = new TestConsole();
 
-            PackageRegistry packageRegistry = PackageRegistry.CreateForTryMode(rootDirectory, null);
+            var packageRegistry = PackageRegistry.CreateForTryMode(rootDirectory, null);
             var resultCode = await VerifyCommand.Do(
                                  new VerifyOptions(rootDirectory),
                                  console,

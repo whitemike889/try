@@ -87,10 +87,10 @@ namespace Twilio_try.dot.net_sample
         {
             var unregisteredWorkspace = await Default.ConsoleWorkspace;
 
-            var resolvedWorkspace = await registry.Get(unregisteredWorkspace.Name);
+            var package = await registry.Get(unregisteredWorkspace.Name);
 
-            resolvedWorkspace.Directory.FullName.Should().Be(unregisteredWorkspace.Directory.FullName);
-            resolvedWorkspace.AnalyzerResult.SourceFiles.Should().NotBeEmpty();
+            package.Directory.FullName.Should().Be(unregisteredWorkspace.Directory.FullName);
+            (await package.CreateRoslynWorkspaceAsync(new TimeBudget(30.Seconds()))).CurrentSolution.Projects.Should().HaveCount(1);
         }
 
         [Fact]

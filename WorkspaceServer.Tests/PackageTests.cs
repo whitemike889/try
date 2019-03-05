@@ -1,16 +1,16 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using FluentAssertions;
 using FluentAssertions.Extensions;
-using System.Threading;
 using System.Threading.Tasks;
 using Clockwise;
 using Pocket;
 using Xunit;
 using Xunit.Abstractions;
 using WorkspaceServer.Packaging;
-using Microsoft.CodeAnalysis.CSharp;
 using System.Linq;
+using System.Threading;
 using System.Xml.Linq;
 
 namespace WorkspaceServer.Tests
@@ -36,8 +36,8 @@ namespace WorkspaceServer.Tests
 
             var package = Create.EmptyWorkspace(initializer: initializer);
 
-            await package.EnsureReady(new TimeBudget(30.Seconds()));
-            await package.EnsureReady(new TimeBudget(30.Seconds()));
+            await package.EnsureReady(new TimeBudget(FluentTimeSpanExtensions.Seconds(30)));
+            await package.EnsureReady(new TimeBudget(FluentTimeSpanExtensions.Seconds(30)));
 
             initializer.InitializeCount.Should().Be(1);
         }
@@ -58,8 +58,8 @@ namespace WorkspaceServer.Tests
 
             var package = Create.EmptyWorkspace(initializer: initializer);
 
-            await package.EnsureReady(new TimeBudget(30.Seconds()));
-            await package.EnsureReady(new TimeBudget(30.Seconds()));
+            await package.EnsureReady(new TimeBudget(FluentTimeSpanExtensions.Seconds(30)));
+            await package.EnsureReady(new TimeBudget(FluentTimeSpanExtensions.Seconds(30)));
 
             afterCreateCallCount.Should().Be(1);
         }
@@ -68,16 +68,16 @@ namespace WorkspaceServer.Tests
         public async Task A_package_copy_is_not_reinitialized_if_the_source_was_already_built()
         {
             var initializer = new TestPackageInitializer(
-                "console", 
+                "console",
                 "MyProject");
 
             var original = Create.EmptyWorkspace(initializer: initializer);
 
-            await original.EnsureReady(new TimeBudget(30.Seconds()));
+            await original.EnsureReady(new TimeBudget(FluentTimeSpanExtensions.Seconds(30)));
 
             var copy = await Package.Copy(original);
 
-            await copy.EnsureReady(new TimeBudget(30.Seconds()));
+            await copy.EnsureReady(new TimeBudget(FluentTimeSpanExtensions.Seconds(30)));
 
             initializer.InitializeCount.Should().Be(1);
         }
@@ -87,7 +87,7 @@ namespace WorkspaceServer.Tests
         {
             var package = await Create.ConsoleWorkspaceCopy();
 
-            await package.EnsureReady(new TimeBudget(30.Seconds()));
+            await package.EnsureReady(new TimeBudget(FluentTimeSpanExtensions.Seconds(30)));
 
             package.IsWebProject.Should().BeFalse();
         }
@@ -97,7 +97,7 @@ namespace WorkspaceServer.Tests
         {
             var package = await Create.WebApiWorkspaceCopy();
 
-            await package.EnsureReady(new TimeBudget(30.Seconds()));
+            await package.EnsureReady(new TimeBudget(FluentTimeSpanExtensions.Seconds(30)));
 
             package.IsWebProject.Should().BeTrue();
         }
@@ -107,7 +107,7 @@ namespace WorkspaceServer.Tests
         {
             var package = Create.EmptyWorkspace(initializer: new PackageInitializer("console", "empty"));
 
-            await package.EnsureReady(new TimeBudget(30.Seconds()));
+            await package.EnsureReady(new TimeBudget(FluentTimeSpanExtensions.Seconds(30)));
 
             package.EntryPointAssemblyPath.Exists.Should().BeTrue();
 
@@ -127,7 +127,7 @@ namespace WorkspaceServer.Tests
         {
             var package = Create.EmptyWorkspace(initializer: new PackageInitializer("webapi", "aspnet.webapi"));
 
-            await package.EnsureReady(new TimeBudget(30.Seconds()));
+            await package.EnsureReady(new TimeBudget(FluentTimeSpanExtensions.Seconds(30)));
 
             package.EntryPointAssemblyPath.Exists.Should().BeTrue();
 
@@ -144,9 +144,9 @@ namespace WorkspaceServer.Tests
         }
 
         [Fact]
-        public async Task If_the_package_has_been_built_before_calling_ensure_ready_we_still_get_the_analyzer_result()
+        public async Task If_the_package_has_been_built_before_calling_create_roslyn_workspace_we_still_get_workspace()
         {
-            DirectoryInfo directory = Create.EmptyWorkspace().Directory;
+            var directory = Create.EmptyWorkspace().Directory;
             await new Dotnet(directory).New("console");
             var projectFile = directory.GetFiles("*.csproj").FirstOrDefault();
             var projectFileDom = XElement.Load(projectFile.FullName);
@@ -159,12 +159,41 @@ namespace WorkspaceServer.Tests
             var lastBuildTime = dllFile.LastWriteTimeUtc;
             var package = new NonrebuildablePackage(directory: directory);
 
-            await package.EnsureReady(new TimeBudget(30.Seconds()));
+            var ws = await package.CreateRoslynWorkspaceAsync(new TimeBudget(30.Seconds()));
             dllFile = package.Directory.GetFiles($"{directory.Name}.dll", SearchOption.AllDirectories).FirstOrDefault();
             dllFile.Should().NotBeNull();
             dllFile.LastWriteTimeUtc.Should().Be(lastBuildTime);
 
-            package.AnalyzerResult.GetProperty("langVersion").Should().Be("7.3");
+            ws.CurrentSolution.Projects.First().Language.Should().Be("C#");
+        }
+
+        [Fact]
+        public async Task If_a_build_is_in_fly_the_second_one_will_wait_and_do_not_continue()
+        {
+            var buildEvents = new LogEntryList();
+            var buildEventsMessages = new List<string>();
+            var package = await Create.ConsoleWorkspaceCopy(isRebuildable: true);
+            var barrier = new Barrier(2);
+            using (LogEvents.Subscribe(e =>
+            {
+                buildEvents.Add(e);
+                buildEventsMessages.Add(e.Evaluate().Message);
+                if (e.Evaluate().Message.StartsWith("Attempting building package "))
+                {
+                    barrier.SignalAndWait(1.Minutes());
+                }
+            }))
+            {
+                await Task.WhenAll(
+                    Task.Run(() => package.Build()),
+                    Task.Run(() => package.Build()));
+            }
+
+
+            buildEventsMessages.Should()
+                .Contain(e => e.StartsWith("Building workspace using "))
+                .And
+                .Contain(e => e.StartsWith("Skipping build for package "));
         }
     }
 }
