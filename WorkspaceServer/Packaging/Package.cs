@@ -464,7 +464,7 @@ namespace WorkspaceServer.Packaging
             }
         }
 
-        public AnalyzerResult DesignTimeBuildResult { get; protected set; }
+        protected AnalyzerResult DesignTimeBuildResult { get; set; }
 
         protected virtual bool ShouldBuild()
         {
