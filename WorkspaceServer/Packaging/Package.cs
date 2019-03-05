@@ -72,6 +72,7 @@ namespace WorkspaceServer.Packaging
         private AsyncLazy<bool> _lazyCreation;
 
         private readonly SemaphoreSlim buildSemaphore = new SemaphoreSlim(1, 1);
+        private readonly SemaphoreSlim publishSemaphore = new SemaphoreSlim(1, 1);
         private readonly Subject<Budget> _designTimeBuildRequestChannel;
         private readonly SerialDisposable _designTimeBuildThrottlerSubscription;
 
@@ -307,12 +308,8 @@ namespace WorkspaceServer.Packaging
 
         public virtual async Task EnsurePublished()
         {
-            var latestBuild = LastSuccessfulBuildTime;
             await EnsureBuilt();
-            if (latestBuild == null || latestBuild < LastSuccessfulBuildTime)
-            {
-                await Publish();
-            }
+            await Publish();
         }
 
         public bool RequiresPublish => IsWebProject;
@@ -370,9 +367,22 @@ namespace WorkspaceServer.Packaging
         {
             using (var operation = _log.OnEnterAndConfirmOnExit())
             {
-                operation.Info("Publishing workspace in {directory}", Directory);
-                var result = await new Dotnet(Directory)
-                    .Publish("--no-dependencies --no-restore --no-build");
+                var buildInProgress = publishSemaphore.CurrentCount == 0;
+                await publishSemaphore.WaitAsync();
+                if (buildInProgress)
+                {
+                    operation.Info("Skipping build for package {name}", Name);
+                    return;
+                }
+                operation.Info("Attempting to publish package {name}", Name);
+                CommandLineResult result;
+                using (Disposable.Create(() => publishSemaphore.Release()))
+                {
+                    operation.Info("Publishing workspace in {directory}", Directory);
+                    result = await new Dotnet(Directory)
+                        .Publish("--no-dependencies --no-restore --no-build");
+                }
+
                 result.ThrowOnFailure();
 
                 PublicationTime = Clock.Current.Now();
