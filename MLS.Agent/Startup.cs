@@ -152,14 +152,23 @@ namespace MLS.Agent
                     builder.UseBlazor<MLS.Blazor.Program>();
                 });
 
+                //app.Map("/LocalCodeRunner/blazor-nodatime.api", builder =>
+                //{
+                //    builder.UsePathBase("/LocalCodeRunner/blazor-nodatime.api/");
+                //    builder.UseBlazor(new BlazorOptions()
+                //    {
+                //        ClientAssemblyPath = "C:\\Users\\rchande\\.trydotnet\\packages\\blazor-nodatime.api\\MLS.Blazor\\bin\\Debug\\netstandard2.0\\MLS.Blazor.dll"
+                //    });
+                //});
+
+                var budget = new Budget();
+                _disposables.Add(() => budget.Cancel());
+                Configurator.Configure(app, app.ApplicationServices, budget);
+
                 app.UseDefaultFiles()
                     .UseStaticFilesFromToolLocation()
                     .UseRouter(new StaticFilesProxyRouter())
                     .UseMvc();
-
-                var budget = new Budget();
-                Configurator.Configure(app, app.ApplicationServices, budget);
-                _disposables.Add(() => budget.Cancel());
 
                 operation.Succeed();
 

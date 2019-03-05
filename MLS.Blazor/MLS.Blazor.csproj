@@ -5,8 +5,10 @@
     <RunCommand>dotnet</RunCommand>
     <RunArguments>blazor serve</RunArguments>
     <LangVersion>7.3</LangVersion>
+    <RootNamespace>MLS.Blazor</RootNamespace>
   </PropertyGroup>
 
+  
   <Target Name="AddCustomLinkerDescriptor" AfterTargets="_CollectBlazorLinkerDescriptors">
     <ItemGroup>
       <BlazorLinkerDescriptor Include="Linker.xml" />

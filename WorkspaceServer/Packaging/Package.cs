@@ -149,7 +149,7 @@ namespace WorkspaceServer.Packaging
 
         public FileInfo BlazorEntryPointAssemblyPath =>
             new FileInfo(Path.Combine(Directory.FullName,
-                    "MLS.Blazor\\bin\\Debug\\netstandard2.0\\MLS.Blazor.dll"));
+                    "bin\\Debug\\netstandard2.0\\MLS.Blazor.dll"));
 
         public string TargetFramework => _targetFramework ?? (_targetFramework = GetTargetFramework(Directory));
 

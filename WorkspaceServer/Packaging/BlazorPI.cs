@@ -37,6 +37,10 @@ namespace WorkspaceServer.Packaging
                 var dotnet = new Dotnet(directory);
                 var root = directory.FullName;
 
+                var csproj = Path.Combine(root, "MLS.Blazor.csproj");
+                var text = File.ReadAllText(csproj);
+                File.WriteAllText(csproj, UpdateCSProj(text));
+
                 var toDelete = new[] { "Pages", "Shared", "wwwroot", "_ViewImports.cshtml" };
                 foreach (var thing in toDelete)
                 {
@@ -46,11 +50,13 @@ namespace WorkspaceServer.Packaging
 
                 var wwwRootFiles = new[] { "index.html", "interop.js" };
                 var pagesFiles = new[] { "Index.cshtml", "Index.cshtml.cs" };
-                var rootFiles = new[] { "Program.cs", "Startup.cs" };
+                var rootFiles = new[] { "Program.cs", "Startup.cs", "Linker.xml" };
 
                 WriteAll(wwwRootFiles, "wwwroot", root);
                 WriteAll(pagesFiles, "Pages", root);
                 WriteAll(rootFiles, "", root);
+
+                Modify(root, "wwwroot\\index.html", "/LocalCodeRunner/blazor-console", "/LocalCodeRunner/blazor-nodatime.api");
 
                 var result = await dotnet.AddPackage("MLS.WasmCodeRunner", "1.0.7880001-alpha-c895bf25");
                 result.ThrowOnFailure();
@@ -69,6 +75,29 @@ namespace WorkspaceServer.Packaging
 
                 return Path.Combine(directory.FullName,
                     "bin\\Debug\\netstandard2.0\\MLS.Blazor.dll");
+            }
+
+            private void Modify(string root, string file, string toReplace, string replacement)
+            {
+                file = Path.Combine(root, file);
+                var text = File.ReadAllText(file);
+                var updated = text.Replace(toReplace, replacement);
+                File.WriteAllText(file, updated);
+            }
+
+            private string UpdateCSProj(string text)
+            {
+                var attribute = @"</PropertyGroup>
+<PropertyGroup>
+    <RootNamespace>MLS.Blazor</RootNamespace>
+</PropertyGroup>";
+                var u1 = text.Replace("</PropertyGroup>", attribute);
+
+                return u1.Replace("</ItemGroup>", @"
+</ItemGroup>
+<ItemGroup>
+  <BlazorLinkerDescriptor Include=""Linker.xml"" />
+</ItemGroup> ");
             }
 
             private static void WriteAll(string[] resources, string targetDirectory, string root)

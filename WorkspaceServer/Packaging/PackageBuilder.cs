@@ -70,7 +70,7 @@ namespace WorkspaceServer.Packaging
                 var initializer = new BlazorPI(_addPackages);
                 pb.PackageInitializer = initializer;
                  pb.BlazorSupported = true;
-                pb.Directory = pb.Directory.CreateSubdirectory("MLS.Blazor");
+                pb.Directory = new DirectoryInfo(Path.Combine(Package.DefaultPackagesDirectory.FullName, pb.PackageName, "MLS.Blazor"));
             });
 
             _afterCreateActions.Add(async (package, budget) =>
@@ -132,7 +132,14 @@ namespace WorkspaceServer.Packaging
         {
             budget = budget ?? new Budget();
 
-            if (CreateRebuildablePackage)
+            if (PackageInitializer is BlazorPI)
+            {
+                package = new BlazorPackage(
+                        PackageName,
+                        PackageInitializer,
+                        Directory);
+            }
+            else if (CreateRebuildablePackage)
             {
                 package = new RebuildablePackage(
                         PackageName,

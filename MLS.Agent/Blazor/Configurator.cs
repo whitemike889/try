@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,16 +18,17 @@ namespace MLS.Agent.Blazor
                 var builder = builderFactory.Result;
                 if (builder.BlazorSupported)
                 {
+                    var package = builder.GetPackage().Result;
+                    var readyTask = package.EnsureReady(budget);
+                    readyTask.Wait();
                     // if is a normal nuget package should we emit a special loader to run in blazor?
-                    var path = $"/LocalCodeRunner/blazor-{builder.PackageName}";
-                    app.Map(path, async a =>
+                    var path = $"/LocalCodeRunner/{builder.PackageName}";
+                    app.Map(path, appBuilder =>
                     {
-                        var package = await builder.GetPackage();
-                        await package.EnsureReady(budget);
                         var blazorEntryPoint = package.BlazorEntryPointAssemblyPath;
-                        app.UsePathBase(path);
+                        appBuilder.UsePathBase(path + "/");
                         // this is will cause the addition of a new static file provider, might cause issues
-                        app.UseBlazor(new BlazorOptions { ClientAssemblyPath = blazorEntryPoint.FullName });
+                        appBuilder.UseBlazor(new BlazorOptions { ClientAssemblyPath = blazorEntryPoint.FullName });
                     });
                 }
             }
