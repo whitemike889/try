@@ -119,7 +119,10 @@ namespace WorkspaceServer.Packaging
                             RoslynWorkspace = null;
                             DesignTimeBuildResult = result;
                             LastDesignTimeBuild = binLog.LastWriteTimeUtc;
-                            LastSuccessfulBuildTime = binLog.LastWriteTimeUtc;
+                            if (result.Succeeded)
+                            {
+                                LastSuccessfulBuildTime = binLog.LastWriteTimeUtc;
+                            }
                         }
                     }
                 }
@@ -309,7 +312,14 @@ namespace WorkspaceServer.Packaging
         public virtual async Task EnsurePublished()
         {
             await EnsureBuilt();
-            await Publish();
+            using (var operation = _log.OnEnterAndConfirmOnExit())
+            {
+                if (PublicationTime == null || PublicationTime < LastSuccessfulBuildTime)
+                {
+                    await Publish();
+                }
+                operation.Succeed();
+            }
         }
 
         public bool RequiresPublish => IsWebProject;
@@ -338,6 +348,7 @@ namespace WorkspaceServer.Packaging
                             .Build(args: "/bl");
                     }
 
+                    TryLoadDesignTimeBuildFromBuildLog();
                     if (result.ExitCode != 0)
                     {
                         File.WriteAllText(
@@ -349,7 +360,7 @@ namespace WorkspaceServer.Packaging
                         LastBuildErrorLogFile.Delete();
                     }
 
-                    TryLoadDesignTimeBuildFromBuildLog();
+                  
                     result.ThrowOnFailure();
                     operation.Info("Workspace built");
 
@@ -368,10 +379,10 @@ namespace WorkspaceServer.Packaging
             using (var operation = _log.OnEnterAndConfirmOnExit())
             {
                 operation.Info("Attempting to publish package {name}", Name);
-                var buildInProgress = publishSemaphore.CurrentCount == 0;
+                var publishInProgress = publishSemaphore.CurrentCount == 0;
                 await publishSemaphore.WaitAsync();
 
-                if (buildInProgress)
+                if (publishInProgress)
                 {
                     operation.Info("Skipping publish for package {name}", Name);
                     return;
@@ -386,10 +397,10 @@ namespace WorkspaceServer.Packaging
                 }
 
                 result.ThrowOnFailure();
-
-                PublicationTime = Clock.Current.Now();
+             
                 operation.Info("Workspace published");
                 operation.Succeed();
+                PublicationTime = Clock.Current.Now();
             }
         }
 
