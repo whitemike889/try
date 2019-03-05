@@ -26,19 +26,19 @@ namespace WorkspaceServer.Tests
         public void Dispose() => disposables.Dispose();
 
         [Fact]
-        public async Task If_a_new_file_is_added_and_ensure_ready_is_called_the_analyzer_result_includes_the_file()
+        public async Task If_a_new_file_is_added_the_workspace_includes_the_file()
         {
             var package = (RebuildablePackage)await Create.ConsoleWorkspaceCopy(isRebuildable: true);
-            await package.CreateRoslynWorkspaceAsync(new TimeBudget(30.Seconds()));
+            var ws = await package.CreateRoslynWorkspaceAsync(new TimeBudget(30.Seconds()));
 
             var newFile = Path.Combine(package.Directory.FullName, "Sample.cs");
-            package.DesignTimeBuildResult.SourceFiles.Should().NotContain(newFile);
+            ws.CurrentSolution.Projects.First().Documents.Should().NotContain(d => d.FilePath == newFile);
 
             File.WriteAllText(newFile, "//this is a new file");
 
-            await package.CreateRoslynWorkspaceAsync(new TimeBudget(30.Seconds()));
+            ws = await package.CreateRoslynWorkspaceAsync(new TimeBudget(30.Seconds()));
 
-            package.DesignTimeBuildResult.SourceFiles.Should().Contain(newFile);
+            ws.CurrentSolution.Projects.First().Documents.Should().Contain(d => d.FilePath == newFile);
         }
 
         [Fact]
@@ -47,13 +47,16 @@ namespace WorkspaceServer.Tests
             var package = (RebuildablePackage)await Create.ConsoleWorkspaceCopy(isRebuildable: true);
             var ws = await package.CreateRoslynWorkspaceAsync(new TimeBudget(30.Seconds()));
 
-            package.DesignTimeBuildResult.PackageReferences.Keys.Should().NotContain("Microsoft.CodeAnalysis");
+            var references = ws.CurrentSolution.Projects.First().MetadataReferences;
+            references.Should().NotContain(reference =>
+                reference.Display.Contains("Microsoft.CodeAnalysis.CSharp.dll")
+                && reference.Display.Contains("2.8.2"));
 
             await new Dotnet(package.Directory).AddPackage("Microsoft.CodeAnalysis", "2.8.2");
 
             ws = await package.CreateRoslynWorkspaceAsync(new TimeBudget(30.Seconds()));
-            var references = ws.CurrentSolution.Projects.First().MetadataReferences;
-            references.Should().Contain(reference => 
+            references = ws.CurrentSolution.Projects.First().MetadataReferences;
+            references.Should().Contain(reference =>
                 reference.Display.Contains("Microsoft.CodeAnalysis.CSharp.dll")
                 && reference.Display.Contains("2.8.2"));
         }
@@ -74,18 +77,17 @@ namespace WorkspaceServer.Tests
         }
 
         [Fact]
-        public async Task If_an_existing_file_is_modified__then_the_workspace_is_updated()
+        public async Task If_an_existing_file_is_modified_then_the_workspace_is_updated()
         {
             var package = (RebuildablePackage)await Create.ConsoleWorkspaceCopy(isRebuildable: true);
-            await package.CreateRoslynWorkspaceAsync(new TimeBudget(30.Seconds()));
+            var oldWorkspace = await package.CreateRoslynWorkspaceAsync(new TimeBudget(30.Seconds()));
 
             var existingFile = Path.Combine(package.Directory.FullName, "Program.cs");
-            var oldAnalyzerResult = package.DesignTimeBuildResult;
             File.WriteAllText(existingFile, "//this is Program.cs");
 
-            await package.CreateRoslynWorkspaceAsync(new TimeBudget(30.Seconds()));
+            var newWorkspace = await package.CreateRoslynWorkspaceAsync(new TimeBudget(30.Seconds()));
 
-            package.DesignTimeBuildResult.Should().NotBeSameAs(oldAnalyzerResult);
+            newWorkspace.Should().NotBeSameAs(oldWorkspace);
         }
 
         [Fact]
