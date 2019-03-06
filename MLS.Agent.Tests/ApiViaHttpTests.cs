@@ -166,8 +166,8 @@ namespace MLS.Agent.Tests
         [Theory]
         [InlineData("{}")]
         [InlineData("{ \"workspace\" : { } }")]
-        [InlineData( /* has top-level position property */
-            "{\r\n  \"workspace\": {\r\n    \"workspaceType\": \"console\",\r\n    \"files\": [],\r\n    \"buffers\": [\r\n      {\r\n        \"id\": \"\",\r\n        \"content\": \"\",\r\n        \"position\": 0\r\n      }\r\n    ],\r\n    \"usings\": []\r\n  },\r\n  \"activeBufferId\": \"\",\r\n  \"position\": 187\r\n}", Skip = "This is still supported")]
+        //[InlineData( /* has top-level position property */
+        //    "{\r\n  \"workspace\": {\r\n    \"workspaceType\": \"console\",\r\n    \"files\": [],\r\n    \"buffers\": [\r\n      {\r\n        \"id\": \"\",\r\n        \"content\": \"\",\r\n        \"position\": 0\r\n      }\r\n    ],\r\n    \"usings\": []\r\n  },\r\n  \"activeBufferId\": \"\",\r\n  \"position\": 187\r\n}", Skip = "This is still supported")]
         [InlineData( /* buffers array is empty */
             "{\r\n  \"workspace\": {\r\n    \"workspaceType\": \"console\",\r\n    \"files\": [],\r\n    \"buffers\": [],\r\n    \"usings\": []\r\n  },\r\n  \"activeBufferId\": \"\"\r\n}")]
         [InlineData( /* no buffers property */
