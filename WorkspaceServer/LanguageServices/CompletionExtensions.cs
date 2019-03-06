@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Completion;
+using Microsoft.CodeAnalysis.Tags;
 using MLS.Protocol;
 using WorkspaceServer.Models;
 
@@ -17,29 +17,29 @@ namespace WorkspaceServer.Servers.Scripting
         private static readonly string GetSymbolsAsync = nameof(GetSymbolsAsync);
 
         private static readonly ImmutableArray<string> KindTags = ImmutableArray.Create(
-            CompletionTags.Class,
-            CompletionTags.Constant,
-            CompletionTags.Delegate,
-            CompletionTags.Enum,
-            CompletionTags.EnumMember,
-            CompletionTags.Event,
-            CompletionTags.ExtensionMethod,
-            CompletionTags.Field,
-            CompletionTags.Interface,
-            CompletionTags.Intrinsic,
-            CompletionTags.Keyword,
-            CompletionTags.Label,
-            CompletionTags.Local,
-            CompletionTags.Method,
-            CompletionTags.Module,
-            CompletionTags.Namespace,
-            CompletionTags.Operator,
-            CompletionTags.Parameter,
-            CompletionTags.Property,
-            CompletionTags.RangeVariable,
-            CompletionTags.Reference,
-            CompletionTags.Structure,
-            CompletionTags.TypeParameter);
+            WellKnownTags.Class,
+            WellKnownTags.Constant,
+            WellKnownTags.Delegate,
+            WellKnownTags.Enum,
+            WellKnownTags.EnumMember,
+            WellKnownTags.Event,
+            WellKnownTags.ExtensionMethod,
+            WellKnownTags.Field,
+            WellKnownTags.Interface,
+            WellKnownTags.Intrinsic,
+            WellKnownTags.Keyword,
+            WellKnownTags.Label,
+            WellKnownTags.Local,
+            WellKnownTags.Method,
+            WellKnownTags.Module,
+            WellKnownTags.Namespace,
+            WellKnownTags.Operator,
+            WellKnownTags.Parameter,
+            WellKnownTags.Property,
+            WellKnownTags.RangeVariable,
+            WellKnownTags.Reference,
+            WellKnownTags.Structure,
+            WellKnownTags.TypeParameter);
 
         public static string GetKind(this CompletionItem completionItem)
         {

@@ -126,7 +126,7 @@ namespace WorkspaceServer.Tests
         {
             var package = Create.EmptyWorkspace(initializer: new PackageInitializer("webapi", "aspnet.webapi"));
 
-            await package.CreateRoslynWorkspaceForRunAsync(new TimeBudget(FluentTimeSpanExtensions.Seconds(30)));
+            await package.CreateRoslynWorkspaceForRunAsync(new TimeBudget(30.Seconds()));
 
             package.EntryPointAssemblyPath.Exists.Should().BeTrue();
 

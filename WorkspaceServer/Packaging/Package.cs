@@ -27,7 +27,8 @@ namespace WorkspaceServer.Packaging
 {
     public abstract class Package
     {
-        const string csharpLanguageVersion = "7.3";
+        const string CSharpLanguageVersion = "7.3";
+        protected const string DesignTimeBuildBinlogFileName = "designTimeBuild.binlog";
 
         static Package()
         {
@@ -107,7 +108,7 @@ namespace WorkspaceServer.Packaging
         {
             if (Directory.Exists)
             {
-                var binLog = Directory.GetFiles("*.binlog").FirstOrDefault();
+                var binLog = Directory.GetFiles("*.binlog").OrderByDescending(f => f.LastWriteTimeUtc).FirstOrDefault();
                 if (binLog != null)
                 {
                     var projectFile = Directory.GetFiles("*.csproj").FirstOrDefault();
@@ -120,7 +121,7 @@ namespace WorkspaceServer.Packaging
                             RoslynWorkspace = null;
                             DesignTimeBuildResult = result;
                             LastDesignTimeBuild = binLog.LastWriteTimeUtc;
-                            if (result.Succeeded)
+                            if (result.Succeeded && !binLog.Name.EndsWith(DesignTimeBuildBinlogFileName))
                             {
                                 LastSuccessfulBuildTime = binLog.LastWriteTimeUtc;
                             }
@@ -338,15 +339,20 @@ namespace WorkspaceServer.Packaging
 
         private async Task ProcessFullBuildRequest(Budget budget)
         {
-            await EnsureReady(budget);
+            await EnsureCreated().CancelIfExceeds(budget);
+            await EnsureBuilt().CancelIfExceeds(budget);
             var ws = CreateRoslynWorkspace();
+            if (IsWebProject)
+            {
+                await EnsurePublished().CancelIfExceeds(budget);
+            }
             SetCompletionSourceResult(_fullBuildCompletionSource, ws, _fullBuildCompletionSourceLock);
         }
 
         private async Task ProcessDesignTimeBuildRequest(Budget budget)
         {
             await EnsureCreated().CancelIfExceeds(budget);
-            DesignTimeBuild();
+            await EnsureDesignTimeBuilt().CancelIfExceeds(budget);
             var ws = CreateRoslynWorkspace();
             SetCompletionSourceResult(_designTimeBuildCompletionSource, ws, _designTimeBuildCompletionSourceLock);
         }
@@ -398,6 +404,24 @@ namespace WorkspaceServer.Packaging
                 if (ShouldDoFullBuild())
                 {
                     await FullBuild();
+                }
+                else
+                {
+                    operation.Info("Workspace already built");
+                }
+
+                operation.Succeed();
+            }
+        }
+
+        protected async Task EnsureDesignTimeBuilt([CallerMemberName] string caller = null)
+        {
+            await EnsureCreated();
+            using (var operation = _log.OnEnterAndConfirmOnExit())
+            {
+                if (ShouldDoDesignTimeFullBuild())
+                {
+                    DesignTimeBuild();
                 }
                 else
                 {
@@ -612,7 +636,8 @@ namespace WorkspaceServer.Packaging
 
         protected virtual bool ShouldDoFullBuild()
         {
-            return ShouldDoDesignTimeFullBuild()
+            return LastSuccessfulBuildTime == null
+                   || ShouldDoDesignTimeFullBuild()
                    || (LastDesignTimeBuild > LastSuccessfulBuildTime);
         }
 
@@ -634,7 +659,8 @@ namespace WorkspaceServer.Packaging
                 });
 
                 var analyzer = manager.GetProject(csProj.FullName);
-                analyzer.SetGlobalProperty("langVersion", csharpLanguageVersion);
+                analyzer.AddBinaryLogger(Path.Combine(Directory.FullName, DesignTimeBuildBinlogFileName));
+                analyzer.SetGlobalProperty("langVersion", CSharpLanguageVersion);
                 var result = analyzer.Build().Results.First();
                 DesignTimeBuildResult = result;
                 LastDesignTimeBuild = Clock.Current.Now();

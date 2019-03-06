@@ -62,11 +62,11 @@ namespace WorkspaceServer.Packaging
             });
         }
 
-        public async Task<Package> GetPackage(Budget budget = null)
+        public Package GetPackage(Budget budget = null)
         {
             if (package == null)
             {
-                await PreparePackage(budget);
+                PreparePackage(budget);
             }
 
             budget?.RecordEntry();
@@ -91,7 +91,7 @@ namespace WorkspaceServer.Packaging
             return info;
         }
 
-        private async Task PreparePackage(Budget budget = null)
+        private void PreparePackage(Budget budget = null)
         {
             budget = budget ?? new Budget();
 
@@ -109,8 +109,6 @@ namespace WorkspaceServer.Packaging
                         PackageInitializer,
                         Directory);
             }
-
-            await package.EnsureReady(budget);
 
             budget.RecordEntry();
         }
