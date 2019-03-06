@@ -378,7 +378,7 @@ namespace WorkspaceServer.Packaging
 
         protected AdhocWorkspace RoslynWorkspace { get; set; }
 
-        public async Task EnsureReady(Budget budget)
+        private async Task EnsureReady(Budget budget)
         {
             budget = budget ?? new Budget();
 
