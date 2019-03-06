@@ -64,7 +64,7 @@ namespace MLS.Agent.Tests
                 Workspace.FromSource(
                     source: $@"Console.WriteLine(""{output}"");".EnforceLF(),
                     workspaceType: "script"
-                ), 
+                ),
                 requestId: "TestRun").ToJson();
 
             var response = await CallCompile(requestJson);
@@ -76,7 +76,8 @@ namespace MLS.Agent.Tests
         public async Task The_workspace_endpoint_compiles_code_using_dotnet_when_a_non_script_workspace_type_is_specified()
         {
             var output = Guid.NewGuid().ToString();
-            var requestJson = Create.SimpleWorkspaceRequestAsJson(output, "console");
+            var package = await Package.Copy(await Default.ConsoleWorkspace);
+            var requestJson = Create.SimpleWorkspaceRequestAsJson(output, package.Name);
 
             var response = await CallRun(requestJson);
 
@@ -93,21 +94,24 @@ namespace MLS.Agent.Tests
         public async Task The_workspace_endpoint_will_prevent_compiling_if_is_in_language_service_mode()
         {
             var output = Guid.NewGuid().ToString();
-            var requestJson = Create.SimpleWorkspaceRequestAsJson(output, "console");
+            var package = await Package.Copy(await Default.ConsoleWorkspace);
+
+            var requestJson = Create.SimpleWorkspaceRequestAsJson(output, package.Name);
 
             var response = await CallRun(requestJson, options: new StartupOptions(true, true, string.Empty));
-          
+
             response.Should().BeNotFound();
         }
 
         [Fact]
         public async Task When_a_non_script_workspace_type_is_specified_then_code_fragments_cannot_be_compiled_successfully()
         {
+            var package = await Package.Copy(await Default.ConsoleWorkspace);
             var requestJson =
                 new WorkspaceRequest(
                     Workspace.FromSource(
                         @"Console.WriteLine(""hello!"");",
-                        workspaceType: "console", 
+                        workspaceType: package.Name,
                         id: "Program.cs")).ToJson();
 
             var response = await CallRun(requestJson);
@@ -166,8 +170,6 @@ namespace MLS.Agent.Tests
         [Theory]
         [InlineData("{}")]
         [InlineData("{ \"workspace\" : { } }")]
-        //[InlineData( /* has top-level position property */
-        //    "{\r\n  \"workspace\": {\r\n    \"workspaceType\": \"console\",\r\n    \"files\": [],\r\n    \"buffers\": [\r\n      {\r\n        \"id\": \"\",\r\n        \"content\": \"\",\r\n        \"position\": 0\r\n      }\r\n    ],\r\n    \"usings\": []\r\n  },\r\n  \"activeBufferId\": \"\",\r\n  \"position\": 187\r\n}", Skip = "This is still supported")]
         [InlineData( /* buffers array is empty */
             "{\r\n  \"workspace\": {\r\n    \"workspaceType\": \"console\",\r\n    \"files\": [],\r\n    \"buffers\": [],\r\n    \"usings\": []\r\n  },\r\n  \"activeBufferId\": \"\"\r\n}")]
         [InlineData( /* no buffers property */
@@ -243,7 +245,7 @@ namespace MLS.Agent.Tests
                             id: "default.cs",
                             position: position))
                     .ToJson();
-                
+
                 var request = new HttpRequestMessage(HttpMethod.Post, @"/workspace/signaturehelp")
                 {
                     Content = new StringContent(
@@ -338,7 +340,7 @@ namespace FibonacciTest
     }
 }".EnforceLF();
             #endregion
-
+            var package = await Package.Copy(await Default.ConsoleWorkspace);
             var (processed, position) = CodeManipulation.ProcessMarkup(generator);
             var log = new LogEntryList();
             using (LogEvents.Subscribe(log.Add))
@@ -348,7 +350,7 @@ namespace FibonacciTest
                     new WorkspaceRequest(activeBufferId: "generators/FibonacciGenerator.cs",
                                          requestId: "TestRun",
                                          workspace: Workspace.FromSources(
-                                             "console",
+                                             package.Name,
                                              ("Program.cs", program, 0),
                                              ("generators/FibonacciGenerator.cs", processed, position)
                                          )).ToJson();
@@ -415,7 +417,7 @@ namespace FibonacciTest
 }".EnforceLF();
 
             #endregion
-
+            var package = await Package.Copy(await Default.ConsoleWorkspace);
             var (processed, position) = CodeManipulation.ProcessMarkup(generator);
             var log = new LogEntryList();
             using (LogEvents.Subscribe(log.Add))
@@ -425,7 +427,7 @@ namespace FibonacciTest
                     new WorkspaceRequest(activeBufferId: "generators/FibonacciGenerator.cs",
                                         requestId: "TestRun",
                                          workspace: Workspace.FromSources(
-                                             "console",
+                                             package.Name,
                                              ("Program.cs", program, 0),
                                              ("generators/FibonacciGenerator.cs", processed, position)
                                          )).ToJson();
@@ -493,7 +495,7 @@ namespace FibonacciTest
 }".EnforceLF();
 
             #endregion
-
+            var package = await Package.Copy(await Default.ConsoleWorkspace);
             var (processed, position) = CodeManipulation.ProcessMarkup(generator);
             var log = new LogEntryList();
             using (LogEvents.Subscribe(log.Add))
@@ -503,7 +505,7 @@ namespace FibonacciTest
                     new WorkspaceRequest(activeBufferId: "generators/FibonacciGenerator.cs",
                                         requestId: "TestRun",
                                          workspace: Workspace.FromSources(
-                                             "console",
+                                             package.Name,
                                              ("Program.cs", program, 0),
                                              ("generators/FibonacciGenerator.cs", processed, position)
                                          )).ToJson();
@@ -533,7 +535,7 @@ namespace FibonacciTest
         {
             var workspaceType = await Create.WebApiWorkspaceCopy();
             var workspace = WorkspaceFactory.CreateWorkspaceFromDirectory(
-                workspaceType.Directory, 
+                workspaceType.Directory,
                 workspaceType.Directory.Name);
 
             var request = new WorkspaceRequest(workspace, httpRequest: new HttpRequest("/api/values", "get"), requestId: "TestRun");
@@ -607,24 +609,25 @@ namespace FibonacciTest
             result.ShouldFailWithOutput("broken.cs(1,1): error CS1031: Type expected");
         }
 
-        [Theory]
-        [InlineData(@"
-            public class Program { public static void Main()\n  {\n  Console.WriteLine();  }  }")]
-        public async Task When_Run_times_out_in_console_workspace_server_code_then_the_response_code_is_504(string code)
+        [Fact]
+        public async Task When_Run_times_out_in_console_workspace_server_code_then_the_response_code_is_504()
         {
-            var workspace = Workspace.FromSource(code.EnforceLF(), (await Create.ConsoleWorkspaceCopy()).Name);
+            var code = @"public class Program { public static void Main()\n  {\n  Console.WriteLine();  }  }";
+            var package = await Package.Copy(await Default.ConsoleWorkspace);
+           
+            var workspace = Workspace.FromSource(code.EnforceLF(), package.Name);
 
             var requestJson = new WorkspaceRequest(workspace).ToJson();
 
-            ((VirtualClock) Clock.Current).OnBudgetEntryRecorded((virtualClock, budget, entry) =>
-            {
-                Log.Info("Budget entry created: {entry}", entry);
+            ((VirtualClock)Clock.Current).OnBudgetEntryRecorded((virtualClock, budget, entry) =>
+           {
+               Log.Info("Budget entry created: {entry}", entry);
 
-                if (entry.Name == typeof(BufferInliningTransformer).Name)
-                {
-                    budget.Cancel();
-                }
-            });
+               if (entry.Name == typeof(BufferInliningTransformer).Name)
+               {
+                   budget.Cancel();
+               }
+           });
 
             var response = await CallRun(requestJson);
 
@@ -632,7 +635,7 @@ namespace FibonacciTest
         }
 
         [Theory]
-        [InlineData( @"
+        [InlineData(@"
             Console.WriteLine();")]
         [InlineData(@"
             public class Program { public static void Main()\n  {\n  Console.WriteLine();  }  }")]
@@ -642,12 +645,12 @@ namespace FibonacciTest
 
             var requestJson = new WorkspaceRequest(workspace).ToJson();
 
-            ((VirtualClock) Clock.Current).OnBudgetEntryRecorded((virtualClock, budget, entry) =>
-            {
-                Log.Info("Budget entry created: {entry}", entry);
+            ((VirtualClock)Clock.Current).OnBudgetEntryRecorded((virtualClock, budget, entry) =>
+           {
+               Log.Info("Budget entry created: {entry}", entry);
 
-                budget.Cancel();
-            });
+               budget.Cancel();
+           });
 
             var response = await CallRun(requestJson);
 

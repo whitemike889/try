@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
 using System.Reactive.Concurrency;
@@ -29,6 +30,8 @@ namespace WorkspaceServer.Packaging
     {
         const string CSharpLanguageVersion = "7.3";
         protected const string DesignTimeBuildBinlogFileName = "designTimeBuild.binlog";
+        private static ConcurrentDictionary<string, SemaphoreSlim> packageBuildSemaphores = new ConcurrentDictionary<string, SemaphoreSlim>();
+        private static ConcurrentDictionary<string, SemaphoreSlim> packagePublishSemaphores = new ConcurrentDictionary<string, SemaphoreSlim>();
 
         static Package()
         {
@@ -66,8 +69,9 @@ namespace WorkspaceServer.Packaging
         private readonly SerialDisposable _fullBuildThrottlerSubscription;
         private readonly AsyncLazy<bool> _lazyCreation;
 
-        private readonly SemaphoreSlim _buildSemaphore = new SemaphoreSlim(1, 1);
-        private readonly SemaphoreSlim _publishSemaphore = new SemaphoreSlim(1, 1);
+        private readonly SemaphoreSlim _buildSemaphore;
+        private readonly SemaphoreSlim _publishSemaphore;
+
         private readonly Subject<Budget> _designTimeBuildRequestChannel;
         private readonly SerialDisposable _designTimeBuildThrottlerSubscription;
 
@@ -101,6 +105,8 @@ namespace WorkspaceServer.Packaging
             SetupWorkspaceCreationFromDesignTimeBuildChannel();
             TryLoadDesignTimeBuildFromBuildLog();
             _lazyCreation = new AsyncLazy<bool>(Create);
+            _buildSemaphore = packageBuildSemaphores.GetOrAdd(Name, _ => new SemaphoreSlim(1, 1));
+            _publishSemaphore = packagePublishSemaphores.GetOrAdd(Name, _ => new SemaphoreSlim(1, 1));
         }
 
 
@@ -307,12 +313,21 @@ namespace WorkspaceServer.Packaging
 
         private void SetupWorkspaceCreationFromBuildChannel()
         {
+
             _fullBuildThrottlerSubscription.Disposable = _fullBuildRequestChannel
                 .Throttle(TimeSpan.FromSeconds(0.5), _buildThrottleScheduler)
+                .ObserveOn(TaskPoolScheduler.Default)
                 .Subscribe(
                       async (budget) =>
                       {
-                          await ProcessFullBuildRequest(budget);
+                          try
+                          {
+                              await ProcessFullBuildRequest(budget);
+                          }
+                          catch (Exception e)
+                          {
+                              SetCompletionSourceException(_fullBuildCompletionSource, e, _fullBuildCompletionSourceLock);
+                          }
                       },
                   error =>
                   {
@@ -325,10 +340,18 @@ namespace WorkspaceServer.Packaging
         {
             _designTimeBuildThrottlerSubscription.Disposable = _designTimeBuildRequestChannel
                 .Throttle(TimeSpan.FromSeconds(0.5), _buildThrottleScheduler)
+                .ObserveOn(TaskPoolScheduler.Default)
                 .Subscribe(
                     async (budget) =>
                     {
-                        await ProcessDesignTimeBuildRequest(budget);
+                        try
+                        {
+                            await ProcessDesignTimeBuildRequest(budget);
+                        }
+                        catch (Exception e)
+                        {
+                            SetCompletionSourceException(_designTimeBuildCompletionSource, e, _designTimeBuildCompletionSourceLock);
+                        }
                     },
                     error =>
                     {
