@@ -67,7 +67,7 @@ namespace WorkspaceServer.Servers.Roslyn
 
             var processed = await _transformer.TransformAsync(request.Workspace, budget);
             var sourceFiles = processed.GetSourceFiles();
-            var (_, documents) = await package.GetCompilation(sourceFiles, GetSourceCodeKind(request), GetUsings(request.Workspace), budget, WorkspaceUsage.CompileOrRun);
+            var (_, documents) = await package.GetCompilationForLanguageServices(sourceFiles, GetSourceCodeKind(request), GetUsings(request.Workspace), budget);
 
             var file = processed.GetFileFromBufferId(request.ActiveBufferId);
             var (_, _, absolutePosition) = processed.GetTextLocation(request.ActiveBufferId);
@@ -133,7 +133,7 @@ namespace WorkspaceServer.Servers.Roslyn
             var processed = await _transformer.TransformAsync(request.Workspace, budget);
 
             var sourceFiles = processed.GetSourceFiles();
-            var (compilation, documents) = await package.GetCompilation(sourceFiles, GetSourceCodeKind(request), GetUsings(request.Workspace), budget, WorkspaceUsage.CompileOrRun);
+            var (compilation, documents) = await package.GetCompilationForLanguageServices(sourceFiles, GetSourceCodeKind(request), GetUsings(request.Workspace), budget);
 
             var selectedDocument = documents.FirstOrDefault(doc => doc.IsMatch(request.ActiveBufferId.FileName))
                                    ??
@@ -174,7 +174,7 @@ namespace WorkspaceServer.Servers.Roslyn
             var processed = await _transformer.TransformAsync(request.Workspace, budget);
 
             var sourceFiles = processed.GetSourceFiles();
-            var (_, documents) = await package.GetCompilation(sourceFiles, GetSourceCodeKind(request), GetUsings(request.Workspace), budget, WorkspaceUsage.CompileOrRun);
+            var (_, documents) = await package.GetCompilationForLanguageServices(sourceFiles, GetSourceCodeKind(request), GetUsings(request.Workspace), budget);
 
             var selectedDocument = documents.FirstOrDefault(doc => doc.IsMatch( request.ActiveBufferId.FileName))
                                    ??
