@@ -567,7 +567,7 @@ namespace FibonacciTest
         public async Task When_aspnet_webapi_workspace_request_succeeds_then_standard_out_is_available_on_response()
         {
             var package = await Package.Copy(await Default.WebApiWorkspace);
-            await package.CreateRoslynWorkspaceForRunAsync(new TimeBudget(1.Minutes()));
+            await package.CreateRoslynWorkspaceForRunAsync(new TimeBudget(10.Minutes()));
             var workspace = WorkspaceFactory.CreateWorkspaceFromDirectory(package.Directory, package.Directory.Name);
 
             var request = new WorkspaceRequest(workspace, httpRequest: new HttpRequest("/api/values", "get"), requestId: "TestRun");
@@ -588,7 +588,7 @@ namespace FibonacciTest
         public async Task When_aspnet_webapi_workspace_request_fails_then_diagnostics_are_returned()
         {
             var package = await Package.Copy(await Default.WebApiWorkspace);
-            await package.CreateRoslynWorkspaceForRunAsync(new TimeBudget(1.Minutes()));
+            await package.CreateRoslynWorkspaceForRunAsync(new TimeBudget(10.Minutes()));
             var workspace = WorkspaceFactory.CreateWorkspaceFromDirectory(package.Directory, package.Directory.Name);
             var nonCompilingBuffer = new Workspace.Buffer("broken.cs", "this does not compile", 0);
             workspace = new Workspace(
