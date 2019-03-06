@@ -139,8 +139,12 @@ Source
 
 
             project = currentSolution.GetProject(projectId);
-            var options = (CSharpCompilationOptions)project.CompilationOptions;
-            project = project.WithCompilationOptions(options.WithUsings(defaultUsings));
+            var usings = defaultUsings?.ToArray() ?? Array.Empty<string>();
+            if (usings.Length > 0)
+            {
+                var options = (CSharpCompilationOptions) project.CompilationOptions;
+                project = project.WithCompilationOptions(options.WithUsings(usings));
+            }
 
             var compilation = await project.GetCompilationAsync().CancelIfExceeds(budget);
 

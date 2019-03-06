@@ -204,7 +204,7 @@ Console.WriteLine(3);
 Console.WriteLine(4);", build);
 
 
-            var timeBudget = new TimeBudget(30.Seconds());
+            var timeBudget = new TimeBudget(1.Minutes());
 
             var result = await server.Run(new WorkspaceRequest(request), timeBudget);
 
