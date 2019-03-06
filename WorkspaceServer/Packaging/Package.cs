@@ -25,12 +25,6 @@ using Disposable = System.Reactive.Disposables.Disposable;
 
 namespace WorkspaceServer.Packaging
 {
-
-    public enum WorkspaceUsage
-    {
-        CompileOrRun,
-        Intellisense
-    }
     public abstract class Package
     {
         const string csharpLanguageVersion = "7.3";
