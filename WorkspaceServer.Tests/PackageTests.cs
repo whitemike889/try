@@ -155,7 +155,7 @@ namespace WorkspaceServer.Tests
                 buildEventsMessages.Add(e.Evaluate().Message);
                 if (e.Evaluate().Message.StartsWith("Attempting building package "))
                 {
-                    barrier.SignalAndWait(1.Minutes());
+                    barrier.SignalAndWait(3.Minutes());
                 }
             }))
             {
