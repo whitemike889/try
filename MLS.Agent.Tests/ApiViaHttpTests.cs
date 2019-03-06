@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Clockwise;
 using FluentAssertions;
+using Humanizer;
 using MLS.Project.Transformations;
 using MLS.Protocol;
 using MLS.Protocol.Completion;
@@ -565,8 +566,9 @@ namespace FibonacciTest
         [Fact(Skip = "WIP")]
         public async Task When_aspnet_webapi_workspace_request_succeeds_then_standard_out_is_available_on_response()
         {
-            var workspaceType = await Package.Copy(await Default.WebApiWorkspace);
-            var workspace = WorkspaceFactory.CreateWorkspaceFromDirectory(workspaceType.Directory, workspaceType.Directory.Name);
+            var package = await Package.Copy(await Default.WebApiWorkspace);
+            await package.CreateRoslynWorkspaceForRunAsync(new TimeBudget(1.Minutes()));
+            var workspace = WorkspaceFactory.CreateWorkspaceFromDirectory(package.Directory, package.Directory.Name);
 
             var request = new WorkspaceRequest(workspace, httpRequest: new HttpRequest("/api/values", "get"), requestId: "TestRun");
 
@@ -585,8 +587,9 @@ namespace FibonacciTest
         [Fact]
         public async Task When_aspnet_webapi_workspace_request_fails_then_diagnostics_are_returned()
         {
-            var workspaceType = await Package.Copy(await Default.WebApiWorkspace);
-            var workspace = WorkspaceFactory.CreateWorkspaceFromDirectory(workspaceType.Directory, workspaceType.Directory.Name);
+            var package = await Package.Copy(await Default.WebApiWorkspace);
+            await package.CreateRoslynWorkspaceForRunAsync(new TimeBudget(1.Minutes()));
+            var workspace = WorkspaceFactory.CreateWorkspaceFromDirectory(package.Directory, package.Directory.Name);
             var nonCompilingBuffer = new Workspace.Buffer("broken.cs", "this does not compile", 0);
             workspace = new Workspace(
                 buffers: workspace.Buffers.Concat(new[] { nonCompilingBuffer }).ToArray(),
