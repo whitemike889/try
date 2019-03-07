@@ -5,7 +5,7 @@ namespace WorkspaceServer
     public class PackageInfo
     {
         public PackageInfo(string type, DateTimeOffset? buildTime, DateTimeOffset? constructionTime, DateTimeOffset? publicationTime, DateTimeOffset? creationTime,
-            DateTimeOffset? readyTime, bool blazorSupported = false)
+            DateTimeOffset? readyTime)
         {
             Type = type;
             BuildTime = buildTime;
@@ -13,7 +13,6 @@ namespace WorkspaceServer
             PublicationTime = publicationTime;
             CreationTime = creationTime;
             ReadyTime = readyTime;
-            BlazorSupported = true;
         }
 
         public string Type { get;  }
@@ -22,6 +21,5 @@ namespace WorkspaceServer
         public DateTimeOffset? PublicationTime { get;  }
         public DateTimeOffset? CreationTime { get;  }
         public DateTimeOffset? ReadyTime { get; }
-        public bool BlazorSupported { get; set; }
     }
 }

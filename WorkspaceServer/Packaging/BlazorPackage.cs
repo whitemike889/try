@@ -12,10 +12,18 @@ namespace WorkspaceServer.Packaging
 {
     public class BlazorPackage : Package
     {
+        private const string runnerPrefix = "runner-";
         private FileInfo _blazorEntryPoint;
 
         public BlazorPackage(string name = null, IPackageInitializer initializer = null, DirectoryInfo directory = null, IScheduler buildThrottleScheduler = null) : base(name, initializer, directory, buildThrottleScheduler)
         {
+            if (!name.StartsWith(runnerPrefix))
+            {
+                throw new ArgumentException(nameof(name));
+            }
+
+            CodeRunnerPath = $"/LocalCodeRunner/{name.Remove(0, runnerPrefix.Length)}";
+            CodeRunnerPathBase = CodeRunnerPath + "/";
         }
 
         protected override bool ShouldDoDesignTimeFullBuild()
@@ -25,6 +33,9 @@ namespace WorkspaceServer.Packaging
 
         public FileInfo BlazorEntryPointAssemblyPath =>
             _blazorEntryPoint ?? (_blazorEntryPoint = GetBlazorEntryPoint());
+
+        public string CodeRunnerPath { get; }
+        public string CodeRunnerPathBase { get; }
 
         private FileInfo GetBlazorEntryPoint()
         {

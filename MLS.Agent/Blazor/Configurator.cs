@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -8,9 +7,9 @@ using WorkspaceServer.Packaging;
 
 namespace MLS.Agent.Blazor
 {
-    internal sealed class Configurator
+    internal sealed class BlazorPackageConfiguration
     {
-        public static void Configure(IApplicationBuilder app, IServiceProvider serviceProvider, Budget budget = null)
+        public static void Configure(IApplicationBuilder app, IServiceProvider serviceProvider, Budget budget)
         {
             var registry = serviceProvider.GetService<PackageRegistry>();
 
@@ -21,15 +20,13 @@ namespace MLS.Agent.Blazor
                 {
                     var package = builder.GetPackage() as BlazorPackage;
                     var readyTask = package.CreateRoslynWorkspaceForRunAsync(budget);
+
+                    // Todo: don't do this in server startup path
                     readyTask.Wait();
-                    var name = builder.PackageName.Remove(0, "runner-".Length);
-                    //var name = builder.PackageName;
-                    var path = $"/LocalCodeRunner/{name}";
-                    app.Map(path, appBuilder =>
+                    app.Map(package.CodeRunnerPath, appBuilder =>
                     {
                         var blazorEntryPoint = package.BlazorEntryPointAssemblyPath;
-                        appBuilder.UsePathBase(path + "/");
-                        // this is will cause the addition of a new static file provider, might cause issues
+                        appBuilder.UsePathBase(package.CodeRunnerPathBase);
                         appBuilder.UseBlazor(new BlazorOptions { ClientAssemblyPath = blazorEntryPoint.FullName });
                     });
                 }

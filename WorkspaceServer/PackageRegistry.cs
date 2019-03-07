@@ -121,8 +121,8 @@ namespace WorkspaceServer
                          workspace =>
                          {
                              workspace.CreateUsingDotnet("console");
-                             workspace.AddPackageReference("NodaTime", "2.4.4");
-                             workspace.AddPackageReference("NodaTime.Testing", "2.4.4");
+                             workspace.AddPackageReference("NodaTime", "2.3.0");
+                             workspace.AddPackageReference("NodaTime.Testing", "2.3.0");
                              workspace.AddPackageReference("Newtonsoft.Json");
                          });
 
@@ -147,6 +147,7 @@ namespace WorkspaceServer
                              workspace.AddPackageReference("Newtonsoft.Json");
                          });
 
+            // Todo: soemething about nodatime 2.3 makes blazor toolchain fail to build
             registry.Add("blazor-nodatime.api",
                          workspace =>
                          {
