@@ -4,6 +4,7 @@ using Clockwise;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using WorkspaceServer;
+using WorkspaceServer.Packaging;
 
 namespace MLS.Agent.Blazor
 {
@@ -18,8 +19,8 @@ namespace MLS.Agent.Blazor
                 var builder = builderFactory.Result;
                 if (builder.BlazorSupported)
                 {
-                    var package = builder.GetPackage().Result;
-                    var readyTask = package.EnsureReady(budget);
+                    var package = builder.GetPackage() as BlazorPackage;
+                    var readyTask = package.CreateRoslynWorkspaceForRunAsync(budget);
                     readyTask.Wait();
                     var name = builder.PackageName.Remove(0, "runner-".Length);
                     //var name = builder.PackageName;

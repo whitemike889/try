@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Threading.Tasks;
 using Clockwise;
 using FluentAssertions;
@@ -204,7 +203,7 @@ Console.WriteLine(3);
 Console.WriteLine(4);", build);
 
 
-            var timeBudget = new TimeBudget(30.Seconds());
+            var timeBudget = new TimeBudget(10.Minutes());
 
             var result = await server.Run(new WorkspaceRequest(request), timeBudget);
 

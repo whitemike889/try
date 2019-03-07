@@ -30,13 +30,6 @@
       "message": "(1,18): error CS1002: ; expected",
       "severity": 3,
       "id": "CS1002"
-    },
-    {
-      "start": 27,
-      "end": 27,
-      "message": "(1,1): error CS1002: ; expected",
-      "severity": 3,
-      "id": "CS1002"
     }
   ],
   "projectDiagnostics": [

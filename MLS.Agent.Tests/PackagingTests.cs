@@ -12,6 +12,7 @@ using MLS.Agent.Tools;
 using System.IO;
 using MLS.Agent.Tests.TestUtility;
 using MLS.Agent.CommandLine;
+using MLS.Agent.Tools.Extensions;
 
 namespace MLS.Agent.Tests
 {
@@ -53,7 +54,7 @@ namespace MLS.Agent.Tests
             foreach (var thing in toDelete)
             {
                 var path = Path.Combine(root, thing);
-                Delete(path);
+                path.Delete();
             }
 
 
@@ -100,27 +101,6 @@ namespace MLS.Agent.Tests
             using (var reader = new StreamReader(assembly.GetManifestResourceStream($"MLS.Agent.Tests.{resourceName}")))
             {
                 return reader.ReadToEnd();
-            }
-        }
-
-        private void Delete(string path)
-        {
-            try
-            {
-                Directory.Delete(path, recursive: true);
-            }
-            catch
-            {
-
-            }
-
-            try
-            {
-                File.Delete(path);
-            }
-            catch
-            {
-
             }
         }
     }

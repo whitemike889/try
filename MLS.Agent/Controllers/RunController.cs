@@ -35,7 +35,7 @@ namespace MLS.Agent.Controllers
         [DebugEnableFilter]
         public async Task<IActionResult> Run(
             [FromBody] WorkspaceRequest request,
-            [FromHeader(Name = "Timeout")] string timeoutInMilliseconds = "15000")
+            [FromHeader(Name = "Timeout")] string timeoutInMilliseconds = "45000")
         {
             if (_options.IsLanguageService)
             {

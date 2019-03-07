@@ -44,15 +44,23 @@ namespace WorkspaceServer.Transformations
 
             var paddingSize = BufferInliningTransformer.PaddingSize;
 
+            var diagnosticsInBuffer = FilterDiagnosticsForViewport().ToArray();
+            var projectDiagnostics = diagnostics.Select(d => d.ToSerializableDiagnostic()).ToArray();
+
             return (
-                       ReconstructDiagnosticLocations().ToArray(),
-                       diagnostics.Select(d => d.ToSerializableDiagnostic()).ToArray()
+                diagnosticsInBuffer,
+                projectDiagnostics
                    );
 
-            IEnumerable<SerializableDiagnostic> ReconstructDiagnosticLocations()
+            IEnumerable<SerializableDiagnostic> FilterDiagnosticsForViewport()
             {
                 foreach (var diagnostic in diagnostics)
                 {
+                    if (diagnostic.Location == Location.None)
+                    {
+                        continue;
+                    }
+
                     var filePath = diagnostic.Location.SourceTree?.FilePath;
 
                     // hide warnings that are not within the visible code
@@ -78,7 +86,7 @@ namespace WorkspaceServer.Transformations
                     {
                         var target = viewPorts
                                      .Where(e => e.BufferId.RegionName != null &&
-                                                 (!lineSpan.HasMappedPath || lineSpanPath.EndsWith(e.Destination.Name)))
+                                                 (string.IsNullOrWhiteSpace(lineSpanPath) || lineSpanPath.EndsWith(e.Destination.Name)))
                                      .FirstOrDefault(e => e.Region.Contains(diagnostic.Location.SourceSpan.Start));
 
                         if (target != null && !target.Region.IsEmpty)
@@ -121,6 +129,14 @@ namespace WorkspaceServer.Transformations
             Diagnostic diagnostic,
             int paddingSize)
         {
+            // this diagnostics does not apply to viewport
+            if (diagnostic.Location!= Location.None 
+                && !string.IsNullOrWhiteSpace(diagnostic.Location.SourceTree.FilePath) 
+                && !diagnostic.Location.SourceTree.FilePath.Contains(viewport.Destination.Name))
+            {
+                return null;
+            }
+
             // offset of the buffer into the original source file
             var offset = viewport.Region.Start;
             // span of content injected in the buffer viewport
@@ -141,18 +157,22 @@ namespace WorkspaceServer.Transformations
                 if (regionLine.ToString() == line.ToString())
                 {
                     var lineText = line.ToString();
-                    var partToFind = lineText.Substring(diagnostic.Location.GetMappedLineSpan().Span.Start.Character);
-                    var charOffset = sourceText.Lines[lineOffset].ToString().IndexOf(partToFind, StringComparison.Ordinal);
+                    var startCharacter = diagnostic.Location.GetMappedLineSpan().Span.Start.Character;
+                    if (startCharacter < lineText.Length)
+                    {
+                        var partToFind = lineText.Substring(startCharacter);
+                        var charOffset = sourceText.Lines[lineOffset].ToString().IndexOf(partToFind, StringComparison.Ordinal);
 
-                    var errorMessage = $"({lineOffset + 1},{charOffset + 1}): error {diagnostic.Id}: {diagnostic.GetMessage()}";
+                        var errorMessage = $"({lineOffset + 1},{charOffset + 1}): error {diagnostic.Id}: {diagnostic.GetMessage()}";
 
-                    return new SerializableDiagnostic(
-                        start,
-                        end,
-                        errorMessage,
-                        diagnostic.ConvertSeverity(),
-                        diagnostic.Id,
-                        viewport.BufferId);
+                        return new SerializableDiagnostic(
+                            start,
+                            end,
+                            errorMessage,
+                            diagnostic.ConvertSeverity(),
+                            diagnostic.Id,
+                            viewport.BufferId);
+                    }
                 }
 
                 lineOffset++;

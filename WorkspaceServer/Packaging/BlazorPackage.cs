@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reactive.Concurrency;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,30 +10,25 @@ using MLS.Agent.Tools;
 
 namespace WorkspaceServer.Packaging
 {
-    class BlazorPackage : Package
+    public class BlazorPackage : Package
     {
+        private FileInfo _blazorEntryPoint;
+
         public BlazorPackage(string name = null, IPackageInitializer initializer = null, DirectoryInfo directory = null, IScheduler buildThrottleScheduler = null) : base(name, initializer, directory, buildThrottleScheduler)
         {
         }
 
-        public override Task EnsureReady(Budget budget)
-        {
-            
-            return base.EnsureReady(budget);
-        }
-        protected override Task<bool> EnsureBuilt()
-        {
-            return Task.FromResult(true);
-        }
-
-        public override Task<bool> EnsurePublished()
-        {
-            return Task.FromResult(true);
-        }
-
-        protected override bool ShouldBuild()
+        protected override bool ShouldDoDesignTimeFullBuild()
         {
             return false;
+        }
+
+        public FileInfo BlazorEntryPointAssemblyPath =>
+            _blazorEntryPoint ?? (_blazorEntryPoint = GetBlazorEntryPoint());
+
+        private FileInfo GetBlazorEntryPoint()
+        {
+            return Directory.GetFiles("MLS.Blazor.dll", SearchOption.AllDirectories).First();
         }
     }
 }

@@ -9,7 +9,7 @@ namespace MLS.Agent.Tools.Extensions
         {
             if (Directory.Exists(path))
             {
-                Directory.Delete(path);
+                Directory.Delete(path, recursive: true);
             }
             else if (File.Exists(path))
             {

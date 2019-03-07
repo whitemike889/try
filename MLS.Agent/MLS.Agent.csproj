@@ -62,7 +62,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="system.commandline.experimental" Version="0.1.0-alpha-63826-02" />
+    <PackageReference Include="system.commandline.experimental" Version="0.2.0-alpha.19154.3" />
     <PackageReference Include="System.Reactive" Version="4.1.3" />
     <PackageReference Include="TaskExtensions" Version="0.1.5650001" />
     <PackageReference Include="VersionSensor" Version="0.1.5650001" />
@@ -88,7 +88,7 @@
     <EmbeddedResource Include="..\MLS.PackageTool\MLS.PackageTool.csproj" />
     <EmbeddedResource Include="..\MLS.PackageTool\Program.cs" />
     <EmbeddedResource Include="$(OutputPath)/demo.zip">
-         <LogicalName>demo.zip</LogicalName>
+      <LogicalName>demo.zip</LogicalName>
     </EmbeddedResource>
   </ItemGroup>
 
@@ -99,7 +99,7 @@
 
   <Target Name="CopyDemoFiles" BeforeTargets="ZipDemo;PrepareForBuild">
     <ItemGroup>
-      <DemoFiles Include="$(MSBuildProjectDirectory)/../docs/GettingStarted/**/*.cs;$(MSBuildProjectDirectory)/../docs/GettingStarted/**/*.md;$(MSBuildProjectDirectory)/../docs/GettingStarted/**/*.csproj;" Exclude="**/bin/**; **/obj/**" SkipUnchangedFiles="true" />
+      <DemoFiles Include="$(MSBuildProjectDirectory)/../docs/GettingStarted/**/*.cs;$(MSBuildProjectDirectory)/../docs/GettingStarted/**/*.md;$(MSBuildProjectDirectory)/../docs/GettingStarted/**/*.csproj;$(MSBuildProjectDirectory)/../docs/GettingStarted/**/*.config" Exclude="**/bin/**; **/obj/**" SkipUnchangedFiles="true" />
     </ItemGroup>
 
     <Copy SourceFiles="@(DemoFiles)" DestinationFolder="$(OutputPath)/demo/%(RecursiveDir)" />

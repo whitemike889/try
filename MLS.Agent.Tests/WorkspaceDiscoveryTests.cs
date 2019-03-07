@@ -71,7 +71,7 @@ namespace MLS.Agent.Tests
                 initializer: new PackageInitializer(
                     "console",
                     projectName));
-            await copy.EnsureReady(new Budget());
+            await copy.CreateRoslynWorkspaceForRunAsync(new Budget());
 
             var packageLocation = new DirectoryInfo(
                 Path.Combine(copy.Directory.FullName, "pack-output"));

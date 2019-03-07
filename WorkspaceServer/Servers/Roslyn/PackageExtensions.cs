@@ -23,11 +23,9 @@ namespace WorkspaceServer.Servers.Roslyn
             Budget budget, 
             BufferId activeBufferId)
         {
-            await package.EnsureReady(budget);
-
             var sourceFiles = workspace.GetSourceFiles().ToArray();
 
-            var (compilation, documents) = await package.GetCompilation(sourceFiles, SourceCodeKind.Regular, workspace.Usings, budget);
+            var (compilation, documents) = await package.GetCompilationForRun(sourceFiles, SourceCodeKind.Regular, workspace.Usings, budget);
 
             var viewports = workspace.ExtractViewPorts();
 
@@ -111,10 +109,10 @@ Source
             IReadOnlyCollection<SourceFile> sources,
             SourceCodeKind sourceCodeKind,
             IEnumerable<string> defaultUsings,
+            Func<Task<Microsoft.CodeAnalysis.Workspace>> workspaceFactory,
             Budget budget)
         {
-
-            var workspace = await package.CreateRoslynWorkspaceAsync(budget);
+            var workspace = await workspaceFactory();
 
             var currentSolution = workspace.CurrentSolution;
             var project = currentSolution.Projects.First();
@@ -122,8 +120,8 @@ Source
             foreach (var source in sources)
             {
                 if (currentSolution.Projects
-                                   .SelectMany(p => p.Documents)
-                                   .FirstOrDefault(d => d.IsMatch(source)) is Document document)
+                    .SelectMany(p => p.Documents)
+                    .FirstOrDefault(d => d.IsMatch(source)) is Document document)
                 {
                     // there's a pre-existing document, so overwrite its contents
                     document = document.WithText(source.Text);
@@ -141,13 +139,33 @@ Source
 
 
             project = currentSolution.GetProject(projectId);
-            var options = (CSharpCompilationOptions)project.CompilationOptions;
-            project = project.WithCompilationOptions(options.WithUsings(defaultUsings));
+            var usings = defaultUsings?.ToArray() ?? Array.Empty<string>();
+            if (usings.Length > 0)
+            {
+                var options = (CSharpCompilationOptions) project.CompilationOptions;
+                project = project.WithCompilationOptions(options.WithUsings(usings));
+            }
 
             var compilation = await project.GetCompilationAsync().CancelIfExceeds(budget);
 
             return (compilation, project.Documents.ToArray());
         }
+
+        public static  Task<(Compilation compilation, IReadOnlyCollection<Document> documents)> GetCompilationForRun(
+            this Package package,
+            IReadOnlyCollection<SourceFile> sources,
+            SourceCodeKind sourceCodeKind,
+            IEnumerable<string> defaultUsings,
+            Budget budget) =>
+            package.GetCompilation(sources, sourceCodeKind, defaultUsings, () => package.CreateRoslynWorkspaceForRunAsync(budget), budget);
+
+        public static Task<(Compilation compilation, IReadOnlyCollection<Document> documents)> GetCompilationForLanguageServices(
+          this Package package,
+          IReadOnlyCollection<SourceFile> sources,
+          SourceCodeKind sourceCodeKind,
+          IEnumerable<string> defaultUsings,
+          Budget budget) =>
+            package.GetCompilation(sources, sourceCodeKind, defaultUsings, () => package.CreateRoslynWorkspaceForLanguageServicesAsync(budget), budget);
 
         private static Document GetActiveDocument(IEnumerable<Document> documents, BufferId activeBufferId)
         {

@@ -74,7 +74,7 @@ namespace WorkspaceServer.Packaging
 
             WriteResourcesToLocation(wwwRootFiles, Path.Combine(root, "wwwroot"));
             WriteResourcesToLocation(pagesFiles, Path.Combine(root, "Pages"));
-            WriteResourcesToLocation(rootFiles, "");
+            WriteResourcesToLocation(rootFiles, root);
         }
 
         private static void DeleteUnusedFilesFromTemplate(string root)
