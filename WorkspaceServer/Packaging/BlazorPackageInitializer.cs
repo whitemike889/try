@@ -8,7 +8,7 @@ using MLS.Agent.Tools.Extensions;
 
 namespace WorkspaceServer.Packaging
 {
-    internal class BlazorPackageInitializer : PackageInitializer
+    public class BlazorPackageInitializer : PackageInitializer
     {
         private readonly string _name;
         private readonly List<Func<Task>> _addPackages;
@@ -24,7 +24,11 @@ namespace WorkspaceServer.Packaging
 
         public override async Task Initialize(DirectoryInfo directory, Budget budget = null)
         {
-            //directory = directory.CreateSubdirectory("MLS.Blazor");
+            if (directory.Name != "MLS.Blazor")
+            {
+                throw new ArgumentException(nameof(directory));
+            }
+
             await base.Initialize(directory, budget);
             EntrypointPath = await MakeBlazorProject(directory, budget);
         }
@@ -37,7 +41,7 @@ namespace WorkspaceServer.Packaging
             AddRootNamespaceAndBlazorLinkerDirective();
             DeleteUnusedFilesFromTemplate(root);
             AddEmbeddedResourceContentToProject(root);
-            UpdateFileText(root, "wwwroot\\index.html", "/LocalCodeRunner/blazor-console", $"/LocalCodeRunner/{_name.Remove(0, "runner-".Length)}");
+            UpdateFileText(root, "wwwroot\\index.html", "/LocalCodeRunner/blazor-console", $"/LocalCodeRunner/{_name}");
 
             var result = await dotnet.AddPackage("MLS.WasmCodeRunner", "1.0.7880001-alpha-c895bf25");
             result.ThrowOnFailure();
