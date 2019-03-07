@@ -111,8 +111,7 @@ namespace WorkspaceServer.Packaging
                     package.ConstructionTime,
                     package.PublicationTime,
                     package.CreationTime,
-                    package.ReadyTime,
-                    blazorSupported: _blazorEnabled
+                    package.ReadyTime
                 );
             }
 
