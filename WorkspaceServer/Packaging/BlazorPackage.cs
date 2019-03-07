@@ -5,6 +5,7 @@ using System.Reactive.Concurrency;
 using System.Text;
 using System.Threading.Tasks;
 using Clockwise;
+using MLS.Agent.Tools;
 
 namespace WorkspaceServer.Packaging
 {
@@ -14,6 +15,11 @@ namespace WorkspaceServer.Packaging
         {
         }
 
+        public override Task EnsureReady(Budget budget)
+        {
+            
+            return base.EnsureReady(budget);
+        }
         protected override Task<bool> EnsureBuilt()
         {
             return Task.FromResult(true);

@@ -4,6 +4,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Clockwise;
 using MLS.Agent.Tools;
+using MLS.Agent.Tools.Extensions;
 
 namespace WorkspaceServer.Packaging
 {
@@ -34,23 +35,9 @@ namespace WorkspaceServer.Packaging
             var root = directory.FullName;
 
             AddRootNamespaceAndBlazorLinkerDirective();
-
-            var toDelete = new[] { "Pages", "Shared", "wwwroot", "_ViewImports.cshtml" };
-            foreach (var thing in toDelete)
-            {
-                var path = Path.Combine(root, thing);
-                Delete(path);
-            }
-
-            var wwwRootFiles = new[] { "index.html", "interop.js" };
-            var pagesFiles = new[] { "Index.cshtml", "Index.cshtml.cs" };
-            var rootFiles = new[] { "Program.cs", "Startup.cs", "Linker.xml" };
-
-            WriteAll(wwwRootFiles, "wwwroot", root);
-            WriteAll(pagesFiles, "Pages", root);
-            WriteAll(rootFiles, "", root);
-
-            Modify(root, "wwwroot\\index.html", "/LocalCodeRunner/blazor-console", $"/LocalCodeRunner/{_name.Remove(0, "runner-".Length)}");
+            DeleteUnusedFilesFromTemplate(root);
+            AddEmbeddedResourceContentToProject(root);
+            UpdateFileText(root, "wwwroot\\index.html", "/LocalCodeRunner/blazor-console", $"/LocalCodeRunner/{_name.Remove(0, "runner-".Length)}");
 
             var result = await dotnet.AddPackage("MLS.WasmCodeRunner", "1.0.7880001-alpha-c895bf25");
             result.ThrowOnFailure();
@@ -68,7 +55,7 @@ namespace WorkspaceServer.Packaging
 
             void AddRootNamespaceAndBlazorLinkerDirective()
             {
-                Modify(root, "MLS.Blazor.csproj", "</PropertyGroup>",
+                UpdateFileText(root, "MLS.Blazor.csproj", "</PropertyGroup>",
                     @"</PropertyGroup>
 <PropertyGroup>
     <RootNamespace>MLS.Blazor</RootNamespace>
@@ -79,7 +66,27 @@ namespace WorkspaceServer.Packaging
             }
         }
 
-        private void Modify(string root, string file, string toReplace, string replacement)
+        private void AddEmbeddedResourceContentToProject(string root)
+        {
+            var wwwRootFiles = new[] { "index.html", "interop.js" };
+            var pagesFiles = new[] { "Index.cshtml", "Index.cshtml.cs" };
+            var rootFiles = new[] { "Program.cs", "Startup.cs", "Linker.xml" };
+
+            WriteResourcesToLocation(wwwRootFiles, Path.Combine(root, "wwwroot"));
+            WriteResourcesToLocation(pagesFiles, Path.Combine(root, "Pages"));
+            WriteResourcesToLocation(rootFiles, "");
+        }
+
+        private static void DeleteUnusedFilesFromTemplate(string root)
+        {
+            var filesAndDirectoriestoDelete = new[] { "Pages", "Shared", "wwwroot", "_ViewImports.cshtml" };
+            foreach (var fOrD in filesAndDirectoriestoDelete)
+            {
+                Path.Combine(root, fOrD).Delete();
+            }
+        }
+
+        private void UpdateFileText(string root, string file, string toReplace, string replacement)
         {
             file = Path.Combine(root, file);
             var text = File.ReadAllText(file);
@@ -87,45 +94,20 @@ namespace WorkspaceServer.Packaging
             File.WriteAllText(file, updated);
         }
 
-        private static void WriteAll(string[] resources, string targetDirectory, string root)
+        private void WriteResourcesToLocation(string[] resources, string targetDirectory)
         {
             foreach (var resource in resources)
             {
-                WriteResource(resource, targetDirectory, root);
+                WriteResource(resource, targetDirectory);
             }
         }
 
-        private static void WriteResource(string resourceName, string targetDirectory, string root)
+        private void WriteResource(string resourceName, string targetDirectory)
         {
-            var text = ReadManifestResource(resourceName);
-            var directory = Path.Combine(root, targetDirectory);
-            System.IO.Directory.CreateDirectory(directory);
-            var path = Path.Combine(directory, resourceName);
+            var text = this.GetType().ReadManifestResource(resourceName);
+            System.IO.Directory.CreateDirectory(targetDirectory);
+            var path = Path.Combine(targetDirectory, resourceName);
             File.WriteAllText(path, text);
-        }
-
-        private static string ReadManifestResource(string resourceName)
-        {
-            var assembly = typeof(PackageBuilder).Assembly;
-            var resoures = assembly.GetManifestResourceNames();
-            using (var reader = new StreamReader(assembly.GetManifestResourceStream($"WorkspaceServer.{resourceName}")))
-            {
-                return reader.ReadToEnd();
-            }
-        }
-
-        private void Delete(string path)
-        {
-            try
-            {
-                Directory.Delete(path, recursive: true);
-            }
-            catch { }
-            try
-            {
-                File.Delete(path);
-            }
-            catch { }
         }
     }
 }
