@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
 using System.Reactive.Concurrency;
@@ -25,15 +26,12 @@ using Disposable = System.Reactive.Disposables.Disposable;
 
 namespace WorkspaceServer.Packaging
 {
-
-    public enum WorkspaceUsage
-    {
-        CompileOrRun,
-        Intellisense
-    }
     public abstract class Package
     {
-        const string csharpLanguageVersion = "7.3";
+        const string CSharpLanguageVersion = "7.3";
+        protected const string DesignTimeBuildBinlogFileName = "designTimeBuild.binlog";
+        private static ConcurrentDictionary<string, SemaphoreSlim> packageBuildSemaphores = new ConcurrentDictionary<string, SemaphoreSlim>();
+        private static ConcurrentDictionary<string, SemaphoreSlim> packagePublishSemaphores = new ConcurrentDictionary<string, SemaphoreSlim>();
 
         static Package()
         {
@@ -65,17 +63,23 @@ namespace WorkspaceServer.Packaging
         private FileInfo _entryPointAssemblyPath;
         private static string _targetFramework;
         private readonly Logger _log;
-        private Subject<Budget> _fullBuildRequestChannel;
-        private TaskCompletionSource<Workspace> _fullBuildCompletionSource;
-        private readonly IScheduler _buildThrottleScheduler;
-        private SerialDisposable _fullBuildThrottlerSubscription;
-        private AsyncLazy<bool> _lazyCreation;
+        private readonly Subject<Budget> _fullBuildRequestChannel;
 
-        private readonly SemaphoreSlim buildSemaphore = new SemaphoreSlim(1, 1);
-        private readonly SemaphoreSlim publishSemaphore = new SemaphoreSlim(1, 1);
+        private readonly IScheduler _buildThrottleScheduler;
+        private readonly SerialDisposable _fullBuildThrottlerSubscription;
+        private readonly AsyncLazy<bool> _lazyCreation;
+
+        private readonly SemaphoreSlim _buildSemaphore;
+        private readonly SemaphoreSlim _publishSemaphore;
+
         private readonly Subject<Budget> _designTimeBuildRequestChannel;
         private readonly SerialDisposable _designTimeBuildThrottlerSubscription;
-        private TaskCompletionSource<Workspace> _designTimeBuildCompletionSource;
+
+        private TaskCompletionSource<Workspace> _fullBuildCompletionSource = new TaskCompletionSource<Workspace>();
+        private TaskCompletionSource<Workspace> _designTimeBuildCompletionSource = new TaskCompletionSource<Workspace>();
+
+        private readonly object _fullBuildCompletionSourceLock = new object();
+        private readonly object _designTimeBuildCompletionSourceLock = new object();
 
         protected Package(
             string name = null,
@@ -101,14 +105,16 @@ namespace WorkspaceServer.Packaging
             SetupWorkspaceCreationFromDesignTimeBuildChannel();
             TryLoadDesignTimeBuildFromBuildLog();
             _lazyCreation = new AsyncLazy<bool>(Create);
+            _buildSemaphore = packageBuildSemaphores.GetOrAdd(Name, _ => new SemaphoreSlim(1, 1));
+            _publishSemaphore = packagePublishSemaphores.GetOrAdd(Name, _ => new SemaphoreSlim(1, 1));
         }
-        
+
 
         private void TryLoadDesignTimeBuildFromBuildLog()
         {
             if (Directory.Exists)
             {
-                var binLog = Directory.GetFiles("*.binlog").FirstOrDefault();
+                var binLog = Directory.GetFiles("*.binlog").OrderByDescending(f => f.LastWriteTimeUtc).FirstOrDefault();
                 if (binLog != null)
                 {
                     var projectFile = Directory.GetFiles("*.csproj").FirstOrDefault();
@@ -121,7 +127,7 @@ namespace WorkspaceServer.Packaging
                             RoslynWorkspace = null;
                             DesignTimeBuildResult = result;
                             LastDesignTimeBuild = binLog.LastWriteTimeUtc;
-                            if (result.Succeeded)
+                            if (result.Succeeded && !binLog.Name.EndsWith(DesignTimeBuildBinlogFileName))
                             {
                                 LastSuccessfulBuildTime = binLog.LastWriteTimeUtc;
                             }
@@ -211,48 +217,95 @@ namespace WorkspaceServer.Packaging
             }
         }
 
-        public Task<Workspace> CreateRoslynWorkspaceAsync(Budget budget, WorkspaceUsage usage = WorkspaceUsage.CompileOrRun )
+        public Task<Workspace> CreateRoslynWorkspaceForRunAsync(Budget budget)
         {
-            var shouldBuild = usage == WorkspaceUsage.CompileOrRun ? ShouldDoFullBuild() : ShouldDoDesignTimeFullBuild();
+            var shouldBuild = ShouldDoFullBuild();
             if (!shouldBuild)
             {
-                var ws = RoslynWorkspace?? CreateRoslynWorkspace();
+                var ws = RoslynWorkspace ?? CreateRoslynWorkspace();
                 if (ws != null)
                 {
                     return Task.FromResult(ws);
                 }
             }
 
-            switch (usage)
+            return RequestFullBuild(budget);
+        }
+
+        public Task<Workspace> CreateRoslynWorkspaceForLanguageServicesAsync(Budget budget)
+        {
+            var shouldBuild = ShouldDoDesignTimeFullBuild();
+            if (!shouldBuild)
             {
-                case WorkspaceUsage.CompileOrRun:
-                    return RequestFullBuild(budget);
-                case WorkspaceUsage.Intellisense:
-                    return RequestDesignTimeBuild(budget);
-                   
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(usage), usage, null);
+                var ws = RoslynWorkspace ?? CreateRoslynWorkspace();
+                if (ws != null)
+                {
+                    return Task.FromResult(ws);
+                }
             }
-           
+
+            return RequestDesignTimeBuild(budget);
+        }
+
+        private void CreateCompletionSourceIfNeeded(ref TaskCompletionSource<Workspace> completionSource, object lockObject)
+        {
+            lock (lockObject)
+            {
+                switch (completionSource.Task.Status)
+                {
+                    case TaskStatus.Canceled:
+                    case TaskStatus.Faulted:
+                    case TaskStatus.RanToCompletion:
+                        completionSource = new TaskCompletionSource<Workspace>();
+                        break;
+                }
+            }
+        }
+
+        private void SetCompletionSourceResult(TaskCompletionSource<Workspace> completionSource, Workspace result, object lockObject)
+        {
+            lock (lockObject)
+            {
+                switch (completionSource.Task.Status)
+                {
+                    case TaskStatus.Canceled:
+                    case TaskStatus.Faulted:
+                    case TaskStatus.RanToCompletion:
+                        return;
+                    default:
+                        completionSource.SetResult(result);
+                        break;
+                }
+            }
+        }
+
+        private void SetCompletionSourceException(TaskCompletionSource<Workspace> completionSource, Exception exception, object lockObject)
+        {
+            lock (lockObject)
+            {
+                switch (completionSource.Task.Status)
+                {
+                    case TaskStatus.Canceled:
+                    case TaskStatus.Faulted:
+                    case TaskStatus.RanToCompletion:
+                        return;
+                    default:
+                        completionSource.SetException(exception);
+                        break;
+                }
+            }
         }
 
         private Task<Workspace> RequestFullBuild(Budget budget)
         {
-            if (_fullBuildCompletionSource == null)
-            {
-                _fullBuildCompletionSource = new TaskCompletionSource<Workspace>();
-            }
-
+            CreateCompletionSourceIfNeeded(ref _fullBuildCompletionSource, _fullBuildCompletionSourceLock);
             _fullBuildRequestChannel.OnNext(budget);
             return _fullBuildCompletionSource.Task;
         }
 
         private Task<Workspace> RequestDesignTimeBuild(Budget budget)
         {
-            if (_designTimeBuildCompletionSource == null)
-            {
-                _designTimeBuildCompletionSource = new TaskCompletionSource<Workspace>();
-            }
+            CreateCompletionSourceIfNeeded(ref _designTimeBuildCompletionSource, _designTimeBuildCompletionSourceLock);
 
             _designTimeBuildRequestChannel.OnNext(budget);
             return _designTimeBuildCompletionSource.Task;
@@ -260,18 +313,25 @@ namespace WorkspaceServer.Packaging
 
         private void SetupWorkspaceCreationFromBuildChannel()
         {
+
             _fullBuildThrottlerSubscription.Disposable = _fullBuildRequestChannel
                 .Throttle(TimeSpan.FromSeconds(0.5), _buildThrottleScheduler)
+                .ObserveOn(TaskPoolScheduler.Default)
                 .Subscribe(
                       async (budget) =>
                       {
-                          await ProcessFullBuildRequest(budget);
+                          try
+                          {
+                              await ProcessFullBuildRequest(budget);
+                          }
+                          catch (Exception e)
+                          {
+                              SetCompletionSourceException(_fullBuildCompletionSource, e, _fullBuildCompletionSourceLock);
+                          }
                       },
                   error =>
                   {
-                      _fullBuildCompletionSource?.SetException(error);
-                      _fullBuildCompletionSource = null;
-
+                      SetCompletionSourceException(_fullBuildCompletionSource, error, _fullBuildCompletionSourceLock);
                       SetupWorkspaceCreationFromBuildChannel();
                   });
         }
@@ -280,37 +340,45 @@ namespace WorkspaceServer.Packaging
         {
             _designTimeBuildThrottlerSubscription.Disposable = _designTimeBuildRequestChannel
                 .Throttle(TimeSpan.FromSeconds(0.5), _buildThrottleScheduler)
+                .ObserveOn(TaskPoolScheduler.Default)
                 .Subscribe(
                     async (budget) =>
                     {
-                        await ProcessDesignTimeBuildRequest(budget);
+                        try
+                        {
+                            await ProcessDesignTimeBuildRequest(budget);
+                        }
+                        catch (Exception e)
+                        {
+                            SetCompletionSourceException(_designTimeBuildCompletionSource, e, _designTimeBuildCompletionSourceLock);
+                        }
                     },
                     error =>
                     {
-                        _designTimeBuildCompletionSource?.SetException(error);
-                        _designTimeBuildCompletionSource = null;
-
+                        SetCompletionSourceException(_designTimeBuildCompletionSource, error, _designTimeBuildCompletionSourceLock);
                         SetupWorkspaceCreationFromDesignTimeBuildChannel();
                     });
         }
 
         private async Task ProcessFullBuildRequest(Budget budget)
         {
-            await EnsureReady(budget);
+            await EnsureCreated().CancelIfExceeds(budget);
+            await EnsureBuilt().CancelIfExceeds(budget);
             var ws = CreateRoslynWorkspace();
-            _fullBuildCompletionSource?.SetResult(ws);
-            _fullBuildCompletionSource = null;
+            if (IsWebProject)
+            {
+                await EnsurePublished().CancelIfExceeds(budget);
+            }
+            SetCompletionSourceResult(_fullBuildCompletionSource, ws, _fullBuildCompletionSourceLock);
         }
 
         private async Task ProcessDesignTimeBuildRequest(Budget budget)
         {
             await EnsureCreated().CancelIfExceeds(budget);
-            DesignTimeBuild();
+            await EnsureDesignTimeBuilt().CancelIfExceeds(budget);
             var ws = CreateRoslynWorkspace();
-            _designTimeBuildCompletionSource?.SetResult(ws);
-            _designTimeBuildCompletionSource = null;
+            SetCompletionSourceResult(_designTimeBuildCompletionSource, ws, _designTimeBuildCompletionSourceLock);
         }
-
 
         private Workspace CreateRoslynWorkspace()
         {
@@ -318,8 +386,8 @@ namespace WorkspaceServer.Packaging
             if (build == null)
             {
                 return null;
-
             }
+
             var ws = build.GetWorkspace();
             var projectId = ws.CurrentSolution.ProjectIds.FirstOrDefault();
             var references = build.References;
@@ -333,7 +401,7 @@ namespace WorkspaceServer.Packaging
 
         protected AdhocWorkspace RoslynWorkspace { get; set; }
 
-        public async Task EnsureReady(Budget budget)
+        private async Task EnsureReady(Budget budget)
         {
             budget = budget ?? new Budget();
 
@@ -358,7 +426,25 @@ namespace WorkspaceServer.Packaging
             {
                 if (ShouldDoFullBuild())
                 {
-                    await Build();
+                    await FullBuild();
+                }
+                else
+                {
+                    operation.Info("Workspace already built");
+                }
+
+                operation.Succeed();
+            }
+        }
+
+        protected async Task EnsureDesignTimeBuilt([CallerMemberName] string caller = null)
+        {
+            await EnsureCreated();
+            using (var operation = _log.OnEnterAndConfirmOnExit())
+            {
+                if (ShouldDoDesignTimeFullBuild())
+                {
+                    DesignTimeBuild();
                 }
                 else
                 {
@@ -384,7 +470,7 @@ namespace WorkspaceServer.Packaging
 
         public bool RequiresPublish => IsWebProject;
 
-        public async Task Build()
+        public async Task FullBuild()
         {
             using (var operation = _log.OnEnterAndConfirmOnExit())
             {
@@ -392,10 +478,10 @@ namespace WorkspaceServer.Packaging
                 {
                     operation.Info("Attempting building package {name}", Name);
 
-                    var buildInProgress = buildSemaphore.CurrentCount == 0;
-                    await buildSemaphore.WaitAsync();
+                    var buildInProgress = _buildSemaphore.CurrentCount == 0;
+                    await _buildSemaphore.WaitAsync();
                     CommandLineResult result;
-                    using (Disposable.Create(() => buildSemaphore.Release()))
+                    using (Disposable.Create(() => _buildSemaphore.Release()))
                     {
                         if (buildInProgress)
                         {
@@ -420,7 +506,7 @@ namespace WorkspaceServer.Packaging
                         LastBuildErrorLogFile.Delete();
                     }
 
-                  
+
                     result.ThrowOnFailure();
                     operation.Info("Workspace built");
 
@@ -439,8 +525,8 @@ namespace WorkspaceServer.Packaging
             using (var operation = _log.OnEnterAndConfirmOnExit())
             {
                 operation.Info("Attempting to publish package {name}", Name);
-                var publishInProgress = publishSemaphore.CurrentCount == 0;
-                await publishSemaphore.WaitAsync();
+                var publishInProgress = _publishSemaphore.CurrentCount == 0;
+                await _publishSemaphore.WaitAsync();
 
                 if (publishInProgress)
                 {
@@ -449,7 +535,7 @@ namespace WorkspaceServer.Packaging
                 }
 
                 CommandLineResult result;
-                using (Disposable.Create(() => publishSemaphore.Release()))
+                using (Disposable.Create(() => _publishSemaphore.Release()))
                 {
                     operation.Info("Publishing workspace in {directory}", Directory);
                     result = await new Dotnet(Directory)
@@ -457,7 +543,7 @@ namespace WorkspaceServer.Packaging
                 }
 
                 result.ThrowOnFailure();
-             
+
                 operation.Info("Workspace published");
                 operation.Succeed();
                 PublicationTime = Clock.Current.Now();
@@ -573,7 +659,8 @@ namespace WorkspaceServer.Packaging
 
         protected virtual bool ShouldDoFullBuild()
         {
-            return ShouldDoDesignTimeFullBuild()
+            return LastSuccessfulBuildTime == null
+                   || ShouldDoDesignTimeFullBuild()
                    || (LastDesignTimeBuild > LastSuccessfulBuildTime);
         }
 
@@ -595,7 +682,8 @@ namespace WorkspaceServer.Packaging
                 });
 
                 var analyzer = manager.GetProject(csProj.FullName);
-                analyzer.SetGlobalProperty("langVersion", csharpLanguageVersion);
+                analyzer.AddBinaryLogger(Path.Combine(Directory.FullName, DesignTimeBuildBinlogFileName));
+                analyzer.SetGlobalProperty("langVersion", CSharpLanguageVersion);
                 var result = analyzer.Build().Results.First();
                 DesignTimeBuildResult = result;
                 LastDesignTimeBuild = Clock.Current.Now();
@@ -609,7 +697,7 @@ namespace WorkspaceServer.Packaging
                 {
                     LastBuildErrorLogFile.Delete();
                 }
-                
+
                 operation.Succeed();
 
                 return result;

@@ -26,7 +26,7 @@ namespace MLS.Agent.Controllers
         [DebugEnableFilter]
         public async Task<IActionResult> Compile(
             [FromBody] WorkspaceRequest request,
-            [FromHeader(Name = "Timeout")] string timeoutInMilliseconds = "15000")
+            [FromHeader(Name = "Timeout")] string timeoutInMilliseconds = "45000")
         {
             using (var operation = Log.OnEnterAndConfirmOnExit())
             {

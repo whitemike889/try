@@ -9,9 +9,7 @@ using Pocket;
 using Xunit;
 using Xunit.Abstractions;
 using WorkspaceServer.Packaging;
-using System.Linq;
 using System.Threading;
-using System.Xml.Linq;
 
 namespace WorkspaceServer.Tests
 {
@@ -36,8 +34,8 @@ namespace WorkspaceServer.Tests
 
             var package = Create.EmptyWorkspace(initializer: initializer);
 
-            await package.EnsureReady(new TimeBudget(FluentTimeSpanExtensions.Seconds(30)));
-            await package.EnsureReady(new TimeBudget(FluentTimeSpanExtensions.Seconds(30)));
+            await package.CreateRoslynWorkspaceForRunAsync(new TimeBudget(30.Seconds()));
+            await package.CreateRoslynWorkspaceForRunAsync(new TimeBudget(30.Seconds()));
 
             initializer.InitializeCount.Should().Be(1);
         }
@@ -58,14 +56,14 @@ namespace WorkspaceServer.Tests
 
             var package = Create.EmptyWorkspace(initializer: initializer);
 
-            await package.EnsureReady(new TimeBudget(FluentTimeSpanExtensions.Seconds(30)));
-            await package.EnsureReady(new TimeBudget(FluentTimeSpanExtensions.Seconds(30)));
+            await package.CreateRoslynWorkspaceForRunAsync(new TimeBudget(30.Seconds()));
+            await package.CreateRoslynWorkspaceForRunAsync(new TimeBudget(30.Seconds()));
 
             afterCreateCallCount.Should().Be(1);
         }
 
         [Fact]
-        public async Task A_package_copy_is_not_reinitialized_if_the_source_was_already_built()
+        public async Task A_package_copy_is_not_reinitialized_if_the_source_was_already_initialized()
         {
             var initializer = new TestPackageInitializer(
                 "console",
@@ -73,11 +71,11 @@ namespace WorkspaceServer.Tests
 
             var original = Create.EmptyWorkspace(initializer: initializer);
 
-            await original.EnsureReady(new TimeBudget(FluentTimeSpanExtensions.Seconds(30)));
+            await original.CreateRoslynWorkspaceForLanguageServicesAsync(new TimeBudget(30.Seconds()));
 
             var copy = await Package.Copy(original);
 
-            await copy.EnsureReady(new TimeBudget(FluentTimeSpanExtensions.Seconds(30)));
+            await copy.CreateRoslynWorkspaceForLanguageServicesAsync(new TimeBudget(30.Seconds()));
 
             initializer.InitializeCount.Should().Be(1);
         }
@@ -87,7 +85,7 @@ namespace WorkspaceServer.Tests
         {
             var package = await Create.ConsoleWorkspaceCopy();
 
-            await package.EnsureReady(new TimeBudget(FluentTimeSpanExtensions.Seconds(30)));
+            await package.CreateRoslynWorkspaceForLanguageServicesAsync(new TimeBudget(30.Seconds()));
 
             package.IsWebProject.Should().BeFalse();
         }
@@ -97,7 +95,7 @@ namespace WorkspaceServer.Tests
         {
             var package = await Create.WebApiWorkspaceCopy();
 
-            await package.EnsureReady(new TimeBudget(FluentTimeSpanExtensions.Seconds(30)));
+            await package.CreateRoslynWorkspaceForLanguageServicesAsync(new TimeBudget(30.Seconds()));
 
             package.IsWebProject.Should().BeTrue();
         }
@@ -107,7 +105,7 @@ namespace WorkspaceServer.Tests
         {
             var package = Create.EmptyWorkspace(initializer: new PackageInitializer("console", "empty"));
 
-            await package.EnsureReady(new TimeBudget(FluentTimeSpanExtensions.Seconds(30)));
+            await package.CreateRoslynWorkspaceForRunAsync(new TimeBudget(30.Seconds()));
 
             package.EntryPointAssemblyPath.Exists.Should().BeTrue();
 
@@ -122,12 +120,13 @@ namespace WorkspaceServer.Tests
                              "empty.dll"));
         }
 
+
         [Fact]
         public async Task When_package_contains_aspnet_project_then_entry_point_dll_is_in_the_publish_directory()
         {
             var package = Create.EmptyWorkspace(initializer: new PackageInitializer("webapi", "aspnet.webapi"));
 
-            await package.EnsureReady(new TimeBudget(FluentTimeSpanExtensions.Seconds(30)));
+            await package.CreateRoslynWorkspaceForRunAsync(new TimeBudget(30.Seconds()));
 
             package.EntryPointAssemblyPath.Exists.Should().BeTrue();
 
@@ -144,30 +143,6 @@ namespace WorkspaceServer.Tests
         }
 
         [Fact]
-        public async Task If_the_package_has_been_built_before_calling_create_roslyn_workspace_we_still_get_workspace()
-        {
-            var directory = Create.EmptyWorkspace().Directory;
-            await new Dotnet(directory).New("console");
-            var projectFile = directory.GetFiles("*.csproj").FirstOrDefault();
-            var projectFileDom = XElement.Load(projectFile.FullName);
-            projectFileDom.DescendantsAndSelf("PropertyGroup").First().Add(new XElement("LangVersion", "7.3"));
-            projectFileDom.Save(projectFile.FullName);
-
-            await new Dotnet(directory).Build(args: "/bl");
-            var dllFile = directory.GetFiles($"{directory.Name}.dll", SearchOption.AllDirectories).FirstOrDefault();
-            dllFile.Should().NotBeNull();
-            var lastBuildTime = dllFile.LastWriteTimeUtc;
-            var package = new NonrebuildablePackage(directory: directory);
-
-            var ws = await package.CreateRoslynWorkspaceAsync(new TimeBudget(30.Seconds()));
-            dllFile = package.Directory.GetFiles($"{directory.Name}.dll", SearchOption.AllDirectories).FirstOrDefault();
-            dllFile.Should().NotBeNull();
-            dllFile.LastWriteTimeUtc.Should().Be(lastBuildTime);
-
-            ws.CurrentSolution.Projects.First().Language.Should().Be("C#");
-        }
-
-        [Fact]
         public async Task If_a_build_is_in_fly_the_second_one_will_wait_and_do_not_continue()
         {
             var buildEvents = new LogEntryList();
@@ -180,13 +155,13 @@ namespace WorkspaceServer.Tests
                 buildEventsMessages.Add(e.Evaluate().Message);
                 if (e.Evaluate().Message.StartsWith("Attempting building package "))
                 {
-                    barrier.SignalAndWait(1.Minutes());
+                    barrier.SignalAndWait(3.Minutes());
                 }
             }))
             {
                 await Task.WhenAll(
-                    Task.Run(() => package.Build()),
-                    Task.Run(() => package.Build()));
+                    Task.Run(() => package.FullBuild()),
+                    Task.Run(() => package.FullBuild()));
             }
 
 

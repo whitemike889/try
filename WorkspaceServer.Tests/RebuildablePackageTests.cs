@@ -29,14 +29,14 @@ namespace WorkspaceServer.Tests
         public async Task If_a_new_file_is_added_the_workspace_includes_the_file()
         {
             var package = (RebuildablePackage)await Create.ConsoleWorkspaceCopy(isRebuildable: true);
-            var ws = await package.CreateRoslynWorkspaceAsync(new TimeBudget(30.Seconds()));
+            var ws = await package.CreateRoslynWorkspaceForRunAsync(new TimeBudget(30.Seconds()));
 
             var newFile = Path.Combine(package.Directory.FullName, "Sample.cs");
             ws.CurrentSolution.Projects.First().Documents.Should().NotContain(d => d.FilePath == newFile);
 
             File.WriteAllText(newFile, "//this is a new file");
 
-            ws = await package.CreateRoslynWorkspaceAsync(new TimeBudget(30.Seconds()));
+            ws = await package.CreateRoslynWorkspaceForRunAsync(new TimeBudget(30.Seconds()));
 
             ws.CurrentSolution.Projects.First().Documents.Should().Contain(d => d.FilePath == newFile);
         }
@@ -45,7 +45,7 @@ namespace WorkspaceServer.Tests
         public async Task If_the_project_file_is_changed_then_the_workspace_reflects_the_changes()
         {
             var package = (RebuildablePackage)await Create.ConsoleWorkspaceCopy(isRebuildable: true);
-            var ws = await package.CreateRoslynWorkspaceAsync(new TimeBudget(30.Seconds()));
+            var ws = await package.CreateRoslynWorkspaceForRunAsync(new TimeBudget(30.Seconds()));
 
             var references = ws.CurrentSolution.Projects.First().MetadataReferences;
             references.Should().NotContain(reference =>
@@ -54,7 +54,7 @@ namespace WorkspaceServer.Tests
 
             await new Dotnet(package.Directory).AddPackage("Microsoft.CodeAnalysis", "2.8.2");
 
-            ws = await package.CreateRoslynWorkspaceAsync(new TimeBudget(30.Seconds()));
+            ws = await package.CreateRoslynWorkspaceForRunAsync(new TimeBudget(30.Seconds()));
             references = ws.CurrentSolution.Projects.First().MetadataReferences;
             references.Should().Contain(reference =>
                 reference.Display.Contains("Microsoft.CodeAnalysis.CSharp.dll")
@@ -65,7 +65,7 @@ namespace WorkspaceServer.Tests
         public async Task If_an_existing_file_is_deleted_then_the_workspace_does_not_include_the_file()
         {
             var package = (RebuildablePackage)await Create.ConsoleWorkspaceCopy(isRebuildable: true);
-            var ws = await package.CreateRoslynWorkspaceAsync(new TimeBudget(30.Seconds()));
+            var ws = await package.CreateRoslynWorkspaceForRunAsync(new TimeBudget(30.Seconds()));
 
             var existingFile = Path.Combine(package.Directory.FullName, "Program.cs");
             ws.CurrentSolution.Projects.First().Documents.Should().Contain(d => d.FilePath == existingFile);
@@ -73,7 +73,7 @@ namespace WorkspaceServer.Tests
             File.Delete(existingFile);
             await Task.Delay(1000);
 
-            ws = await package.CreateRoslynWorkspaceAsync(new TimeBudget(30.Seconds()));
+            ws = await package.CreateRoslynWorkspaceForRunAsync(new TimeBudget(30.Seconds()));
             ws.CurrentSolution.Projects.First().Documents.Should().NotContain(d => d.FilePath == existingFile);
         }
 
@@ -81,13 +81,13 @@ namespace WorkspaceServer.Tests
         public async Task If_an_existing_file_is_modified_then_the_workspace_is_updated()
         {
             var package = (RebuildablePackage)await Create.ConsoleWorkspaceCopy(isRebuildable: true);
-            var oldWorkspace = await package.CreateRoslynWorkspaceAsync(new TimeBudget(30.Seconds()));
+            var oldWorkspace = await package.CreateRoslynWorkspaceForRunAsync(new TimeBudget(30.Seconds()));
 
             var existingFile = Path.Combine(package.Directory.FullName, "Program.cs");
             File.WriteAllText(existingFile, "//this is Program.cs");
             await Task.Delay(1000);
 
-            var newWorkspace = await package.CreateRoslynWorkspaceAsync(new TimeBudget(30.Seconds()));
+            var newWorkspace = await package.CreateRoslynWorkspaceForRunAsync(new TimeBudget(30.Seconds()));
 
             newWorkspace.Should().NotBeSameAs(oldWorkspace);
         }
@@ -97,12 +97,12 @@ namespace WorkspaceServer.Tests
         {
             var vt = new TestScheduler();
             var package = (RebuildablePackage)await Create.ConsoleWorkspaceCopy(isRebuildable: true, buildThrottleScheduler: vt);
-            var workspace1 = package.CreateRoslynWorkspaceAsync(new TimeBudget(30.Seconds()));
+            var workspace1 = package.CreateRoslynWorkspaceForRunAsync(new TimeBudget(30.Seconds()));
             vt.AdvanceBy(TimeSpan.FromSeconds(0.2).Ticks);
             var newFile = Path.Combine(package.Directory.FullName, "Sample.cs");
             File.WriteAllText(newFile, "//this is Sample.cs");
             vt.AdvanceBy(TimeSpan.FromSeconds(0.2).Ticks);
-            var workspace2 = package.CreateRoslynWorkspaceAsync(new TimeBudget(30.Seconds()));
+            var workspace2 = package.CreateRoslynWorkspaceForRunAsync(new TimeBudget(30.Seconds()));
             vt.AdvanceBy(TimeSpan.FromSeconds(0.6).Ticks);
 
 

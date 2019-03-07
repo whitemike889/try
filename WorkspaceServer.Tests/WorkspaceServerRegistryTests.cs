@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Clockwise;
 using FluentAssertions;
@@ -11,7 +12,6 @@ using WorkspaceServer.Packaging;
 using Xunit;
 using Xunit.Abstractions;
 using FluentAssertions.Extensions;
-using Buildalyzer.Workspaces;
 
 namespace WorkspaceServer.Tests
 {
@@ -31,16 +31,17 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task Workspaces_can_be_registered_to_be_created_using_dotnet_new()
         {
-            var workspaceId = Package.CreateDirectory(nameof(Workspaces_can_be_registered_to_be_created_using_dotnet_new)).Name;
+            var packageName = Package.CreateDirectory(nameof(Workspaces_can_be_registered_to_be_created_using_dotnet_new)).Name;
 
-            registry.Add(workspaceId,
+            registry.Add(packageName,
                          options => options.CreateUsingDotnet("console"));
 
-            var workspace = await registry.Get(workspaceId);
+            var package = await registry.Get(packageName);
 
-            await workspace.EnsureReady(new TimeBudget(30.Seconds()));
+            var workspace = await package.CreateRoslynWorkspaceForRunAsync(new TimeBudget(30.Seconds()));
 
-            workspace.Directory.GetFiles().Length.Should().BeGreaterThan(1);
+            var project = workspace.CurrentSolution.Projects.First();
+            project.MetadataReferences.Count.Should().BeGreaterThan(0);
         }
 
         [Fact]
@@ -90,7 +91,7 @@ namespace Twilio_try.dot.net_sample
             var package = await registry.Get(unregisteredWorkspace.Name);
 
             package.Directory.FullName.Should().Be(unregisteredWorkspace.Directory.FullName);
-            (await package.CreateRoslynWorkspaceAsync(new TimeBudget(30.Seconds()))).CurrentSolution.Projects.Should().HaveCount(1);
+            (await package.CreateRoslynWorkspaceForRunAsync(new TimeBudget(30.Seconds()))).CurrentSolution.Projects.Should().HaveCount(1);
         }
 
         [Fact]
