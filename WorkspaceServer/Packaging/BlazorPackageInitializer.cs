@@ -86,7 +86,7 @@ namespace WorkspaceServer.Packaging
             var filesAndDirectoriestoDelete = new[] { "Pages", "Shared", "wwwroot", "_ViewImports.cshtml" };
             foreach (var fOrD in filesAndDirectoriestoDelete)
             {
-                Path.Combine(root, fOrD).Delete();
+                Path.Combine(root, fOrD).DeleteFileSystemObject();
             }
         }
 
@@ -108,7 +108,7 @@ namespace WorkspaceServer.Packaging
 
         private void WriteResource(string resourceName, string targetDirectory)
         {
-            var text = this.GetType().ReadManifestResource(resourceName);
+            var text = this.GetType().ReadManifestResource($"WorkspaceServer.{resourceName}");
             System.IO.Directory.CreateDirectory(targetDirectory);
             var path = Path.Combine(targetDirectory, resourceName);
             File.WriteAllText(path, text);

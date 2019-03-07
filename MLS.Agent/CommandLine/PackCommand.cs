@@ -32,9 +32,9 @@ namespace MLS.Agent.CommandLine
 
                 await File.WriteAllTextAsync(
                     projectFilePath,
-                    Resources.ReadManifestResource("MLS.Agent.MLS.PackageTool.csproj"));
+                    typeof(Program).ReadManifestResource("MLS.Agent.MLS.PackageTool.csproj"));
 
-                await File.WriteAllTextAsync(contentFilePath, Resources.ReadManifestResource("MLS.Agent.Program.cs"));
+                await File.WriteAllTextAsync(contentFilePath, typeof(Program).ReadManifestResource("MLS.Agent.Program.cs"));
 
                 var dotnet = new Dotnet(tempDir);
                 var result = await dotnet.Build();

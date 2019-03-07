@@ -5,7 +5,7 @@ namespace MLS.Agent.Tools.Extensions
 {
     public static class StringExtensions
     {
-        public static void Delete(this string path)
+        public static void DeleteFileSystemObject(this string path)
         {
             if (Directory.Exists(path))
             {

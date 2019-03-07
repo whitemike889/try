@@ -41,5 +41,10 @@ namespace WorkspaceServer.Packaging
         {
             return Directory.GetFiles("MLS.Blazor.dll", SearchOption.AllDirectories).First();
         }
+
+        public async Task Prepare()
+        {
+            await base.EnsureBuilt();
+        }
     }
 }

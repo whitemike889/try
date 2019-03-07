@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,9 +20,7 @@ namespace MLS.Agent.Blazor
                 if (builder.BlazorSupported)
                 {
                     var package = builder.GetPackage() as BlazorPackage;
-                    var readyTask = package.CreateRoslynWorkspaceForRunAsync(budget);
-
-                    // Todo: don't do this in server startup path
+                    var readyTask = Task.Run(package.Prepare);
                     readyTask.Wait();
                     app.Map(package.CodeRunnerPath, appBuilder =>
                     {
