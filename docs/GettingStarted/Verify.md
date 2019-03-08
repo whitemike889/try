@@ -20,4 +20,4 @@ When `dotnet try verify` detects errors, it will return a non-zero exit code. Wh
 Resources
 
 - [Quick Start](./QuickStart.md)
-- [Gossary](./Glossary.md)
+- [Glossary](./Glossary.md)

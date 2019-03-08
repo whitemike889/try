@@ -1,6 +1,6 @@
 # Quick Start
 
-Congratulations! You just ran `dotnet try demo`. This an interactive getting starting guide to get you familiar with the `dotnet try` tool. 
+Congratulations! You just ran `dotnet try demo`. This is an interactive guide to get you familiar with the `dotnet try` tool. 
 
 ### What is dotnet try?
 
