@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Linq;
 using System.Reactive.Concurrency;
 
@@ -25,17 +26,17 @@ namespace WorkspaceServer.Packaging
 
         private bool IsProjectFile(string fileName)
         {
-            return fileName.EndsWith(".csproj");
+            return fileName.EndsWith(".csproj", StringComparison.InvariantCultureIgnoreCase);
         }
 
         private bool IsCodeFile(string fileName)
         {
-            return fileName.EndsWith(".cs");
+            return fileName.EndsWith(".cs", StringComparison.InvariantCultureIgnoreCase);
         }
 
         private bool IsBuildLogFile(string fileName)
         {
-            return fileName.EndsWith(".binlog");
+            return fileName.EndsWith(".binlog", StringComparison.InvariantCultureIgnoreCase);
         }
 
 

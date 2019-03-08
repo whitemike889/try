@@ -557,8 +557,6 @@ namespace WorkspaceServer.Packaging
                             .Build(args: "/bl");
                     }
 
-                   
-
                     if (result.ExitCode != 0)
                     {
                         File.WriteAllText(
