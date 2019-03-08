@@ -1,4 +1,4 @@
-## Glossary 
+# Glossary 
 
 ### dotnet try
 `dotnet try ` is a set of tools that allows you to create interactive samples for your users.

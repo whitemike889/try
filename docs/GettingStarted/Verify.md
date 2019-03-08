@@ -16,8 +16,7 @@ When `dotnet try verify` detects errors, it will return a non-zero exit code. Wh
 
 **[< Define sessions](./Sessions.md) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [ Passing arguments to your sample project >](./PassingArgs.md)**
 
-
-Resources
+### Resources
 
 - [Quick Start](./QuickStart.md)
 - [Glossary](./Glossary.md)

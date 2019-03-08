@@ -6,7 +6,7 @@ Congratulations! You just ran `dotnet try demo`. This is an interactive guide to
 
 `dotnet try` is a tool that allows you to create interactive documentation. Try editing the code in the editor below and then clicking the `Run example 1` button.
 
-**Example 1**
+#### Example 1
 
 ```csharp .\Snippets\Program.cs --project .\Snippets\Snippets.csproj --session "Run example 1" --region run1
 ```
@@ -29,7 +29,7 @@ Console.WriteLine("Hello World!");
 
 The `dotnet try` tool extends Markdown using a set of options that can be added after the language keyword in the code fence. This lets you reference sample code from the backing project, allowing a normal C# project, rather than the documentation, to be the source of truth. This removes the need to copy and paste code snippets from a code sample into your Markdown file.
 
-**Example 2**
+#### Example 2
 
 ```cs .\Snippets\Program.cs --project .\Snippets\Snippets.csproj --region run2 --session "Run example 2" 
 ```
@@ -65,7 +65,7 @@ Verifying that your code samples work is vital to your user experience, so `dotn
 
 Now change the region option back to `--region run1`. Save the changes. If you re-run the  `dotnet try verify` you'll see all green check marks and the error is gone. 
 
-## Exercise   
+### Exercise   
 
 Here's a quick exercise that will teach you how to create a new snippet, specify a region in an existing backing project, and define a new session. 
 
@@ -97,6 +97,3 @@ Console.WriteLine(primes);
 *Hint* Look at the static code snippet above, under **Code fence options**. Make sure to update the `--session` and `--region` options.
 
 **[Next: A beginners guide to getting started with *dotnet try* from scratch](./NewProject.md)**
-
-
-
