@@ -23,14 +23,46 @@ namespace WorkspaceServer.Packaging
             _fileSystemWatcher.Created += FileSystemWatcherOnCreated;
         }
 
+        private bool IsProjectFile(string fileName)
+        {
+            return fileName.EndsWith(".csproj");
+        }
+
+        private bool IsCodeFile(string fileName)
+        {
+            return fileName.EndsWith(".cs");
+        }
+
+        private bool IsBuildLogFile(string fileName)
+        {
+            return fileName.EndsWith(".binlog");
+        }
+
+
         private void FileSystemWatcherOnDeleted(object sender, FileSystemEventArgs e)
         {
-            HandleFileChanges(e.Name);
+            var fileName = e.Name;
+            if (DesignTimeBuildResult != null)
+            {
+                if (IsProjectFile(fileName) || IsBuildLogFile(fileName))
+                {
+                    Reset();
+                }
+                else if (IsCodeFile(fileName))
+                {
+                    var analyzerInputs = DesignTimeBuildResult.GetCompileInputs();
+                    if (analyzerInputs.Any(sourceFile => sourceFile.EndsWith(fileName)))
+                    {
+                        Reset();
+                    }
+                }
+            }
         }
 
         private void FileSystemWatcherOnCreated(object sender, FileSystemEventArgs e)
         {
-            if (e.Name.EndsWith(".csproj") || e.Name.EndsWith(".cs"))
+            var fileName = e.Name;
+            if (IsProjectFile(fileName) || IsCodeFile(fileName))
             {
                 Reset();
             }
@@ -45,11 +77,11 @@ namespace WorkspaceServer.Packaging
         {
             if (DesignTimeBuildResult != null)
             {
-                if (fileName.EndsWith(".csproj"))
+                if (IsProjectFile(fileName))
                 {
                     Reset();
                 }
-                else if (fileName.EndsWith(".cs"))
+                else if (IsCodeFile(fileName))
                 {
                     var analyzerInputs = DesignTimeBuildResult.GetCompileInputs();
                     if (analyzerInputs.Any(sourceFile => sourceFile.EndsWith(fileName)))
