@@ -108,6 +108,7 @@ namespace WorkspaceServer.Packaging
             _lazyCreation = new AsyncLazy<bool>(Create);
             _buildSemaphore = packageBuildSemaphores.GetOrAdd(Name, _ => new SemaphoreSlim(1, 1));
             _publishSemaphore = packagePublishSemaphores.GetOrAdd(Name, _ => new SemaphoreSlim(1, 1));
+            RoslynWorkspace = null;
         }
 
         private FileInfo FindLatestBinLog() => FindBinLogs().OrderByDescending(f => f.LastWriteTimeUtc).FirstOrDefault();
