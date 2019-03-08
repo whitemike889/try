@@ -1,4 +1,3 @@
-using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Assent;
@@ -6,6 +5,7 @@ using FluentAssertions;
 using MLS.Protocol;
 using MLS.Protocol.Execution;
 using Recipes;
+using WorkspaceServer.Packaging;
 using WorkspaceServer.Tests;
 using Xunit;
 using Xunit.Abstractions;
@@ -27,11 +27,12 @@ namespace MLS.Agent.Tests
         [Fact]
         public async Task The_Run_contract_for_compiling_code_has_not_been_broken()
         {
+            var package = await Package.Copy(await Default.ConsoleWorkspace);
             var viewport = ViewportCode();
 
             var requestJson = new WorkspaceRequest(
                 new Workspace(
-                    workspaceType: "console",
+                    workspaceType: package.Name,
                     buffers: new[]
                              {
                                  EntrypointCode(),
@@ -50,11 +51,12 @@ namespace MLS.Agent.Tests
         [Fact]
         public async Task The_Run_contract_for_noncompiling_code_has_not_been_broken()
         {
+            var package = await Package.Copy(await Default.ConsoleWorkspace);
             var viewport = ViewportCode("doesn't compile");
 
             var request = new WorkspaceRequest(
                 new Workspace(
-                    workspaceType: "console",
+                    workspaceType: package.Name,
                     buffers: new[]
                              {
                                  EntrypointCode(),
@@ -75,11 +77,12 @@ namespace MLS.Agent.Tests
         [Fact]
         public async Task The_Compile_contract_for_compiling_code_has_not_been_broken()
         {
+            var package = await Package.Copy(await Default.ConsoleWorkspace);
             var viewport = ViewportCode();
 
             var requestJson = new WorkspaceRequest(
                 new Workspace(
-                    workspaceType: "console",
+                    workspaceType: package.Name,
                     buffers: new[]
                              {
                                  EntrypointCode(),
@@ -109,11 +112,12 @@ namespace MLS.Agent.Tests
         [Fact]
         public async Task The_Compile_contract_for_noncompiling_code_has_not_been_broken()
         {
+            var package = await Package.Copy(await Default.ConsoleWorkspace);
             var viewport = ViewportCode("doesn't compile");
 
             var request = new WorkspaceRequest(
                 new Workspace(
-                    workspaceType: "console",
+                    workspaceType: package.Name,
                     buffers: new[]
                              {
                                  EntrypointCode(),
@@ -134,11 +138,12 @@ namespace MLS.Agent.Tests
         [Fact]
         public async Task The_Completions_contract_has_not_been_broken()
         {
+            var package = await Package.Copy(await Default.ConsoleWorkspace);
             var viewport = ViewportCode("Console.Ou$$");
 
             var requestJson = new WorkspaceRequest(
                 new Workspace(
-                    workspaceType: "console",
+                    workspaceType: package.Name,
                     buffers: new[]
                              {
                                  EntrypointCode(),
@@ -157,11 +162,12 @@ namespace MLS.Agent.Tests
         [Fact]
         public async Task The_signature_help_contract_has_not_been_broken()
         {
+            var package = await Package.Copy(await Default.ConsoleWorkspace);
             var viewport = ViewportCode("Console.Write($$);");
 
             var requestJson = new WorkspaceRequest(
                 new Workspace(
-                    workspaceType: "console",
+                    workspaceType: package.Name,
                     buffers: new[]
                              {
                                  EntrypointCode(),
@@ -180,9 +186,10 @@ namespace MLS.Agent.Tests
         [Fact]
         public async Task The_instrumentation_contract_has_not_been_broken()
         {
+            var package = await Package.Copy(await Default.ConsoleWorkspace);
             var requestJson = new WorkspaceRequest(
                 new Workspace(
-                    workspaceType: "console",
+                    workspaceType: package.Name,
                     buffers: new[]
                              {
                                  EntrypointCode("int a = 1; int b = 2; a = 3; b = a;")
@@ -201,9 +208,10 @@ namespace MLS.Agent.Tests
         [Fact]
         public async Task The_run_contract_with_no_instrumentation_has_not_been_broken()
         {
+            var package = await Package.Copy(await Default.ConsoleWorkspace);
             var requestJson = new WorkspaceRequest(
                 new Workspace(
-                    workspaceType: "console",
+                    workspaceType: package.Name,
                     buffers: new[]
                              {
                                  EntrypointCode("int a = 1; int b = 2; a = 3; b = a;")

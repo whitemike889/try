@@ -145,6 +145,7 @@ namespace FibonacciTest
         [Fact]
         public async Task Get_documentation_with_autocompletion_of_console_methods()
         {
+            
             #region bufferSources
 
             var program = @"using System;
@@ -185,9 +186,10 @@ namespace FibonacciTest
 
             #endregion
 
+            var package = await Package.Copy(await Default.ConsoleWorkspace);
             var (processed, position) = CodeManipulation.ProcessMarkup(generator);
 
-            var workspace = new Workspace(workspaceType: "console", buffers: new[]
+            var workspace = new Workspace(workspaceType: package.Name, buffers: new[]
             {
                 new Workspace.Buffer("Program.cs", program),
                 new Workspace.Buffer("generators/FibonacciGenerator.cs", processed, position)
@@ -692,8 +694,8 @@ namespace FibonacciTest
             #endregion
 
             var (processed, position) = CodeManipulation.ProcessMarkup(generator);
-
-            var workspace = new Workspace(workspaceType: "console", buffers: new[]
+            var package = await Package.Copy(await Default.ConsoleWorkspace);
+            var workspace = new Workspace(workspaceType: package.Name, buffers: new[]
             {
                 new Workspace.Buffer("Program.cs", program),
                 new Workspace.Buffer("generators/FibonacciGenerator.cs", processed, position)

@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Linq;
 using System.Reactive.Concurrency;
 
@@ -23,14 +24,48 @@ namespace WorkspaceServer.Packaging
             _fileSystemWatcher.Created += FileSystemWatcherOnCreated;
         }
 
+        private static bool IsProjectFile(string fileName)
+        {
+            return fileName.EndsWith(".csproj", StringComparison.InvariantCultureIgnoreCase);
+        }
+
+        private static bool IsCodeFile(string fileName)
+        {
+            return fileName.EndsWith(".cs", StringComparison.InvariantCultureIgnoreCase);
+        }
+
+        private static bool IsBuildLogFile(string fileName)
+        {
+            return fileName.EndsWith(".binlog", StringComparison.InvariantCultureIgnoreCase);
+        }
+
         private void FileSystemWatcherOnDeleted(object sender, FileSystemEventArgs e)
         {
-            HandleFileChanges(e.Name);
+            var fileName = e.Name;
+            var build = DesignTimeBuildResult;
+            if (build == null)
+            {
+                return;
+            }
+
+            if (IsProjectFile(fileName) || IsBuildLogFile(fileName))
+            {
+                Reset();
+            }
+            else if (IsCodeFile(fileName))
+            {
+                var analyzerInputs = build.GetCompileInputs();
+                if (analyzerInputs.Any(sourceFile => sourceFile.EndsWith(fileName)))
+                {
+                    Reset();
+                }
+            }
         }
 
         private void FileSystemWatcherOnCreated(object sender, FileSystemEventArgs e)
         {
-            if (e.Name.EndsWith(".csproj") || e.Name.EndsWith(".cs"))
+            var fileName = e.Name;
+            if (IsProjectFile(fileName) || IsCodeFile(fileName))
             {
                 Reset();
             }
@@ -43,19 +78,22 @@ namespace WorkspaceServer.Packaging
 
         private void HandleFileChanges(string fileName)
         {
-            if (DesignTimeBuildResult != null)
+            var build = DesignTimeBuildResult;
+            if (build == null)
             {
-                if (fileName.EndsWith(".csproj"))
+                return;
+            }
+
+            if (IsProjectFile(fileName))
+            {
+                Reset();
+            }
+            else if (IsCodeFile(fileName))
+            {
+                var analyzerInputs = build.GetCompileInputs();
+                if (analyzerInputs.Any(sourceFile => sourceFile.EndsWith(fileName)))
                 {
                     Reset();
-                }
-                else if (fileName.EndsWith(".cs"))
-                {
-                    var analyzerInputs = DesignTimeBuildResult.GetCompileInputs();
-                    if (analyzerInputs.Any(sourceFile => sourceFile.EndsWith(fileName)))
-                    {
-                        Reset();
-                    }
                 }
             }
         }
