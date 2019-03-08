@@ -121,7 +121,9 @@ namespace WorkspaceServer.Packaging
                     if (projectFile != null && binLog.LastWriteTimeUtc >= projectFile.LastWriteTimeUtc)
                     {
                         var manager = new AnalyzerManager();
-                        var result = manager.Analyze(binLog.FullName).FirstOrDefault(p => p.ProjectFilePath == projectFile.FullName);
+                        var results = manager.Analyze(binLog.FullName);
+
+                        var result = results.FirstOrDefault(p => p.ProjectFilePath == projectFile.FullName);
                         if (result != null)
                         {
                             RoslynWorkspace = null;
@@ -130,12 +132,18 @@ namespace WorkspaceServer.Packaging
                             if (result.Succeeded && !binLog.Name.EndsWith(DesignTimeBuildBinlogFileName))
                             {
                                 LastSuccessfulBuildTime = binLog.LastWriteTimeUtc;
+                                if (CanUseToGenerateCompilation(DesignTimeBuildResult, out var ws))
+                                {
+                                    RoslynWorkspace = ws;
+                                }
                             }
                         }
                     }
                 }
             }
         }
+
+        
 
         private DateTimeOffset? LastDesignTimeBuild { get; set; }
 
@@ -241,6 +249,10 @@ namespace WorkspaceServer.Packaging
                 if (ws != null)
                 {
                     return Task.FromResult(ws);
+                }
+                else
+                {
+
                 }
             }
 
@@ -389,6 +401,8 @@ namespace WorkspaceServer.Packaging
             }
 
             var ws = build.GetWorkspace();
+            ValidateRoslynWorkspace();
+                
             var projectId = ws.CurrentSolution.ProjectIds.FirstOrDefault();
             var references = build.References;
             var metadataReferences = references.GetMetadataReferences();
@@ -397,9 +411,31 @@ namespace WorkspaceServer.Packaging
             ws.TryApplyChanges(solution);
             RoslynWorkspace = ws;
             return ws;
+
+            void ValidateRoslynWorkspace()
+            {
+                if (CanUseToGenerateCompilation(ws))
+                {
+                    RoslynWorkspace = null;
+                    DesignTimeBuildResult = null;
+                    LastDesignTimeBuild = null;
+                    throw new InvalidOperationException("The roslyn workspace cannot be used to generate a compilation");
+                }
+            }
         }
 
-        protected AdhocWorkspace RoslynWorkspace { get; set; }
+        private static bool CanUseToGenerateCompilation(AnalyzerResult analyzerResult, out Workspace ws)
+        {
+            ws = analyzerResult.GetWorkspace();
+            return CanUseToGenerateCompilation(ws);
+        }
+
+        private static bool CanUseToGenerateCompilation(Workspace ws)
+        {
+            return (ws?.CurrentSolution?.Projects?.Count() == 0);
+        }
+
+        protected Workspace RoslynWorkspace { get; set; }
 
         private async Task EnsureReady(Budget budget)
         {
@@ -689,9 +725,10 @@ namespace WorkspaceServer.Packaging
                 LastDesignTimeBuild = Clock.Current.Now();
                 if (result.Succeeded == false)
                 {
+                    var logData = logWriter.ToString();
                     File.WriteAllText(
                         LastBuildErrorLogFile.FullName,
-                        string.Join(Environment.NewLine, logWriter.ToString()));
+                        string.Join(Environment.NewLine, "Design Time Build Error", logData));
                 }
                 else if (LastBuildErrorLogFile.Exists)
                 {
