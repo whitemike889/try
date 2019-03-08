@@ -428,7 +428,7 @@ namespace WorkspaceServer.Packaging
             var build = DesignTimeBuildResult;
             if (build == null)
             {
-                return null;
+                throw new NullReferenceException("No design time of full build available");
             }
 
             var ws = build.GetWorkspace();
