@@ -21,4 +21,3 @@ Resources
 
 - [Quick Start](./QuickStart.md)
 - [Gossary](./Glossary.md)
-- [Step-by-step tutorial](./Introduction.md) 
