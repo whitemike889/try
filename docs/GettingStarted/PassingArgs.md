@@ -1,5 +1,13 @@
 # Passing arguments to your sample project
 
+- [Quick Start](./QuickStart.md)
+- [Create a New Project](./NewProject.md)
+- [Define Regions](./Regions.md)
+- [Create Sessions](./Sessions.md)
+- [Verify your Project](./Verify.md)
+- **Passing Arguments**
+- [Glossary](./Glossary.md)
+
 Now that you have a few different regions and few different sessions, you might want to actually call different code depending on which button was clicked. Remember, `dotnet try` will replace some code and then invoke your program's `Main`. But you may not want to run all of the code in your program for every button. If you can switch code paths based on which button was clicked, you can get a lot more use out of that sample project.
 
 You may have noticed that the signature of `Program.Main` in the [QuickStart](./QuickStart.md)'s backing project (`Snippets.csproj`) looks a little strange:
@@ -34,4 +42,4 @@ Instead of the familiar `Main(string[] args)` entry point, this program's entry 
 
 _Congratulations! You've finished the `dotnet try` step-by-step tutorial walkthrough._
 
-**[&laquo; Verify your project](./Verify.md)**
+**NEXT: [Glossary &raquo;](./Glossary.md)**

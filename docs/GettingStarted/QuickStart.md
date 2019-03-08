@@ -1,5 +1,13 @@
 # Quick Start
 
+- **Quick Start**
+- [Create a New Project](./NewProject.md)
+- [Define Regions](./Regions.md)
+- [Create Sessions](./Sessions.md)
+- [Verify your Project](./Verify.md)
+- [Passing Arguments](./PassingArgs.md)
+- [Glossary](./Glossary.md)
+
 Congratulations! You just ran `dotnet try demo`. This is an interactive guide to get you familiar with the `dotnet try` tool. 
 
 ### What is dotnet try?
@@ -96,4 +104,4 @@ Console.WriteLine(primes);
 
 *Hint* Look at the static code snippet above, under **Code fence options**. Make sure to update the `--session` and `--region` options.
 
-**[A beginner's guide to getting started with *dotnet try* from scratch &raquo;](./NewProject.md)**
+**NEXT: [A beginner's guide to getting started with *dotnet try* from scratch &raquo;](./NewProject.md)**

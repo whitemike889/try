@@ -1,4 +1,12 @@
-# Step-by-step tutorial: Create a new project
+# Step-by-step tutorial: Create a New Project
+
+- [Quick Start](./QuickStart.md)
+- **Create a New Project**
+- [Define Regions](./Regions.md)
+- [Create Sessions](./Sessions.md)
+- [Verify your Project](./Verify.md)
+- [Passing Arguments](./PassingArgs.md)
+- [Glossary](./Glossary.md)
 
 Let's walk through how to create some `dotnet try`-powered documentation from scratch. 
 
@@ -37,4 +45,4 @@ Let's walk through how to create some `dotnet try`-powered documentation from sc
 
 As you might have noticed, you see the full `Program.cs` file. But suppose you'd like to show your user only `Console.WriteLine("Hello World!");`? The next step in the tutorial will show you how to do that.
 
-**[&laquo; Quickstart](./QuickStart.md) | [Define regions &raquo;](./Regions.md)**
+**NEXT: [Define Regions &raquo;](./Regions.md)**

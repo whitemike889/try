@@ -1,5 +1,13 @@
 # Step-by-step tutorial: Define Sessions
 
+- [Quick Start](./QuickStart.md)
+- [Create a New Project](./NewProject.md)
+- [Define Regions](./Regions.md)
+- **Create Sessions**
+- [Verify your Project](./Verify.md)
+- [Passing Arguments](./PassingArgs.md)
+- [Glossary](./Glossary.md)
+
 Let's make this a little more interesting. Your project probably has more than one snippet you want people to be able to run. Sessions allow you to run these code snippets independently of one another.
 
 1. In your `MyConsoleApp` folder, add a new file called `Cat.cs` and add the following code:
@@ -63,4 +71,4 @@ Let's make this a little more interesting. Your project probably has more than o
 
 Well done! Now, you have a project that you are almost ready to share with others. A big part of good documentation is making sure everything works. In `dotnet try` we do this by using `dotnet try verify` which we will explore in the next module.
 
-**[&laquo; Define Regions](./Regions.md) | [Verify your project &raquo;](./Verify.md)**
+**NEXT: [Verify your Project &raquo;](./Verify.md)**

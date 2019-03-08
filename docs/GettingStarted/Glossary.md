@@ -1,5 +1,13 @@
 # Glossary
 
+- [Quick Start](./QuickStart.md)
+- [Create a New Project](./NewProject.md)
+- [Define Regions](./Regions.md)
+- [Create Sessions](./Sessions.md)
+- [Verify your Project](./Verify.md)
+- [Passing Arguments](./PassingArgs.md)
+- **Glossary**
+
 ### dotnet try
 
 `dotnet try` is a set of tools that allows you to create interactive samples for your users.
