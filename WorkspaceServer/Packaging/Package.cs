@@ -561,9 +561,7 @@ namespace WorkspaceServer.Packaging
                             .Build(args: "/bl");
                     }
 
-                    var binLog = FindLatestBinLog();
-                    await WaitForFileAvailable(binLog);
-                    LoadDesignTimeBuildFromBuildLogFile(binLog);
+                   
 
                     if (result.ExitCode != 0)
                     {
@@ -585,6 +583,12 @@ namespace WorkspaceServer.Packaging
                 catch (Exception exception)
                 {
                     operation.Error("Exception building workspace", exception);
+                }
+                finally
+                {
+                    var binLog = FindLatestBinLog();
+                    await WaitForFileAvailable(binLog);
+                    LoadDesignTimeBuildFromBuildLogFile(binLog);
                 }
 
             }
