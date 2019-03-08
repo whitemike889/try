@@ -40,15 +40,12 @@ This is done using the `--region` option, which targets a [C# code region](https
 
 3. In `doc.md`, modify your code fence, appending the `--region` option.
 
-<pre>
-    <code>
-# My code sample:
+    ````markdown
+    # My code sample:
 
-```cs ./MyConsoleApp/Program.cs --project ./MyConsoleApp/MyConsoleApp.csproj --region say_hello
-```
-    </code>
-</pre>
-
+    ```cs ./MyConsoleApp/Program.cs --project ./MyConsoleApp/MyConsoleApp.csproj --region say_hello
+    ```
+    ````
 
 when you refresh your browser, your Try .NET editor should now only show a single line of code: `Console.WriteLine("Hello World!");`.
 

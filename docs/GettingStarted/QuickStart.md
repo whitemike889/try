@@ -21,13 +21,11 @@ For reference, the path to the demo folder is in the upper right-hand corner of 
 
 The term "code fence" refers to the Markdown delimiters around a multi-line block of code. Here's an example:
 
-<pre>
-    <code>
+````markdown
 ```cs 
 Console.WriteLine("Hello World!");
 ```
-    </code>
-</pre>
+````
 
 The `dotnet try` tool extends Markdown using a set of options that can be added after the language keyword in the code fence. This lets you reference sample code from the backing project, allowing a normal C# project, rather than the documentation, to be the source of truth. This removes the need to copy and paste code snippets from a code sample into your Markdown file.
 
@@ -38,12 +36,10 @@ The `dotnet try` tool extends Markdown using a set of options that can be added 
 
 For example, the code snippet above was extended using `dotnet try`. The code fence that wires it up looks like this: 
 
-<pre>
-    <code>
+````markdown
 ```cs .\Snippets\Program.cs --project .\Snippets\Snippets.csproj --region run2 --session "Run example 2" 
 ```
-    </code>
-</pre>
+````
 
 ### What do those options do?
 

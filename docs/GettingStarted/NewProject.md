@@ -6,14 +6,12 @@ Let's walk through how to create some `dotnet try`-powered documentation from sc
 
 2. Create a file called `doc.md`. Inside that file, add some text and a code fence:
 
-<pre>
-    <code>
+````markdown
 # My code sample:
 
 ```cs ./MyConsoleApp/Program.cs --project ./MyConsoleApp/MyConsoleApp.csproj
 ```
-    </code>
-</pre>
+````
 
 3. Inside the `MyDocProject` folder, create a subfolder called `MyConsoleApp`, navigate into that folder in your terminal, and run the following command:
 
