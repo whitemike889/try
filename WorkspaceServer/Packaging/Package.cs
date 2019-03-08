@@ -432,8 +432,15 @@ namespace WorkspaceServer.Packaging
             }
 
             var ws = build.GetWorkspace();
-            ValidateRoslynWorkspace();
-                
+
+            if (!CanBeUsedToGenerateCompilation(ws))
+            {
+                RoslynWorkspace = null;
+                DesignTimeBuildResult = null;
+                LastDesignTimeBuild = null;
+                throw new InvalidOperationException("The roslyn workspace cannot be used to generate a compilation");
+            }
+
             var projectId = ws.CurrentSolution.ProjectIds.FirstOrDefault();
             var references = build.References;
             var metadataReferences = references.GetMetadataReferences();
@@ -442,17 +449,6 @@ namespace WorkspaceServer.Packaging
             ws.TryApplyChanges(solution);
             RoslynWorkspace = ws;
             return ws;
-
-            void ValidateRoslynWorkspace()
-            {
-                if (!CanBeUsedToGenerateCompilation(ws))
-                {
-                    RoslynWorkspace = null;
-                    DesignTimeBuildResult = null;
-                    LastDesignTimeBuild = null;
-                    throw new InvalidOperationException("The roslyn workspace cannot be used to generate a compilation");
-                }
-            }
         }
 
         private static bool CanBeUsedToGenerateCompilation(AnalyzerResult analyzerResult, out Workspace ws)
@@ -584,13 +580,10 @@ namespace WorkspaceServer.Packaging
                 {
                     operation.Error("Exception building workspace", exception);
                 }
-                finally
-                {
-                    var binLog = FindLatestBinLog();
-                    await WaitForFileAvailable(binLog);
-                    LoadDesignTimeBuildFromBuildLogFile(binLog);
-                }
 
+                var binLog = FindLatestBinLog();
+                await WaitForFileAvailable(binLog);
+                LoadDesignTimeBuildFromBuildLogFile(binLog);
             }
         }
 
