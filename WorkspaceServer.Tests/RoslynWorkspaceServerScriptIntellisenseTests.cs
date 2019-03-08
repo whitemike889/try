@@ -94,8 +94,7 @@ public class Program
   }
 }";
             var (processed, markLocation) = CodeManipulation.ProcessMarkup(code);
-
-            var ws = new Workspace(buffers: new[] { new Workspace.Buffer("", processed, markLocation) });
+            var ws = new Workspace( buffers: new[] { new Workspace.Buffer("", processed, markLocation) });
             var request = new WorkspaceRequest(ws, activeBufferId: "");
             var server = GetLanguageService();
             var result = await server.GetSignatureHelp(request);
