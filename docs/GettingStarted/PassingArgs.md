@@ -34,4 +34,4 @@ Instead of the familiar `Main(string[] args)` entry point, this program's entry 
 
 _Congratulations! You've finished the `dotnet try` step-by-step tutorial walkthrough._
 
-**[< Verify your project](./Verify.md)**
+**[&laquo; Verify your project](./Verify.md)**

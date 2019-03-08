@@ -63,4 +63,4 @@ Let's make this a little more interesting. Your project probably has more than o
 
 Well done! Now, you have a project that you are almost ready to share with others. A big part of good documentation is making sure everything works. In `dotnet try` we do this by using `dotnet try verify` which we will explore in the next module.
 
-**[< Define Regions](./Regions.md) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  [Verify your project >](./Verify.md)**
+**[&laquo; Define Regions](./Regions.md) | [Verify your project &raquo;](./Verify.md)**

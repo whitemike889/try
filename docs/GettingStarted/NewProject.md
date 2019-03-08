@@ -37,4 +37,4 @@ Let's walk through how to create some `dotnet try`-powered documentation from sc
 
 As you might have noticed, you see the full `Program.cs` file. But suppose you'd like to show your user only `Console.WriteLine("Hello World!");`? The next step in the tutorial will show you how to do that.
 
-**[< Quickstart](./QuickStart.md) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [ Define regions >](./Regions.md)**
+**[&laquo; Quickstart](./QuickStart.md) | [Define regions &raquo;](./Regions.md)**

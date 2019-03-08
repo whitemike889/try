@@ -53,4 +53,4 @@ This is done using the `--region` option, which targets a [C# code region](https
     Console.WriteLine("Hello World!");
     ```
 
-**[< Create a new project](./NewProject.md) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [ Define sessions >](./Sessions.md)**
+**[&laquo; Create a new project](./NewProject.md) | [Define sessions &raquo;](./Sessions.md)**

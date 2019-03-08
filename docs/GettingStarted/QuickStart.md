@@ -96,4 +96,4 @@ Console.WriteLine(primes);
 
 *Hint* Look at the static code snippet above, under **Code fence options**. Make sure to update the `--session` and `--region` options.
 
-**[Next: A beginners guide to getting started with *dotnet try* from scratch](./NewProject.md)**
+**[A beginner's guide to getting started with *dotnet try* from scratch &raquo;](./NewProject.md)**

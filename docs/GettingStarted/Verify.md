@@ -14,7 +14,7 @@ Try making other changes to the code fence options. Mistype an option name, spec
 
 When `dotnet try verify` detects errors, it will return a non-zero exit code. When everything looks good, it returns `0`. You can use this in your continuous integration scripts to prevent code changes from breaking your documentation.
 
-**[< Define sessions](./Sessions.md) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [ Passing arguments to your sample project >](./PassingArgs.md)**
+**[&laquo; Define sessions](./Sessions.md) | [Passing arguments to your sample project &raquo;](./PassingArgs.md)**
 
 ### Resources
 
