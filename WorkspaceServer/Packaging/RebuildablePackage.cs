@@ -24,38 +24,40 @@ namespace WorkspaceServer.Packaging
             _fileSystemWatcher.Created += FileSystemWatcherOnCreated;
         }
 
-        private bool IsProjectFile(string fileName)
+        private static bool IsProjectFile(string fileName)
         {
             return fileName.EndsWith(".csproj", StringComparison.InvariantCultureIgnoreCase);
         }
 
-        private bool IsCodeFile(string fileName)
+        private static bool IsCodeFile(string fileName)
         {
             return fileName.EndsWith(".cs", StringComparison.InvariantCultureIgnoreCase);
         }
 
-        private bool IsBuildLogFile(string fileName)
+        private static bool IsBuildLogFile(string fileName)
         {
             return fileName.EndsWith(".binlog", StringComparison.InvariantCultureIgnoreCase);
         }
 
-
         private void FileSystemWatcherOnDeleted(object sender, FileSystemEventArgs e)
         {
             var fileName = e.Name;
-            if (DesignTimeBuildResult != null)
+            var build = DesignTimeBuildResult;
+            if (build == null)
             {
-                if (IsProjectFile(fileName) || IsBuildLogFile(fileName))
+                return;
+            }
+
+            if (IsProjectFile(fileName) || IsBuildLogFile(fileName))
+            {
+                Reset();
+            }
+            else if (IsCodeFile(fileName))
+            {
+                var analyzerInputs = build.GetCompileInputs();
+                if (analyzerInputs.Any(sourceFile => sourceFile.EndsWith(fileName)))
                 {
                     Reset();
-                }
-                else if (IsCodeFile(fileName))
-                {
-                    var analyzerInputs = DesignTimeBuildResult.GetCompileInputs();
-                    if (analyzerInputs.Any(sourceFile => sourceFile.EndsWith(fileName)))
-                    {
-                        Reset();
-                    }
                 }
             }
         }
@@ -76,19 +78,22 @@ namespace WorkspaceServer.Packaging
 
         private void HandleFileChanges(string fileName)
         {
-            if (DesignTimeBuildResult != null)
+            var build = DesignTimeBuildResult;
+            if (build == null)
             {
-                if (IsProjectFile(fileName))
+                return;
+            }
+
+            if (IsProjectFile(fileName))
+            {
+                Reset();
+            }
+            else if (IsCodeFile(fileName))
+            {
+                var analyzerInputs = build.GetCompileInputs();
+                if (analyzerInputs.Any(sourceFile => sourceFile.EndsWith(fileName)))
                 {
                     Reset();
-                }
-                else if (IsCodeFile(fileName))
-                {
-                    var analyzerInputs = DesignTimeBuildResult.GetCompileInputs();
-                    if (analyzerInputs.Any(sourceFile => sourceFile.EndsWith(fileName)))
-                    {
-                        Reset();
-                    }
                 }
             }
         }
