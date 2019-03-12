@@ -8,6 +8,7 @@ $content-height: 89vh;
 @import "../node_modules/bulma/bulma.sass";
 @import "../node_modules/@mdi/font/scss/materialdesignicons.scss";
 @import "../node_modules/xterm/dist/xterm";
+@import "../node_modules/xterm/dist/addons/fullscreen/fullscreen.css";
 
 @keyframes textBlink {
     from {
