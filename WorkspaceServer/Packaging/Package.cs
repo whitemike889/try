@@ -143,11 +143,16 @@ namespace WorkspaceServer.Packaging
         private void LoadDesignTimeBuildFromBuildLogFile(FileSystemInfo binLog)
         {
             
-            var projectFile = Directory.GetFiles("*.csproj").FirstOrDefault();
+            var projectFile = GetProjectFile();
             if (projectFile != null && binLog.LastWriteTimeUtc >= projectFile.LastWriteTimeUtc)
             {
                 var manager = new AnalyzerManager();
                 var results = manager.Analyze(binLog.FullName);
+
+                if (results.Count == 0)
+                {
+                    throw new InvalidOperationException("The build log seems to contain no solutions or projects");
+                }
 
                 var result = results.FirstOrDefault(p => p.ProjectFilePath == projectFile.FullName);
                 if (result != null)
@@ -166,6 +171,12 @@ namespace WorkspaceServer.Packaging
                 }
             }
         }
+
+        private FileInfo GetProjectFile()
+        {
+            return Directory.GetFiles("*.csproj").FirstOrDefault();
+        }
+
         private void TryLoadDesignTimeBuildFromBuildLog()
         {
             if (Directory.Exists)
@@ -201,8 +212,7 @@ namespace WorkspaceServer.Packaging
         {
             get
             {
-                if (_isWebProject == null &&
-                    Directory.GetFiles("*.csproj").SingleOrDefault() is FileInfo csproj)
+                if (_isWebProject == null && GetProjectFile() is FileInfo csproj)
                 {
                     var csprojXml = File.ReadAllText(csproj.FullName);
 
@@ -551,10 +561,15 @@ namespace WorkspaceServer.Packaging
                             operation.Info("Skipping build for package {name}", Name);
                             return;
                         }
-
+                        var projectFile = GetProjectFile();
+                        var args = "/bl";
+                        if (projectFile?.Exists == true)
+                        {
+                            args = $"{projectFile.FullName} /bl";
+                        }
                         operation.Info("Building workspace using {_initializer} in {directory}", _initializer, Directory);
                         result = await new Dotnet(Directory)
-                            .Build(args: "/bl");
+                            .Build(args: args);
                     }
 
                     if (result.ExitCode != 0)
