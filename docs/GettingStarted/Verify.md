@@ -1,5 +1,13 @@
 # Step-by-step tutorial: Verify your project
 
+- [Quick Start](./QuickStart.md)
+- [Create a New Project](./NewProject.md)
+- [Define Regions](./Regions.md)
+- [Create Sessions](./Sessions.md)
+- **Verify your Project**
+- [Passing Arguments](./PassingArgs.md)
+- [Glossary](./Glossary.md)
+
 `dotnet try verify` is a compiler for your documentation. With this command, you can make sure that every code snippet will work and is in sync with the backing project. The goal of `dotnet try verify` is to enable you to check the correctness of your documentation as you work, and to enable the same checks inside of your build pipeline.
 
 In the `doc.md` file in your `MyDocProject`, change the `--project` option in one of the code fences to a nonexistent file name, like `./nonexistent.csproj`. Then refresh your browser.
@@ -14,11 +22,4 @@ Try making other changes to the code fence options. Mistype an option name, spec
 
 When `dotnet try verify` detects errors, it will return a non-zero exit code. When everything looks good, it returns `0`. You can use this in your continuous integration scripts to prevent code changes from breaking your documentation.
 
-**[< Define sessions](./Sessions.md) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [ Passing arguments to your sample project >](./PassingArgs.md)**
-
-
-Resources
-
-- [Quick Start](./QuickStart.md)
-- [Gossary](./Glossary.md)
-- [Step-by-step tutorial](./Introduction.md) 
+**NEXT: [Passing Arguments to your Project &raquo;](./PassingArgs.md)**

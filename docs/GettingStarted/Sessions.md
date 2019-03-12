@@ -1,5 +1,13 @@
 # Step-by-step tutorial: Define Sessions
 
+- [Quick Start](./QuickStart.md)
+- [Create a New Project](./NewProject.md)
+- [Define Regions](./Regions.md)
+- **Create Sessions**
+- [Verify your Project](./Verify.md)
+- [Passing Arguments](./PassingArgs.md)
+- [Glossary](./Glossary.md)
+
 Let's make this a little more interesting. Your project probably has more than one snippet you want people to be able to run. Sessions allow you to run these code snippets independently of one another.
 
 1. In your `MyConsoleApp` folder, add a new file called `Cat.cs` and add the following code:
@@ -29,15 +37,13 @@ Let's make this a little more interesting. Your project probably has more than o
 
 3. In `doc.md`, create two separate snippets with one pointing to `Program.cs` and the `say_hello` region and the other pointing to `Cat.cs` and the `what_the_cat_says` region. 
 
-    <pre>
-    <code>
+    ````markdown
     # My code sample:
     ```cs --project .\MyConsoleApp\MyConsoleApp.csproj .\MyConsoleApp\Program.cs --region say_hello
     ```
     ```cs --project .\MyConsoleApp\MyConsoleApp.csproj .\MyConsoleApp\Cat.cs --region what_the_cat_says
     ```
-    </code>
-    </pre>
+    ````
 
     _**Workaround alert!** We're working on automatically detecting changes in your backing project and rebuilding it for you, but we're not there yet. For now, stop `dotnet try` and in your `MyConsoleApp` folder, delete the `bin` and `obj` folders as well as the `.trydotnet` and `msbuild.log` files, and then run `dotnet try` again._
 
@@ -51,15 +57,13 @@ Let's make this a little more interesting. Your project probably has more than o
 
 4. Go back to the code fence snippets we created in step 3 and add the `--session` option.
 
-    <pre>
-    <code>
+    ````markdown
      # My code sample:
     ```cs .\MyConsoleApp\Program.cs --project .\MyConsoleApp\MyConsoleApp.csproj --region say_hello --session one
     ```
     ```cs .\MyConsoleApp\Cat.cs --project .\MyConsoleApp\MyConsoleApp.csproj --region what_the_cat_says --session two 
     ```
-    </code>
-    </pre>
+    ````
 
     Once you've made this change, refresh the page. You should see two separate output panels and two run buttons containing the text that you specified for the session names.
 
@@ -67,4 +71,4 @@ Let's make this a little more interesting. Your project probably has more than o
 
 Well done! Now, you have a project that you are almost ready to share with others. A big part of good documentation is making sure everything works. In `dotnet try` we do this by using `dotnet try verify` which we will explore in the next module.
 
-**[< Define Regions](./Regions.md) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  [Verify your project >](./Verify.md)**
+**NEXT: [Verify your Project &raquo;](./Verify.md)**

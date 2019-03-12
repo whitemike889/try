@@ -1,5 +1,13 @@
 # Step-by-step tutorial: Define Regions
 
+- [Quick Start](./QuickStart.md)
+- [Create a New Project](./NewProject.md)
+- **Define Regions**
+- [Create Sessions](./Sessions.md)
+- [Verify your Project](./Verify.md)
+- [Passing Arguments](./PassingArgs.md)
+- [Glossary](./Glossary.md)
+
 Code documentation almost always features code snippets in isolation, like this:
 
 ```cs 
@@ -19,7 +27,7 @@ This is done using the `--region` option, which targets a [C# code region](https
 
 2. Start a code region by placing `#region say_hello` on the line above `Console.WriteLine("Hello World!");`. Then, place ` #endregion` on the line after.
 
-    Your Program.cs should look like this:
+    Your `Program.cs` should look like this:
 
     ```cs
     using System;
@@ -40,17 +48,17 @@ This is done using the `--region` option, which targets a [C# code region](https
 
 3. In `doc.md`, modify your code fence, appending the `--region` option.
 
-<pre>
-    <code>
-# My code sample:
+    ````markdown
+    # My code sample:
 
-```cs ./MyConsoleApp/Program.cs --project ./MyConsoleApp/MyConsoleApp.csproj --region say_hello
-```
-    </code>
-</pre>
+    ```cs ./MyConsoleApp/Program.cs --project ./MyConsoleApp/MyConsoleApp.csproj --region say_hello
+    ```
+    ````
 
+4. When you refresh your browser, your Try .NET editor should now only show a single line of code: 
 
-when you refresh your browser, your Try .NET editor should now only show a single line of code: `Console.WriteLine("Hello World!");`.
+    ```cs
+    Console.WriteLine("Hello World!");
+    ```
 
-
-**[< Create a new project](./NewProject.md) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [ Define sessions >](./Sessions.md)**
+**NEXT: [Define Sessions &raquo;](./Sessions.md)**
