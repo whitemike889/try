@@ -82,6 +82,7 @@ namespace MLS.Agent.Controllers
     <meta http-equiv=""Content-Type"" content=""text/html;charset=utf-8"">
     <script src=""/api/trydotnet.min.js""></script>
     <link rel=""stylesheet"" href=""/css/trydotnet.css"">
+    <title>dotnet try - {markdownFile.Path.Value.HtmlEncode()}</title>
 </head>
 
 <body>
@@ -116,6 +117,7 @@ namespace MLS.Agent.Controllers
 <head>
     <meta http-equiv=""Content-Type"" content=""text/html;charset=utf-8"">
     <link rel=""stylesheet"" href=""/css/trydotnet.css"">
+    <title>dotnet try - {_startupOptions.RootDirectory.FullName.HtmlEncode()}</title>
 </head>
 
 <body>
