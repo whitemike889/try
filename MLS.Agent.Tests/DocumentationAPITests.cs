@@ -122,9 +122,9 @@ namespace MLS.Agent.Tests
                                      .Descendants("body")
                                      .Single()
                                      .Descendants("script")
-                                     .FirstOrDefault();
+                                     .FirstOrDefault(s => s.InnerHtml.Contains(@"trydotnet.autoEnable(new URL(""http://localhost""));"));
 
-                script.InnerHtml.Should().Be(@"trydotnet.autoEnable(new URL(""http://localhost""));");
+                script.Should().NotBeNull();
             }
         }
 
