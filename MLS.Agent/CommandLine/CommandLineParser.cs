@@ -82,14 +82,14 @@ namespace MLS.Agent.CommandLine
             RootCommand StartInTryMode()
             {
                 var command = new RootCommand
-                              {
-                                  Description = "Try out a .NET project with interactive documentation in your browser",
-                                  Argument = new Argument<DirectoryInfo>(() => new DirectoryInfo(Directory.GetCurrentDirectory()))
-                                             {
-                                                 Name = nameof(StartupOptions.RootDirectory),
-                                                 Description = "Specify the path to the root directory to run samples from"
-                                             }.ExistingOnly()
-                              };
+                {
+                    Description = "Try out a .NET project with interactive documentation in your browser",
+                    Argument = new Argument<DirectoryInfo>(() => new DirectoryInfo(Directory.GetCurrentDirectory()))
+                    {
+                        Name = nameof(StartupOptions.RootDirectory),
+                        Description = "Specify the path to the root directory to run samples from"
+                    }.ExistingOnly()
+                };
 
                 command.AddOption(new Option(
                                      "--add-source",
@@ -101,16 +101,21 @@ namespace MLS.Agent.CommandLine
                      "Specify a URL to a markdown file",
                      new Argument<Uri>()));
 
+                command.AddOption(new Option(
+                    "--enable-preview-features",
+                    "Enables preview features",
+                    new Argument<bool>()));
+
                 return command;
             }
 
             Command StartInHostedMode()
             {
                 var command = new Command("hosted")
-                              {
-                                  Description = "Starts the Try .NET agent",
-                                  IsHidden = true
-                              };
+                {
+                    Description = "Starts the Try .NET agent",
+                    IsHidden = true
+                };
 
                 command.AddOption(new Option(
                                       "--id",
@@ -236,13 +241,13 @@ namespace MLS.Agent.CommandLine
             Command Verify()
             {
                 var verifyCommand = new Command("verify", "Verify Markdown files in the target directory and its children.")
-                                    {
-                                        Argument = new Argument<DirectoryInfo>(() => new DirectoryInfo(Directory.GetCurrentDirectory()))
-                                                   {
-                                                       Name = nameof(VerifyOptions.RootDirectory),
-                                                       Description = "Specify the path to the root directory"
-                                                   }.ExistingOnly()
-                                    };
+                {
+                    Argument = new Argument<DirectoryInfo>(() => new DirectoryInfo(Directory.GetCurrentDirectory()))
+                    {
+                        Name = nameof(VerifyOptions.RootDirectory),
+                        Description = "Specify the path to the root directory"
+                    }.ExistingOnly()
+                };
 
                 verifyCommand.Handler = CommandHandler.Create<VerifyOptions, IConsole>((options, console) =>
                 {
