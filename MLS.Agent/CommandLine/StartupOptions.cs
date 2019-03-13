@@ -15,7 +15,8 @@ namespace MLS.Agent.CommandLine
             string regionId = null,
             DirectoryInfo rootDirectory = null,
             DirectoryInfo addSource = null,
-            Uri uri = null)
+            Uri uri = null,
+            bool enablePreviewFeatures = false)
         {
             LogToFile = logToFile;
             Id = id;
@@ -27,8 +28,10 @@ namespace MLS.Agent.CommandLine
             RootDirectory = rootDirectory;
             AddSource = addSource;
             Uri = uri;
+            EnablePreviewFeatures = enablePreviewFeatures;
         }
 
+        public bool EnablePreviewFeatures { get; set; }
         public string Id { get; set; }
         public string RegionId { get; set; }
         public DirectoryInfo RootDirectory { get; set; }
