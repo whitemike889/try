@@ -181,8 +181,10 @@ namespace MLS.Agent.CommandLine
                                       {
                                           Argument = new Argument<DirectoryInfo>(
                                               defaultValue: () => new DirectoryInfo(Directory.GetCurrentDirectory()))
-                                      }
-                                  };
+                                      },
+                                      new Option("--enable-preview-features", "Enables preview features",
+                                          new Argument<bool>())
+            };
 
                 demoCommand.Handler = CommandHandler.Create<DemoOptions, InvocationContext>((options, context) =>
                 {
