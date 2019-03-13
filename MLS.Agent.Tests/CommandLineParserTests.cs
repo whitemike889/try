@@ -106,6 +106,14 @@ namespace MLS.Agent.Tests
         }
 
         [Fact]
+        public async Task Parse_enable_preview_features_flag()
+        {
+            await _parser.InvokeAsync("--enable-preview-features", _console);
+            _start_options.EnablePreviewFeatures.Should().BeTrue();
+        }
+
+
+        [Fact]
         public async Task Parse_language_service_mode_flag_switches_option_to_language_service()
         {
             await _parser.InvokeAsync("hosted --language-service", _console);
@@ -247,6 +255,25 @@ namespace MLS.Agent.Tests
                 .FullName
                 .Should()
                 .Be(expected);
+        }
+
+        [Fact]
+        public async Task Demo_allows_enabling_preview_features()
+        {
+            var expected = Path.GetTempPath();
+
+            await _parser.InvokeAsync($"demo --output {expected} --enable-preview-features");
+
+            _demoOptions
+                .Output
+                .FullName
+                .Should()
+                .Be(expected);
+
+            _demoOptions
+                .EnablePreviewFeatures
+                .Should()
+                .BeTrue();
         }
     }
 }

@@ -58,7 +58,7 @@ namespace MLS.Agent.CommandLine
                 }
             }
 
-            startServer?.Invoke(new StartupOptions(uri: new Uri("QuickStart.md", UriKind.Relative))
+            startServer?.Invoke(new StartupOptions(uri: new Uri("QuickStart.md", UriKind.Relative), enablePreviewFeatures:options.EnablePreviewFeatures)
                                 {
                                     RootDirectory = options.Output
                                 }, context);
