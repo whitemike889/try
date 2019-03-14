@@ -30,7 +30,7 @@ namespace WorkspaceServer.Packaging
     public abstract class Package
     {
         const string CSharpLanguageVersion = "7.3";
-        protected const string DesignTimeBuildBinlogFileName = "designTimeBuild.binlog";
+    
         private static ConcurrentDictionary<string, SemaphoreSlim> packageBuildSemaphores = new ConcurrentDictionary<string, SemaphoreSlim>();
         private static ConcurrentDictionary<string, SemaphoreSlim> packagePublishSemaphores = new ConcurrentDictionary<string, SemaphoreSlim>();
 
@@ -96,6 +96,8 @@ namespace WorkspaceServer.Packaging
             _log = new Logger($"{nameof(Package)}:{Name}");
             _buildThrottleScheduler = buildThrottleScheduler ?? TaskPoolScheduler.Default;
 
+            DesignTimeBuildBinlogFileName = "package_designTimeBuild.binlog";
+            FullBuildBinlogFileName = "package_fullBuild.binlog";
             _fullBuildRequestChannel = new Subject<Budget>();
             _fullBuildThrottlerSubscription = new SerialDisposable();
 
@@ -111,8 +113,11 @@ namespace WorkspaceServer.Packaging
             RoslynWorkspace = null;
         }
 
+        protected string DesignTimeBuildBinlogFileName { get; }
+        protected string FullBuildBinlogFileName { get; }
+
         private FileInfo FindLatestBinLog() => FindBinLogs().OrderByDescending(f => f.LastWriteTimeUtc).FirstOrDefault();
-        private IEnumerable<FileInfo> FindBinLogs() => Directory.GetFiles("*.binlog");
+        private IEnumerable<FileInfo> FindBinLogs() => Directory.GetFiles("*.binlog").Where(f => f.FullName.EndsWith(FullBuildBinlogFileName) || f.FullName.EndsWith(DesignTimeBuildBinlogFileName));
 
         private async Task WaitForFileAvailable(FileInfo file)
         {
@@ -562,10 +567,10 @@ namespace WorkspaceServer.Packaging
                             return;
                         }
                         var projectFile = GetProjectFile();
-                        var args = "/bl";
+                        var args = $"/bl:{FullBuildBinlogFileName}";
                         if (projectFile?.Exists == true)
                         {
-                            args = $"{projectFile.FullName} /bl";
+                            args = $"{projectFile.FullName} {args}";
                         }
                         operation.Info("Building workspace using {_initializer} in {directory}", _initializer, Directory);
                         result = await new Dotnet(Directory)
@@ -761,7 +766,7 @@ namespace WorkspaceServer.Packaging
         {
             using (var operation = _log.OnEnterAndConfirmOnExit())
             {
-                var csProj = Directory.GetFiles("*.csproj").FirstOrDefault();
+                var csProj = GetProjectFile();
                 var logWriter = new StringWriter();
                 var manager = new AnalyzerManager(new AnalyzerManagerOptions
                 {

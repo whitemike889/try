@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using MLS.Protocol;
 using MLS.Protocol.Execution;
 using Recipes;
@@ -57,8 +57,6 @@ namespace MLS.Agent.Tests
             var result = await response
                                 .EnsureSuccess()
                                 .DeserializeAs<RunResult>();
-
-            result.Succeeded.Should().BeTrue();
 
             result.ShouldSucceedWithOutput(output);
         }
