@@ -8,7 +8,7 @@ namespace MLS.Agent.Tools
         {
             if (result.ExitCode != 0)
             {
-                throw new CommandLineInvocationException(result, message);
+                throw new CommandLineInvocationException(result, message ?? string.Join("\n", result.Error));
             }
         }
     }
