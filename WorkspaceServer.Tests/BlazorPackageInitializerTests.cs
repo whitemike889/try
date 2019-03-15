@@ -60,7 +60,7 @@ namespace WorkspaceServer.Tests
         }
 
         [Fact]
-        public async Task Calls_package_addition_funcs()
+        public async Task Adds_packages()
         {
             var empty = Create.EmptyWorkspace();
             var dir = empty.Directory.CreateSubdirectory("MLS.Blazor");
@@ -70,12 +70,9 @@ namespace WorkspaceServer.Tests
             var name = "blazor-test";
             var initializer = new BlazorPackageInitializer(
                 name,
-                new List<Func<Task>>()
+                new List<string>()
                 {
-                    () => {
-                        called = true;
-                        return Task.CompletedTask;
-                    }
+                    "Microsoft.CodeAnalysis"
                 });
 
             await initializer.Initialize(dir);
