@@ -54,6 +54,7 @@ html {
 
 .run-button {
     @extend .button, .is-primary;
+    margin: 2px;
     background-color: $dotnet-purple;
     transition: background-color .15s ease-in-out, transform .15s ease-in-out;
 }
@@ -87,14 +88,13 @@ html {
 .inline-code-container{
     background: rgb(214, 208, 235);
     padding: 1px;
-    border: rgb(171, 156, 224);
-    border-left: 4px solid;
+    border-left: 4px solid rgb(171, 156, 224);
 }
 
 .output-panel-inline{  
-    border-top: 4px solid rgb(176, 161, 230);
+    border-top: 2px solid rgb(199, 190, 233);
     padding: 1px;  
-    background: rgb(214, 208, 235); 
+    background: rgb(245, 244, 247); 
     color: #000;
     overflow-y: auto;
     min-height: 0px;   
