@@ -8,12 +8,16 @@ namespace MLS.Agent.Markdown
     {
         private readonly IDirectoryAccessor _directoryAccessor;
         private readonly PackageRegistry _packageRegistry;
+    
+
 
         public CodeLinkExtension(IDirectoryAccessor directoryAccessor, PackageRegistry packageRegistry)
         {
             _directoryAccessor = directoryAccessor;
             _packageRegistry = packageRegistry;
         }
+
+        public bool InlineControls { get; set; }
 
         public void Setup(MarkdownPipelineBuilder pipeline)
         {
@@ -30,7 +34,12 @@ namespace MLS.Agent.Markdown
             var renderers = htmlRenderer?.ObjectRenderers;
             if (renderers != null && !renderers.Contains<CodeLinkBlockRenderer>())
             {
-                renderers.Insert(0, new CodeLinkBlockRenderer());
+                var codeLinkBlockRenderer = new CodeLinkBlockRenderer()
+                {
+                    InlineControls = InlineControls
+                };
+                renderers.Insert(0, codeLinkBlockRenderer);
+                
             }
         }
     }

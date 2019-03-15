@@ -84,6 +84,12 @@ html {
     height: $content-height;
 }
 
+.code-single-column{
+    @extend .column;    
+    overflow-y: auto;
+    height: $content-height;
+}
+
 .control-column{
     @extend .column;
     overflow-y: auto;

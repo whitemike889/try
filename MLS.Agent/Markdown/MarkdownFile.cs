@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Markdig;
 using Microsoft.AspNetCore.Html;
 
 namespace MLS.Agent.Markdown
@@ -27,7 +28,7 @@ namespace MLS.Agent.Markdown
                 ReadAllText(),
                 pipeline);
 
-            var blocks = document.OfType<CodeLinkBlock>();
+            var blocks = document.OfType<CodeLinkBlock>().ToList();
 
             await Task.WhenAll(blocks.Select(b => b.InitializeAsync()));
             return blocks;
@@ -36,6 +37,17 @@ namespace MLS.Agent.Markdown
         public async Task<IHtmlContent> ToHtmlContentAsync()
         {
             var pipeline = Project.GetMarkdownPipelineFor(Path);
+            var extension = pipeline.Extensions.FindExact<CodeLinkExtension>();
+            if (extension != null)
+            {
+                var blocks = await GetCodeLinkBlocks();
+                var maxEditorPerSession = blocks
+                    .GroupBy(b => b.Session)
+                    .Max(editors => editors.Count());
+
+                extension.InlineControls = maxEditorPerSession <= 1;
+            }
+
             var html = await pipeline.RenderHtmlAsync(ReadAllText());
             return new HtmlString(html);
         }

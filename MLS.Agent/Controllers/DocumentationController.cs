@@ -52,7 +52,7 @@ namespace MLS.Agent.Controllers
             var hostUrl = Request.GetUri();
 
             return Content(
-                await Scaffold($"{hostUrl.Scheme}://{hostUrl.Authority}",
+                await TwoColumnLayoutScaffold($"{hostUrl.Scheme}://{hostUrl.Authority}",
                          markdownFile), "text/html");
         }
 
@@ -66,7 +66,7 @@ namespace MLS.Agent.Controllers
 
             foreach (var session in sessions)
             {
-                sb.AppendLine($@"<div data-trydotnet-control-group=""true"" data-trydotnet-session-id=""{session}"">");
+                sb.AppendLine($@"<div data-trydotnet-control-group=""true"" data-trydotnet-session-id=""{session.Key}"">");
                 sb.AppendLine($@"<button class=""run-button"" data-trydotnet-mode=""run"" data-trydotnet-session-id=""{session.Key}"" data-trydotnet-run-args=""{session.First().RunArgs.HtmlAttributeEncode()}"">{session.Key}</button>");
                 if (enablePreviewFeatures)
                 {
@@ -76,12 +76,49 @@ namespace MLS.Agent.Controllers
                 {
                     sb.AppendLine($@"<div class=""output-panel"" data-trydotnet-mode=""runResult"" data-trydotnet-session-id=""{session.Key}""></div>");
                 }
+                sb.AppendLine(@"</div >");
             }
 
             return new HtmlString(sb.ToString());
         }
 
-        private async Task<string> Scaffold(string hostUrl, MarkdownFile markdownFile) =>
+        private async Task<string> OneColumnLayoutScaffold(string hostUrl, MarkdownFile markdownFile) =>
+            $@"
+<!DOCTYPE html>
+<html lang=""en"">
+
+<head>
+    <meta http-equiv=""Content-Type"" content=""text/html;charset=utf-8"">
+    <script src=""/api/trydotnet.min.js""></script>
+    <script src=""/api/trydotnet-layout.min.js""></script>
+    <link rel=""stylesheet"" href=""/css/trydotnet.css"">
+    <title>dotnet try - {markdownFile.Path.Value.HtmlEncode()}</title>
+</head>
+
+<body>
+
+    <div class=""content"">
+
+    {Header()}
+
+    <div class=""documentation-container"">
+        <div id=""documentation-container"" class=""code-single-column"">
+            {await markdownFile.ToHtmlContentAsync()}
+        </div>       
+    </div>
+
+    </div>
+
+    {Footer()}
+
+    <script>
+        trydotnet.autoEnable(new URL(""{hostUrl}""));
+        trydotnetLayout.trackTopmostSession(document.getElementById(""documentation-container""), function (e){{ console.log(e); }});
+    </script>
+</body>
+
+</html>";
+        private async Task<string> TwoColumnLayoutScaffold(string hostUrl, MarkdownFile markdownFile) =>
             $@"
 <!DOCTYPE html>
 <html lang=""en"">

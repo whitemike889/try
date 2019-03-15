@@ -9,6 +9,13 @@ namespace MLS.Agent.Markdown
 {
     public class CodeLinkBlockRenderer : CodeBlockRenderer
     {
+        public bool InlineControls { get; set; }
+
+        public CodeLinkBlockRenderer()
+        {
+            
+        }
+
         protected override void Write(
             HtmlRenderer renderer,
             CodeBlock codeBlock)
@@ -36,6 +43,11 @@ namespace MLS.Agent.Markdown
                 return;
             }
 
+            if (InlineControls)
+            {
+                renderer
+                    .WriteLine(@"<div >");
+            }
             renderer
                 .WriteLine(@"<div class=""editor-panel"">")
                 .WriteLine($@"<pre style=""border:none"" height=""{GetEditorHeightInEm(codeLinkBlock.Lines)}em"" width=""100%"">")
@@ -47,6 +59,12 @@ namespace MLS.Agent.Markdown
                 .WriteLine(@"</code>")
                 .WriteLine(@"</pre>")
                 .WriteLine(@"</div >");
+
+            if (InlineControls)
+            {
+                renderer
+                    .WriteLine(@"<div >place holder</div >");
+            }
         }
 
         private static int GetEditorHeightInEm(StringLineGroup text)
