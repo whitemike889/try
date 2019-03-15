@@ -23,5 +23,20 @@ namespace MLS.Agent.Tests
                  .Should()
                  .Contain(f => f.Name.Contains("nupkg"));
         }
+        [Fact]
+        public async Task Pack_project_works_with_blazor()
+        {
+            var asset = await Create.NetstandardWorkspaceCopy();
+
+            var console = new TestConsole();
+
+            await PackCommand.Do(new PackOptions(asset.Directory, enableBlazor: true), console);
+
+            asset.Directory
+                 .GetFiles()
+                 .Should()
+                 .Contain(f => f.Name.Contains("nupkg"));
+        }
+
     }
 }

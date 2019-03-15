@@ -11,14 +11,12 @@ namespace WorkspaceServer.Packaging
     public class BlazorPackageInitializer : PackageInitializer
     {
         private readonly string _name;
-        private readonly List<Func<Task>> _addPackages;
+        private readonly List<string> _addPackages;
 
-        public FileInfo EntrypointPath { get; private set; }
-
-        public BlazorPackageInitializer(string name, List<Func<Task>> addPackages) :
+        public BlazorPackageInitializer(string name, List<string> addPackages) :
             base("blazor", "MLS.Blazor")
         {
-            this._name = name;
+            _name = name;
             _addPackages = addPackages;
         }
 
@@ -30,10 +28,10 @@ namespace WorkspaceServer.Packaging
             }
 
             await base.Initialize(directory, budget);
-            EntrypointPath = await MakeBlazorProject(directory, budget);
+             await MakeBlazorProject(directory, budget);
         }
 
-        private async Task<FileInfo> MakeBlazorProject(DirectoryInfo directory, Budget budget)
+        private async Task MakeBlazorProject(DirectoryInfo directory, Budget budget)
         {
             var dotnet = new Dotnet(directory);
             var root = directory.FullName;
@@ -46,16 +44,13 @@ namespace WorkspaceServer.Packaging
             var result = await dotnet.AddPackage("MLS.WasmCodeRunner", "1.0.7880001-alpha-c895bf25");
             result.ThrowOnFailure();
 
-            foreach (var addPackage in _addPackages)
+            foreach (var packageId in _addPackages)
             {
-                await addPackage();
+                await dotnet.AddPackage(packageId);
             }
 
-            result = await dotnet.Build("");
+            result = await dotnet.Build("-o runtime /bl", budget: budget);
             result.ThrowOnFailure();
-
-            return new FileInfo(Path.Combine(directory.FullName,
-                "bin\\Debug\\netstandard2.0\\MLS.Blazor.dll"));
 
             void AddRootNamespaceAndBlazorLinkerDirective()
             {

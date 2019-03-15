@@ -37,6 +37,11 @@ namespace WorkspaceServer
             return Execute($"add package {versionArg} {packageId}", budget);
         }
 
+        public Task<CommandLineResult> AddReference(FileInfo projectToReference, Budget budget = null)
+        {
+            return Execute($"add reference {projectToReference.FullName}", budget);
+        }
+
         public Task<CommandLineResult> Build(string args = null, Budget budget = null) =>
             Execute("build".AppendArgs(args), budget);
 

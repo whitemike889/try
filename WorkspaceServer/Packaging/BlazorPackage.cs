@@ -39,7 +39,8 @@ namespace WorkspaceServer.Packaging
 
         private FileInfo GetBlazorEntryPoint()
         {
-            return Directory.GetFiles("MLS.Blazor.dll", SearchOption.AllDirectories).First();
+            var path = Path.Combine(Directory.FullName, "runtime", "MLS.Blazor.dll");
+            return new FileInfo(path);
         }
 
         public async Task Prepare()

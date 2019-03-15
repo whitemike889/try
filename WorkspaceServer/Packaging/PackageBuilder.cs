@@ -11,7 +11,7 @@ namespace WorkspaceServer.Packaging
         private Package package;
         private bool _blazorEnabled;
         private readonly List<Func<Package, Budget, Task>> _afterCreateActions = new List<Func<Package, Budget, Task>>();
-        private readonly List<Func<Task>> _addPackages = new List<Func<Task>>();
+        private readonly List<string> _addPackages = new List<string>();
 
         public PackageBuilder(string packageName, IPackageInitializer packageInitializer = null)
         {
@@ -47,15 +47,15 @@ namespace WorkspaceServer.Packaging
 
         public void AddPackageReference(string packageId, string version = null)
         {
-            _afterCreateActions.Add(async (workspace, budget) =>
+            _addPackages.Add(packageId);
+            _afterCreateActions.Add(async (package, budget) =>
             {
                 Func<Task> action = async () =>
                 {
-                    var dotnet = new Dotnet(workspace.Directory);
+                    var dotnet = new Dotnet(package.Directory);
                     await dotnet.AddPackage(packageId, version);
                 };
 
-                _addPackages.Add(action);
                 await action();
                
             });
