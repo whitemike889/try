@@ -19,6 +19,8 @@ namespace MLS.Agent.Markdown
 
         public bool InlineControls { get; set; }
 
+        public bool EnablePreviewFeatures { get; set; }
+
         public void Setup(MarkdownPipelineBuilder pipeline)
         {
             if (!pipeline.BlockParsers.Contains<CodeLinkBlockParser>())
@@ -36,7 +38,8 @@ namespace MLS.Agent.Markdown
             {
                 var codeLinkBlockRenderer = new CodeLinkBlockRenderer()
                 {
-                    InlineControls = InlineControls
+                    InlineControls = InlineControls,
+                    EnablePreviewFeatures = EnablePreviewFeatures
                 };
                 renderers.Insert(0, codeLinkBlockRenderer);
                 

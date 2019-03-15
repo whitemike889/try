@@ -78,6 +78,11 @@ html {
     margin-bottom: 1em;
 }
 
+.output-panel-inline{
+    @extend .output-panel;   
+    margin: 1em;
+}
+
 .code-column{
     @extend .column.is-two-thirds;    
     overflow-y: auto;
@@ -85,7 +90,7 @@ html {
 }
 
 .code-single-column{
-    @extend .column;    
+    @extend .column.is-full;    
     overflow-y: auto;
     height: $content-height;
 }

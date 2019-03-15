@@ -42,12 +42,6 @@ namespace MLS.Agent.Markdown
 
                 return;
             }
-
-            if (InlineControls)
-            {
-                renderer
-                    .WriteLine(@"<div >");
-            }
             renderer
                 .WriteLine(@"<div class=""editor-panel"">")
                 .WriteLine($@"<pre style=""border:none"" height=""{GetEditorHeightInEm(codeLinkBlock.Lines)}em"" width=""100%"">")
@@ -63,9 +57,21 @@ namespace MLS.Agent.Markdown
             if (InlineControls)
             {
                 renderer
-                    .WriteLine(@"<div >place holder</div >");
+                    .WriteLine($@"<button class=""run-button"" data-trydotnet-mode=""run"" data-trydotnet-session-id=""{codeLinkBlock.Session}"" data-trydotnet-run-args=""{codeLinkBlock.RunArgs.HtmlAttributeEncode()}"">Run</button>");
+                if (EnablePreviewFeatures)
+                {
+                    renderer
+                        .WriteLine($@"<div class=""output-panel-inline"" data-trydotnet-mode=""runResult"" data-trydotnet-output-type=""terminal"" data-trydotnet-session-id=""{codeLinkBlock.Session}""></div>");
+                }
+                else
+                {
+                    renderer
+                        .WriteLine($@"<div class=""output-panel-inline"" data-trydotnet-mode=""runResult"" data-trydotnet-session-id=""{codeLinkBlock.Session}""></div>");
+                }
             }
         }
+
+        public bool EnablePreviewFeatures { get; set; }
 
         private static int GetEditorHeightInEm(StringLineGroup text)
         {

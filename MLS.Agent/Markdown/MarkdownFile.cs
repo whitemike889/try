@@ -37,17 +37,6 @@ namespace MLS.Agent.Markdown
         public async Task<IHtmlContent> ToHtmlContentAsync()
         {
             var pipeline = Project.GetMarkdownPipelineFor(Path);
-            var extension = pipeline.Extensions.FindExact<CodeLinkExtension>();
-            if (extension != null)
-            {
-                var blocks = await GetCodeLinkBlocks();
-                var maxEditorPerSession = blocks
-                    .GroupBy(b => b.Session)
-                    .Max(editors => editors.Count());
-
-                extension.InlineControls = maxEditorPerSession <= 1;
-            }
-
             var html = await pipeline.RenderHtmlAsync(ReadAllText());
             return new HtmlString(html);
         }

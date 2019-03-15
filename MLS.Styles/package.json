@@ -13,8 +13,8 @@
   "author": "Diego Colombo",
   "license": "MIT",
   "devDependencies": {
-    "@mdi/font": "3.3.92",
-    "bulma": "0.7.2",
+    "@mdi/font": "3.5.95",
+    "bulma": "0.7.4",
     "node-sass": "4.11.0",
     "xterm": "3.12.0"
   }
