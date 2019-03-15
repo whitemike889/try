@@ -152,6 +152,7 @@ namespace WorkspaceServer
                          workspace =>
                          {
                              workspace.CreateUsingDotnet("classlib");
+                             workspace.DeleteFile("Class1.cs");
                              workspace.AddPackageReference("NodaTime", "2.4.4");
                              workspace.AddPackageReference("NodaTime.Testing", "2.4.4");
                              workspace.AddPackageReference("Newtonsoft.Json");

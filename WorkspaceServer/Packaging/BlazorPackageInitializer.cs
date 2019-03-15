@@ -13,8 +13,6 @@ namespace WorkspaceServer.Packaging
         private readonly string _name;
         private readonly List<string> _addPackages;
 
-        public FileInfo EntrypointPath { get; private set; }
-
         public BlazorPackageInitializer(string name, List<string> addPackages) :
             base("blazor", "MLS.Blazor")
         {
@@ -30,10 +28,10 @@ namespace WorkspaceServer.Packaging
             }
 
             await base.Initialize(directory, budget);
-            EntrypointPath = await MakeBlazorProject(directory, budget);
+             await MakeBlazorProject(directory, budget);
         }
 
-        private async Task<FileInfo> MakeBlazorProject(DirectoryInfo directory, Budget budget)
+        private async Task MakeBlazorProject(DirectoryInfo directory, Budget budget)
         {
             var dotnet = new Dotnet(directory);
             var root = directory.FullName;
@@ -51,11 +49,8 @@ namespace WorkspaceServer.Packaging
                 await dotnet.AddPackage(packageId);
             }
 
-            result = await dotnet.Build("");
+            result = await dotnet.Build("-o runtime /bl", budget: budget);
             result.ThrowOnFailure();
-
-            return new FileInfo(Path.Combine(directory.FullName,
-                "bin\\Debug\\netstandard2.0\\MLS.Blazor.dll"));
 
             void AddRootNamespaceAndBlazorLinkerDirective()
             {
