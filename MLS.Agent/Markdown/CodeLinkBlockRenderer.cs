@@ -61,12 +61,12 @@ namespace MLS.Agent.Markdown
                 if (EnablePreviewFeatures)
                 {
                     renderer
-                        .WriteLine($@"<div class=""output-panel-inline"" data-trydotnet-mode=""runResult"" data-trydotnet-output-type=""terminal"" data-trydotnet-session-id=""{codeLinkBlock.Session}""></div>");
+                        .WriteLine($@"<div class=""output-panel-inline collapsed"" data-trydotnet-mode=""runResult"" data-trydotnet-output-type=""terminal"" data-trydotnet-session-id=""{codeLinkBlock.Session}""></div>");
                 }
                 else
                 {
                     renderer
-                        .WriteLine($@"<div class=""output-panel-inline"" data-trydotnet-mode=""runResult"" data-trydotnet-session-id=""{codeLinkBlock.Session}""></div>");
+                        .WriteLine($@"<div class=""output-panel-inline collapsed"" data-trydotnet-mode=""runResult"" data-trydotnet-session-id=""{codeLinkBlock.Session}""></div>");
                 }
             }
         }

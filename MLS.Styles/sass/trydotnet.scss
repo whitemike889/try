@@ -4,6 +4,7 @@ $dotnet-purple:  #512bd4;
 $header-footer-color: white;
 $footer-background-color: $dotnet-purple;
 $content-height: 89vh;
+$output-panel-min-height: 200px;
 
 @import "../node_modules/bulma/bulma.sass";
 @import "../node_modules/@mdi/font/scss/materialdesignicons.scss";
@@ -67,6 +68,12 @@ html {
     border-style: dotted;
 }
 
+.collapsed{
+    visibility: collapse;
+    min-height: 0px;
+    height: 0px;
+}
+
 .error-icon{
     @extend .mdi, .mdi-alert-decagram-outline;
 }
@@ -80,6 +87,7 @@ html {
 
 .output-panel-inline{
     @extend .output-panel;   
+    min-height: 0px;   
     margin: 1em;
 }
 
@@ -123,16 +131,23 @@ ul.code-example-list li{
     transition: all 0.2s ease-in;
     background: $red;
     color: $white;
+    visibility: visible;
+    min-height: $output-panel-min-height;
 }
+
 .run-execution{
     animation-duration: 1s;
     animation-name: textBlink;
     animation-iteration-count: infinite;
     animation-direction: alternate;
+    visibility: visible;
+    min-height: $output-panel-min-height;
 }
 
 .run-success{
     transition: all 0.2s ease-in; 
+    visibility: visible;   
+    min-height: $output-panel-min-height; 
 }
 
 .header {
