@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc;
 using MLS.Agent.CommandLine;
 using MLS.Agent.Markdown;
+using Pocket;
 
 namespace MLS.Agent.Controllers
 {
@@ -50,15 +51,14 @@ namespace MLS.Agent.Controllers
             }
 
             var hostUrl = Request.GetUri();
-            var pipeline = _markdownProject.GetMarkdownPipelineFor(markdownFile.Path);
-            var extension = pipeline.Extensions.FindExact<CodeLinkExtension>();
-            
 
             var blocks = await markdownFile.GetCodeLinkBlocks();
-            var maxEditorPerSession = blocks
+            var maxEditorPerSession = blocks.Any() ? blocks
                 .GroupBy(b => b.Session)
-                .Max(editors => editors.Count());
+                .Max(editors => editors.Count()) : 0;
 
+            var pipeline = _markdownProject.GetMarkdownPipelineFor(markdownFile.Path);
+            var extension = pipeline.Extensions.FindExact<CodeLinkExtension>();
             if (extension != null)
             {
                 extension.InlineControls = maxEditorPerSession <= 1;
