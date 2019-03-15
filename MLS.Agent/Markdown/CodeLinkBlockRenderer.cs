@@ -37,6 +37,13 @@ namespace MLS.Agent.Markdown
 
                 return;
             }
+
+            if (InlineControls)
+            {
+                renderer
+                    .WriteLine(@"<div class=""inline-code-container"">");
+            }
+
             renderer
                 .WriteLine(@"<div class=""editor-panel"">")
                 .WriteLine($@"<pre style=""border:none"" height=""{GetEditorHeightInEm(codeLinkBlock.Lines)}em"" width=""100%"">")
@@ -63,6 +70,8 @@ namespace MLS.Agent.Markdown
                     renderer
                         .WriteLine($@"<div class=""output-panel-inline collapsed"" data-trydotnet-mode=""runResult"" data-trydotnet-session-id=""{codeLinkBlock.Session}""></div>");
                 }
+
+                renderer.WriteLine("</div >");
             }
         }
 
