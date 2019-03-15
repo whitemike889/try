@@ -17,7 +17,7 @@ namespace WorkspaceServer.Tests
 
             var initializer = new BlazorPackageInitializer(
                 "blazor-test",
-                new List<Func<Task>>());
+                new List<string>());
 
             Func<Task> initialize = async () =>
                 await initializer.Initialize(empty.Directory);
@@ -35,7 +35,7 @@ namespace WorkspaceServer.Tests
             var name = "blazor-test";
             var initializer = new BlazorPackageInitializer(
                 name,
-                new List<Func<Task>>());
+                new List<string>());
 
             await initializer.Initialize(dir);
 
