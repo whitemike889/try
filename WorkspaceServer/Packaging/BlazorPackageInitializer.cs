@@ -11,14 +11,14 @@ namespace WorkspaceServer.Packaging
     public class BlazorPackageInitializer : PackageInitializer
     {
         private readonly string _name;
-        private readonly List<Func<Task>> _addPackages;
+        private readonly List<string> _addPackages;
 
         public FileInfo EntrypointPath { get; private set; }
 
-        public BlazorPackageInitializer(string name, List<Func<Task>> addPackages) :
+        public BlazorPackageInitializer(string name, List<string> addPackages) :
             base("blazor", "MLS.Blazor")
         {
-            this._name = name;
+            _name = name;
             _addPackages = addPackages;
         }
 
@@ -46,9 +46,9 @@ namespace WorkspaceServer.Packaging
             var result = await dotnet.AddPackage("MLS.WasmCodeRunner", "1.0.7880001-alpha-c895bf25");
             result.ThrowOnFailure();
 
-            foreach (var addPackage in _addPackages)
+            foreach (var packageId in _addPackages)
             {
-                await addPackage();
+                await dotnet.AddPackage(packageId);
             }
 
             result = await dotnet.Build("");

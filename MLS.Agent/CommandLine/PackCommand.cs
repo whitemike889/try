@@ -66,7 +66,7 @@ namespace MLS.Agent.CommandLine
 
         private static async Task AddBlazorProject(DirectoryInfo blazorTargetDirectory, FileInfo projectToReference)
         {
-            var initializer = new BlazorPackageInitializer("project", new System.Collections.Generic.List<Func<Task>>());
+            var initializer = new BlazorPackageInitializer("project", new System.Collections.Generic.List<string>());
             await initializer.Initialize(blazorTargetDirectory);
 
             await AddReference(blazorTargetDirectory, projectToReference);
