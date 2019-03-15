@@ -10,12 +10,7 @@ namespace MLS.Agent.Markdown
     public class CodeLinkBlockRenderer : CodeBlockRenderer
     {
         public bool InlineControls { get; set; }
-
-        public CodeLinkBlockRenderer()
-        {
-            
-        }
-
+     
         protected override void Write(
             HtmlRenderer renderer,
             CodeBlock codeBlock)
