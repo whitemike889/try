@@ -4,6 +4,7 @@ $dotnet-purple:  #512bd4;
 $header-footer-color: white;
 $footer-background-color: $dotnet-purple;
 $content-height: 89vh;
+$output-panel-min-height: 200px;
 
 @import "../node_modules/bulma/bulma.sass";
 @import "../node_modules/@mdi/font/scss/materialdesignicons.scss";
@@ -53,6 +54,7 @@ html {
 
 .run-button {
     @extend .button, .is-primary;
+    margin: 2px;
     background-color: $dotnet-purple;
     transition: background-color .15s ease-in-out, transform .15s ease-in-out;
 }
@@ -67,6 +69,12 @@ html {
     border-style: dotted;
 }
 
+.collapsed{
+    visibility: collapse;
+    min-height: 0px;
+    height: 0px;
+}
+
 .error-icon{
     @extend .mdi, .mdi-alert-decagram-outline;
 }
@@ -77,9 +85,32 @@ html {
     margin-top: 1em;
     margin-bottom: 1em;
 }
+.inline-code-container{
+    background: rgb(214, 208, 235);
+    margin-top: 1em;
+    margin-bottom: 1em;
+    padding: 1px;
+    border-left: 4px solid rgb(171, 156, 224);
+}
+
+.output-panel-inline{  
+    border-top: 2px solid rgb(199, 190, 233);
+    padding: 1px;  
+    background: rgb(245, 244, 247); 
+    color: #000;
+    overflow-y: auto;
+    min-height: 0px;   
+    max-height: 400px;   
+}
 
 .code-column{
     @extend .column.is-two-thirds;    
+    overflow-y: auto;
+    height: $content-height;
+}
+
+.code-single-column{
+    @extend .column.is-full;    
     overflow-y: auto;
     height: $content-height;
 }
@@ -112,16 +143,23 @@ ul.code-example-list li{
     transition: all 0.2s ease-in;
     background: $red;
     color: $white;
+    visibility: visible;
+    min-height: $output-panel-min-height;
 }
+
 .run-execution{
     animation-duration: 1s;
     animation-name: textBlink;
     animation-iteration-count: infinite;
     animation-direction: alternate;
+    visibility: visible;
+    min-height: $output-panel-min-height;
 }
 
 .run-success{
     transition: all 0.2s ease-in; 
+    visibility: visible;   
+    min-height: $output-panel-min-height; 
 }
 
 .header {

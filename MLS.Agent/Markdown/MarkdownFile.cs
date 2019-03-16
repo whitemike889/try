@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Markdig;
 using Microsoft.AspNetCore.Html;
 
 namespace MLS.Agent.Markdown
@@ -27,7 +28,7 @@ namespace MLS.Agent.Markdown
                 ReadAllText(),
                 pipeline);
 
-            var blocks = document.OfType<CodeLinkBlock>();
+            var blocks = document.OfType<CodeLinkBlock>().ToList();
 
             await Task.WhenAll(blocks.Select(b => b.InitializeAsync()));
             return blocks;

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc;
 using MLS.Agent.CommandLine;
 using MLS.Agent.Markdown;
+using Pocket;
 
 namespace MLS.Agent.Controllers
 {
@@ -51,9 +52,32 @@ namespace MLS.Agent.Controllers
 
             var hostUrl = Request.GetUri();
 
-            return Content(
-                await Scaffold($"{hostUrl.Scheme}://{hostUrl.Authority}",
-                         markdownFile), "text/html");
+            var blocks = await markdownFile.GetCodeLinkBlocks();
+            var maxEditorPerSession = blocks.Any() ? blocks
+                .GroupBy(b => b.Session)
+                .Max(editors => editors.Count()) : 0;
+
+            var pipeline = _markdownProject.GetMarkdownPipelineFor(markdownFile.Path);
+            var extension = pipeline.Extensions.FindExact<CodeLinkExtension>();
+            if (extension != null)
+            {
+                extension.InlineControls = maxEditorPerSession <= 1;
+                extension.EnablePreviewFeatures = _startupOptions.EnablePreviewFeatures;
+            }
+
+
+            if (maxEditorPerSession <= 1)
+            {
+                return Content(
+                    await OneColumnLayoutScaffold($"{hostUrl.Scheme}://{hostUrl.Authority}",
+                        markdownFile), "text/html");
+            }
+            else
+            {
+                return Content(
+                    await TwoColumnLayoutScaffold($"{hostUrl.Scheme}://{hostUrl.Authority}",
+                        markdownFile), "text/html");
+            }
         }
 
         public static async Task<IHtmlContent> SessionControlsHtml(MarkdownFile markdownFile, bool enablePreviewFeatures = false)
@@ -75,12 +99,13 @@ namespace MLS.Agent.Controllers
                 {
                     sb.AppendLine($@"<div class=""output-panel"" data-trydotnet-mode=""runResult"" data-trydotnet-session-id=""{session.Key}""></div>");
                 }
+             
             }
 
             return new HtmlString(sb.ToString());
         }
 
-        private async Task<string> Scaffold(string hostUrl, MarkdownFile markdownFile) =>
+        private async Task<string> OneColumnLayoutScaffold(string hostUrl, MarkdownFile markdownFile) =>
             $@"
 <!DOCTYPE html>
 <html lang=""en"">
@@ -88,6 +113,7 @@ namespace MLS.Agent.Controllers
 <head>
     <meta http-equiv=""Content-Type"" content=""text/html;charset=utf-8"">
     <script src=""/api/trydotnet.min.js""></script>
+    <script src=""/api/trydotnet-layout.min.js""></script>
     <link rel=""stylesheet"" href=""/css/trydotnet.css"">
     <title>dotnet try - {markdownFile.Path.Value.HtmlEncode()}</title>
 </head>
@@ -96,22 +122,61 @@ namespace MLS.Agent.Controllers
 
     <div class=""content"">
 
-    {Header()}
+        {Header()}
 
-    <div class=""documentation-container"">
-        <div class=""code-column"">
-            {await markdownFile.ToHtmlContentAsync()}
+        <div class=""documentation-container"">
+            <div id=""documentation-container"" class=""code-single-column"">
+                {await markdownFile.ToHtmlContentAsync()}
+            </div>       
         </div>
-        <div class=""control-column"">
-            {await SessionControlsHtml(markdownFile, _startupOptions.EnablePreviewFeatures)}
-        </div>
-    </div>
 
     </div>
 
     {Footer()}
 
-    <script>trydotnet.autoEnable(new URL(""{hostUrl}""));</script>
+    <script>
+        trydotnet.autoEnable(new URL(""{hostUrl}""));
+        trydotnetLayout.trackTopmostSession(document.getElementById(""documentation-container""), function (e){{ console.log(e); }});
+    </script>
+</body>
+
+</html>";
+        private async Task<string> TwoColumnLayoutScaffold(string hostUrl, MarkdownFile markdownFile) =>
+            $@"
+<!DOCTYPE html>
+<html lang=""en"">
+
+<head>
+    <meta http-equiv=""Content-Type"" content=""text/html;charset=utf-8"">
+    <script src=""/api/trydotnet.min.js""></script>
+    <script src=""/api/trydotnet-layout.min.js""></script>
+    <link rel=""stylesheet"" href=""/css/trydotnet.css"">
+    <title>dotnet try - {markdownFile.Path.Value.HtmlEncode()}</title>
+</head>
+
+<body>
+
+    <div class=""content"">
+
+        {Header()}
+
+        <div class=""documentation-container"">
+            <div id=""documentation-container"" class=""code-column"">
+                {await markdownFile.ToHtmlContentAsync()}
+            </div>
+            <div class=""control-column"">
+                {await SessionControlsHtml(markdownFile, _startupOptions.EnablePreviewFeatures)}
+            </div>
+        </div>
+
+    </div>
+
+    {Footer()}
+
+    <script>
+        trydotnet.autoEnable(new URL(""{hostUrl}""));
+        trydotnetLayout.trackTopmostSession(document.getElementById(""documentation-container""), function (e){{ console.log(e); }});
+    </script>
 </body>
 
 </html>";
@@ -130,8 +195,8 @@ namespace MLS.Agent.Controllers
 <body>
 
     <div class=""content"">
-    
-    {Header()}
+
+        {Header()}
 
         <ul class=""code-example-list"">
             {html}
