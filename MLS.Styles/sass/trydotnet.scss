@@ -135,6 +135,10 @@ html {
      @extend .mdi, .mdi-file-document-outline;
 }
 
+.run-icon{
+    @extend .mdi, .mdi-play;
+}
+
 ul.code-example-list li{
     list-style: none;
 }

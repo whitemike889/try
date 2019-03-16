@@ -59,7 +59,7 @@ namespace MLS.Agent.Markdown
             if (InlineControls)
             {
                 renderer
-                    .WriteLine($@"<button class=""run-button"" data-trydotnet-mode=""run"" data-trydotnet-session-id=""{codeLinkBlock.Session}"" data-trydotnet-run-args=""{codeLinkBlock.RunArgs.HtmlAttributeEncode()}"">Run</button>");
+                    .WriteLine($@"<button class=""run-button"" data-trydotnet-mode=""run"" data-trydotnet-session-id=""{codeLinkBlock.Session}"" data-trydotnet-run-args=""{codeLinkBlock.RunArgs.HtmlAttributeEncode()}""><span class=""icon is-small""><i class=""run-icon""></i></span></button>");
                 if (EnablePreviewFeatures)
                 {
                     renderer
