@@ -10,7 +10,7 @@ namespace MLS.Agent.Markdown
     public class CodeLinkBlockRenderer : CodeBlockRenderer
     {
         public bool InlineControls { get; set; }
-     
+
         protected override void Write(
             HtmlRenderer renderer,
             CodeBlock codeBlock)
@@ -26,10 +26,10 @@ namespace MLS.Agent.Markdown
             {
                 renderer.WriteLine(@"<div class=""notification is-danger"">");
                 renderer.WriteLine(@"<span class=""icon is-small""><i class=""error-icon""></i></span>");
-                
+
                 foreach (var diagnostic in codeLinkBlock.Diagnostics)
                 {
-                    renderer.WriteEscape("\t"+diagnostic);
+                    renderer.WriteEscape("\t" + diagnostic);
                     renderer.WriteLine();
                 }
 
@@ -38,15 +38,22 @@ namespace MLS.Agent.Markdown
                 return;
             }
 
+            var height = $"{GetEditorHeightInEm(codeLinkBlock.Lines)}em";
+
             if (InlineControls)
             {
                 renderer
                     .WriteLine(@"<div class=""inline-code-container"">");
             }
+            else
+            {
+                renderer
+                    .WriteLine(@"<div class=""code-container"">");
+            }
 
             renderer
-                .WriteLine($@"<div class=""editor-panel"" height=""{GetEditorHeightInEm(codeLinkBlock.Lines)}em"">")
-                .WriteLine($@"<pre style=""border:none"" height=""100%"" width=""100%"">")
+                .WriteLine($@"<div class=""editor-panel"">")
+                .WriteLine($@"<pre style=""border:none; height: {height}"" height=""{height}"" width=""100%"">")
                 .Write("<code")
                 .WriteAttributes(codeLinkBlock)
                 .WriteLine(">")
@@ -70,17 +77,17 @@ namespace MLS.Agent.Markdown
                     renderer
                         .WriteLine($@"<div class=""output-panel-inline collapsed"" data-trydotnet-mode=""runResult"" data-trydotnet-session-id=""{codeLinkBlock.Session}""></div>");
                 }
-
-                renderer.WriteLine("</div >");
             }
+
+            renderer.WriteLine("</div>");
         }
 
         public bool EnablePreviewFeatures { get; set; }
 
         private static int GetEditorHeightInEm(StringLineGroup text)
         {
-            var size = (text.ToString().Split("\n").Length + 3) * 20;
-            return Math.Max(100, size);
+            var size = (text.ToString().Split("\n").Length + 6);
+            return Math.Max(8, size);
         }
     }
 }
