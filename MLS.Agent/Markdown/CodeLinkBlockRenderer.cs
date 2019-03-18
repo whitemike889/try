@@ -10,7 +10,7 @@ namespace MLS.Agent.Markdown
     public class CodeLinkBlockRenderer : CodeBlockRenderer
     {
         public bool InlineControls { get; set; }
-     
+
         protected override void Write(
             HtmlRenderer renderer,
             CodeBlock codeBlock)
@@ -26,10 +26,10 @@ namespace MLS.Agent.Markdown
             {
                 renderer.WriteLine(@"<div class=""notification is-danger"">");
                 renderer.WriteLine(@"<span class=""icon is-small""><i class=""error-icon""></i></span>");
-                
+
                 foreach (var diagnostic in codeLinkBlock.Diagnostics)
                 {
-                    renderer.WriteEscape("\t"+diagnostic);
+                    renderer.WriteEscape("\t" + diagnostic);
                     renderer.WriteLine();
                 }
 
@@ -38,15 +38,12 @@ namespace MLS.Agent.Markdown
                 return;
             }
 
-            if (InlineControls)
-            {
-                renderer
-                    .WriteLine(@"<div class=""inline-code-container"">");
-            }
+            renderer
+                .WriteLine(@"<div class=""inline-code-container"">");
 
             renderer
-                .WriteLine($@"<div class=""editor-panel"" height=""{GetEditorHeightInEm(codeLinkBlock.Lines)}em"">")
-                .WriteLine($@"<pre style=""border:none"" height=""100%"" width=""100%"">")
+                .WriteLine($@"<div class=""editor-panel"">")
+                .WriteLine($@"<pre style=""border:none"" height=""{GetEditorHeightInEm(codeLinkBlock.Lines)}em"" width=""100%"">")
                 .Write("<code")
                 .WriteAttributes(codeLinkBlock)
                 .WriteLine(">")
@@ -70,9 +67,9 @@ namespace MLS.Agent.Markdown
                     renderer
                         .WriteLine($@"<div class=""output-panel-inline collapsed"" data-trydotnet-mode=""runResult"" data-trydotnet-session-id=""{codeLinkBlock.Session}""></div>");
                 }
-
-                renderer.WriteLine("</div >");
             }
+
+            renderer.WriteLine("</div>");
         }
 
         public bool EnablePreviewFeatures { get; set; }
