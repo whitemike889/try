@@ -183,12 +183,14 @@ namespace MLS.Agent.Controllers
 
         private IHtmlContent Header() => $@"
 <header class=""header"">
-    <div class=""shimmer"">
-        <a href=""https://dotnet.microsoft.com/platform/try-dotnet"">
-            Powered by Try .NET
-        </a>
+    <div class=""header-container"">
+        <div class=""dotnet-try-cmd""><span class=""dotnet-try"">dotnet try</span> <span class=""project-file-path"">{_startupOptions.RootDirectory.FullName.ToLowerInvariant().HtmlEncode()}</span ></div>
+        <div class=""shimmer powered-by-try-dot-net"">
+            <a href=""https://dotnet.microsoft.com/platform/try-dotnet"">
+                Powered by Try .NET
+            </a>
+        </div>
     </div>
-    <div>{_startupOptions.RootDirectory.FullName.HtmlEncode()}</div>
 </header>".ToHtmlContent();
 
         private IHtmlContent Footer() => @"

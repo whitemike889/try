@@ -40,6 +40,7 @@ html {
 
 .content {
     flex: 1;
+    margin: 1px;
 }
 
 .collapsed{
@@ -98,24 +99,22 @@ html {
 .code-column{
     @extend .column.is-two-thirds;    
     overflow-y: auto;
-    height: $content-height;
 }
 
 .code-single-column{
     @extend .column.is-full;    
     overflow-y: auto;
-    height: $content-height;
 }
 
 .control-column{
     @extend .column;
-    overflow-y: auto;
-    height: $content-height;
+    overflow-y: auto;   
 }
 
 .documentation-container{
     @extend .columns;
-    margin: 10px
+    margin: 10px;
+    height: $content-height;
 }
 
 .code-example{
@@ -138,19 +137,39 @@ ul.code-example-list li{
     list-style: none;
 }
 
-.header {
+.header {   
     background-color: $dotnet-purple;
-    color: $header-footer-color;
+    color: $header-footer-color;       
+}
+
+.header-container{
+    @extend .columns, .columns.is-vcentered;
+}
+
+.dotnet-try-cmd{
+    @extend .column;
+    margin-left: 1em;
+}
+
+.powered-by-try-dot-net{
+    @extend .column, .column.is-one-quarter, .has-text-right;
+    margin-right: 1em;
+}
+
+.project-file-path{
+    @extend .has-text-weight-semibold;
+    color: darken($dotnet-try-cmd-color, 30%);
+    font-size: $dotnet-try-cmd-font-size;  
+}
+
+.dotnet-try{
+    @extend .has-text-weight-semibold;
+    color: $dotnet-try-cmd-color;
+    font-size: $dotnet-try-cmd-font-size;
+}
+
+.header a {   
     font-size: .6em;
-    min-height: 2vh;
-}
-
-.header div {
-    float: right;
-    margin-right: 2em;
-}
-
-.header a {
     color: inherit;
     text-decoration: none;
 }

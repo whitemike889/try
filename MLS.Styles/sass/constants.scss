@@ -2,8 +2,10 @@
 
 $dotnet-purple:  #512bd4;
 $header-footer-color: white;
+$dotnet-try-cmd-color: $header-footer-color;
+$dotnet-try-cmd-font-size: 1.5em; 
 $footer-background-color: $dotnet-purple;
-$content-height: 89vh;
+$content-height: 92vh;
 $output-panel-min-height: 200px;
 
 $run-failure-background: $red;
