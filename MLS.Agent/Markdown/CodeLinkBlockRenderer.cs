@@ -45,8 +45,8 @@ namespace MLS.Agent.Markdown
             }
 
             renderer
-                .WriteLine(@"<div class=""editor-panel"">")
-                .WriteLine($@"<pre style=""border:none"" height=""{GetEditorHeightInEm(codeLinkBlock.Lines)}em"" width=""100%"">")
+                .WriteLine($@"<div class=""editor-panel"" height=""{GetEditorHeightInEm(codeLinkBlock.Lines)}em"">")
+                .WriteLine($@"<pre style=""border:none"" height=""100%"" width=""100%"">")
                 .Write("<code")
                 .WriteAttributes(codeLinkBlock)
                 .WriteLine(">")
@@ -59,7 +59,7 @@ namespace MLS.Agent.Markdown
             if (InlineControls)
             {
                 renderer
-                    .WriteLine($@"<button class=""run-button top-right-position"" data-trydotnet-mode=""run"" data-trydotnet-session-id=""{codeLinkBlock.Session}"" data-trydotnet-run-args=""{codeLinkBlock.RunArgs.HtmlAttributeEncode()}""><span class=""icon is-small""><i class=""run-icon""></i></span></button>");
+                    .WriteLine($@"<button class=""run-button top-right-position"" data-trydotnet-mode=""run"" data-trydotnet-session-id=""{codeLinkBlock.Session}"" data-trydotnet-run-args=""{codeLinkBlock.RunArgs.HtmlAttributeEncode()}""><span class=""icon is-medium""><i class=""run-icon""></i></span></button>");
                 if (EnablePreviewFeatures)
                 {
                     renderer

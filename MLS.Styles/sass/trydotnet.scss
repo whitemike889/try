@@ -1,25 +1,15 @@
 @charset "utf-8";
 
-$dotnet-purple:  #512bd4;
-$header-footer-color: white;
-$footer-background-color: $dotnet-purple;
-$content-height: 89vh;
-$output-panel-min-height: 200px;
 
 @import "../node_modules/bulma/bulma.sass";
 @import "../node_modules/@mdi/font/scss/materialdesignicons.scss";
 @import "../node_modules/xterm/dist/xterm";
 @import "../node_modules/xterm/dist/addons/fullscreen/fullscreen";
 
-@keyframes textBlink {
-    from {
-      color: $white;
-    }
-    
-    to {
-        color: $text;
-    }
-  }
+@import "./constants";
+@import "./run-button";
+
+
 
 @keyframes shimmerBackground {
     0% {background-position:-5000px 0}
@@ -52,23 +42,6 @@ html {
     flex: 1;
 }
 
-.run-button {
-    @extend .button, .is-primary;
-    margin: 2px;
-    background-color: $dotnet-purple;
-    transition: background-color .15s ease-in-out, transform .15s ease-in-out;
-}
-
-.button:hover {
-    background-color: #2a03b2;
-}
-
-.error {
-    color: red;
-    border: red;
-    border-style: dotted;
-}
-
 .collapsed{
     visibility: collapse;
     min-height: 0px;
@@ -85,23 +58,41 @@ html {
     margin-top: 1em;
     margin-bottom: 1em;
 }
+
 .inline-code-container{
     position: relative;
     background: rgb(214, 208, 235);
     margin-top: 1em;
     margin-bottom: 1em;
-    padding: 1px;
-    border-left: 4px solid rgb(171, 156, 224);
+    padding: 01px;
 }
 
-.output-panel-inline{  
-    border-top: 2px solid rgb(199, 190, 233);
-    padding: 1px;  
+.output-panel-inline{     
     background: rgb(245, 244, 247); 
     color: #000;
-    overflow-y: auto;
-    min-height: 0px;   
+    overflow-y: auto;   
+}
+
+.output-panel-inline.expanded{  
+    visibility: visible;   
+    min-height: $output-panel-min-height; 
     max-height: 400px;   
+    padding:2px;
+    padding-left: .5em;      
+    margin: 1px;
+}
+
+.output-panel-inline.run-failure{
+    @extend .output-panel-inline.expanded, .run-failure;
+}
+.output-panel-inline.run-execution{
+    @extend .output-panel-inline.expanded, .run-execution;
+}
+.output-panel-inline.run-success{
+    @extend .output-panel-inline.expanded, .run-success;
+}
+.output-panel-inline.error{
+    @extend .output-panel-inline.expanded, .error;
 }
 
 .code-column{
@@ -136,41 +127,15 @@ html {
      @extend .mdi, .mdi-file-document-outline;
 }
 
-.run-icon{
-    @extend .mdi, .mdi-play;
+.editor-panel{
+    margin: 0px;
+    padding: 0px;
+    border: 1px solid  rgb(171, 156, 224);
 }
+
 
 ul.code-example-list li{
     list-style: none;
-}
-
-.top-right-position{
-    position: absolute;
-    right: 0px;
-    top: 0px;
-}
-
-.run-failure{
-    transition: all 0.2s ease-in;
-    background: $red;
-    color: $white;
-    visibility: visible;
-    min-height: $output-panel-min-height;
-}
-
-.run-execution{
-    animation-duration: 1s;
-    animation-name: textBlink;
-    animation-iteration-count: infinite;
-    animation-direction: alternate;
-    visibility: visible;
-    min-height: $output-panel-min-height;
-}
-
-.run-success{
-    transition: all 0.2s ease-in; 
-    visibility: visible;   
-    min-height: $output-panel-min-height; 
 }
 
 .header {
