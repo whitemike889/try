@@ -40,7 +40,7 @@ html {
 
 .content {
     flex: 1;
-    // margin: 1px;
+    margin-bottom: 0 !important;
 }
 
 .collapsed{
@@ -99,11 +99,13 @@ html {
 .code-column{
     @extend .column.is-two-thirds;    
     overflow-y: auto;
+    padding: 16px;
 }
 
 .code-single-column{
     @extend .column.is-full;    
     overflow-y: auto;
+    padding: 16px;
 }
 
 .control-column{
@@ -112,8 +114,8 @@ html {
 }
 
 .documentation-container{
-    @extend .columns;
-    // margin: 10px;
+    //@extend .columns;
+    margin: 0px;
     height: $content-height;
 }
 

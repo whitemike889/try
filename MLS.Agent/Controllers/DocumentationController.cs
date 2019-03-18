@@ -117,7 +117,7 @@ namespace MLS.Agent.Controllers
 <body>
     {Header()}
     <div class=""content"">
-        <div class=""documentation-container"">
+        <div class=""documentation-container columns"">
            {content} 
         </div>
     </div>
