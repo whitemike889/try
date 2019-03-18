@@ -40,7 +40,7 @@ html {
 
 .content {
     flex: 1;
-    margin: 1px;
+    // margin: 1px;
 }
 
 .collapsed{
@@ -113,7 +113,7 @@ html {
 
 .documentation-container{
     @extend .columns;
-    margin: 10px;
+    // margin: 10px;
     height: $content-height;
 }
 
@@ -137,23 +137,17 @@ ul.code-example-list li{
     list-style: none;
 }
 
-.header {   
+.dotnet-try-header {   
     background-color: $dotnet-purple;
-    color: $header-footer-color;       
-}
-
-.header-container{
-    @extend .columns, .columns.is-vcentered;
-}
-
-.dotnet-try-cmd{
-    @extend .column;
-    margin-left: 1em;
+    color: $header-footer-color;    
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;   
 }
 
 .powered-by-try-dot-net{
-    @extend .column, .column.is-one-quarter, .has-text-right;
-    margin-right: 1em;
+    font-size: 1.5em;
 }
 
 .project-file-path{
@@ -168,8 +162,7 @@ ul.code-example-list li{
     font-size: $dotnet-try-cmd-font-size;
 }
 
-.header a {   
-    font-size: .6em;
+.dotnet-try-header a {   
     color: inherit;
     text-decoration: none;
 }

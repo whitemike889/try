@@ -115,15 +115,11 @@ namespace MLS.Agent.Controllers
 </head>
 
 <body>
-
+    {Header()}
     <div class=""content"">
-
-        {Header()}
-
         <div class=""documentation-container"">
            {content} 
         </div>
-
     </div>
 
     {Footer()}
@@ -165,11 +161,8 @@ namespace MLS.Agent.Controllers
 </head>
 
 <body>
-
+    {Header()}
     <div class=""content"">
-
-        {Header()}
-
         <ul class=""code-example-list"">
             {html}
         </ul>
@@ -182,14 +175,12 @@ namespace MLS.Agent.Controllers
 </html>".ToHtmlContent();
 
         private IHtmlContent Header() => $@"
-<header class=""header"">
-    <div class=""header-container"">
-        <div class=""dotnet-try-cmd""><span class=""dotnet-try"">dotnet try</span> <span class=""project-file-path"">{_startupOptions.RootDirectory.FullName.ToLowerInvariant().HtmlEncode()}</span ></div>
-        <div class=""shimmer powered-by-try-dot-net"">
-            <a href=""https://dotnet.microsoft.com/platform/try-dotnet"">
-                Powered by Try .NET
-            </a>
+<header class=""dotnet-try-header"">
+        <div>
+            <span class=""dotnet-try"">dotnet try</span>
+            <span class=""project-file-path"">{_startupOptions.RootDirectory.FullName.ToLowerInvariant().HtmlEncode()}</span>
         </div>
+        <a href=""https://dotnet.microsoft.com/platform/try-dotnet"">Powered by Try .NET</a>
     </div>
 </header>".ToHtmlContent();
 
