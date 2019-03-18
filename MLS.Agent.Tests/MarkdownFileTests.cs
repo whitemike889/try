@@ -77,7 +77,7 @@ namespace BasicConsoleApp
 
                 var project = new MarkdownProject(dirAccessor, PackageRegistry.CreateForHostedMode());
                 project.TryGetMarkdownFile(new RelativeFilePath("Readme.md"), out var markdownFile).Should().BeTrue();
-                (await markdownFile.ToHtmlContentAsync()).ToString().EnforceLF().Should().Contain(codeContent.HtmlEncode());
+                (await markdownFile.ToHtmlContentAsync()).ToString().EnforceLF().Should().Contain(codeContent.HtmlEncode().ToString());
             }
 
             [Fact]
@@ -135,7 +135,7 @@ namespace BasicConsoleApp
 
                 var project = new MarkdownProject(dirAccessor, PackageRegistry.CreateForHostedMode());
                 project.TryGetMarkdownFile(new RelativeFilePath("docs/Readme.md"), out var markdownFile).Should().BeTrue();
-                (await markdownFile.ToHtmlContentAsync()).ToString().EnforceLF().Should().Contain(codeContent.HtmlEncode());
+                (await markdownFile.ToHtmlContentAsync()).ToString().EnforceLF().Should().Contain(codeContent.HtmlEncode().ToString());
             }
 
             [Fact]

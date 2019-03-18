@@ -14,12 +14,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="bin\**" />
     <Compile Remove="node_modules\**" />
     <Compile Remove="TestResults\**" />
+    <Content Remove="bin\**" />
     <Content Remove="node_modules\**" />
     <Content Remove="TestResults\**" />
+    <EmbeddedResource Remove="bin\**" />
     <EmbeddedResource Remove="node_modules\**" />
     <EmbeddedResource Remove="TestResults\**" />
+    <None Remove="bin\**" />
     <None Remove="node_modules\**" />
     <None Remove="TestResults\**" />
   </ItemGroup>

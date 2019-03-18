@@ -1,18 +1,23 @@
-﻿using System.IO;
-using System.Web;
+﻿using System.Web;
+using Microsoft.AspNetCore.Html;
 
 namespace MLS.Agent
 {
     public static class StringExtensions
     {
-        public static string HtmlEncode(this string content)
+        public static IHtmlContent HtmlEncode(this string content)
         {
-            return HttpUtility.HtmlEncode(content);
+            return new HtmlString(HttpUtility.HtmlEncode(content));
         }
 
-        public static string HtmlAttributeEncode(this string content)
+        public static IHtmlContent HtmlAttributeEncode(this string content)
         {
-            return HttpUtility.HtmlAttributeEncode(content);
+            return new HtmlString(HttpUtility.HtmlAttributeEncode(content));
+        }
+
+        public static IHtmlContent ToHtmlContent(this string value)
+        {
+            return new HtmlString(value);
         }
     }
 }

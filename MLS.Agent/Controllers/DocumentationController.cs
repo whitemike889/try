@@ -40,7 +40,7 @@ namespace MLS.Agent.Controllers
                                     .Select(f =>
                                      $@"<li ><a class=""code-example"" href=""{f.Path.Value.HtmlAttributeEncode()}""><span class=""icon is-small""><i class=""source-file""></i></span><span>{f.Path.Value}</span></a></li>"));
 
-                return Content(Index(links), "text/html");
+                return Content(Index(links).ToString(), "text/html");
             }
 
             var relativeFilePath = new RelativeFilePath(path);
@@ -65,19 +65,15 @@ namespace MLS.Agent.Controllers
                 extension.EnablePreviewFeatures = _startupOptions.EnablePreviewFeatures;
             }
 
+            var content = maxEditorPerSession <= 1
+                              ? await OneColumnLayoutScaffold(
+                                    $"{hostUrl.Scheme}://{hostUrl.Authority}",
+                                    markdownFile)
+                              : await TwoColumnLayoutScaffold(
+                                    $"{hostUrl.Scheme}://{hostUrl.Authority}",
+                                    markdownFile);
 
-            if (maxEditorPerSession <= 1)
-            {
-                return Content(
-                    await OneColumnLayoutScaffold($"{hostUrl.Scheme}://{hostUrl.Authority}",
-                        markdownFile), "text/html");
-            }
-            else
-            {
-                return Content(
-                    await TwoColumnLayoutScaffold($"{hostUrl.Scheme}://{hostUrl.Authority}",
-                        markdownFile), "text/html");
-            }
+            return Content(content.ToString(), "text/html");
         }
 
         public static async Task<IHtmlContent> SessionControlsHtml(MarkdownFile markdownFile, bool enablePreviewFeatures = false)
@@ -105,7 +101,7 @@ namespace MLS.Agent.Controllers
             return new HtmlString(sb.ToString());
         }
 
-        private async Task<string> OneColumnLayoutScaffold(string hostUrl, MarkdownFile markdownFile) =>
+        private IHtmlContent Layout(string hostUrl, MarkdownFile markdownFile, IHtmlContent content) =>
             $@"
 <!DOCTYPE html>
 <html lang=""en"">
@@ -125,9 +121,7 @@ namespace MLS.Agent.Controllers
         {Header()}
 
         <div class=""documentation-container"">
-            <div id=""documentation-container"" class=""code-single-column"">
-                {await markdownFile.ToHtmlContentAsync()}
-            </div>       
+           {content} 
         </div>
 
     </div>
@@ -140,48 +134,26 @@ namespace MLS.Agent.Controllers
     </script>
 </body>
 
-</html>";
-        private async Task<string> TwoColumnLayoutScaffold(string hostUrl, MarkdownFile markdownFile) =>
-            $@"
-<!DOCTYPE html>
-<html lang=""en"">
+</html>".ToHtmlContent();
 
-<head>
-    <meta http-equiv=""Content-Type"" content=""text/html;charset=utf-8"">
-    <script src=""/api/trydotnet.min.js""></script>
-    <script src=""/api/trydotnet-layout.min.js""></script>
-    <link rel=""stylesheet"" href=""/css/trydotnet.css"">
-    <title>dotnet try - {markdownFile.Path.Value.HtmlEncode()}</title>
-</head>
+        private async Task<IHtmlContent> OneColumnLayoutScaffold(string hostUrl, MarkdownFile markdownFile) =>
+            Layout(hostUrl, markdownFile,
+                   $@"
+            <div id=""documentation-container"" class=""code-single-column"">
+                {await markdownFile.ToHtmlContentAsync()}
+            </div>".ToHtmlContent());
 
-<body>
-
-    <div class=""content"">
-
-        {Header()}
-
-        <div class=""documentation-container"">
+        private async Task<IHtmlContent> TwoColumnLayoutScaffold(string hostUrl, MarkdownFile markdownFile) =>
+            Layout(hostUrl, markdownFile,
+                   $@"
             <div id=""documentation-container"" class=""code-column"">
                 {await markdownFile.ToHtmlContentAsync()}
             </div>
             <div class=""control-column"">
                 {await SessionControlsHtml(markdownFile, _startupOptions.EnablePreviewFeatures)}
-            </div>
-        </div>
+            </div>".ToHtmlContent());
 
-    </div>
-
-    {Footer()}
-
-    <script>
-        trydotnet.autoEnable(new URL(""{hostUrl}""));
-        trydotnetLayout.trackTopmostSession(document.getElementById(""documentation-container""), function (e){{ console.log(e); }});
-    </script>
-</body>
-
-</html>";
-
-        private string Index(string html) =>
+        private IHtmlContent Index(string html) =>
             $@"
 <!DOCTYPE html>
 <html lang=""en"">
@@ -207,9 +179,9 @@ namespace MLS.Agent.Controllers
 
 </body>
 
-</html>";
+</html>".ToHtmlContent();
 
-        private string Header() => $@"
+        private IHtmlContent Header() => $@"
 <header class=""header"">
     <div class=""shimmer"">
         <a href=""https://dotnet.microsoft.com/platform/try-dotnet"">
@@ -217,9 +189,9 @@ namespace MLS.Agent.Controllers
         </a>
     </div>
     <div>{_startupOptions.RootDirectory.FullName.HtmlEncode()}</div>
-</header>";
+</header>".ToHtmlContent();
 
-        private string Footer() => @"
+        private IHtmlContent Footer() => @"
 <footer class=""footer"">
   <div class=""content has-text-centered"">
     <ul>
@@ -243,6 +215,6 @@ namespace MLS.Agent.Controllers
         </li>
     </ul>
   </div>
-</footer>";
+</footer>".ToHtmlContent();
     }
 }

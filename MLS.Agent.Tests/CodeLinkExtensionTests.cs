@@ -64,7 +64,7 @@ namespace BasicConsoleApp
 $@"```{language} Program.cs
 ```";
             string html = (await pipeline.RenderHtmlAsync(document)).EnforceLF();
-            html.Should().Contain(fileContent.HtmlEncode());
+            html.Should().Contain(fileContent.HtmlEncode().ToString());
         }
 
         [Fact]
@@ -364,7 +364,9 @@ $@"```cs Program.cs --region {region}
             htmlDocument.LoadHtml(html);
             var node = htmlDocument.DocumentNode.SelectSingleNode("//div[@class='notification is-danger']");
 
-            node.InnerHtml.Should().Contain($"Region \"{region}\" not found in file {directoryAccessor.GetFullyQualifiedPath(new RelativeFilePath("./Program.cs"))}".HtmlEncode());
+            var expected = $"Region \"{region}\" not found in file {directoryAccessor.GetFullyQualifiedPath(new RelativeFilePath("./Program.cs"))}".HtmlEncode().ToString();
+
+            node.InnerHtml.Should().Contain(expected);
         }
 
         [Fact]
@@ -506,7 +508,7 @@ $@"```cs --package {package} Program.cs
                                     .Attributes["data-trydotnet-run-args"]
                                     .Value;
 
-            value.Should().Be("--region the-region Program.cs -- one two \"and three\"".HtmlAttributeEncode());
+            value.Should().Be("--region the-region Program.cs -- one two \"and three\"".HtmlAttributeEncode().ToString());
         }
     }
 }

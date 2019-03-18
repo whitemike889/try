@@ -36,13 +36,12 @@ namespace MLS.Agent.Markdown
             var renderers = htmlRenderer?.ObjectRenderers;
             if (renderers != null && !renderers.Contains<CodeLinkBlockRenderer>())
             {
-                var codeLinkBlockRenderer = new CodeLinkBlockRenderer()
+                var codeLinkBlockRenderer = new CodeLinkBlockRenderer
                 {
                     InlineControls = InlineControls,
                     EnablePreviewFeatures = EnablePreviewFeatures
                 };
                 renderers.Insert(0, codeLinkBlockRenderer);
-                
             }
         }
     }
