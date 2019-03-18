@@ -100,7 +100,7 @@ namespace MLS.Agent.Tests
                                      .Descendants("script")
                                      .FirstOrDefault();
 
-                script.Attributes["src"].Value.Should().Be("/api/trydotnet.min.js");
+                script.Attributes["src"].Value.Should().StartWith("/api/trydotnet.min.js?v=");
             }
         }
 

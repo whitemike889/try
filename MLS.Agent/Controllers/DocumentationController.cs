@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc;
 using MLS.Agent.CommandLine;
 using MLS.Agent.Markdown;
-using Pocket;
+using Recipes;
 
 namespace MLS.Agent.Controllers
 {
@@ -15,6 +15,7 @@ namespace MLS.Agent.Controllers
     {
         private readonly MarkdownProject _markdownProject;
         private readonly StartupOptions _startupOptions;
+        private static readonly string _cacheBuster = VersionSensor.Version().ToString();
 
         public DocumentationController(MarkdownProject markdownProject, StartupOptions startupOptions)
         {
@@ -110,9 +111,9 @@ namespace MLS.Agent.Controllers
 
 <head>
     <meta http-equiv=""Content-Type"" content=""text/html;charset=utf-8"">
-    <script src=""/api/trydotnet.min.js""></script>
-    <script src=""/api/trydotnet-layout.min.js""></script>
-    <link rel=""stylesheet"" href=""/css/trydotnet.css"">
+    <script src=""/api/trydotnet.min.js?v={_cacheBuster}""></script>
+    <script src=""/api/trydotnet-layout.min.js?v={_cacheBuster}""></script>
+    <link rel=""stylesheet"" href=""/css/trydotnet.css?v={_cacheBuster}"">
     <title>dotnet try - {markdownFile.Path.Value.HtmlEncode()}</title>
 </head>
 
@@ -158,7 +159,7 @@ namespace MLS.Agent.Controllers
 
 <head>
     <meta http-equiv=""Content-Type"" content=""text/html;charset=utf-8"">
-    <link rel=""stylesheet"" href=""/css/trydotnet.css"">
+    <link rel=""stylesheet"" href=""/css/trydotnet.css?v={_cacheBuster}"">
     <title>dotnet try - {_startupOptions.RootDirectory.FullName.HtmlEncode()}</title>
 </head>
 

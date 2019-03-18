@@ -1,5 +1,4 @@
-﻿using System;
-using FluentAssertions;
+﻿using FluentAssertions;
 using Markdig;
 using MLS.Agent.Markdown;
 using MLS.Project.Generators;
