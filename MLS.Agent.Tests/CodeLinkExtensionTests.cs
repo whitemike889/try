@@ -450,7 +450,7 @@ $@"```cs Program.cs --region {region}
                                      .SelectSingleNode("//pre/code")
                                      .Attributes["data-trydotnet-session-id"];
 
-            output.Value.Should().Be("Run");
+            output.Value.Should().StartWith("Run");
         }
 
         [Fact]

@@ -11,6 +11,7 @@ namespace MLS.Agent.Markdown
     {
         private readonly Parser _parser;
         private readonly ModelBinder<CodeLinkBlockOptions> _modelBinder= new ModelBinder<CodeLinkBlockOptions>();
+        private static int sessionIndex;
 
         public CodeFenceOptionsParser(IDirectoryAccessor directoryAccessor)
         {
@@ -126,7 +127,7 @@ namespace MLS.Agent.Markdown
                              new Option("--project", argument: projectArg),
                              new Option("--region", argument: regionArgument),
                              new Option("--package", argument: packageArgument),
-                             new Option("--session", argument: new Argument<string>(defaultValue: "Run"))
+                             new Option("--session", argument: new Argument<string>(defaultValue: () => $"Run{++sessionIndex}"))
                          };
 
             csharp.AddAlias("CS");
