@@ -38,12 +38,22 @@ namespace MLS.Agent.Markdown
                 return;
             }
 
-            renderer
-                .WriteLine(@"<div class=""inline-code-container"">");
+            var height = $"{GetEditorHeightInEm(codeLinkBlock.Lines)}em";
+
+            if (InlineControls)
+            {
+                renderer
+                    .WriteLine(@"<div class=""inline-code-container"">");
+            }
+            else
+            {
+                renderer
+                    .WriteLine(@"<div class=""code-container"">");
+            }
 
             renderer
                 .WriteLine($@"<div class=""editor-panel"">")
-                .WriteLine($@"<pre style=""border:none"" height=""{GetEditorHeightInEm(codeLinkBlock.Lines)}em"" width=""100%"">")
+                .WriteLine($@"<pre style=""border:none; height: {height}"" height=""{height}"" width=""100%"">")
                 .Write("<code")
                 .WriteAttributes(codeLinkBlock)
                 .WriteLine(">")
@@ -76,8 +86,8 @@ namespace MLS.Agent.Markdown
 
         private static int GetEditorHeightInEm(StringLineGroup text)
         {
-            var size = (text.ToString().Split("\n").Length + 3) * 20;
-            return Math.Max(100, size);
+            var size = (text.ToString().Split("\n").Length + 6);
+            return Math.Max(8, size);
         }
     }
 }
