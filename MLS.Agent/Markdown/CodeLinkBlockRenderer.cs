@@ -65,8 +65,10 @@ namespace MLS.Agent.Markdown
 
             if (InlineControls)
             {
+                const string playSvg = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 9 10\"><path fill=\"white\" d=\"M1,0 1,10, 9,5z\" /></svg>";
+
                 renderer
-                    .WriteLine($@"<button class=""run-button top-right-position"" data-trydotnet-mode=""run"" data-trydotnet-session-id=""{codeLinkBlock.Session}"" data-trydotnet-run-args=""{codeLinkBlock.RunArgs.HtmlAttributeEncode()}""><span class=""icon is-medium""><i class=""run-icon""></i></span></button>");
+                    .WriteLine($@"<button class=""run"" data-trydotnet-mode=""run"" data-trydotnet-session-id=""{codeLinkBlock.Session}"" data-trydotnet-run-args=""{codeLinkBlock.RunArgs.HtmlAttributeEncode()}"">{playSvg}</button>");
                 if (EnablePreviewFeatures)
                 {
                     renderer

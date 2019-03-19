@@ -13,22 +13,26 @@
     }
   }
 
-.run-button {
-    // @extend .button, .is-primary;
+button.run {
+    font-size: 20px;
+    border: none;
     margin: 2px;
+    padding: 4px 12px;
+    color: $white;
     background-color: $dotnet-purple;
     transition: background-color .15s ease-in-out, transform .15s ease-in-out;
+    background-repeat: no-repeat;
+
+    &:hover {
+        background-color: lighten($dotnet-purple, 17.5%);
+    }
+
+    svg {
+        height: 14px;
+    }
 }
 
-.button:hover {
-    background-color: #2a03b2;
-}
-
-.run-icon{
-    @extend .mdi, .mdi-play-circle-outline;
-}
-
-.top-right-position{
+.inline-code-container button.run {
     position: absolute;
     right: 0px;
     top: 0px;

@@ -119,9 +119,9 @@ namespace MLS.Agent.Controllers
 
 <body>
     {Header()}
-    <div class=""content"">
+    <section>
        {content}
-    </div>
+    </section>
 
     {Footer()}
 
@@ -163,11 +163,11 @@ namespace MLS.Agent.Controllers
 
 <body>
     {Header()}
-    <div class=""content"">
+    <section>
         <ul class=""code-example-list"">
             {html}
         </ul>
-    </div>
+    </section>
 
     {Footer()}
 
@@ -176,18 +176,16 @@ namespace MLS.Agent.Controllers
 </html>".ToHtmlContent();
 
         private IHtmlContent Header() => $@"
-<header class=""dotnet-try-header"">
-        <div>
-            <span class=""dotnet-try"">dotnet try</span>
-            <span class=""project-file-path"">{_startupOptions.RootDirectory.FullName.ToLowerInvariant().HtmlEncode()}</span>
-        </div>
-        <a href=""https://dotnet.microsoft.com/platform/try-dotnet"">Powered by Try .NET</a>
+<header>
+    <div>
+        <span class=""dotnet-try"">dotnet try</span>
+        <span class=""project-file-path"">{_startupOptions.RootDirectory.FullName.ToLowerInvariant().HtmlEncode()}</span>
     </div>
+    <a href=""https://dotnet.microsoft.com/platform/try-dotnet"">Powered by Try .NET</a>
 </header>".ToHtmlContent();
 
         private IHtmlContent Footer() => @"
-<footer class=""footer"">
-  <div class=""content has-text-centered"">
+<footer>
     <ul>
         <li>
             <a href=""https://teams.microsoft.com/l/channel/19%3a32c2f8c34d4b4136b4adf554308363fc%40thread.skype/Try%2520.NET?groupId=fdff90ed-0b3b-4caa-a30a-efb4dd47665f&tenantId=72f988bf-86f1-41af-91ab-2d7cd011db47"">Ask a question or tell us about a bug</a>
@@ -208,7 +206,6 @@ namespace MLS.Agent.Controllers
             © Microsoft 2019
         </li>
     </ul>
-  </div>
 </footer>".ToHtmlContent();
     }
 }
