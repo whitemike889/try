@@ -1,6 +1,6 @@
 @charset "utf-8";
 
-@import "../node_modules/@mdi/font/scss/materialdesignicons.scss";
+//@import "../node_modules/@mdi/font/scss/materialdesignicons.scss";
 @import "./constants";
 
 @keyframes textBlink {
@@ -11,9 +11,9 @@
     to {
         color: $text;
     }
-  }
+}
 
-button.run {
+@mixin action-button {
     font-size: 20px;
     border: none;
     margin: 2px;
@@ -21,7 +21,12 @@ button.run {
     color: $white;
     background-color: $dotnet-purple;
     transition: background-color .15s ease-in-out, transform .15s ease-in-out;
-    background-repeat: no-repeat;
+}
+
+button.run,
+ul.index > li {
+
+    @include action-button;
 
     &:hover {
         background-color: lighten($dotnet-purple, 17.5%);
@@ -30,6 +35,13 @@ button.run {
     svg {
         height: 14px;
     }
+}
+
+ul.index > li > a {
+    display: block;
+    color: $white;
+    padding: 4px 12px;
+    text-decoration: none;
 }
 
 .inline-code-container button.run {

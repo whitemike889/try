@@ -40,16 +40,10 @@ namespace MLS.Agent.Markdown
 
             var height = $"{GetEditorHeightInEm(codeLinkBlock.Lines)}em";
 
-            if (InlineControls)
-            {
-                renderer
-                    .WriteLine(@"<div class=""inline-code-container"">");
-            }
-            else
-            {
-                renderer
-                    .WriteLine(@"<div class=""code-container"">");
-            }
+            renderer
+                .WriteLine(InlineControls
+                    ? @"<div class=""inline-code-container"">" 
+                    : @"<div class=""code-container"">");
 
             renderer
                 .WriteLine($@"<div class=""editor-panel"">")
@@ -69,16 +63,11 @@ namespace MLS.Agent.Markdown
 
                 renderer
                     .WriteLine($@"<button class=""run"" data-trydotnet-mode=""run"" data-trydotnet-session-id=""{codeLinkBlock.Session}"" data-trydotnet-run-args=""{codeLinkBlock.RunArgs.HtmlAttributeEncode()}"">{playSvg}</button>");
-                if (EnablePreviewFeatures)
-                {
-                    renderer
-                        .WriteLine($@"<div class=""output-panel-inline collapsed"" data-trydotnet-mode=""runResult"" data-trydotnet-output-type=""terminal"" data-trydotnet-session-id=""{codeLinkBlock.Session}""></div>");
-                }
-                else
-                {
-                    renderer
-                        .WriteLine($@"<div class=""output-panel-inline collapsed"" data-trydotnet-mode=""runResult"" data-trydotnet-session-id=""{codeLinkBlock.Session}""></div>");
-                }
+
+                renderer
+                    .WriteLine(EnablePreviewFeatures
+                        ? $@"<div class=""output-panel-inline collapsed"" data-trydotnet-mode=""runResult"" data-trydotnet-output-type=""terminal"" data-trydotnet-session-id=""{codeLinkBlock.Session}""></div>"
+                        : $@"<div class=""output-panel-inline collapsed"" data-trydotnet-mode=""runResult"" data-trydotnet-session-id=""{codeLinkBlock.Session}""></div>");
             }
 
             renderer.WriteLine("</div>");

@@ -35,11 +35,12 @@ namespace MLS.Agent.Controllers
 
             if (string.IsNullOrEmpty(path))
             {
+                
                 var links = string.Join(
                     "\n",
                     _markdownProject.GetAllMarkdownFiles()
                                     .Select(f =>
-                                     $@"<li ><a class=""code-example"" href=""{f.Path.Value.HtmlAttributeEncode()}""><span class=""icon is-small""><i class=""source-file""></i></span><span>{f.Path.Value}</span></a></li>"));
+                                     $@"<li><a href=""{f.Path.Value.HtmlAttributeEncode()}"">{f.Path.Value}</a></li>"));
 
                 return Content(Index(links).ToString(), "text/html");
             }
@@ -89,16 +90,11 @@ namespace MLS.Agent.Controllers
 
             foreach (var session in sessions)
             {
-                sb.AppendLine($@"<button class=""run-button"" data-trydotnet-mode=""run"" data-trydotnet-session-id=""{session.Key}"" data-trydotnet-run-args=""{session.First().RunArgs.HtmlAttributeEncode()}"">{session.Key}</button>");
-                if (enablePreviewFeatures)
-                {
-                    sb.AppendLine($@"<div class=""output-panel"" data-trydotnet-mode=""runResult"" data-trydotnet-output-type=""terminal"" data-trydotnet-session-id=""{session.Key}""></div>");
-                }
-                else
-                {
-                    sb.AppendLine($@"<div class=""output-panel"" data-trydotnet-mode=""runResult"" data-trydotnet-session-id=""{session.Key}""></div>");
-                }
-             
+                sb.AppendLine($@"<button class=""run"" data-trydotnet-mode=""run"" data-trydotnet-session-id=""{session.Key}"" data-trydotnet-run-args=""{session.First().RunArgs.HtmlAttributeEncode()}"">{session.Key}</button>");
+
+                sb.AppendLine(enablePreviewFeatures
+                    ? $@"<div class=""output-panel"" data-trydotnet-mode=""runResult"" data-trydotnet-output-type=""terminal"" data-trydotnet-session-id=""{session.Key}""></div>"
+                    : $@"<div class=""output-panel"" data-trydotnet-mode=""runResult"" data-trydotnet-session-id=""{session.Key}""></div>");
             }
 
             return new HtmlString(sb.ToString());
@@ -164,7 +160,7 @@ namespace MLS.Agent.Controllers
 <body>
     {Header()}
     <section>
-        <ul class=""code-example-list"">
+        <ul class=""index"">
             {html}
         </ul>
     </section>
