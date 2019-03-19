@@ -1,8 +1,7 @@
 @charset "utf-8";
 
-
-@import "../node_modules/bulma/bulma.sass";
-@import "../node_modules/@mdi/font/scss/materialdesignicons.scss";
+@import "../node_modules/github-markdown-css/github-markdown";
+// @import "../node_modules/@mdi/font/scss/materialdesignicons.scss";
 @import "../node_modules/xterm/dist/xterm";
 @import "../node_modules/xterm/dist/addons/fullscreen/fullscreen";
 
@@ -10,37 +9,88 @@
 @import "./run-button";
 
 
-
-@keyframes shimmerBackground {
-    0% {background-position:-5000px 0}
-    100% {background-position:5000px 0}
-}
-
-.shimmer {
-    background-image: -moz-linear-gradient(160deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0) 25%, rgba(255,255,255,0.85) 60%, rgba(255,255,255,0) 100%);
-    background-image: -webkit-gradient(linear, left top, right top, color-stop(0%,rgba(255,255,255,0)), color-stop(25%,rgba(255,255,255,0)), color-stop(60%,rgba(255,255,255,0.85)), color-stop(100%,rgba(255,255,255,0)));
-    background-image: -webkit-linear-gradient(160deg, rgba(255,255,255,0) 0%,rgba(255,255,255,0) 25%,rgba(255,255,255,0.85) 60%,rgba(255,255,255,0) 100%);
-    background-image: -o-linear-gradient(160deg, rgba(255,255,255,0) 0%,rgba(255,255,255,0) 25%,rgba(255,255,255,0.85) 60%,rgba(255,255,255,0) 100%);
-    background-image: -ms-linear-gradient(160deg, rgba(255,255,255,0) 0%,rgba(255,255,255,0) 25%,rgba(255,255,255,0.85) 60%,rgba(255,255,255,0) 100%);
-    background-image: linear-gradient(160deg, rgba(255,255,255,0) 0%,rgba(255,255,255,0) 25%,rgba(255,255,255,0.85) 60%,rgba(255,255,255,0) 100%);
-    background-repeat: repeat-y;
-    background-position:-5000px 0;
-    animation: shimmerBackground 8s linear infinite;
-}
+html, body { font-family: "Segoe UI",Helvetica,Arial,sans-serif; }
 
 body {
     display: flex;
     height: 100vh;
     flex-direction: column;
+    margin: 0;
 }
 
 html {
     overflow-y: hidden;
 }
 
-.content {
+header {
+    background-color: $dotnet-purple;
+    color: $header-footer-color;    
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;   
+
+    .dotnet-try {
+        color: $dotnet-try-cmd-color;
+        font-size: $dotnet-try-cmd-font-size;
+    }
+
+    .project-file-path {
+        opacity: 0.6;
+        font-size: $dotnet-try-cmd-font-size;
+        margin-left: 16px;
+    }
+
+    a {   
+        color: inherit;
+        text-decoration: none;
+    }
+}
+
+section {
     flex: 1;
-    margin-bottom: 0 !important;
+    overflow: auto;
+    display: flex;
+
+    #documentation-container {
+        flex-grow: 1;
+    }
+    .control-column {
+        // TODO not sure why this works
+        flex-basis: 100%;
+    }
+
+    > div {
+        overflow-y: auto;   
+        padding: 16px;
+    }
+}
+
+footer {
+    max-height: 6em;
+    color: $header-footer-color;
+    background: $footer-background-color;
+
+    ul {
+        float: right;
+
+        li {
+            display: inline-block;
+            font-size: 11px;
+            list-style-type: none;
+            padding: 0 24px 4px 0;
+
+            a {
+                color: inherit;
+                text-decoration: none;
+
+                &:hover {
+                    color: lightblue;
+                    text-decoration: underline;
+                }
+            }            
+        }
+    }
 }
 
 .collapsed{
@@ -49,15 +99,27 @@ html {
     height: 0px;
 }
 
-.error-icon{
-    @extend .mdi, .mdi-alert-decagram-outline;
+.notification.is-danger {
+    border: 1px solid red;
+    padding: 1em;
+    background: rgba(255, 0, 0, 0.1);
+    border-left-width: 4px;
+    display: flex;
+    svg {    
+        margin: 16px;
+        display: inline-flex;
+    }
+    span {
+        display: inline-flex;
+    }
 }
 
 .output-panel{
-    @extend .box;   
-    min-height: 200px;
-    margin-top: 1em;
-    margin-bottom: 1em;
+    min-height: 160px;
+    margin: 16px 0;
+    border: 1px solid #ddd;
+    padding: 2px;
+    overflow: auto;
 }
 
 .inline-code-container{
@@ -84,7 +146,7 @@ html {
     overflow-y: auto;   
 }
 
-.output-panel-inline.expanded{  
+.output-panel-inline.expanded {
     visibility: visible;   
     min-height: $output-panel-min-height; 
     max-height: 400px;   
@@ -93,121 +155,29 @@ html {
     margin: 1px;
 }
 
-.output-panel-inline.run-failure{
+.output-panel-inline.run-failure {
     @extend .output-panel-inline.expanded, .run-failure;
 }
-.output-panel-inline.run-execution{
+.output-panel-inline.run-execution {
     @extend .output-panel-inline.expanded, .run-execution;
 }
-.output-panel-inline.run-success{
+.output-panel-inline.run-success {
     @extend .output-panel-inline.expanded, .run-success;
 }
-.output-panel-inline.error{
+.output-panel-inline.error {
     @extend .output-panel-inline.expanded, .error;
 }
 
-.code-column{
-    @extend .column.is-two-thirds;    
-    overflow-y: auto;
-    padding: 16px;
+.editor-panel {
+    margin: 0;
+    padding: 0;
 }
 
-.code-single-column{
-    @extend .column.is-full;    
-    overflow-y: auto;
-    padding: 16px;
-}
-
-.control-column{
-    @extend .column;
-    overflow-y: auto;   
-}
-
-.documentation-container{
-    //@extend .columns;
-    margin: 0px;
-    height: $content-height;
-}
-
-.code-example{
-    @extend .button, .is-link;
-    background-color: $dotnet-purple;
-}
-
-.source-file{
-     @extend .mdi, .mdi-file-document-outline;
-}
-
-.editor-panel{
-    margin: 0px;
-    padding: 0px;
-}
-
-
-ul.code-example-list li{
-    list-style: none;
-}
-
-.dotnet-try-header {   
-    background-color: $dotnet-purple;
-    color: $header-footer-color;    
-    padding: 8px 16px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;   
-}
-
-.powered-by-try-dot-net{
-    font-size: 1.5em;
-}
-
-.project-file-path{
-    @extend .has-text-weight-semibold;
-    color: darken($dotnet-try-cmd-color, 30%);
-    font-size: $dotnet-try-cmd-font-size;  
-}
-
-.dotnet-try{
-    @extend .has-text-weight-semibold;
-    color: $dotnet-try-cmd-color;
-    font-size: $dotnet-try-cmd-font-size;
-}
-
-.dotnet-try-header a {   
-    color: inherit;
-    text-decoration: none;
-}
-
-footer {
-    max-height: 6em;
-    color: $header-footer-color;
-}
-
-footer ul {
-    float: right;
-}
-
-.footer {
-    padding: unset;
-}
-
-.footer-logo {
-    float: left;
-}
-
-footer li {
-    display: inline-block;
-    font-size: 11px;
-    list-style-type: none;
-    padding: 0 24px 4px 0;
-}
-
-footer li a {
-    color: inherit;
-    text-decoration: none;
-}
-
-footer li a:hover {
-    color: lightblue;
-    text-decoration: underline;
+ul.index {
+    li {
+        padding: 0;
+        list-style: none;
+        background-color: $dotnet-purple;
+//        @include action-button
+    }
 }

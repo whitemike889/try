@@ -1,7 +1,6 @@
 @charset "utf-8";
 
-@import "../node_modules/bulma/bulma.sass";
-@import "../node_modules/@mdi/font/scss/materialdesignicons.scss";
+//@import "../node_modules/@mdi/font/scss/materialdesignicons.scss";
 @import "./constants";
 
 @keyframes textBlink {
@@ -12,26 +11,47 @@
     to {
         color: $text;
     }
-  }
+}
 
-.run-button {
-    @extend .button, .is-primary;
+@mixin action-button {
+    font-size: 20px;
+    border: none;
     margin: 2px;
+    padding: 4px 12px;
+    color: $white;
     background-color: $dotnet-purple;
     transition: background-color .15s ease-in-out, transform .15s ease-in-out;
 }
 
-.button:hover {
-    background-color: #2a03b2;
+button.run,
+ul.index > li {
+
+    @include action-button;
+
+    &:hover {
+        background-color: lighten($dotnet-purple, 17.5%);
+    }
+
+    svg {
+        height: 16px;
+        display: inline-flex;        
+        fill: $white;
+    }
 }
 
-.run-icon{
-    @extend .mdi, .mdi-play-circle-outline;
+ul.index > li > a {
+    display: block;
+    color: $white;
+    padding: 4px 12px;
+    text-decoration: none;
 }
 
-.top-right-position{
+.inline-code-container button.run {
     position: absolute;
     right: 0px;
     top: 0px;
     margin: 4px;
+    svg {
+        fill: $white;
+    }
 }

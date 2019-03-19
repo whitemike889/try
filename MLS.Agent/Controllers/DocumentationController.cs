@@ -35,11 +35,12 @@ namespace MLS.Agent.Controllers
 
             if (string.IsNullOrEmpty(path))
             {
+                const string documentSvg = "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" version=\"1.1\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\"><path d=\"M6,2A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2H6M6,4H13V9H18V20H6V4M8,12V14H16V12H8M8,16V18H13V16H8Z\" /></svg>";
                 var links = string.Join(
                     "\n",
                     _markdownProject.GetAllMarkdownFiles()
                                     .Select(f =>
-                                     $@"<li ><a class=""code-example"" href=""{f.Path.Value.HtmlAttributeEncode()}""><span class=""icon is-small""><i class=""source-file""></i></span><span>{f.Path.Value}</span></a></li>"));
+                                     $@"<li><a href=""{f.Path.Value.HtmlAttributeEncode()}"">{documentSvg}<span>{f.Path.Value}</span></a></li>"));
 
                 return Content(Index(links).ToString(), "text/html");
             }
@@ -89,16 +90,11 @@ namespace MLS.Agent.Controllers
 
             foreach (var session in sessions)
             {
-                sb.AppendLine($@"<button class=""run-button"" data-trydotnet-mode=""run"" data-trydotnet-session-id=""{session.Key}"" data-trydotnet-run-args=""{session.First().RunArgs.HtmlAttributeEncode()}"">{session.Key}</button>");
-                if (enablePreviewFeatures)
-                {
-                    sb.AppendLine($@"<div class=""output-panel"" data-trydotnet-mode=""runResult"" data-trydotnet-output-type=""terminal"" data-trydotnet-session-id=""{session.Key}""></div>");
-                }
-                else
-                {
-                    sb.AppendLine($@"<div class=""output-panel"" data-trydotnet-mode=""runResult"" data-trydotnet-session-id=""{session.Key}""></div>");
-                }
-             
+                sb.AppendLine($@"<button class=""run"" data-trydotnet-mode=""run"" data-trydotnet-session-id=""{session.Key}"" data-trydotnet-run-args=""{session.First().RunArgs.HtmlAttributeEncode()}"">{session.Key}</button>");
+
+                sb.AppendLine(enablePreviewFeatures
+                    ? $@"<div class=""output-panel"" data-trydotnet-mode=""runResult"" data-trydotnet-output-type=""terminal"" data-trydotnet-session-id=""{session.Key}""></div>"
+                    : $@"<div class=""output-panel"" data-trydotnet-mode=""runResult"" data-trydotnet-session-id=""{session.Key}""></div>");
             }
 
             return new HtmlString(sb.ToString());
@@ -119,11 +115,9 @@ namespace MLS.Agent.Controllers
 
 <body>
     {Header()}
-    <div class=""content"">
-        <div class=""documentation-container columns"">
-           {content} 
-        </div>
-    </div>
+    <section>
+       {content}
+    </section>
 
     {Footer()}
 
@@ -138,14 +132,14 @@ namespace MLS.Agent.Controllers
         private async Task<IHtmlContent> OneColumnLayoutScaffold(string hostUrl, MarkdownFile markdownFile) =>
             Layout(hostUrl, markdownFile,
                    $@"
-            <div id=""documentation-container"" class=""code-single-column"">
+            <div id=""documentation-container"" class=""markdown-body"">
                 {await markdownFile.ToHtmlContentAsync()}
             </div>".ToHtmlContent());
 
         private async Task<IHtmlContent> TwoColumnLayoutScaffold(string hostUrl, MarkdownFile markdownFile) =>
             Layout(hostUrl, markdownFile,
                    $@"
-            <div id=""documentation-container"" class=""code-column"">
+            <div id=""documentation-container"" class=""markdown-body"">
                 {await markdownFile.ToHtmlContentAsync()}
             </div>
             <div class=""control-column"">
@@ -165,11 +159,11 @@ namespace MLS.Agent.Controllers
 
 <body>
     {Header()}
-    <div class=""content"">
-        <ul class=""code-example-list"">
+    <section>
+        <ul class=""index"">
             {html}
         </ul>
-    </div>
+    </section>
 
     {Footer()}
 
@@ -178,18 +172,16 @@ namespace MLS.Agent.Controllers
 </html>".ToHtmlContent();
 
         private IHtmlContent Header() => $@"
-<header class=""dotnet-try-header"">
-        <div>
-            <span class=""dotnet-try"">dotnet try</span>
-            <span class=""project-file-path"">{_startupOptions.RootDirectory.FullName.ToLowerInvariant().HtmlEncode()}</span>
-        </div>
-        <a href=""https://dotnet.microsoft.com/platform/try-dotnet"">Powered by Try .NET</a>
+<header>
+    <div>
+        <span class=""dotnet-try"">dotnet try</span>
+        <span class=""project-file-path"">{_startupOptions.RootDirectory.FullName.ToLowerInvariant().HtmlEncode()}</span>
     </div>
+    <a href=""https://dotnet.microsoft.com/platform/try-dotnet"">Powered by Try .NET</a>
 </header>".ToHtmlContent();
 
         private IHtmlContent Footer() => @"
-<footer class=""footer"">
-  <div class=""content has-text-centered"">
+<footer>
     <ul>
         <li>
             <a href=""https://teams.microsoft.com/l/channel/19%3a32c2f8c34d4b4136b4adf554308363fc%40thread.skype/Try%2520.NET?groupId=fdff90ed-0b3b-4caa-a30a-efb4dd47665f&tenantId=72f988bf-86f1-41af-91ab-2d7cd011db47"">Ask a question or tell us about a bug</a>
@@ -210,7 +202,6 @@ namespace MLS.Agent.Controllers
             © Microsoft 2019
         </li>
     </ul>
-  </div>
 </footer>".ToHtmlContent();
     }
 }
