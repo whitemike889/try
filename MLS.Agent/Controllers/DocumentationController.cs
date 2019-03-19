@@ -120,9 +120,7 @@ namespace MLS.Agent.Controllers
 <body>
     {Header()}
     <div class=""content"">
-        <div class=""documentation-container columns"">
-           {content} 
-        </div>
+       {content}
     </div>
 
     {Footer()}
@@ -138,14 +136,14 @@ namespace MLS.Agent.Controllers
         private async Task<IHtmlContent> OneColumnLayoutScaffold(string hostUrl, MarkdownFile markdownFile) =>
             Layout(hostUrl, markdownFile,
                    $@"
-            <div id=""documentation-container"" class=""code-single-column"">
+            <div id=""documentation-container"" class=""markdown-body"">
                 {await markdownFile.ToHtmlContentAsync()}
             </div>".ToHtmlContent());
 
         private async Task<IHtmlContent> TwoColumnLayoutScaffold(string hostUrl, MarkdownFile markdownFile) =>
             Layout(hostUrl, markdownFile,
                    $@"
-            <div id=""documentation-container"" class=""code-column"">
+            <div id=""documentation-container"" class=""markdown-body"">
                 {await markdownFile.ToHtmlContentAsync()}
             </div>
             <div class=""control-column"">

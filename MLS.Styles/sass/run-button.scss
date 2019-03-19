@@ -1,6 +1,5 @@
 @charset "utf-8";
 
-@import "../node_modules/bulma/bulma.sass";
 @import "../node_modules/@mdi/font/scss/materialdesignicons.scss";
 @import "./constants";
 
@@ -15,7 +14,7 @@
   }
 
 .run-button {
-    @extend .button, .is-primary;
+    // @extend .button, .is-primary;
     margin: 2px;
     background-color: $dotnet-purple;
     transition: background-color .15s ease-in-out, transform .15s ease-in-out;
