@@ -99,16 +99,19 @@ footer {
     height: 0px;
 }
 
-.error-icon{
-    // TODO 
-//    @extend .mdi, .mdi-alert-decagram-outline;
-}
-
 .notification.is-danger {
     border: 1px solid red;
     padding: 1em;
     background: rgba(255, 0, 0, 0.1);
     border-left-width: 4px;
+    display: flex;
+    svg {    
+        margin: 16px;
+        display: inline-flex;
+    }
+    span {
+        display: inline-flex;
+    }
 }
 
 .output-panel{
