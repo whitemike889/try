@@ -33,7 +33,9 @@ ul.index > li {
     }
 
     svg {
-        height: 14px;
+        height: 16px;
+        display: inline-flex;        
+        fill: $white;
     }
 }
 
@@ -49,4 +51,7 @@ ul.index > li > a {
     right: 0px;
     top: 0px;
     margin: 4px;
+    svg {
+        fill: $white;
+    }
 }
