@@ -53,9 +53,9 @@ Let's make this a little more interesting. Your project probably has more than o
 
     ![image](https://user-images.githubusercontent.com/547415/53462150-afc2df00-39f7-11e9-8a22-7ed5b2825cb6.png)
 
-    But you might want them to be able to compile and execute independently of one another. To do this, you can use a `--session` option, providing a new session name for each snippet. Any snippets that share a session name will compile together.
+    But you might want these snippets to be able to compile and execute independently of one another. That way, if your user breaks the code in one, the others will still work. To do this, you can use a `--session` option, providing a new session name for each snippet. Any snippets that share a session name will compile together.
 
-4. Go back to the code fence snippets we created in step 3 and add the `--session` option.
+4. Go back to the code fence snippets we created in step 3 and add a `--session` option to each one:
 
     ````markdown
      # My code sample:
