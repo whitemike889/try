@@ -39,7 +39,7 @@ namespace WorkspaceServer.Packaging
             AddRootNamespaceAndBlazorLinkerDirective();
             DeleteUnusedFilesFromTemplate(root);
             AddEmbeddedResourceContentToProject(root);
-            UpdateFileText(root, "wwwroot\\index.html", "/LocalCodeRunner/blazor-console", $"/LocalCodeRunner/{_name}");
+            UpdateFileText(root, Path.Combine("wwwroot","index.html"), "/LocalCodeRunner/blazor-console", $"/LocalCodeRunner/{_name}");
 
             var result = await dotnet.AddPackage("MLS.WasmCodeRunner", "1.0.7880001-alpha-c895bf25");
             result.ThrowOnFailure();
