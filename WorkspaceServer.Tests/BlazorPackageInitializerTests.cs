@@ -65,8 +65,6 @@ namespace WorkspaceServer.Tests
             var empty = Create.EmptyWorkspace();
             var dir = empty.Directory.CreateSubdirectory("MLS.Blazor");
 
-            bool called = false;
-
             var name = "blazor-test";
             var initializer = new BlazorPackageInitializer(
                 name,
@@ -76,8 +74,5 @@ namespace WorkspaceServer.Tests
                 });
 
             await initializer.Initialize(dir);
-
-            called.Should().Be(true);
-        }
     }
 }
