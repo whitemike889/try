@@ -53,11 +53,13 @@ section {
     display: flex;
 
     #documentation-container {
-        flex-grow: 1;
+        flex-grow: 2;
+        flex-basis: 67vw;
+        
     }
     .control-column {
-        // TODO not sure why this works
-        flex-basis: 100%;
+        flex-grow: 1;
+        flex-basis: 33vw;
     }
 
     > div {
@@ -105,6 +107,7 @@ footer {
     background: rgba(255, 0, 0, 0.1);
     border-left-width: 4px;
     display: flex;
+    align-items: center;
     svg {    
         margin: 16px;
         display: inline-flex;
