@@ -70,7 +70,7 @@ namespace WorkspaceServer.Tests
                 name,
                 new List<string>()
                 {
-                    "Microsoft.CodeAnalysis"
+                    "Microsoft.Extensions.Logging"
                 });
 
             await initializer.Initialize(dir);
