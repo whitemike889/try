@@ -2,10 +2,10 @@
 $text: black;
 $red: red;
 $white: white;
-$dotnet-purple:  #512bd4;
+$dotnet-purple: #512bd4;
 $header-footer-color: white;
 $dotnet-try-cmd-color: $header-footer-color;
-$dotnet-try-cmd-font-size: 1.5em; 
+$dotnet-try-cmd-font-size: 1.5em;
 $footer-background-color: $dotnet-purple;
 $content-height: 92vh;
 $output-panel-min-height: 200px;
@@ -13,26 +13,25 @@ $output-panel-min-height: 200px;
 $run-failure-background: $red;
 $run-failure-foreground: $white;
 
-.run-failure{
-    transition: all 0.2s ease-in;
-    background: $run-failure-background;
-    color: $run-failure-foreground;
+.run-failure {
+  transition: all 0.2s ease-in;
+  background: $run-failure-background;
+  color: $run-failure-foreground;
 }
 
-.run-execution{
-    animation-duration: 1s;
-    animation-name: textBlink;
-    animation-iteration-count: infinite;
-    animation-direction: alternate;
+.run-execution {
+  animation-duration: 1s;
+  animation-name: textBlink;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
 }
 
-.run-success{
-    transition: all 0.2s ease-in;    
+.run-success {
+  transition: all 0.2s ease-in;
 }
-
 
 .error {
-    color: red;
-    border: red;
-    border-style: dotted;
+  color: red;
+  border: red;
+  border-style: dotted;
 }

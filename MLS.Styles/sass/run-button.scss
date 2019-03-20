@@ -1,57 +1,54 @@
 @charset "utf-8";
-
-//@import "../node_modules/@mdi/font/scss/materialdesignicons.scss";
 @import "./constants";
 
 @keyframes textBlink {
-    from {
-      color: $white;
-    }
-    
-    to {
-        color: $text;
-    }
+  from {
+    color: $white;
+  }
+
+  to {
+    color: $text;
+  }
 }
 
 @mixin action-button {
-    font-size: 20px;
-    border: none;
-    margin: 2px;
-    padding: 4px 12px;
-    color: $white;
-    background-color: $dotnet-purple;
-    transition: background-color .15s ease-in-out, transform .15s ease-in-out;
+  font-size: 20px;
+  border: none;
+  margin: 2px;
+  padding: 4px 12px;
+  color: $white;
+  background-color: $dotnet-purple;
+  transition: background-color 0.15s ease-in-out, transform 0.15s ease-in-out;
 }
 
 button.run,
 ul.index > li {
+  @include action-button;
 
-    @include action-button;
+  &:hover {
+    background-color: lighten($dotnet-purple, 17.5%);
+  }
 
-    &:hover {
-        background-color: lighten($dotnet-purple, 17.5%);
-    }
-
-    svg {
-        height: 16px;
-        display: inline-flex;        
-        fill: $white;
-    }
+  svg {
+    height: 16px;
+    display: inline-flex;
+    fill: $white;
+  }
 }
 
 ul.index > li > a {
-    display: block;
-    color: $white;
-    padding: 4px 12px;
-    text-decoration: none;
+  display: block;
+  color: $white;
+  padding: 4px 12px;
+  text-decoration: none;
 }
 
 .inline-code-container button.run {
-    position: absolute;
-    right: 0px;
-    top: 0px;
-    margin: 4px;
-    svg {
-        fill: $white;
-    }
+  position: absolute;
+  right: 0px;
+  top: 0px;
+  margin: 4px;
+  svg {
+    fill: $white;
+  }
 }
