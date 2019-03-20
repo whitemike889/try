@@ -59,10 +59,10 @@ namespace WorkspaceServer.Features
             _disposables.Add(StandardOutput.Subscribe(s => operation.Trace(s)));
             _disposables.Add(StandardError.Subscribe(s => operation.Error(s)));
 
-            var kestrelListeningMessagePrefix = "Now listening on: ";
+            var kestrelListeningMessagePrefix = "Now listening on:";
 
             var uriString = await StandardOutput
-                                  .Where(line => line.StartsWith(kestrelListeningMessagePrefix))
+                                  .Where(line => line.Contains(kestrelListeningMessagePrefix))
                                   .Select(line => line.Replace(kestrelListeningMessagePrefix, ""))
                                   .FirstAsync();
 

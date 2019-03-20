@@ -31,8 +31,8 @@ namespace WorkspaceServer.Packaging
     {
         const string CSharpLanguageVersion = "7.3";
     
-        private static ConcurrentDictionary<string, SemaphoreSlim> packageBuildSemaphores = new ConcurrentDictionary<string, SemaphoreSlim>();
-        private static ConcurrentDictionary<string, SemaphoreSlim> packagePublishSemaphores = new ConcurrentDictionary<string, SemaphoreSlim>();
+        private static readonly ConcurrentDictionary<string, SemaphoreSlim> _packageBuildSemaphores = new ConcurrentDictionary<string, SemaphoreSlim>();
+        private static ConcurrentDictionary<string, SemaphoreSlim> _packagePublishSemaphores = new ConcurrentDictionary<string, SemaphoreSlim>();
 
         static Package()
         {
@@ -108,8 +108,8 @@ namespace WorkspaceServer.Packaging
             SetupWorkspaceCreationFromDesignTimeBuildChannel();
             TryLoadDesignTimeBuildFromBuildLog();
             _lazyCreation = new AsyncLazy<bool>(Create);
-            _buildSemaphore = packageBuildSemaphores.GetOrAdd(Name, _ => new SemaphoreSlim(1, 1));
-            _publishSemaphore = packagePublishSemaphores.GetOrAdd(Name, _ => new SemaphoreSlim(1, 1));
+            _buildSemaphore = _packageBuildSemaphores.GetOrAdd(Name, _ => new SemaphoreSlim(1, 1));
+            _publishSemaphore = _packagePublishSemaphores.GetOrAdd(Name, _ => new SemaphoreSlim(1, 1));
             RoslynWorkspace = null;
         }
 
@@ -223,9 +223,14 @@ namespace WorkspaceServer.Packaging
 
                     var xml = XElement.Parse(csprojXml);
 
-                    var wut = xml.XPathSelectElement("//ItemGroup/PackageReference[@Include='Microsoft.AspNetCore.App']");
+                    var isAspNetCore2 = xml.XPathSelectElement("//ItemGroup/PackageReference[@Include='Microsoft.AspNetCore.App']") != null;
 
-                    _isWebProject = wut != null;
+                    var isAspNetCore3 = xml.DescendantsAndSelf()
+                               .FirstOrDefault(n => n.Name == "Project")
+                               ?.Attribute("Sdk")
+                               ?.Value == "Microsoft.NET.Sdk.Web";
+
+                    _isWebProject = isAspNetCore2 || isAspNetCore3 ;
                 }
 
                 return _isWebProject ?? false;

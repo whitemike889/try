@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using Clockwise;
 using FluentAssertions;
@@ -59,20 +60,19 @@ namespace WorkspaceServer.Tests
         public async Task WebServer_lifecycle_events_can_be_viewed_via_StandardOutput()
         {
             var workspace = await Package.Copy(await Default.WebApiWorkspace);
-            var log = new List<string>();
+            var log = new StringBuilder();
 
             using (var webServer = new WebServer(workspace))
-            using (webServer.StandardOutput.Subscribe(log.Add))
+            using (webServer.StandardOutput.Subscribe(s => log.Append(s)))
             {
                 await webServer.EnsureStarted(); 
                 await Task.Delay(100);
             }
 
-            log.ShouldMatch(
-                "Hosting environment: Production",
-                "Content root path: *",
-                "Now listening on: http://127.0.0.1:*",
-                "Application started. Press Ctrl+C to shut down.");
+            log.ToString().Should().Match(
+                "*Now listening on: http://127.0.0.1:*");
+            log.ToString().Should().Match(
+                "*Hosting environment: Production*");
         }
     }
 }

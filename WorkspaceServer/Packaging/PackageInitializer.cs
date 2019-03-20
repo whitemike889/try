@@ -48,7 +48,7 @@ namespace WorkspaceServer.Packaging
                              .New(Template,
                                   args: $"--name \"{ProjectName}\" --output \"{directory.FullName}\"",
                                   budget: budget);
-            result.ThrowOnFailure();
+            result.ThrowOnFailure($"Error initializing in {directory.FullName}");
 
             if (afterCreate != null)
             {
