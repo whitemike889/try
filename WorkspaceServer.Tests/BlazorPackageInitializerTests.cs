@@ -74,5 +74,6 @@ namespace WorkspaceServer.Tests
                 });
 
             await initializer.Initialize(dir);
+        }
     }
 }
