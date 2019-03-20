@@ -53,11 +53,13 @@ section {
     display: flex;
 
     #documentation-container {
-        flex-grow: 1;
+        flex-grow: 2;
+        flex-basis: 67vw;
+        
     }
     .control-column {
-        // TODO not sure why this works
-        flex-basis: 100%;
+        flex-grow: 1;
+        flex-basis: 33vw;
     }
 
     > div {
