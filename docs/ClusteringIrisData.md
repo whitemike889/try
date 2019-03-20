@@ -30,7 +30,7 @@ To solve this problem, first we will build and train an ML model. Then we will u
 
 ### 1. Build model
 Building a model includes: uploading data (`iris-full.txt` with `TextLoader`), transforming the data so it can be used effectively by an ML algorithm (with `Concatenate`), and choosing a learning algorithm (`KMeans`). All of those steps are stored in `trainingPipeline`:
-```csharp --region create_model --project ./IrisClustering/IrisClustering/IrisClustering.csproj --session "iris clustering"     ./IrisClustering/IrisClustering/Program.cs
+```csharp --region create_model --project ./IrisClustering/IrisClustering/IrisClustering.csproj --session "iris clustering" --source-file ./IrisClustering/IrisClustering/Program.cs
 //Create the MLContext to share across components for deterministic results
 var mlContext = new MLContext(seed: 1);  //Seed set to any number so you have a deterministic environment
 
@@ -65,13 +65,13 @@ var trainingPipeline = dataProcessPipeline.Append(trainer);
 ```
 ### 2. Train model
 Training the model is a process of running the chosen algorithm on the given data. To perform training you need to call the Fit() method.
-```csharp --region train_model --project ./IrisClustering/IrisClustering/IrisClustering.csproj --session "iris clustering"     ./IrisClustering/IrisClustering/Program.cs
+```csharp --region train_model --project ./IrisClustering/IrisClustering/IrisClustering.csproj --session "iris clustering" --source-file./IrisClustering/IrisClustering/Program.cs
 var trainedModel = trainingPipeline.Fit(trainingDataView);
 ```
 ### 3. Consume model
 After the model is build and trained, we can use the `Predict()` API to predict the cluster for an iris flower and calculate the distance from given flower parameters to each cluster (each centroid of a cluster).
 
-```csharp --region execute_model --project ./IrisClustering/IrisClustering/IrisClustering.csproj --session "iris clustering"     ./IrisClustering/IrisClustering/Program.cs
+```csharp --region execute_model --project ./IrisClustering/IrisClustering/IrisClustering.csproj --session "iris clustering" --source-file ./IrisClustering/IrisClustering/Program.cs
 // Test with one sample text 
 var sampleIrisData = new IrisData()
 {
