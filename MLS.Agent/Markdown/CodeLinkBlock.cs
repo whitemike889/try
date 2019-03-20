@@ -99,11 +99,12 @@ namespace MLS.Agent.Markdown
             AddAttributeIfNotNull("region", options.Region);
             AddAttributeIfNotNull("session-id", options.Session);
 
-            if (options.SourceFile != null)
+            var fileName = await GetDestinationFileAbsolutePath();
+            if (!string.IsNullOrWhiteSpace(fileName))
             {
                 AddAttribute(
                     "data-trydotnet-file-name",
-                    await GetSourceFileAbsolutePath());
+                    fileName);
             }
         }
 
@@ -211,6 +212,12 @@ namespace MLS.Agent.Markdown
         private async Task<string> GetSourceFileAbsolutePath()
         {
             return (await _directoryAccessor.ValueAsync()).GetFullyQualifiedPath(_options.SourceFile).FullName;
+        }
+
+        private async Task<string> GetDestinationFileAbsolutePath()
+        {
+            var file = _options.DestinationFile ?? _options.SourceFile;
+            return file == null ? string.Empty : (await _directoryAccessor.ValueAsync()).GetFullyQualifiedPath(file).FullName;
         }
 
         public IEnumerable<string> Diagnostics => _diagnostics;

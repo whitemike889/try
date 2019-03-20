@@ -8,6 +8,7 @@ namespace MLS.Agent.Markdown
     {
         public CodeLinkBlockOptions(
             RelativeFilePath sourceFile = null,
+            RelativeFilePath destinationFile = null,
             FileInfo project = null,
             string package = null,
             string region = null,
@@ -23,13 +24,17 @@ namespace MLS.Agent.Markdown
             Session = session;
             IsProjectImplicit = isProjectFileImplicit;
             RunArgs = runArgs;
+            DestinationFile = destinationFile;
             Errors = errors ?? Enumerable.Empty<string>();
         }
+
+      
 
         public CodeLinkBlockOptions WithIsProjectImplicit(bool isProjectFileImplicit)
         {
             return new CodeLinkBlockOptions(
                 SourceFile,
+                DestinationFile,
                 Project,
                 Package,
                 Region,
@@ -43,6 +48,7 @@ namespace MLS.Agent.Markdown
         {
             return new CodeLinkBlockOptions(
                 SourceFile,
+                DestinationFile,
                 Project,
                 Package,
                 Region,
@@ -55,6 +61,7 @@ namespace MLS.Agent.Markdown
         public FileInfo Project { get; }
         public string Package { get; }
         public RelativeFilePath SourceFile { get; }
+        public RelativeFilePath DestinationFile { get; }
         public string Region { get; }
         public string RunArgs { get; set; }
         public string Session { get; }
