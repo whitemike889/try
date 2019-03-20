@@ -82,7 +82,7 @@ namespace MLS.Agent.Controllers
 
         public static async Task<IHtmlContent> SessionControlsHtml(MarkdownFile markdownFile, bool enablePreviewFeatures = false)
         {
-            var sessions= (await markdownFile
+            var sessions = (await markdownFile
                    .GetCodeLinkBlocks())
                    .GroupBy(b => b.Session);
 

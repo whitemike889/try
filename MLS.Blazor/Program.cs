@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Blazor.Hosting;
+using System.ComponentModel;
 
 namespace MLS.Blazor
 {
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public class Program
     {
         public static void Main(string[] args)

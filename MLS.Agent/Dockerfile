@@ -29,5 +29,6 @@ USER app_user
 
 ENV NUGET_XMLDOC_MODE=none
 RUN dotnet tool install -g --version 1.0.87 t-rex
+RUN dotnet new -i Microsoft.AspNetCore.Blazor.Templates::0.7.0
 
 ENTRYPOINT ["dotnet", "MLS.Agent.dll"]

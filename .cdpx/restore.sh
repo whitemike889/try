@@ -19,6 +19,9 @@ apk add --update nodejs-npm
 # Add dotnet tools
 dotnet tool install -g --version 1.0.87 t-rex
 
+#add Blazor templates
+dotnet new -i Microsoft.AspNetCore.Blazor.Templates::0.7.0
+
 # Restore the project
 dotnet restore $REPO_ROOT/MLS-LS.sln
 

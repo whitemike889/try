@@ -6,11 +6,12 @@ using Clockwise;
 
 namespace WorkspaceServer.Packaging
 {
-    public class PackageBuilder
+    public partial class PackageBuilder
     {
         private Package package;
-
+        private bool _blazorEnabled;
         private readonly List<Func<Package, Budget, Task>> _afterCreateActions = new List<Func<Package, Budget, Task>>();
+        private readonly List<string> _addPackages = new List<string>();
 
         public PackageBuilder(string packageName, IPackageInitializer packageInitializer = null)
         {
@@ -29,6 +30,7 @@ namespace WorkspaceServer.Packaging
 
         public DirectoryInfo Directory { get; set; }
         public bool CreateRebuildablePackage { get; internal set; }
+        public bool BlazorSupported { get; private set; }
 
         public void AfterCreate(Func<Package, Budget, Task> action)
         {
@@ -45,10 +47,35 @@ namespace WorkspaceServer.Packaging
 
         public void AddPackageReference(string packageId, string version = null)
         {
-            _afterCreateActions.Add(async (workspace, budget) =>
+            _addPackages.Add(packageId);
+            _afterCreateActions.Add(async (package, budget) =>
             {
-                var dotnet = new Dotnet(workspace.Directory);
-                await dotnet.AddPackage(packageId, version);
+                Func<Task> action = async () =>
+                {
+                    var dotnet = new Dotnet(package.Directory);
+                    await dotnet.AddPackage(packageId, version);
+                };
+
+                await action();
+               
+            });
+        }
+
+        public void EnableBlazor(PackageRegistry registry)
+        {
+            if (this.BlazorSupported)
+            {
+                throw new Exception($"Package {this.PackageName} is already a blazor package");
+            }
+
+            var name = $"runner-{this.PackageName}";
+            registry.Add(name, pb =>
+            {
+
+                var initializer = new BlazorPackageInitializer(this.PackageName, _addPackages);
+                pb.PackageInitializer = initializer;
+                pb.BlazorSupported = true;
+                pb.Directory = new DirectoryInfo(Path.Combine(Package.DefaultPackagesDirectory.FullName, pb.PackageName, "MLS.Blazor"));
             });
         }
 
@@ -95,7 +122,14 @@ namespace WorkspaceServer.Packaging
         {
             budget = budget ?? new Budget();
 
-            if (CreateRebuildablePackage)
+            if (PackageInitializer is BlazorPackageInitializer)
+            {
+                package = new BlazorPackage(
+                        PackageName,
+                        PackageInitializer,
+                        Directory);
+            }
+            else if (CreateRebuildablePackage)
             {
                 package = new RebuildablePackage(
                         PackageName,

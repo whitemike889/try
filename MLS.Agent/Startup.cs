@@ -12,6 +12,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using MLS.Agent.Blazor;
 using MLS.Agent.CommandLine;
 using MLS.Agent.Markdown;
 using MLS.Agent.Middleware;
@@ -151,14 +152,14 @@ namespace MLS.Agent
                     builder.UseBlazor<MLS.Blazor.Program>();
                 });
 
+                var budget = new Budget();
+                _disposables.Add(() => budget.Cancel());
+                BlazorPackageConfiguration.Configure(app, app.ApplicationServices, budget);
+
                 app.UseDefaultFiles()
                     .UseStaticFilesFromToolLocation()
                     .UseRouter(new StaticFilesProxyRouter())
                     .UseMvc();
-
-                var budget = new Budget();
-
-                _disposables.Add(() => budget.Cancel());
 
                 operation.Succeed();
 

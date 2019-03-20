@@ -52,7 +52,7 @@ namespace WorkspaceServer
             configure(packageBuilder);
             _packageBuilders.TryAdd(name, Task.FromResult(packageBuilder));
         }
-
+      
         public async Task<Package> Get(string packageName, Budget budget = null)
         {
             if (packageName == "script")
@@ -147,13 +147,16 @@ namespace WorkspaceServer
                              workspace.AddPackageReference("Newtonsoft.Json");
                          });
 
-            registry.Add("blazor-nodatime",
+            // Todo: soemething about nodatime 2.3 makes blazor toolchain fail to build
+            registry.Add("blazor-nodatime.api",
                          workspace =>
                          {
                              workspace.CreateUsingDotnet("classlib");
-                             workspace.AddPackageReference("NodaTime", "2.3.0");
-                             workspace.AddPackageReference("NodaTime.Testing", "2.3.0");
+                             workspace.DeleteFile("Class1.cs");
+                             workspace.AddPackageReference("NodaTime", "2.4.4");
+                             workspace.AddPackageReference("NodaTime.Testing", "2.4.4");
                              workspace.AddPackageReference("Newtonsoft.Json");
+                             workspace.EnableBlazor(registry);
                          });
 
             return registry;

@@ -237,7 +237,7 @@ namespace WorkspaceServer.Packaging
             }
         }
 
-        public DirectoryInfo Directory { get; }
+        public DirectoryInfo Directory { get; set; }
 
         public string Name { get; }
 
@@ -268,7 +268,7 @@ namespace WorkspaceServer.Packaging
                     IsDirectoryCreated = true;
                 }
 
-                if (Directory.GetFiles().Length == 0)
+                if (Directory.GetFiles("*", SearchOption.AllDirectories).Length == 0)
                 {
                     operation.Info("Initializing package using {_initializer} in {directory}", _initializer, Directory);
                     await _initializer.Initialize(Directory);
