@@ -60,7 +60,7 @@ namespace BasicConsoleApp
             };
             var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor, PackageRegistry.CreateForHostedMode()).Build();
             var document =
-$@"```{language} Program.cs
+$@"```{language} --source-file Program.cs
 ```";
             string html = (await pipeline.RenderHtmlAsync(document)).EnforceLF();
             html.Should().Contain(fileContent.HtmlEncode().ToString());
@@ -114,7 +114,7 @@ Console.WriteLine(""Hello World"");
             };
             var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor, PackageRegistry.CreateForHostedMode()).Build();
             var document =
-@"```cs DOESNOTEXIST
+@"```cs --source-file DOESNOTEXIST
 ```";
             var html = (await pipeline.RenderHtmlAsync(document)).EnforceLF();
             html.Should().Contain("File not found: ./DOESNOTEXIST");
@@ -171,7 +171,7 @@ $@"```cs --project {projectPath} Program.cs
 
             var package = "../src/sample/sample.csproj";
             var document =
-$@"```cs --project {package} ../src/sample/Program.cs
+$@"```cs --project {package} --source-file ../src/sample/Program.cs
 ```";
 
             var html = (await pipeline.RenderHtmlAsync(document)).EnforceLF();
@@ -201,7 +201,7 @@ $@"```cs --project {package} ../src/sample/Program.cs
 
 
             var document =
-$@"```cs --package {package} Program.cs
+$@"```cs --package {package} --source-file Program.cs
 ```";
 
             var html = (await pipeline.RenderHtmlAsync(document)).EnforceLF();
@@ -230,7 +230,7 @@ $@"```cs --package {package} Program.cs
 
             var project = "../src/sample/sample.csproj";
             var document =
-$@"```cs --package {package} --project {project} ../src/sample/Program.cs
+$@"```cs --package {package} --project {project} --source-file ../src/sample/Program.cs
 ```";
 
             var html = (await pipeline.RenderHtmlAsync(document)).EnforceLF();
@@ -271,7 +271,7 @@ namespace BasicConsoleApp
             };
 
             var document =
-$@"```cs Program.cs --region codeRegion
+$@"```cs --source-file Program.cs --region codeRegion
 ```";
             var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor, PackageRegistry.CreateForHostedMode()).Build();
             var html = (await pipeline.RenderHtmlAsync(document)).EnforceLF();
@@ -300,7 +300,7 @@ Console.WriteLine(""Hello World"");
             };
 
             var document =
-$@"```cs Program.cs --region codeRegion
+$@"```cs --source-file Program.cs --region codeRegion
 ```";
             var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor, PackageRegistry.CreateForHostedMode()).Build();
             var html = (await pipeline.RenderHtmlAsync(document)).EnforceLF();
@@ -329,7 +329,7 @@ Console.WriteLine(""Hello World"");
             };
 
             var document =
-$@"```cs Program.cs --region {region}
+$@"```cs --source-file Program.cs --region {region}
 ```";
             var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor, PackageRegistry.CreateForHostedMode()).Build();
             var html = (await pipeline.RenderHtmlAsync(document)).EnforceLF();
@@ -354,7 +354,7 @@ $@"```cs Program.cs --region {region}
             };
 
             var document =
-$@"```cs Program.cs --region {region}
+$@"```cs --source-file Program.cs --region {region}
 ```";
             var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor, PackageRegistry.CreateForHostedMode()).Build();
             var html = (await pipeline.RenderHtmlAsync(document)).EnforceLF();
@@ -385,7 +385,7 @@ $@"```cs Program.cs --region {region}
                                     };
 
             var document =
-                $@"```cs Program.cs --region {region}
+                $@"```cs --source-file Program.cs --region {region}
 ```";
             var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor, PackageRegistry.CreateForHostedMode()).Build();
             var html = (await pipeline.RenderHtmlAsync(document)).EnforceLF();
@@ -408,7 +408,7 @@ $@"```cs Program.cs --region {region}
 
             var session = "the-session-name";
             var document =
-                $@"```cs Program.cs --session {session}
+                $@"```cs --source-file Program.cs --session {session}
 ```";
             var pipeline = new MarkdownPipelineBuilder()
                            .UseCodeLinks(directoryAccessor, PackageRegistry.CreateForHostedMode())
@@ -435,7 +435,7 @@ $@"```cs Program.cs --region {region}
                                     };
 
             var document =
-                @"```cs Program.cs
+                @"```cs --source-file Program.cs
 ```";
             var pipeline = new MarkdownPipelineBuilder()
                            .UseCodeLinks(directoryAccessor, PackageRegistry.CreateForHostedMode())
@@ -469,7 +469,7 @@ $@"```cs Program.cs --region {region}
             package = "not-the-package";
 
             var document =
-$@"```cs --package {package} Program.cs
+$@"```cs --package {package} --source-file Program.cs
 ```";
 
             var html = (await pipeline.RenderHtmlAsync(document)).EnforceLF();
@@ -489,7 +489,7 @@ $@"```cs --package {package} Program.cs
                                         ("Program.cs", ""),
                                         ("sample.csproj", ""),
                                         ("sample.md",
-                                         @"```cs --region the-region Program.cs -- one two ""and three""
+                                         @"```cs --region the-region --source-file Program.cs -- one two ""and three""
 ```")
                                     };
 
@@ -507,7 +507,7 @@ $@"```cs --package {package} Program.cs
                                     .Attributes["data-trydotnet-run-args"]
                                     .Value;
 
-            value.Should().Be("--region the-region Program.cs -- one two \"and three\"".HtmlAttributeEncode().ToString());
+            value.Should().Be("--region the-region --source-file Program.cs -- one two \"and three\"".HtmlAttributeEncode().ToString());
         }
     }
 }

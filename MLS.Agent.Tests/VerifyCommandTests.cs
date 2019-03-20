@@ -51,7 +51,7 @@ public class Program
                                     {
                                         ("doc.md", @"
 This is some sample code:
-```cs Program.cs
+```cs --source-file Program.cs
 ```
 ")
                                     };
@@ -80,7 +80,7 @@ This is some sample code:
                                         ("some.csproj", CsprojContents),
                                         ("Program.cs", CompilingProgramCs),
                                         ("doc.md", @"
-```cs Program.cs
+```cs --source-file Program.cs
 ```
 ")
                                     }.CreateFiles();
@@ -113,7 +113,7 @@ This is some sample code:
                                         ("some.csproj", CsprojContents),
                                         ("Program.cs", CompilingProgramCs),
                                         ("doc.md", @"
-```cs Program.cs
+```cs --source-file Program.cs
 ```
 ")
                                     }.CreateFiles();
@@ -176,14 +176,14 @@ This is some sample code:
 
         [Theory]
         [InlineData(@"
-```cs Program.cs --session one --project a.csproj
+```cs --source-file Program.cs --session one --project a.csproj
 ```
-```cs Program.cs --session one --project b.csproj
+```cs --source-file Program.cs --session one --project b.csproj
 ```")]
         [InlineData(@"
-```cs Program.cs --session one --package some-package
+```cs --source-file Program.cs --session one --package some-package
 ```
-```cs Program.cs --session one --project b.csproj
+```cs --source-file Program.cs --session one --project b.csproj
 ```")]
         public async Task Returns_an_error_when_a_session_has_more_than_one_package_or_project(string mdFileContents)
         {
@@ -229,7 +229,7 @@ This is some sample code:
         }}
     }}"),
                                         ("sample.md", $@"
-```cs {args} Program.cs
+```cs {args} --source-file Program.cs
 ```"),
                                         ("sample.csproj",
                                          @"<Project Sdk=""Microsoft.NET.Sdk"">
@@ -276,7 +276,7 @@ This is some sample code:
         }}
     }}"),
                                         ("sample.md", $@"
-```cs Program.cs --region mask
+```cs --source-file Program.cs --region mask
 ```"),
                                         ("sample.csproj",
                                          CsprojContents)
@@ -350,7 +350,7 @@ This is some sample code:
         }}
     }}"),
                                         ("sample.md", $@"
-```cs Program.cs --region mask
+```cs --source-file Program.cs --region mask
 ```"),
                                         ("sample.csproj",
                                          CsprojContents)
@@ -420,7 +420,7 @@ This is some sample code:
                                     {
                                         ("Program.cs", validCode),
                                         ("sample.md", $@"
-```cs Program.cs --region mask
+```cs --source-file Program.cs --region mask
 ```"),
                                         ("sample.csproj",
                                          CsprojContents)

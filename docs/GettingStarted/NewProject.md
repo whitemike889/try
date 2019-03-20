@@ -17,7 +17,7 @@ Let's walk through how to create some `dotnet try`-powered documentation from sc
 ````markdown
 # My code sample:
 
-```cs ./MyConsoleApp/Program.cs --project ./MyConsoleApp/MyConsoleApp.csproj
+```cs --source-file ./MyConsoleApp/Program.cs --project ./MyConsoleApp/MyConsoleApp.csproj
 ```
 ````
 

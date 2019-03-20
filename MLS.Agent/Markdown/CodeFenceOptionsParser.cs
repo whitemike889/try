@@ -119,15 +119,20 @@ namespace MLS.Agent.Markdown
                 return null;
             });
 
-            var regionArgument = new Argument<string>();
-            var packageArgument = new Argument<string>();
-
-            var csharp = new Command("csharp", argument: sourceFileArg)
+            var csharp = new Command("csharp")
                          {
-                             new Option("--project", argument: projectArg),
-                             new Option("--region", argument: regionArgument),
-                             new Option("--package", argument: packageArgument),
-                             new Option("--session", argument: new Argument<string>(defaultValue: () => $"Run{++sessionIndex}"))
+                             new Option("--destination-file",
+                                        argument: new Argument<RelativeFilePath>()),
+                             new Option("--source-file",
+                                        argument: sourceFileArg),
+                             new Option("--project",
+                                        argument: projectArg),
+                             new Option("--region",
+                                        argument: new Argument<string>()),
+                             new Option("--package",
+                                        argument: new Argument<string>()),
+                             new Option("--session",
+                                        argument: new Argument<string>(defaultValue: () => $"Run{++sessionIndex}"))
                          };
 
             csharp.AddAlias("CS");

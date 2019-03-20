@@ -70,7 +70,7 @@ namespace BasicConsoleApp
                                       ("Readme.md",
                                        @"This is a sample *markdown file*
 
-```cs Program.cs
+```cs --source-file Program.cs
 ```"),
                                       ("sample.csproj", "")
                                   };
@@ -129,7 +129,7 @@ namespace BasicConsoleApp
                                       ("src/sample/sample.csproj", ""),
                                       ("docs/Readme.md",
                                        $@"
-```cs --project {package} ../src/sample/Program.cs
+```cs --project {package} --source-file ../src/sample/Program.cs
 ```")
                                   };
 
@@ -149,7 +149,7 @@ namespace BasicConsoleApp
                                       ("src/sample/Program.cs", ""),
                                       (packagePathRelativeToBaseDir, ""),
                                       ("docs/Readme.md",
-                                       $@"```cs --project ../{packagePathRelativeToBaseDir} ../src/sample/Program.cs
+                                       $@"```cs --project ../{packagePathRelativeToBaseDir} --source-file ../src/sample/Program.cs
 ```")
                                   };
 
@@ -186,7 +186,7 @@ namespace BasicConsoleApp
                     ("sample.csproj", ""),
                     ("Program.cs", codeContent),
                     ("Readme.md",
-@"```cs Program.cs
+@"```cs --source-file Program.cs
 Console.WriteLine(""This code should not appear"");
 ```"),
                 };
@@ -233,11 +233,11 @@ namespace BasicConsoleApp
                     ("Readme.md",
 @"This is a markdown file with two regions
 This is region 1
-```cs Program.cs --region region1
+```cs --source-file Program.cs --region region1
 //This part should not be included
 ```
 This is region 2
-```cs Program.cs --region region2
+```cs --source-file Program.cs --region region2
 //This part should not be included as well
 ```
 This is the end of the file")
@@ -265,7 +265,7 @@ This is the end of the file")
                     new InMemoryDirectoryAccessor(new DirectoryInfo(Directory.GetCurrentDirectory()))
                     {
                         ("readme.md", @"
-```cs Program.cs --package console
+```cs --source-file Program.cs --package console
 ```
                         ")
                     },

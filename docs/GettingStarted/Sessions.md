@@ -39,9 +39,9 @@ Let's make this a little more interesting. Your project probably has more than o
 
     ````markdown
     # My code sample:
-    ```cs --project .\MyConsoleApp\MyConsoleApp.csproj .\MyConsoleApp\Program.cs --region say_hello
+    ```cs --project .\MyConsoleApp\MyConsoleApp.csproj --source-file .\MyConsoleApp\Program.cs --region say_hello
     ```
-    ```cs --project .\MyConsoleApp\MyConsoleApp.csproj .\MyConsoleApp\Cat.cs --region what_the_cat_says
+    ```cs --project .\MyConsoleApp\MyConsoleApp.csproj --source-file .\MyConsoleApp\Cat.cs --region what_the_cat_says
     ```
     ````
 
@@ -59,9 +59,9 @@ Let's make this a little more interesting. Your project probably has more than o
 
     ````markdown
      # My code sample:
-    ```cs .\MyConsoleApp\Program.cs --project .\MyConsoleApp\MyConsoleApp.csproj --region say_hello --session one
+    ```cs --source-file .\MyConsoleApp\Program.cs --project .\MyConsoleApp\MyConsoleApp.csproj --region say_hello --session one
     ```
-    ```cs .\MyConsoleApp\Cat.cs --project .\MyConsoleApp\MyConsoleApp.csproj --region what_the_cat_says --session two 
+    ```cs --source-file .\MyConsoleApp\Cat.cs --project .\MyConsoleApp\MyConsoleApp.csproj --region what_the_cat_says --session two 
     ```
     ````
 

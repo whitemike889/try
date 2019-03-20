@@ -16,7 +16,7 @@ Console.WriteLine(DateTime.Now);
 
 The `dotnet try` tool provides a way to do this while also making the code sample interactive:
 
-```cs ./Snippets/Program.cs --region run1 --project ./Snippets/Snippets.csproj
+```cs --source-file ./Snippets/Program.cs --region run1 --project ./Snippets/Snippets.csproj
 Console.WriteLine("Hello World!");
 ```
 
@@ -51,7 +51,7 @@ This is done using the `--region` option, which targets a [C# code region](https
     ````markdown
     # My code sample:
 
-    ```cs ./MyConsoleApp/Program.cs --project ./MyConsoleApp/MyConsoleApp.csproj --region say_hello
+    ```cs --source-file ./MyConsoleApp/Program.cs --project ./MyConsoleApp/MyConsoleApp.csproj --region say_hello
     ```
     ````
 
