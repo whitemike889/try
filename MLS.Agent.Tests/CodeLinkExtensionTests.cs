@@ -285,7 +285,7 @@ $@"```cs --source-file Program.cs --region codeRegion
         }
 
         [Fact]
-        public async Task Sets_the_trydotnet_filename_using_the_filename_specified_in_the_markdown()
+        public async Task Sets_the_trydotnet_filename_using_the_filename_specified_in_the_markdown_via_source_file()
         {
             var rootDirectory = TestAssets.SampleConsole;
             var filename = "Program.cs";
@@ -300,7 +300,7 @@ Console.WriteLine(""Hello World"");
             };
 
             var document =
-$@"```cs --source-file Program.cs --region codeRegion
+$@"```cs --source-file {filename} --region codeRegion
 ```";
             var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor, PackageRegistry.CreateForHostedMode()).Build();
             var html = (await pipeline.RenderHtmlAsync(document)).EnforceLF();
@@ -311,6 +311,36 @@ $@"```cs --source-file Program.cs --region codeRegion
                 .SelectSingleNode("//pre/code").Attributes["data-trydotnet-file-name"];
 
             output.Value.Should().Be(directoryAccessor.GetFullyQualifiedPath(new RelativeFilePath(filename)).FullName);
+        }
+
+        [Fact]
+        public async Task Sets_the_trydotnet_filename_using_the_filename_specified_in_the_markdown_via_destination_file()
+        {
+            var rootDirectory = TestAssets.SampleConsole;
+            var sourceFile = "Program.cs";
+            var destinationFile = "EntryPoint.cs";
+            var codeContent = @"
+#region codeRegion
+Console.WriteLine(""Hello World"");
+#endregion";
+            var directoryAccessor = new InMemoryDirectoryAccessor(rootDirectory)
+            {
+                (filename: sourceFile, codeContent),
+                ("sample.csproj", "")
+            };
+
+            var document =
+                $@"```cs --source-file {sourceFile} --destination-file {destinationFile} --region codeRegion
+```";
+            var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor, PackageRegistry.CreateForHostedMode()).Build();
+            var html = (await pipeline.RenderHtmlAsync(document)).EnforceLF();
+
+            var htmlDocument = new HtmlDocument();
+            htmlDocument.LoadHtml(html);
+            var output = htmlDocument.DocumentNode
+                .SelectSingleNode("//pre/code").Attributes["data-trydotnet-file-name"];
+
+            output.Value.Should().Be(directoryAccessor.GetFullyQualifiedPath(new RelativeFilePath(destinationFile)).FullName);
         }
 
         [Fact]
