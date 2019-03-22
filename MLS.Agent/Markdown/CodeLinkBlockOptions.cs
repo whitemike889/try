@@ -6,6 +6,8 @@ namespace MLS.Agent.Markdown
 {
     public class CodeLinkBlockOptions
     {
+        private static int sessionIndex;
+
         public CodeLinkBlockOptions(
             RelativeFilePath sourceFile = null,
             RelativeFilePath destinationFile = null,
@@ -14,21 +16,28 @@ namespace MLS.Agent.Markdown
             string region = null,
             string session = null,
             bool isProjectFileImplicit = false,
+            bool include = false,
             IEnumerable<string> errors = null,
             string runArgs = null)
         {
             SourceFile = sourceFile;
+            DestinationFile = destinationFile;
             Project = project;
             Package = package;
             Region = region;
             Session = session;
             IsProjectImplicit = isProjectFileImplicit;
             RunArgs = runArgs;
-            DestinationFile = destinationFile;
+            Include = include;
             Errors = errors ?? Enumerable.Empty<string>();
+
+            if (string.IsNullOrWhiteSpace(Session) && !Include)
+            {
+                Session = $"Run{++sessionIndex}";
+            }
         }
 
-      
+       
 
         public CodeLinkBlockOptions WithIsProjectImplicit(bool isProjectFileImplicit)
         {
@@ -40,6 +49,7 @@ namespace MLS.Agent.Markdown
                 Region,
                 Session,
                 isProjectFileImplicit,
+                Include,
                 Errors,
                 RunArgs);
         }
@@ -54,6 +64,7 @@ namespace MLS.Agent.Markdown
                 Region,
                 Session,
                 IsProjectImplicit,
+                Include,
                 errors,
                 RunArgs);
         }
@@ -66,6 +77,7 @@ namespace MLS.Agent.Markdown
         public string RunArgs { get; set; }
         public string Session { get; }
         public bool IsProjectImplicit { get; }
+        public bool Include { get; }
         public IEnumerable<string> Errors { get; }
     }
 }

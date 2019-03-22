@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Markdig.Parsers;
 using Markdig.Renderers.Html;
@@ -85,7 +86,7 @@ namespace MLS.Agent.Markdown
 
         private async Task AddAttributes(CodeLinkBlockOptions options)
         {
-            AddAttribute("data-trydotnet-mode", "editor");
+            AddAttribute("data-trydotnet-mode", options.Include? "include" : "editor");
 
             if (!string.IsNullOrWhiteSpace(Package))
             {
@@ -97,7 +98,9 @@ namespace MLS.Agent.Markdown
             }
 
             AddAttributeIfNotNull("region", options.Region);
+
             AddAttributeIfNotNull("session-id", options.Session);
+            
 
             var fileName = await GetDestinationFileAbsolutePath();
             if (!string.IsNullOrWhiteSpace(fileName))
@@ -128,7 +131,7 @@ namespace MLS.Agent.Markdown
                 AddDiagnostic($"File not found: {options.SourceFile.Value}");
             }
 
-            if (string.IsNullOrEmpty(options.Package) && options.Project == null)
+            if (!options.Include && string.IsNullOrEmpty(options.Package) && options.Project == null)
             {
                 AddDiagnostic("No project file or package specified");
             }
