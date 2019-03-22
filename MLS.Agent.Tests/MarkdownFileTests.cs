@@ -255,6 +255,34 @@ This is the end of the file")
             }
 
             [Fact]
+            public async Task When_is_include_argument_is_specified_then_it_inserts_code_present_in_markdown()
+            {
+                var console = new TestConsole();
+                var asset = await LocalToolHelpers.CreateTool(console);
+                var registry = new PackageRegistry(false, new LocalToolPackageDiscoveryStrategy(asset, asset));
+
+                var project = new MarkdownProject(
+                    new InMemoryDirectoryAccessor(new DirectoryInfo(Directory.GetCurrentDirectory()))
+                    {
+                        ("readme.md", @"
+```cs --is-include
+//some code to include
+```
+                        ")
+                    },
+                    registry);
+
+                var thing = project.GetAllMarkdownFiles().Single();
+                var text = (await thing.ToHtmlContentAsync()).ToString();
+                var htmlDocument = new HtmlDocument();
+                htmlDocument.LoadHtml(text);
+                var codeNodes = htmlDocument.DocumentNode.SelectNodes("//pre/code[@data-trydotnet-mode='include']");
+                codeNodes.Should().HaveCount(1);
+
+                codeNodes.Single().InnerText.Should().Match(@"*//some code to include*");
+            }
+
+            [Fact]
             public async Task When_file_argument_is_specified_then_it_inserts_code_present_in_csharp_file_from_a_package()
             {
                 var console = new TestConsole();

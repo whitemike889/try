@@ -123,6 +123,8 @@ namespace MLS.Agent.Markdown
                          {
                              new Option("--destination-file",
                                         argument: new Argument<RelativeFilePath>()),
+                             new Option("--is-include",
+                                 argument: new Argument<bool>()),
                              new Option("--source-file",
                                         argument: sourceFileArg),
                              new Option("--project",
