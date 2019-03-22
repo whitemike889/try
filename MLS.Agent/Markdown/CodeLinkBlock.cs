@@ -86,7 +86,7 @@ namespace MLS.Agent.Markdown
 
         private async Task AddAttributes(CodeLinkBlockOptions options)
         {
-            AddAttribute("data-trydotnet-mode", options.IsInclude? "include" : "editor");
+            AddAttribute("data-trydotnet-mode", options.Include? "include" : "editor");
 
             if (!string.IsNullOrWhiteSpace(Package))
             {
@@ -98,17 +98,9 @@ namespace MLS.Agent.Markdown
             }
 
             AddAttributeIfNotNull("region", options.Region);
-            if (options.IsInclude)
-            {
-                if (!Regex.IsMatch(options.Session, @"Run\d+"))
-                {
-                    AddAttributeIfNotNull("session-id", options.Session);
-                }
-            }
-            else
-            {
-                AddAttributeIfNotNull("session-id", options.Session);
-            }
+
+            AddAttributeIfNotNull("session-id", options.Session);
+            
 
             var fileName = await GetDestinationFileAbsolutePath();
             if (!string.IsNullOrWhiteSpace(fileName))
@@ -139,7 +131,7 @@ namespace MLS.Agent.Markdown
                 AddDiagnostic($"File not found: {options.SourceFile.Value}");
             }
 
-            if (!options.IsInclude && string.IsNullOrEmpty(options.Package) && options.Project == null)
+            if (!options.Include && string.IsNullOrEmpty(options.Package) && options.Project == null)
             {
                 AddDiagnostic("No project file or package specified");
             }

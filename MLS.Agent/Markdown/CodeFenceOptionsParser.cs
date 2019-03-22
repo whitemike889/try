@@ -123,7 +123,7 @@ namespace MLS.Agent.Markdown
                          {
                              new Option("--destination-file",
                                         argument: new Argument<RelativeFilePath>()),
-                             new Option("--is-include",
+                             new Option("--include",
                                  argument: new Argument<bool>()),
                              new Option("--source-file",
                                         argument: sourceFileArg),
@@ -134,7 +134,7 @@ namespace MLS.Agent.Markdown
                              new Option("--package",
                                         argument: new Argument<string>()),
                              new Option("--session",
-                                        argument: new Argument<string>(defaultValue: () => $"Run{++sessionIndex}"))
+                                        argument: new Argument<string>())
                          };
 
             csharp.AddAlias("CS");
