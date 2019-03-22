@@ -54,11 +54,11 @@ namespace MLS.Agent.Controllers
 
             var hostUrl = Request.GetUri();
 
-            var blocks = await markdownFile.GetCodeLinkBlocks();
+            var blocks = await markdownFile.GetSourceCodeLinkBlocks();
             var maxEditorPerSession = blocks.Any()
                                           ? blocks
-                                            .GroupBy(b => b.Session)
-                                            .Max(editors => editors.Count())
+                                              .GroupBy(b => b.Session)
+                                              .Max(editors => editors.Count())
                                           : 0;
 
             var pipeline = _markdownProject.GetMarkdownPipelineFor(markdownFile.Path);

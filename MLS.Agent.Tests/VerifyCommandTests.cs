@@ -1,5 +1,4 @@
-﻿using System;
-using System.CommandLine;
+﻿using System.CommandLine;
 using System.IO;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -101,6 +100,43 @@ This is some sample code:
                    .Should()
                    .Match(
                        CodeManipulation.EnforceLF($@"{root}{Path.DirectorySeparatorChar}doc.md*Line 2:*{root}{Path.DirectorySeparatorChar}Program.cs (in project {root}{Path.DirectorySeparatorChar}some.csproj)*"));
+        }
+
+        [Fact]
+        public async Task Include_code_fences_do_not_affect_validation()
+        {
+            var root = Create.EmptyWorkspace(isRebuildablePackage: true).Directory;
+
+            var directoryAccessor = new InMemoryDirectoryAccessor(root, root)
+            {
+                ("some.csproj", CsprojContents),
+                ("Program.cs", CompilingProgramCs),
+                ("doc.md", @"
+```cs --source-file Program.cs
+```
+```cs --include
+// global include
+public class EmptyClass {}
+```
+")
+            }.CreateFiles();
+
+            var console = new TestConsole();
+
+            await VerifyCommand.Do(
+                new VerifyOptions(root),
+                console,
+                () => directoryAccessor,
+                PackageRegistry.CreateForTryMode(root, null));
+
+            _output.WriteLine(console.Out.ToString());
+
+            CodeManipulation.EnforceLF(console.Out
+                    .ToString()
+                    .Trim())
+                .Should()
+                .Match(
+                    CodeManipulation.EnforceLF($@"{root}{Path.DirectorySeparatorChar}doc.md*Line 2:*{root}{Path.DirectorySeparatorChar}Program.cs (in project {root}{Path.DirectorySeparatorChar}some.csproj)*"));
         }
 
         [Fact]
@@ -298,7 +334,56 @@ This is some sample code:
 
             resultCode.Should().NotBe(0);
         }
-        
+
+        [Fact]
+        public async Task When_there_are_compilation_errors_in_include_files_then_they_are_displayed()
+        {
+            var rootDirectory = Create.EmptyWorkspace(isRebuildablePackage: true).Directory;
+
+            var directoryAccessor = new InMemoryDirectoryAccessor(rootDirectory, rootDirectory)
+            {
+                ("Program.cs", @"
+    using System;
+
+    public class Program
+    {{
+        public static void Main(string[] args)
+        {{
+#region mask
+            Console.WriteLine();
+#endregion
+        }}
+    }}"),
+                ("sample.md", @"
+```cs --source-file Program.cs --region mask
+```
+```cs --include
+                                    DOES NOT COMPILE
+                                    DOES NOT COMPILE
+                                    DOES NOT COMPILE
+```
+"),
+                ("sample.csproj",
+                    CsprojContents)
+            }.CreateFiles();
+
+            var console = new TestConsole();
+
+            var resultCode = await VerifyCommand.Do(
+                new VerifyOptions(rootDirectory),
+                console,
+                () => directoryAccessor,
+                PackageRegistry.CreateForTryMode(rootDirectory, null));
+
+            _output.WriteLine(console.Out.ToString());
+
+            console.Out.ToString()
+                .Should().Contain("Build failed")
+                .And.Contain("generated_include_file_global.cs(1,46): error CS1002: ; expected");
+
+            resultCode.Should().NotBe(0);
+        }
+
         [Fact]
         public async Task When_there_are_code_fence_options_errors_then_compilation_is_not_attempted()
         {
