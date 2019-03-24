@@ -41,14 +41,19 @@ namespace MLS.Agent.Markdown
 
             var height = $"{GetEditorHeightInEm(codeLinkBlock.Lines)}em";
 
-            renderer
-                .WriteLine(InlineControls
-                    ? @"<div class=""inline-code-container"">" 
-                    : @"<div class=""code-container"">");
+            if (!codeLinkBlock.IsInclude)
+            {
+                renderer
+                    .WriteLine(InlineControls
+                                   ? @"<div class=""inline-code-container"">"
+                                   : @"<div class=""code-container"">");
+            }
 
             renderer
-                .WriteLine($@"<div class=""editor-panel"">")
-                .WriteLine($@"<pre style=""border:none; height: {height}"" height=""{height}"" width=""100%"">")
+                .WriteLineIf(!codeLinkBlock.IsInclude, @"<div class=""editor-panel"">")
+                .WriteLine(codeLinkBlock.IsInclude
+                               ? @"<pre>"
+                               : $@"<pre style=""border:none; height: {height}"" height=""{height}"" width=""100%"">")
                 .Write("<code")
                 .WriteAttributes(codeLinkBlock)
                 .WriteLine(">")
@@ -56,9 +61,9 @@ namespace MLS.Agent.Markdown
                 .WriteLine()
                 .WriteLine(@"</code>")
                 .WriteLine(@"</pre>")
-                .WriteLine(@"</div >");
+                .WriteLineIf(!codeLinkBlock.IsInclude, @"</div >");
 
-            if (InlineControls)
+            if (InlineControls && !codeLinkBlock.IsInclude)
             {
                 //const string playSvg = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 9 10\"><path fill=\"white\" d=\"M1,0 1,10, 9,5z\" /></svg>";
 
@@ -73,7 +78,10 @@ namespace MLS.Agent.Markdown
                         : $@"<div class=""output-panel-inline collapsed"" data-trydotnet-mode=""runResult"" data-trydotnet-session-id=""{codeLinkBlock.Session}""></div>");
             }
 
-            renderer.WriteLine("</div>");
+            if (!codeLinkBlock.IsInclude)
+            {
+                renderer.WriteLine("</div>");
+            }
         }
 
         public bool EnablePreviewFeatures { get; set; }
@@ -82,6 +90,20 @@ namespace MLS.Agent.Markdown
         {
             var size = (text.ToString().Split("\n").Length + 6);
             return Math.Max(8, size);
+        }
+    }
+
+    internal static class TextRendererBaseExtensions
+    {
+        public static T WriteLineIf<T>(this T textRendererBase, bool @if, string value)
+            where T : HtmlRenderer
+        {
+            if (@if)
+            {
+                textRendererBase.WriteLine(value);
+            }
+
+            return textRendererBase;
         }
     }
 }

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Markdig.Parsers;
 using Markdig.Renderers.Html;
@@ -105,6 +104,7 @@ namespace MLS.Agent.Markdown
 
             AddAttributeIfNotNull("session-id", options.Session);
             
+            AddAttribute("class", $"language-{options.Language}");
 
             var fileName = await GetDestinationFileAbsolutePath();
             if (!string.IsNullOrWhiteSpace(fileName))
@@ -240,7 +240,7 @@ namespace MLS.Agent.Markdown
         public void AddDiagnostic(string message) =>
             _diagnostics.Add(message);
 
-        public  Workspace.Buffer GetBufferAsync(IDirectoryAccessor directoryAccessor, MarkdownFile markdownFile)
+        public Workspace.Buffer GetBufferAsync(IDirectoryAccessor directoryAccessor, MarkdownFile markdownFile)
         {
             var absolutePath = directoryAccessor.GetFullyQualifiedPath(SourceFile).FullName;
             var bufferId = new BufferId(absolutePath, Region);

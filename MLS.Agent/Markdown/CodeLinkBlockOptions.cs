@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.CommandLine;
 using System.IO;
 using System.Linq;
 
@@ -79,5 +80,6 @@ namespace MLS.Agent.Markdown
         public bool IsProjectImplicit { get; }
         public bool Include { get; }
         public IEnumerable<string> Errors { get; }
+        public string Language { get; set; }
     }
 }
