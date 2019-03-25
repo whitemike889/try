@@ -12,7 +12,7 @@ namespace MLS.Agent.Blazor
 {
     internal sealed class BlazorPackageConfiguration
     {
-        public static void Configure(IApplicationBuilder app, IServiceProvider serviceProvider, Budget budget)
+        public static void Configure(IApplicationBuilder app, IServiceProvider serviceProvider, Budget budget, bool isProduction)
         {
             var registry = serviceProvider.GetService<PackageRegistry>();
 
@@ -28,7 +28,7 @@ namespace MLS.Agent.Blazor
                     {
                         SetupMappingsForBlazorContentsOfPackage(package, app);
                     }
-                    else
+                    else if(!isProduction)
                     {
                         prepareTasks.Add(Task.Run(package.Prepare).ContinueWith(t => {
                             if (t.IsCompletedSuccessfully)

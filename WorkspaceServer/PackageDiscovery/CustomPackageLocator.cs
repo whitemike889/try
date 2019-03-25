@@ -23,7 +23,7 @@ namespace WorkspaceServer.PackageDiscovery
             CommandLineResult result;
             try
             {
-                result = await CommandLine.Execute(fileName, "locate-assembly", budget: budget);
+                result = await CommandLine.Execute(fileName, "locate-projects", budget: budget);
             }
             catch (System.ComponentModel.Win32Exception)
             {
@@ -37,7 +37,7 @@ namespace WorkspaceServer.PackageDiscovery
             }
 
             var directory = Path.GetDirectoryName(output);
-            var projectDirectory = Path.Combine(directory, "project");
+            var projectDirectory = Path.Combine(directory, "packTarget");
             Console.WriteLine($"Project: {projectDirectory}");
             var package = new NonrebuildablePackage(name, directory: new DirectoryInfo(projectDirectory));
             return package;

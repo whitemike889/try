@@ -41,8 +41,8 @@ cd $WORKSPACES_ROOT/nodatime.api
 dotnet new console
 xmlstarlet ed --inplace --insert "/Project/PropertyGroup/OutputType" --type elem -n "LangVersion" --value "7.3" nodatime.api.csproj
 dotnet add package Newtonsoft.Json
-dotnet add package NodaTime -v 2.3.0
-dotnet add package NodaTime.Testing -v 2.3.0
+dotnet add package NodaTime -v 2.4.0
+dotnet add package NodaTime.Testing -v 2.4.0
 dotnet build /bl:package_fullBuild.binlog
 
 mkdir -p $WORKSPACES_ROOT/aspnet.webapi

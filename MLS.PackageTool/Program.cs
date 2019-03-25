@@ -52,7 +52,7 @@ namespace MLS.PackageTool
 
         public static void LocateAssemblyHandler(IConsole console)
         {
-            console.Out.WriteLine(AssemblyLocation());
+            console.Out.WriteLine(Path.Combine(Path.GetDirectoryName(AssemblyLocation()), "project"));
         }
 
         public static string AssemblyLocation()
@@ -83,7 +83,7 @@ namespace MLS.PackageTool
 
             Command LocateAssembly()
             {
-                return new Command("locate-assembly")
+                return new Command("locate-projects")
                 {
                     Handler = CommandHandler.Create(getAssembly)
                 };

@@ -23,7 +23,7 @@ namespace MLS.PackageTool.Tests
         public void Locate_assembly_does_something()
         {
             Program.LocateAssemblyHandler(_console);
-            _console.Out.ToString().Should().Contain("MLS.PackageTool.dll");
+            _console.Out.ToString().Should().Contain("project");
         }
 
         [Fact]

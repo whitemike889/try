@@ -31,4 +31,8 @@ ENV NUGET_XMLDOC_MODE=none
 RUN dotnet tool install -g --version 1.0.87 t-rex
 RUN dotnet new -i Microsoft.AspNetCore.Blazor.Templates::0.7.0
 
-ENTRYPOINT ["dotnet", "MLS.Agent.dll"]
+RUN dotnet MLS.Agent.dll pack /workspaces/nodatime.api
+RUN ls /workspaces/nodatime.api
+RUN dotnet tool install --tool-path /workspaces/ --add-source /workspaces/nodatime.api dotnettry.nodatime.api
+
+ENTRYPOINT ["dotnet", "MLS.Agent.dll", "hosted"]

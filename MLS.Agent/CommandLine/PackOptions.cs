@@ -9,12 +9,10 @@ namespace MLS.Agent.CommandLine
         {
             PackTarget = packTarget ?? throw new ArgumentNullException(nameof(packTarget));
             OutputDirectory = outputDirectory ?? packTarget;
-            EnableBlazor = enableBlazor;
         }
 
         public DirectoryInfo PackTarget { get; }
 
         public DirectoryInfo OutputDirectory { get; }
-        public bool EnableBlazor { get; }
     }
 }
