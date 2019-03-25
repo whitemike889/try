@@ -126,6 +126,8 @@ namespace MLS.Agent.Markdown
                                         argument: new Argument<RelativeFilePath>()),
                              new Option("--include",
                                  argument: new Argument<bool>()),
+                             new Option("--hidden",
+                                 argument: new Argument<bool>(defaultValue:false)),
                              new Option("--source-file",
                                         argument: sourceFileArg),
                              new Option("--project",
