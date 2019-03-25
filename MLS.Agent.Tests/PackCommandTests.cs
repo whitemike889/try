@@ -61,7 +61,7 @@ namespace MLS.Agent.Tests
 
             var dotnet = new Dotnet(asset.Directory);
 
-            var result = await dotnet.ToolInstall(packageName, asset.Directory.FullName, asset.Directory);
+            var result = await dotnet.ToolInstall(packageName, asset.Directory, asset.Directory);
 
             var exe = asset.Directory.GetFiles("*.exe").First();
 

@@ -14,7 +14,7 @@ namespace MLS.Agent.CommandLine
             var dotnet = new Dotnet();
             (await dotnet.ToolInstall(
                 options.PackageName,
-                Package.DefaultPackagesDirectory.FullName,
+                Package.DefaultPackagesDirectory,
                 options.AddSource)).ThrowOnFailure();
 
         }

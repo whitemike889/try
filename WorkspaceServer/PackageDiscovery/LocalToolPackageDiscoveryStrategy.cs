@@ -38,7 +38,7 @@ namespace WorkspaceServer.PackageDiscovery
             var dotnet = new Dotnet();
             var installationResult = await dotnet.ToolInstall(
                 packageDesciptor.Name,
-                _workingDirectory.FullName,
+                _workingDirectory,
                 _addSource,
                 budget);
 

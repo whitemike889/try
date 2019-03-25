@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Clockwise;
@@ -61,12 +63,32 @@ namespace WorkspaceServer
         public Task<CommandLineResult> ToolInstall(string args = null, Budget budget = null) =>
             Execute("tool install".AppendArgs(args), budget);
 
+        public async Task<IEnumerable<string>> ToolList(DirectoryInfo directory, Budget budget = null)
+        {
+            var result = await Execute("tool list".AppendArgs($"--tool-path {directory.FullName}"), budget);
+            if (result.ExitCode != 0)
+            {
+                return Enumerable.Empty<string>();
+            }
+
+            // Output of dotnet tool list is:
+            // Package Id        Version      Commands
+            // -------------------------------------------
+            // dotnettry.p1      1.0.0        dotnettry.p1
+
+            string[] separator = new[] { " " };
+            return result.Output
+                .Skip(2)
+                . Where(s => !string.IsNullOrWhiteSpace(s))
+                .Select(s => s.Split(separator, StringSplitOptions.RemoveEmptyEntries)[2]);
+        }
+
         public Task<CommandLineResult> ToolInstall(
             string packageName, 
-            string toolPath,
+            DirectoryInfo toolPath,
             DirectoryInfo addSource = null, Budget budget = null)
         {
-            var args = $"{packageName} --tool-path {toolPath} --version 1.0.0";
+            var args = $"{packageName} --tool-path {toolPath.FullName} --version 1.0.0";
             if (addSource != null)
             {
                 args += $" --add-source \"{addSource}\"";

@@ -92,6 +92,12 @@ namespace WorkspaceServer
             return packageInfos;
         }
 
+        public Task<IEnumerable<Package>> GetPrebuiltBlazorPacakges()
+        {
+            var tool = new PrebuiltBlazorPackageLocator(Package.DefaultPackagesDirectory);
+            return tool.Discover();
+        }
+
         public static PackageRegistry CreateForTryMode(DirectoryInfo project, DirectoryInfo addSource)
         {
             var registry = new PackageRegistry(true,
