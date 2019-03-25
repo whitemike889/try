@@ -198,7 +198,7 @@ Console.WriteLine(""This code should not appear"");
                 var output = htmlDocument.DocumentNode
                                          .SelectSingleNode("//pre/code").InnerHtml.EnforceLF();
 
-                output.Should().Be($"\n{codeContent.HtmlEncode()}\n");
+                output.Should().Contain($"{codeContent.HtmlEncode()}");
             }
 
             [Fact]
@@ -250,8 +250,8 @@ This is the end of the file")
                 var codeNodes = htmlDocument.DocumentNode.SelectNodes("//pre/code");
 
                 codeNodes.Should().HaveCount(2);
-                codeNodes[0].InnerHtml.Should().Be($"\n{region1Code.HtmlEncode()}\n");
-                codeNodes[1].InnerHtml.Should().Be($"\n{region2Code.HtmlEncode()}\n");
+                codeNodes[0].InnerHtml.Should().Contain($"{region1Code.HtmlEncode()}");
+                codeNodes[1].InnerHtml.Should().Contain($"{region2Code.HtmlEncode()}");
             }
 
             [Fact]
