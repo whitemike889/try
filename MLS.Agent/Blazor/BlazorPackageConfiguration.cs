@@ -16,6 +16,12 @@ namespace MLS.Agent.Blazor
         {
             var registry = serviceProvider.GetService<PackageRegistry>();
 
+            var pbps = registry.GetPrebuiltBlazorPacakges().Result;
+            foreach (var pbp in pbps)
+            {
+                SetupMappingsForBlazorContentsOfPackage(pbp, app);
+            }
+
             List<Task> prepareTasks = new List<Task>();
 
             foreach (var builderFactory in registry)

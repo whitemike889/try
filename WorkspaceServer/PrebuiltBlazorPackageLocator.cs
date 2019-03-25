@@ -17,12 +17,12 @@ namespace WorkspaceServer
             this.defaultPackagesDirectory = defaultPackagesDirectory;
         }
 
-        public async Task<IEnumerable<Package>> Discover()
+        public async Task<IEnumerable<BlazorPackage>> Discover()
         {
             var dotnet = new Dotnet(this.defaultPackagesDirectory);
             var tools = await dotnet.ToolList(defaultPackagesDirectory);
 
-            var packages = new List<Package>();
+            var packages = new List<BlazorPackage>();
             foreach (var tool in tools)
             {
                 if (tool.StartsWith("dotnettry."))
