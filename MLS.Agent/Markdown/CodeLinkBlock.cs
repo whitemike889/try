@@ -100,6 +100,11 @@ namespace MLS.Agent.Markdown
                 AddAttributeIfNotNull("package", ProjectFile.FullName);
             }
 
+            if (options.Hidden)
+            {
+                AddAttribute("data-trydotnet-visibility", "hidden");
+            }
+
             AddAttributeIfNotNull("region", options.Region);
 
             AddAttributeIfNotNull("session-id", options.Session);

@@ -2,6 +2,7 @@
 using System.CommandLine;
 using System.IO;
 using System.Linq;
+using Microsoft.AspNetCore.Mvc;
 
 namespace MLS.Agent.Markdown
 {
@@ -18,6 +19,7 @@ namespace MLS.Agent.Markdown
             string session = null,
             bool isProjectFileImplicit = false,
             bool include = false,
+            bool hidden = false,
             IEnumerable<string> errors = null,
             string runArgs = null)
         {
@@ -30,6 +32,7 @@ namespace MLS.Agent.Markdown
             IsProjectImplicit = isProjectFileImplicit;
             RunArgs = runArgs;
             Include = include;
+            Hidden = hidden;
             Errors = errors ?? Enumerable.Empty<string>();
 
             if (string.IsNullOrWhiteSpace(Session) && !Include)
@@ -51,6 +54,7 @@ namespace MLS.Agent.Markdown
                 Session,
                 isProjectFileImplicit,
                 Include,
+                Hidden,
                 Errors,
                 RunArgs);
         }
@@ -66,6 +70,7 @@ namespace MLS.Agent.Markdown
                 Session,
                 IsProjectImplicit,
                 Include,
+                Hidden,
                 errors,
                 RunArgs);
         }
@@ -79,6 +84,7 @@ namespace MLS.Agent.Markdown
         public string Session { get; }
         public bool IsProjectImplicit { get; }
         public bool Include { get; }
+        public bool Hidden { get; }
         public IEnumerable<string> Errors { get; }
         public string Language { get; set; }
     }
