@@ -47,7 +47,7 @@ namespace MLS.Agent.Tests
 
             var output = Guid.NewGuid().ToString();
             var ws = new Workspace(
-                files: new[] {  new Workspace.File(programCs.FullName, "") },
+                files: new[] {  new Workspace.File(programCs.FullName, null) },
                 buffers: new[] { new Workspace.Buffer(new BufferId(programCs.FullName, "theregion"), $"Console.WriteLine(\"{output}\");") },
                 workspaceType: csproj.FullName);
 

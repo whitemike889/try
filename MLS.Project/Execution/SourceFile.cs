@@ -16,8 +16,6 @@ namespace MLS.Project.Execution
         }
 
         public static SourceFile Create(string text, string name)
-            => new SourceFile(
-                SourceText.From(text), 
-                name: name);
+            => new SourceFile(SourceText.From(text ?? string.Empty), name: name);
     }
 }

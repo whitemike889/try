@@ -35,14 +35,14 @@ namespace MLS.Project.Transformations
 
         private static async Task<(Workspace.File[] files, Workspace.Buffer[] buffers)> InlineBuffersAsync(Workspace source, Budget timeBudget)
         {
-            var files = source.GetSourceFiles().ToDictionary(f => f.Name, f =>
+            var files = (source.Files?? Array.Empty<Workspace.File>()).ToDictionary(f => f.Name, f =>
             {
-                if(File.Exists(f.Name))
+                if(string.IsNullOrEmpty(f.Text)  && File.Exists(f.Name))
                 {
                     return SourceFile.Create(File.ReadAllText(f.Name), f.Name);
                 }
 
-                return f;
+                return f.ToSourceFile();
             });
             
             var buffers = new List<Workspace.Buffer>();

@@ -44,7 +44,9 @@ namespace MLS.Agent.CommandLine
 
                 var sessions = codeLinkBlocks.GroupBy(block => block.Session);
 
-                var includeFiles = await markdownFile.GetIncludeFiles(directoryAccessor);
+                var filesToInclude = await markdownFile.GetFilesToInclude(directoryAccessor);
+
+                var buffersToInclude = await markdownFile.GetBuffersToInclude(directoryAccessor);
 
                 foreach (var session in sessions)
                 {
@@ -66,7 +68,7 @@ namespace MLS.Agent.CommandLine
 
                     if (!sourceCodeBlocks.Any(block => block.Diagnostics.Any()))
                     {
-                        await ReportCompileResults(session, markdownFile, includeFiles);
+                        await ReportCompileResults(session, markdownFile, filesToInclude, buffersToInclude);
                     }
 
                     Console.ResetColor();
@@ -81,7 +83,7 @@ namespace MLS.Agent.CommandLine
                 returnCode = 1;
             }
 
-            async Task ReportCompileResults(IGrouping<string, CodeLinkBlock> session, MarkdownFile markdownFile, Dictionary<string, Workspace.File[]> includeFiles)
+            async Task ReportCompileResults(IGrouping<string, CodeLinkBlock> session, MarkdownFile markdownFile, Dictionary<string, Workspace.File[]> filesToInclude, Dictionary<string, Workspace.Buffer[]> buffersToInclude)
             {
                 console.Out.WriteLine($"\n  Compiling samples for session \"{session.Key}\"\n");
 
@@ -89,23 +91,35 @@ namespace MLS.Agent.CommandLine
 
                 var projectOrPackageName = sourceCodeBlocks.First().ProjectOrPackageName();
 
-                var buffers = sourceCodeBlocks.Select(block => block.GetBufferAsync(directoryAccessor, markdownFile)).ToArray();
+                var buffers = sourceCodeBlocks.Select(block => block.GetBufferAsync(directoryAccessor, markdownFile)).ToList();
                 var files = new List<Workspace.File>();
-                if (includeFiles.TryGetValue("global", out var globalIncludes))
+
+                if (filesToInclude.TryGetValue("global", out var globalIncludes))
                 {
                     files.AddRange(globalIncludes);
                 }
 
-                if (includeFiles.TryGetValue(session.Key, out var sessionIncludes))
+                if (filesToInclude.TryGetValue(session.Key, out var sessionIncludes))
                 {
                     files.AddRange(sessionIncludes);
                 }
 
-                
+                if (buffersToInclude.TryGetValue("global", out var globalSessionBuffersToInclude))
+                {
+                    buffers.AddRange(globalSessionBuffersToInclude);
+                }
+
+                if (buffersToInclude.TryGetValue(session.Key, out var localSessionBuffersToInclude))
+                {
+                    buffers.AddRange(localSessionBuffersToInclude);
+                }
+
+
+
                 var workspace = new Workspace(
                     workspaceType: projectOrPackageName,
                     files: files.ToArray(),
-                    buffers: buffers);
+                    buffers: buffers.ToArray());
 
                 var result = await workspaceServer.Value.Compile(new WorkspaceRequest(workspace));
 
