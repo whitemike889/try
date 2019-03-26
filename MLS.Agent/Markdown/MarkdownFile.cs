@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Markdig;
 using Microsoft.AspNetCore.Html;
 using MLS.Protocol.Execution;
 
@@ -27,11 +26,13 @@ namespace MLS.Agent.Markdown
         {
             var pipeline = Project.GetMarkdownPipelineFor(Path);
 
+            CodeLinkBlockParser.ResetSortIdCounter();
+
             var document = Markdig.Markdown.Parse(
                 ReadAllText(),
                 pipeline);
 
-            var blocks = document.OfType<CodeLinkBlock>().ToList();
+            var blocks = document.OfType<CodeLinkBlock>().OrderBy(c => c.SortId).ToList();
 
             await Task.WhenAll(blocks.Select(b => b.InitializeAsync()));
             return blocks;

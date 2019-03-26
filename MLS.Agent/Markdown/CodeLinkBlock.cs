@@ -15,14 +15,16 @@ namespace MLS.Agent.Markdown
 {
     public class CodeLinkBlock : FencedCodeBlock
     {
+        public int SortId { get; }
         private AsyncLazy<IDirectoryAccessor> _directoryAccessor;
         private CodeLinkBlockOptions _options;
         private string _sourceCode;
         private readonly List<string> _diagnostics = new List<string>();
 
         public CodeLinkBlock(
-            BlockParser parser) : base(parser)
+            BlockParser parser, int sortId) : base(parser)
         {
+            SortId = sortId;
         }
 
         public void AddOptions(CodeLinkBlockOptions options, Func<Task<IDirectoryAccessor>> directoryAccessor)
@@ -89,6 +91,8 @@ namespace MLS.Agent.Markdown
 
         private async Task AddAttributes(CodeLinkBlockOptions options)
         {
+            AddAttribute("data-trydotnet-sort-id", SortId.ToString("F0"));
+
             AddAttribute("data-trydotnet-mode", options.Include? "include" : "editor");
 
             if (!string.IsNullOrWhiteSpace(Package))
