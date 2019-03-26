@@ -139,7 +139,7 @@ Console.Write(newValueA + newValueB);
         }
 
         [Fact]
-        public async Task If_workspace_contains_files_whose_names_are_absolute_paths_the_contents_are_read_from_disk()
+        public async Task If_workspace_contains_files_whose_names_are_absolute_paths_and_they_have_no_content_then_the_contents_are_read_from_disk()
         {
             using (var directory = DisposableDirectory.Create())
             {
@@ -150,7 +150,7 @@ Console.Write(newValueA + newValueB);
                 var ws = new Workspace(
                    files: new[]
                    {
-                    new Workspace.File(filePath, "")
+                    new Workspace.File(filePath, null)
                    }
                    );
 

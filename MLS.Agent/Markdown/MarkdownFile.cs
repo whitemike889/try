@@ -59,7 +59,47 @@ namespace MLS.Agent.Markdown
         public string ReadAllText() =>
             Project.DirectoryAccessor.ReadAllText(Path);
 
-        public async Task<Dictionary<string, Workspace.File[]>> GetIncludeFiles(IDirectoryAccessor directoryAccessor)
+        public async Task<Dictionary<string, Workspace.Buffer[]>> GetBuffersToInclude(IDirectoryAccessor directoryAccessor)
+        {
+            var includes = new Dictionary<string, Workspace.Buffer[]>(StringComparer.InvariantCultureIgnoreCase);
+
+            var includeFileBuffersBySession = new Dictionary<string, Dictionary<BufferId, StringBuilder>>(StringComparer.InvariantCultureIgnoreCase);
+
+            var blocks = await GetIncludeCodeLinkBlocks();
+
+            foreach (var block in blocks)
+            {
+                if (string.IsNullOrWhiteSpace(block.Region))
+                {
+                    continue;
+                }
+                var sessionId = string.IsNullOrWhiteSpace(block.Session) ? "global" : block.Session;
+                var filePath = block.DestinationFile ?? new RelativeFilePath($"./generated_include_file_{sessionId}.cs");
+                var bufferId =new BufferId(directoryAccessor.GetFullyQualifiedPath(filePath).FullName, block.Region);
+                if (!includeFileBuffersBySession.TryGetValue(sessionId, out var sessionFileBuffers))
+                {
+                    sessionFileBuffers = new Dictionary<BufferId, StringBuilder>();
+                    includeFileBuffersBySession[sessionId] = sessionFileBuffers;
+                }
+
+                if (!sessionFileBuffers.TryGetValue(bufferId, out var fileBuffer))
+                {
+                    fileBuffer = new StringBuilder();
+                    sessionFileBuffers[bufferId] = fileBuffer;
+                }
+
+                fileBuffer.AppendLine(block.SourceCode);
+            }
+
+            foreach (var includeFileBuffers in includeFileBuffersBySession)
+            {
+                includes[includeFileBuffers.Key] = includeFileBuffers.Value.Select((fileBuffer) => new Workspace.Buffer(fileBuffer.Key, fileBuffer.Value.ToString())).ToArray();
+            }
+
+            return includes;
+        }
+
+        public async Task<Dictionary<string, Workspace.File[]>> GetFilesToInclude(IDirectoryAccessor directoryAccessor)
         {
             var includes = new Dictionary<string, Workspace.File[]>(StringComparer.InvariantCultureIgnoreCase);
 
@@ -69,6 +109,10 @@ namespace MLS.Agent.Markdown
 
             foreach (var block in blocks)
             {
+                if (!string.IsNullOrWhiteSpace(block.Region))
+                {
+                    continue;
+                }
                 var sessionId = string.IsNullOrWhiteSpace(block.Session) ? "global" : block.Session;
                 var filePath = block.DestinationFile ?? new RelativeFilePath($"./generated_include_file_{sessionId}.cs");
                 var absolutePath = directoryAccessor.GetFullyQualifiedPath(filePath).FullName;
