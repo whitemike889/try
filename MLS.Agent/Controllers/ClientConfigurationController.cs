@@ -9,6 +9,7 @@ namespace MLS.Agent.Controllers
         public IActionResult Configuration() =>
             Content(@"{
     ""versionId"": ""0SVN7/Ds8dgNvTokmNLgz4A1WdDDE5UAnbeCnVish+U="",
+    ""enableBranding"": ""false"",
     ""defaultTimeoutMs"": 15000,
     ""_links"": {
         ""_self"": {
