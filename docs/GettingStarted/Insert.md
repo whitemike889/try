@@ -1,15 +1,21 @@
 # Read-only code 
 
-Can be used to import a set of using statemtnts
-```cs --include
+Add these usings
+```cs  --include --region usings --destination-file .\Snippets\Program.cs
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+
 ```
 
-Declare a class
-```cs --include
-public class VisibleObject{
+```cs --hidden --include
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+
+public class DataObject{
      #region custom_code
      #endregion
 
@@ -17,9 +23,9 @@ public class VisibleObject{
 ```
 
 Declare a method
-```cs --include --region custom_code
-public string PrintMe(){
-    return "What an adventure";
+```cs --include  --region custom_code
+public IEnumerable<string> PrintMe(){
+    yield return "What an adventure";
 }
 ```
 
@@ -31,10 +37,8 @@ public class HiddenObject{
 ```
 
 ```cs --include --hidden --destination-file .\Snippets\Program.cs
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+ #region usings
+ #endregion
 
 namespace Snippets
 {
@@ -48,6 +52,13 @@ namespace Snippets
 
             Console.WriteLine("this is from hidden include");
         }        
+    }
+
+```
+
+```cs --include --hidden --destination-file .\Snippets\Program.cs
+    public class ProgramUtility
+    {
     }
 }
 ```
