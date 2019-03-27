@@ -1,9 +1,9 @@
 {
  "argv": [
-  "dotnet try",
+  "dotnet-try",
   "kernel",
   "{connection_file}"
  ],
- "display_name": "dotnet",
- "language": "c#"
+ "display_name": ".NET",
+ "language": "C#"
 }
