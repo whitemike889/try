@@ -264,6 +264,31 @@ namespace MLS.Agent.Tests
         }
 
         [Fact]
+        public async Task Kernel_parses_connection_file_path()
+        {
+            var expected =  Path.GetTempFileName();
+
+            await _parser.InvokeAsync($"kernel --connection-file {expected}");
+
+            _kernelOptions
+                .ConnectionFile
+                .FullName
+                .Should()
+                .Be(expected);
+        }
+
+        [Fact]
+        public async Task Kernel_returns_error_if_connection_file_path_does_not_exits()
+        {
+            var expected = "not_exist.json";
+
+            var testConsole = new TestConsole();
+            await _parser.InvokeAsync($"kernel --connection-file {expected}", testConsole);
+
+            testConsole.Error.ToString().Should().Contain("File does not exist: not_exist.json");
+        }
+
+        [Fact]
         public async Task Demo_allows_enabling_preview_features()
         {
             var expected = Path.GetTempPath();

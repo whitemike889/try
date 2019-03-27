@@ -2,11 +2,14 @@
 using System.Threading;
 using NetMQ;
 using NetMQ.Sockets;
+using Pocket;
+using static Pocket.Logger<MLS.Jupyter.HearthBeatHandler>;
 
 namespace MLS.Jupyter
 {
     public class HearthBeatHandler : IDisposable
     {
+
         private readonly string _address;
         private readonly ResponseSocket _server;
         private readonly ManualResetEventSlim _stopEvent;
@@ -21,6 +24,8 @@ namespace MLS.Jupyter
             }
 
             _address = $"{connectionInformation.Transport}://{connectionInformation.IP}:{connectionInformation.HBPort}";
+
+            Log.Info($"using address {nameof(_address)}", _address);
             _server = new ResponseSocket();
             _stopEvent = new ManualResetEventSlim();
         }
@@ -47,15 +52,16 @@ namespace MLS.Jupyter
         private void StartServerLoop(object state)
         {
             _server.Bind(_address);
-
-            while (!_stopEvent.Wait(0))
+            using (Log.OnEnterAndExit())
             {
-                var data = _server.ReceiveFrameBytes();
+                while (!_stopEvent.Wait(0))
+                {
+                    var data = _server.ReceiveFrameBytes();
 
-                // Echoing back whatever was received
-                _server.TrySendFrame(data);
+                    // Echoing back whatever was received
+                    _server.TrySendFrame(data);
+                }
             }
-
             _thread = null;
         }
 
