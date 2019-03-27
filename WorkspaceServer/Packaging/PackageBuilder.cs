@@ -6,10 +6,9 @@ using Clockwise;
 
 namespace WorkspaceServer.Packaging
 {
-    public partial class PackageBuilder
+    public class PackageBuilder
     {
         private Package package;
-        private bool _blazorEnabled;
         private readonly List<Func<Package, Budget, Task>> _afterCreateActions = new List<Func<Package, Budget, Task>>();
         private readonly List<string> _addPackages = new List<string>();
 
