@@ -83,7 +83,8 @@ namespace MLS.Agent.CommandLine
             {
                 var command = new RootCommand
                 {
-                    Description = "Try out a .NET project with interactive documentation in your browser",
+                    Name = "dotnet-try",
+                    Description = ".NET interactive documentation in your browser",
                     Argument = new Argument<DirectoryInfo>(() => new DirectoryInfo(Directory.GetCurrentDirectory()))
                     {
                         Name = nameof(StartupOptions.RootDirectory),
@@ -229,6 +230,7 @@ namespace MLS.Agent.CommandLine
                 var installCommand = new Command("install", "Install a Try .NET package");
                 installCommand.Argument = new Argument<string>();
                 installCommand.Argument.Name = nameof(InstallOptions.PackageName);
+                installCommand.IsHidden = true;
 
                 var option = new Option("--add-source",
                                         argument: new Argument<DirectoryInfo>().ExistingOnly());
