@@ -6,4 +6,4 @@ Create a `dotnet` folder in the kernels forlder of you jupyter installation, if 
 
 Copy the `kernel.json` file and the two incons there.
 
-Now jupyter will list dotnet as an available kernel
+Now jupyter will list dotnet as an available kernel, to test open a terminal in an Anaconda environment and type `jupyter kernelspec list` it should show dotnet in the list.
