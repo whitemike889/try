@@ -20,6 +20,7 @@ using static Pocket.Logger<MLS.Agent.Program>;
 using SerilogLoggerConfiguration = Serilog.LoggerConfiguration;
 using WorkspaceServer;
 using MLS.Agent.CommandLine;
+using MLS.Jupyter;
 
 namespace MLS.Agent
 {
@@ -56,7 +57,8 @@ namespace MLS.Agent
         private static readonly Assembly[] assembliesEmittingPocketLoggerLogs = {
             typeof(Startup).Assembly,
             typeof(AsyncLazy<>).Assembly,
-            typeof(RoslynWorkspaceServer).Assembly
+            typeof(RoslynWorkspaceServer).Assembly,
+            typeof(Shell).Assembly
         };
 
         private static void StartLogging(CompositeDisposable disposables, StartupOptions options)

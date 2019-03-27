@@ -5,6 +5,8 @@ using NetMQ;
 using NetMQ.Sockets;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Pocket;
+using static Pocket.Logger<MLS.Jupyter.HearthBeatHandler>;
 
 namespace MLS.Jupyter
 {
@@ -15,7 +17,7 @@ namespace MLS.Jupyter
         private readonly ManualResetEventSlim _stopEvent;
         private readonly string _shellAddress;
         private readonly string _ioPubAddress;
-        private SignatureValidator _signatureValidator;
+        private readonly SignatureValidator _signatureValidator;
         private Thread _thread;
         private bool _disposed;
 
@@ -60,8 +62,54 @@ namespace MLS.Jupyter
                 var message = _server.GetMessage();
 
                 var messageType = message.Header.MessageType;
+                switch (messageType)
+                {
+                    case MessageTypeValues.KernelInfoRequest:
+                        HandleKernelInfoRequest(message);
+                        Log.Info("KernelInfoRequest");
+                        break;
+
+                    case MessageTypeValues.KernelShutdownRequest:
+                        Log.Info("KernelShutdownRequest");
+                        break;
+                }
             }
         }
+
+        private void HandleKernelInfoRequest(Message message)
+        {
+            SendStatus(message, _ioPubSocket, StatusValues.Busy);
+
+            var kernelInfoReply = new KernelInfoReply()
+            {
+                ProtocolVersion = "5.3",
+                Implementation = "dotnet",
+                ImplementationVersion = "0.0.3",
+                LanguageInfo = new JObject()
+                {
+                    { "name",  "dotnet" },
+                    { "version", typeof(string).Assembly.ImageRuntimeVersion.Substring(1) },
+                    { "mimetype", "text/x-csharp" },
+                    { "file_extension", ".cs"},
+                    { "pygments_lexer", "c#" }
+                }
+            };
+
+            var replyMessage = new Message()
+            {
+                Identifiers = message.Identifiers,
+                Signature = message.Signature,
+                ParentHeader = message.Header,
+                Header = CreateHeader(MessageTypeValues.KernelInfoReply, message.Header.Session),
+                Content = JObject.FromObject(kernelInfoReply)
+            };
+         
+            Send(replyMessage, _server);
+
+            // 3: Send IDLE status message to IOPub
+           SendStatus(message, _ioPubSocket, StatusValues.Idle);
+        }
+     
 
         private void ThrowIfDisposed()
         {
