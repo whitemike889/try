@@ -40,7 +40,9 @@ namespace MLS.Agent.CommandLine
 
         public delegate Task<int> Kernel(
             KernelOptions options,
-            IConsole console);
+            IConsole console,
+            CommandLineParser.StartServer startServer = null,
+            InvocationContext context = null);
 
         public static Parser Create(
             StartServer start,
@@ -270,10 +272,9 @@ namespace MLS.Agent.CommandLine
             Command Kernel()
             {
                 var kernelCommand = new Command("kernel", "Starts dotnet try as jupyter kernel");
-                var connectionFileOption = new Option("--connection-file", argument: new Argument<FileInfo>().ExistingOnly());
+                var connectionFileArgument = new Argument<FileInfo>(){Name = "ConnectionFile" }.ExistingOnly();
 
-                kernelCommand.AddOption(connectionFileOption);
-
+                kernelCommand.Argument = connectionFileArgument;
                 kernelCommand.Handler = CommandHandler.Create<KernelOptions, IConsole>((options, console) => kernel(options, console));
 
                 return kernelCommand;

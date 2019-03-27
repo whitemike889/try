@@ -43,7 +43,7 @@ namespace MLS.Agent
                                      console,
                                      () => new FileSystemDirectoryAccessor(options.RootDirectory),
                                      PackageRegistry.CreateForTryMode(options.RootDirectory, null)),
-                kernel: (options, console) => KernelCommand.Do(options,console));
+                kernel:  KernelCommand.Do);
 
             return await parser.InvokeAsync(args);
         }

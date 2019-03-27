@@ -58,7 +58,7 @@ namespace MLS.Agent.Tests
                     _verifyOptions = options;
                     return Task.FromResult(1);
                 },
-                kernel: (options, console) =>
+                kernel: (options, console, startServer, context) =>
                 {
                     _kernelOptions = options;
                     return Task.FromResult(1);
@@ -268,7 +268,7 @@ namespace MLS.Agent.Tests
         {
             var expected =  Path.GetTempFileName();
 
-            await _parser.InvokeAsync($"kernel --connection-file {expected}");
+            await _parser.InvokeAsync($"kernel {expected}");
 
             _kernelOptions
                 .ConnectionFile
@@ -283,9 +283,18 @@ namespace MLS.Agent.Tests
             var expected = "not_exist.json";
 
             var testConsole = new TestConsole();
-            await _parser.InvokeAsync($"kernel --connection-file {expected}", testConsole);
+            await _parser.InvokeAsync($"kernel {expected}", testConsole);
 
             testConsole.Error.ToString().Should().Contain("File does not exist: not_exist.json");
+        }
+
+        [Fact]
+        public async Task Kernel_returns_error_if_connection_file_path_is_not_passed()
+        {
+            var testConsole = new TestConsole();
+            await _parser.InvokeAsync("kernel", testConsole);
+
+            testConsole.Error.ToString().Should().Contain("Required argument missing for command: kernel");
         }
 
         [Fact]

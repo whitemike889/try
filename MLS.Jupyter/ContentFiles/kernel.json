@@ -2,7 +2,6 @@
  "argv": [
   "dotnet try",
   "kernel",
-  "--connection-file",
   "{connection_file}"
  ],
  "display_name": "dotnet",
