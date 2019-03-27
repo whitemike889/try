@@ -20,11 +20,17 @@
 
         public const string CompleteRequest = "complete_request";
 
+        public const string IsCompleteRequest = "is_complete_request";
+
+        public const string IsCompleteReply = "is_complete_reply";
+
         public const string Status = "status";
 
         public const string Error = "error";
 
         public const string DisplayData = "display_data";
+
+        public const string UpdateDisplayData = "update_display_data";
 
     }
 }

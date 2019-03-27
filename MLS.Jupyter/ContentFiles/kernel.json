@@ -1,8 +1,7 @@
 {
  "argv": [
-  "dotnet",
-  "try",
-  "--kernel",
+  "dotnet try",
+  "kernel",
   "--connection-settings",
   "{connection_file}"
  ],
