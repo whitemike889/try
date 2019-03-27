@@ -28,7 +28,7 @@ namespace WorkspaceServer.Packaging
             }
 
             await base.Initialize(directory, budget);
-             await MakeBlazorProject(directory, budget);
+            await MakeBlazorProject(directory, budget);
         }
 
         private async Task MakeBlazorProject(DirectoryInfo directory, Budget budget)

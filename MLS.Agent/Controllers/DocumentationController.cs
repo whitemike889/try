@@ -15,7 +15,7 @@ namespace MLS.Agent.Controllers
     {
         private readonly MarkdownProject _markdownProject;
         private readonly StartupOptions _startupOptions;
-        private static readonly string _cacheBuster = VersionSensor.Version().ToString();
+        private static readonly string _cacheBuster = VersionSensor.Version().AssemblyVersion;
 
         public DocumentationController(MarkdownProject markdownProject, StartupOptions startupOptions)
         {

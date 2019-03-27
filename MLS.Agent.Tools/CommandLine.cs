@@ -8,12 +8,9 @@ using System.Threading.Tasks;
 using Clockwise;
 using Pocket;
 using Recipes;
-using static Pocket.Logger<MLS.Agent.Tools.CommandLineLog>;
 
 namespace MLS.Agent.Tools
 {
-    public class CommandLineLog { }
-
     public static class CommandLine
     {
         public static Task<CommandLineResult> Execute(
@@ -197,5 +194,7 @@ namespace MLS.Agent.Tools
                 args: new[] { command, args },
                 logOnStart: true);
         }
+
+        private static Logger Log { get; } = new Logger(nameof(CommandLine));
     }
 }

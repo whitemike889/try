@@ -44,9 +44,7 @@ Let's make this a little more interesting. Your project probably has more than o
     ```cs --project .\MyConsoleApp\MyConsoleApp.csproj --source-file .\MyConsoleApp\Cat.cs --region what_the_cat_says
     ```
     ````
-
-    _**Workaround alert!** We're working on automatically detecting changes in your backing project and rebuilding it for you, but we're not there yet. For now, stop `dotnet try` and in your `MyConsoleApp` folder, delete the `bin` and `obj` folders as well as the `.trydotnet` and `msbuild.log` files, and then run `dotnet try` again._
-
+    
     Once you've made these changes, refresh the page and hit `Run`.
 
     These code snippets compile and execute together. You can see this by editing the method name in the second editor. After a moment, you'll see a red squiggle indicating a compile error:
