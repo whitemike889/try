@@ -7,9 +7,9 @@ namespace MLS.Jupyter.Protocol
     {
         public DisplayData()
         {
-            this.Source = string.Empty;
-            this.Data = new JObject();
-            this.MetaData = new JObject();
+            Source = string.Empty;
+            Data = new JObject();
+            MetaData = new JObject();
         }
 
         [JsonProperty("source")]
@@ -20,5 +20,16 @@ namespace MLS.Jupyter.Protocol
 
         [JsonProperty("metadata")]
         public JObject MetaData { get; set; }
+    }
+
+    public class UpdateDisplayData : DisplayData
+    {
+        public UpdateDisplayData()
+        {
+            Transient = new JObject();
+        }
+
+        [JsonProperty("transient")]
+        public JObject Transient { get; set; }
     }
 }

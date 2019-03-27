@@ -38,13 +38,18 @@ namespace MLS.Agent.CommandLine
             VerifyOptions options,
             IConsole console);
 
+        public delegate Task<int> Kernel(
+            KernelOptions options,
+            IConsole console);
+
         public static Parser Create(
             StartServer start,
             Demo demo,
             TryGitHub tryGithub,
             Pack pack,
             Install install,
-            Verify verify)
+            Verify verify,
+            Kernel kernel)
         {
             var startHandler = CommandHandler.Create<InvocationContext, StartupOptions>((context, options) =>
             {
@@ -64,6 +69,7 @@ namespace MLS.Agent.CommandLine
             rootCommand.AddCommand(Pack());
             rootCommand.AddCommand(Install());
             rootCommand.AddCommand(Verify());
+            rootCommand.AddCommand(Kernel());
 
             return new CommandLineBuilder(rootCommand)
                    .UseDefaults()
@@ -259,6 +265,18 @@ namespace MLS.Agent.CommandLine
                 });
 
                 return verifyCommand;
+            }
+
+            Command Kernel()
+            {
+                var kernelCommand = new Command("kernel", "Starts dotnet try as jupyter kernel");
+                var connectionFileOption = new Option("--connection-file", argument: new Argument<FileInfo>().ExistingOnly());
+
+                kernelCommand.AddOption(connectionFileOption);
+
+                kernelCommand.Handler = CommandHandler.Create<KernelOptions, IConsole>((options, console) => kernel(options, console));
+
+                return kernelCommand;
             }
         }
     }

@@ -1,6 +1,8 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using System.IO;
+using Newtonsoft.Json;
 
-namespace MLS.Jupyter.Protocol
+namespace MLS.Jupyter
 {
     public class ConnectionInformation
     {
@@ -30,5 +32,25 @@ namespace MLS.Jupyter.Protocol
 
         [JsonProperty("iopub_port")]
         public int IOPubPort { get; set; }
+
+        public static ConnectionInformation Load(FileInfo file)
+        {
+            if (file == null)
+            {
+                throw new ArgumentNullException(nameof(file));
+            }
+
+            if (!file.Exists)
+            {
+                throw new FileNotFoundException($"Cannot locate {file.FullName}");
+            }
+
+            var fileContent = File.ReadAllText(file.FullName);
+
+            var connectionInformation =
+                JsonConvert.DeserializeObject<ConnectionInformation>(fileContent);
+
+            return connectionInformation;
+        }
     }
 }

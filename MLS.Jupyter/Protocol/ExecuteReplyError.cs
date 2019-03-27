@@ -7,7 +7,7 @@ namespace MLS.Jupyter.Protocol
     {
         public ExecuteReplyError()
         {
-            this.Status = StatusValues.Error;
+            Status = StatusValues.Error;
         }
 
         [JsonProperty("ename")]

@@ -7,7 +7,7 @@ namespace MLS.Jupyter.Protocol
     {
         public ExecuteReplyOk()
         {
-            this.Status = StatusValues.Ok;
+            Status = StatusValues.Ok;
         }
 
         [JsonProperty("payload")]

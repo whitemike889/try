@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using Newtonsoft.Json;
 
 namespace MLS.Jupyter.Protocol
