@@ -42,6 +42,7 @@ namespace MLS.Jupyter
             if (_thread == null)
             {
                 _thread = new Thread(StartServerLoop);
+                _thread.Name = "Kernel Shell server";
                 _thread.Start();
             }
 
