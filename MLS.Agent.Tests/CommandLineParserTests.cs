@@ -22,6 +22,7 @@ namespace MLS.Agent.Tests
         private DirectoryInfo _install_packageSource;
         private VerifyOptions _verifyOptions;
         private DemoOptions _demoOptions;
+        private KernelOptions _kernelOptions;
 
         public CommandLineParserTests(ITestOutputHelper output)
         {
@@ -56,7 +57,12 @@ namespace MLS.Agent.Tests
                 {
                     _verifyOptions = options;
                     return Task.FromResult(1);
-                });
+                },
+                kernel: (options, console) =>
+                {
+                    _kernelOptions = options;
+                    return Task.FromResult(1);
+                }) ;
         }
 
         [Fact]

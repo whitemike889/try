@@ -1,6 +1,8 @@
 ﻿using System;
 using System.CommandLine;
+using System.IO;
 using System.Threading.Tasks;
+using MLS.Jupyter;
 
 namespace MLS.Agent.CommandLine
 {
@@ -8,6 +10,10 @@ namespace MLS.Agent.CommandLine
     {
         public static async Task<int> Do(KernelOptions options, IConsole console)
         {
+            var connectionInfo = ConnectionInformation.Load(options.ConnectionFile);
+            var hb = new HearthBeatHandler(connectionInfo);
+            hb.Start();
+
             throw new NotImplementedException();
         }
 
@@ -15,6 +21,10 @@ namespace MLS.Agent.CommandLine
 
     public class KernelOptions
     {
-
+        public KernelOptions(FileInfo connectionFile)
+        {
+            ConnectionFile = connectionFile;
+        }
+        public FileInfo ConnectionFile { get; }
     }
 }
