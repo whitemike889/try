@@ -41,8 +41,10 @@ namespace MLS.Jupyter
             _stopEvent.Reset();
             if (_thread == null)
             {
-                _thread = new Thread(StartServerLoop);
-                _thread.Name = "Kernel Shell server";
+                _thread = new Thread(StartServerLoop)
+                {
+                    Name = "Kernel Shell server"
+                };
                 _thread.Start();
             }
 
@@ -136,7 +138,7 @@ namespace MLS.Jupyter
 
         public bool Send(Message message, NetMQSocket socket)
         {
-            string hmac = this._signatureValidator.CreateSignature(message);
+            var hmac = _signatureValidator.CreateSignature(message);
 
             foreach (var ident in message.Identifiers)
             {

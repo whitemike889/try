@@ -140,7 +140,7 @@ namespace MLS.Agent
                           .UseContentRoot(Directory.GetCurrentDirectory())
                           .ConfigureServices(c =>
                           {
-                              if (!String.IsNullOrEmpty(options.ApplicationInsightsKey))
+                              if (!string.IsNullOrEmpty(options.ApplicationInsightsKey))
                               {
                                   c.AddApplicationInsightsTelemetry(options.ApplicationInsightsKey);
                               }
