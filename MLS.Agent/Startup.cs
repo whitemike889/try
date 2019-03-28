@@ -47,6 +47,7 @@ namespace MLS.Agent
                 .SetBasePath(env.ContentRootPath);
 
             Configuration = configurationBuilder.Build();
+
         }
 
         protected IConfigurationRoot Configuration { get; }

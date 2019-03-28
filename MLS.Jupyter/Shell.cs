@@ -163,9 +163,9 @@ namespace MLS.Jupyter
         public bool SendStatus(Message message, PublisherSocket ioPub, string status)
         {
             var content = new Status
-            {
-                ExecutionState = status
-            };
+                          {
+                              ExecutionState = status
+                          };
 
             var ioPubMessage = CreateMessage(MessageTypeValues.Status, JObject.FromObject(content), message.Header);
 
@@ -175,14 +175,14 @@ namespace MLS.Jupyter
         public static Header CreateHeader(string messageType, string session)
         {
             var newHeader = new Header
-            {
-                Username = Constants.USERNAME,
-                Session = session,
-                MessageId = Guid.NewGuid().ToString(),
-                MessageType = messageType,
-                Date = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"),
-                Version = "5.3"
-            };
+                            {
+                                Username = Constants.USERNAME,
+                                Session = session,
+                                MessageId = Guid.NewGuid().ToString(),
+                                MessageType = messageType,
+                                Date = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"),
+                                Version = "5.3"
+                            };
 
             return newHeader;
         }
@@ -191,15 +191,14 @@ namespace MLS.Jupyter
         {
             var session = parentHeader.Session;
 
-            var message = new Message()
-            {
-                ParentHeader = parentHeader,
-                Header = CreateHeader(messageType, session),
-                Content = content
-            };
+            var message = new Message
+                          {
+                              ParentHeader = parentHeader,
+                              Header = CreateHeader(messageType, session),
+                              Content = content
+                          };
 
             return message;
         }
-
     }
 }

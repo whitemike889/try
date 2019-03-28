@@ -37,9 +37,6 @@ namespace MLS.Agent.Blazor
                             }
                         }));
                     }
-                    //var readyTask = Task.Run(package.Prepare);
-                    //readyTask.Wait();
-                   
                 }
             }
 

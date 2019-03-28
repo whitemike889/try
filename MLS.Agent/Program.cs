@@ -29,7 +29,7 @@ namespace MLS.Agent
         public static async Task<int> Main(string[] args)
         {
             var parser = CommandLineParser.Create(
-                start: (options, console) =>
+                startServer: (options, invocationContext) =>
                     ConstructWebHost(options).Run(),
                 demo: DemoCommand.Do,
                 tryGithub: (repo, console) =>
