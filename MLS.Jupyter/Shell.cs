@@ -67,11 +67,9 @@ namespace MLS.Jupyter
                     {
                         case MessageTypeValues.KernelInfoRequest:
                             HandleKernelInfoRequest(message);
-                            Log.Info("KernelInfoRequest");
                             break;
 
                         case MessageTypeValues.KernelShutdownRequest:
-                            Log.Info("KernelShutdownRequest");
                             break;
                         default:
                             Log.Info($"Forward request context {message.Header.MessageType}");

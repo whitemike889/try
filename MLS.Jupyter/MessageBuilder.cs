@@ -3,7 +3,7 @@ using MLS.Jupyter.Protocol;
 
 namespace MLS.Jupyter
 {
-    internal class MessageBuilder : IMessageBuilder
+    public class MessageBuilder : IMessageBuilder
     {
         public Header CreateHeader(string messageType, string session)
         {

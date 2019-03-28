@@ -23,7 +23,7 @@ namespace MLS.Jupyter.Protocol
         [JsonProperty("codemirror_mode", NullValueHandling = NullValueHandling.Ignore)]
         public object CodeMirrorMode { get; set; }
 
-        [JsonProperty("nbconvert_exporter")]
+        [JsonProperty("nbconvert_exporter", NullValueHandling = NullValueHandling.Ignore)]
         public string NbConvertExporter { get; set; }
 
         [JsonProperty("help_links")]
