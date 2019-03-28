@@ -26,9 +26,10 @@ namespace MLS.Agent.CommandLine
                 var temp_projects_packtarget = temp_projects.CreateSubdirectory("packTarget");
                 DirectoryCopy(options.PackTarget, temp_projects_packtarget.FullName, copySubDirs: true);
 
-                var temp_projects_blazorRunner = temp_projects.CreateSubdirectory($"runner-{name}");
+                string blazorName = $"runner-{name}";
+                var temp_projects_blazorRunner = temp_projects.CreateSubdirectory(blazorName);
                 var temp_projects_blazorRunner_mlsblazor = temp_projects_blazorRunner.CreateSubdirectory("MLS.Blazor");
-                await AddBlazorProject(temp_projects_blazorRunner_mlsblazor, GetProjectFile(temp_projects_packtarget));
+                await AddBlazorProject(temp_projects_blazorRunner_mlsblazor, GetProjectFile(temp_projects_packtarget), name);
 
                 var temp_toolproject = temp.CreateSubdirectory("project");
                 var archivePath = Path.Combine(temp_toolproject.FullName, "packagey.zip");
@@ -63,9 +64,9 @@ namespace MLS.Agent.CommandLine
             return name;
         }
 
-        private static async Task AddBlazorProject(DirectoryInfo blazorTargetDirectory, FileInfo projectToReference)
+        private static async Task AddBlazorProject(DirectoryInfo blazorTargetDirectory, FileInfo projectToReference, string blazorName)
         {
-            var initializer = new BlazorPackageInitializer("project", new System.Collections.Generic.List<string>());
+            var initializer = new BlazorPackageInitializer(blazorName, new System.Collections.Generic.List<string>());
             await initializer.Initialize(blazorTargetDirectory);
 
             await AddReference(blazorTargetDirectory, projectToReference);
