@@ -81,3 +81,20 @@ dotnet add package Newtonsoft.Json
 xmlstarlet ed --inplace --insert "/Project/PropertyGroup/OutputType" --type elem -n "LangVersion" --value "7.3" blazor-console.csproj
 dotnet build /bl:package_fullBuild.binlog
 
+## NodaTime
+mkdir -p $WORKSPACES_ROOT/blazor-nodatime.api
+cd $WORKSPACES_ROOT/blazor-nodatime.api
+dotnet new classlib
+xmlstarlet ed --inplace --insert "/Project/PropertyGroup/OutputType" --type elem -n "LangVersion" --value "7.3" blazor-nodatime.api.csproj
+dotnet add package Newtonsoft.Json
+dotnet add package NodaTime -v 2.4.0
+dotnet add package NodaTime.Testing -v 2.4.0
+dotnet build /bl:package_fullBuild.binlog
+
+## Logging
+mkdir -p $WORKSPACES_ROOT/blazor-ms.logging
+cd $WORKSPACES_ROOT/blazor-ms.logging
+dotnet new classlib
+xmlstarlet ed --inplace --insert "/Project/PropertyGroup/OutputType" --type elem -n "LangVersion" --value "7.3" blazor-ms.logging.csproj
+dotnet add package Microsoft.Extensions.Logging
+dotnet build /bl:package_fullBuild.binlog

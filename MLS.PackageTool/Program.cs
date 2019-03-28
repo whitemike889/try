@@ -4,7 +4,10 @@ using System.CommandLine.Builder;
 using System.CommandLine.Invocation;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
+using Process = System.Diagnostics.Process;
 
 namespace MLS.PackageTool
 {
@@ -14,9 +17,19 @@ namespace MLS.PackageTool
         {
             var parser = CommandLineParser.Create(
                 (console) => LocateAssemblyHandler(console),
-                (console) => ExtractPackageHandler(console));
+                (console) => ExtractPackageHandler(console),
+                (console) => Prepare(console));
 
             await parser.InvokeAsync(args);
+        }
+
+        private static async Task Prepare(IConsole console)
+        {
+            await ExtractPackageHandler(console);
+            var projectDirectory = new DirectoryInfo(ProjectDirectoryLocation());
+            
+            var runnerDir = projectDirectory.GetDirectories("runner-*").First().GetDirectories("MLS.Blazor").First();
+            await CommandLine.Execute("dotnet", "build -o runtime /bl", runnerDir);
         }
 
         public static async Task ExtractPackageHandler(IConsole console)
@@ -52,9 +65,12 @@ namespace MLS.PackageTool
 
         public static void LocateAssemblyHandler(IConsole console)
         {
-            console.Out.WriteLine(Path.Combine(Path.GetDirectoryName(AssemblyLocation()), "project"));
+            console.Out.WriteLine(ProjectDirectoryLocation());
         }
 
+        public static string ProjectDirectoryLocation() =>
+            Path.Combine(Path.GetDirectoryName(AssemblyLocation()), "project");
+        
         public static string AssemblyLocation()
         {
             return typeof(Program).Assembly.Location;
@@ -69,12 +85,13 @@ namespace MLS.PackageTool
 
     public class CommandLineParser
     {
-        public static Parser Create(Action<IConsole> getAssembly, Func<IConsole, Task> extract)
+        public static Parser Create(Action<IConsole> getAssembly, Func<IConsole, Task> extract, Func<IConsole, Task> prepare)
         {
             var rootCommand = new RootCommand
                               {
                                   LocateAssembly(),
                                   ExtractPackage(),
+                                  PreparePackage()
                               };
 
             var parser = new CommandLineBuilder(rootCommand)
@@ -97,7 +114,147 @@ namespace MLS.PackageTool
                 };
             }
 
+            Command PreparePackage()
+            {
+                return new Command("prepare-package", "Prepares the packages")
+                {
+                    Handler = CommandHandler.Create(prepare)
+                };
+            }
+
             return parser;
+        }
+    }
+
+    static class CommandLine
+    {
+        public static async Task<CommandLineResult> Execute(
+            string command,
+            string args,
+            DirectoryInfo workingDir = null)
+        {
+            args = args ?? "";
+
+            var stdOut = new StringBuilder();
+            var stdErr = new StringBuilder();
+
+            using (var process = StartProcess(
+                command,
+                args,
+                workingDir,
+                output: data =>
+                {
+                    stdOut.AppendLine(data);
+                },
+                error: data =>
+                {
+                    stdErr.AppendLine(data);
+                }))
+            {
+                var exitCode = await process.Complete();
+
+                var output = stdOut.Replace("\r\n", "\n").ToString().Split('\n');
+
+                var error = stdErr.Replace("\r\n", "\n").ToString().Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+
+                if (error.All(string.IsNullOrWhiteSpace))
+                {
+                    error = null;
+                }
+
+                var result = new CommandLineResult(
+                    exitCode: exitCode,
+                    output: output,
+                    error: error);
+
+                return result;
+            }
+        }
+
+        public static async Task<int> Complete(
+            this Process process) =>
+            await Task.Run(() =>
+                      {
+                          process.WaitForExit();
+
+                          return process.ExitCode;
+                      });
+
+        public static Process StartProcess(
+            string command,
+            string args,
+            DirectoryInfo workingDir,
+            Action<string> output = null,
+            Action<string> error = null,
+            params (string key, string value)[] environmentVariables)
+        {
+            {
+                args = args ?? "";
+
+                var process = new Process
+                {
+                    StartInfo =
+                    {
+                        Arguments = args,
+                        FileName = command,
+                        RedirectStandardError = true,
+                        RedirectStandardOutput = true,
+                        RedirectStandardInput = true,
+                        WorkingDirectory = workingDir?.FullName
+                    }
+                };
+
+                if (environmentVariables?.Length > 0)
+                {
+                    foreach (var tuple in environmentVariables)
+                    {
+                        process.StartInfo.Environment.Add(tuple.key, tuple.value);
+                    }
+                }
+
+                if (output != null)
+                {
+                    process.OutputDataReceived += (sender, eventArgs) =>
+                    {
+                        if (eventArgs.Data != null)
+                        {
+                            output(eventArgs.Data);
+                        }
+                    };
+                }
+
+                if (error != null)
+                {
+                    process.ErrorDataReceived += (sender, eventArgs) =>
+                    {
+                        if (eventArgs.Data != null)
+                        {
+                            error(eventArgs.Data);
+                        }
+                    };
+                }
+
+                process.Start();
+
+                process.BeginOutputReadLine();
+                process.BeginErrorReadLine();
+
+                return process;
+            }
+        }
+    }
+
+    internal class CommandLineResult
+    {
+        private object exitCode;
+        private string[] output;
+        private string[] error;
+
+        public CommandLineResult(object exitCode, string[] output, string[] error)
+        {
+            this.exitCode = exitCode;
+            this.output = output;
+            this.error = error;
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -42,6 +43,9 @@ namespace WorkspaceServer.Packaging
             UpdateFileText(root, Path.Combine("wwwroot","index.html"), "/LocalCodeRunner/blazor-console", $"/LocalCodeRunner/{_name}");
 
             var result = await dotnet.AddPackage("MLS.WasmCodeRunner", "1.0.7880001-alpha-c895bf25");
+
+            System.Console.WriteLine(string.Join("\n", result.Error.Concat(result.Output)));
+
             result.ThrowOnFailure();
 
             foreach (var packageId in _addPackages)
