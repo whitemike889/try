@@ -21,8 +21,6 @@ namespace MLS.Jupyter
 
         public string CreateSignature(Message message)
         {
-            _signatureGenerator.Initialize();
-
             var messages = GetMessagesToAddForDigest(message);
 
             // For all items update the signature

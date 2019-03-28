@@ -1,18 +1,20 @@
 ﻿using System;
 using System.Reactive.Disposables;
-using System.Reactive.Subjects;
 using System.Threading;
 using System.Threading.Tasks;
+using Clockwise;
 using Microsoft.Extensions.Hosting;
 using MLS.Jupyter.Protocol;
 using NetMQ.Sockets;
 using Pocket;
+using Recipes;
 using static Pocket.Logger<MLS.Jupyter.Shell>;
 
 namespace MLS.Jupyter
 {
-    public class Shell : IHostedService, IObservable<JupyterRequestContext>
+    public class Shell : IHostedService
     {
+        private readonly ICommandScheduler<JupyterRequestContext> _scheduler;
         private readonly RouterSocket _server;
         private readonly PublisherSocket _ioPubSocket;
         private readonly string _shellAddress;
@@ -22,15 +24,17 @@ namespace MLS.Jupyter
         private readonly MessageBuilder _messageBuilder;
         private readonly MessageSender _serverMessageSender;
         private readonly MessageSender _ioPubSender;
-        private readonly Subject<JupyterRequestContext> _channel = new Subject<JupyterRequestContext>();
-        private readonly IObservable<JupyterRequestContext> _subscriptionChannel;
 
-        public Shell(ConnectionInformation connectionInformation)
+        public Shell(
+            ICommandScheduler<JupyterRequestContext> scheduler,
+            ConnectionInformation connectionInformation)
         {
             if (connectionInformation == null)
             {
                 throw new ArgumentNullException(nameof(connectionInformation));
             }
+
+            _scheduler = scheduler ?? throw new ArgumentNullException(nameof(scheduler));
 
             _shellAddress = $"{connectionInformation.Transport}://{connectionInformation.IP}:{connectionInformation.ShellPort}";
             _ioPubAddress = $"{connectionInformation.Transport}://{connectionInformation.IP}:{connectionInformation.IOPubPort}";
@@ -48,7 +52,6 @@ namespace MLS.Jupyter
                                _ioPubSocket
                            };
             _messageBuilder = new MessageBuilder();
-            _subscriptionChannel = _channel;
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
@@ -56,12 +59,16 @@ namespace MLS.Jupyter
             _server.Bind(_shellAddress);
             _ioPubSocket.Bind(_ioPubAddress);
 
-            using (Log.OnEnterAndExit())
+            using (var activity = Log.OnEnterAndExit())
+            {
                 while (!cancellationToken.IsCancellationRequested)
                 {
                     var message = _server.GetMessage();
 
-                    Log.Info("{message}", message);
+                    activity.Info("Received: {message}", message.ToJson());
+
+                    var status = new RequestHandlerStatus(message.Header, new MessageSender(_ioPubSocket, _signatureValidator));
+                    status.SetAsBusy();
 
                     switch (message.Header.MessageType)
                     {
@@ -71,18 +78,23 @@ namespace MLS.Jupyter
 
                         case MessageTypeValues.KernelShutdownRequest:
                             break;
+
                         default:
-                            Log.Info($"Forward request context {message.Header.MessageType}");
                             var context = new JupyterRequestContext(
                                 _messageBuilder,
                                 _serverMessageSender,
                                 _ioPubSender,
                                 message,
                                 new RequestHandlerStatus(message.Header, _serverMessageSender));
-                            _channel.OnNext(context);
+
+                            await _scheduler.Schedule(context);
+
                             break;
                     }
+
+                    status.SetAsIdle();
                 }
+            }
         }
 
         public Task StopAsync(CancellationToken cancellationToken)
@@ -93,38 +105,31 @@ namespace MLS.Jupyter
 
         private void HandleKernelInfoRequest(Message message)
         {
-            var status = new RequestHandlerStatus(message.Header, new MessageSender(_ioPubSocket, _signatureValidator));
-            status.SetAsBusy();
-
             var kernelInfoReply = new KernelInfoReply
-            {
-                ProtocolVersion = "5.3",
-                Implementation = ".NET",
-                ImplementationVersion = "0.0.3",
-                LanguageInfo = new LanguageInfo
-                {
-                    Name = "C#",
-                    Version = typeof(string).Assembly.ImageRuntimeVersion.Substring(1),
-                    MimeType = "text/x-csharp",
-                    FileExtension = ".cs",
-                    PygmentsLexer = "c#"
-                }
-            };
+                                  {
+                                      ProtocolVersion = "5.3",
+                                      Implementation = ".NET",
+                                      ImplementationVersion = "0.0.3",
+                                      LanguageInfo = new LanguageInfo
+                                                     {
+                                                         Name = "C#",
+                                                         Version = typeof(string).Assembly.ImageRuntimeVersion.Substring(1),
+                                                         MimeType = "text/x-csharp",
+                                                         FileExtension = ".cs",
+                                                         PygmentsLexer = "c#"
+                                                     }
+                                  };
 
             var replyMessage = new Message
-            {
-                Identifiers = message.Identifiers,
-                Signature = message.Signature,
-                ParentHeader = message.Header,
-                Header = _messageBuilder.CreateHeader(MessageTypeValues.KernelInfoReply, message.Header.Session),
-                Content = kernelInfoReply
-            };
+                               {
+                                   Identifiers = message.Identifiers,
+                                   Signature = message.Signature,
+                                   ParentHeader = message.Header,
+                                   Header = _messageBuilder.CreateHeader(MessageTypeValues.KernelInfoReply, message.Header.Session),
+                                   Content = kernelInfoReply
+                               };
+
             _serverMessageSender.Send(replyMessage);
-
-            // 3: Send IDLE status message to IOPub
-            status.SetAsIdle();
         }
-
-        public IDisposable Subscribe(IObserver<JupyterRequestContext> observer) => _subscriptionChannel.Subscribe(observer);
     }
 }

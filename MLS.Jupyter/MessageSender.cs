@@ -15,6 +15,7 @@ namespace MLS.Jupyter
             _socket = socket ?? throw new ArgumentNullException(nameof(socket));
             _signatureValidator = signatureValidator ?? throw new ArgumentNullException(nameof(signatureValidator));
         }
+
         public bool Send(Message message)
         {
             var hmac = _signatureValidator.CreateSignature(message);

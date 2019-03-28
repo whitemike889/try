@@ -248,6 +248,15 @@ namespace MLS.Agent.CommandLine
                 {
                     services
                         .AddSingleton(c => ConnectionInformation.Load(options.ConnectionFile))
+                        .AddSingleton(
+                            c =>
+                            {
+                                return CommandScheduler
+                                    .Create<JupyterRequestContext>(delivery => c.GetRequiredService<ICommandHandler<JupyterRequestContext>>()
+                                                                                .Trace()
+                                                                                .Handle(delivery));
+                            })
+                        .AddSingleton(c => new JupyterRequestContextHandler(c.GetRequiredService<PackageRegistry>()).Trace())
                         .AddSingleton<IHostedService, Shell>()
                         .AddSingleton<IHostedService, Heartbeat>();
 
