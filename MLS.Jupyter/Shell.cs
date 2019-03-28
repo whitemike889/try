@@ -3,7 +3,6 @@ using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
@@ -51,7 +50,7 @@ namespace MLS.Jupyter
                                _ioPubSocket
                            };
             _messageBuilder = new MessageBuilder();
-            var eventLoop = new EventLoopScheduler(start => new Thread(start) { Name = "Jupyter Shell message channel" });
+            var eventLoop = new EventLoopScheduler(start => new Thread(start) { Name = "Jupyter Shell message channel", IsBackground = false});
 
             _disposables.Add(eventLoop);
             _subscriptionChannel = _channel.ObserveOn(eventLoop);
