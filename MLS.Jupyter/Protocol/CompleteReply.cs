@@ -14,7 +14,7 @@ namespace MLS.Jupyter.Protocol
         [JsonProperty("cursor_end")]
         public int CursorEnd { get; set; }
 
-        [JsonProperty("metadata")]
+        [JsonProperty("metadata", NullValueHandling = NullValueHandling.Ignore)]
         public Dictionary<string, object> MetaData { get; set; }
 
         [JsonProperty("status")]

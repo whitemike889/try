@@ -17,6 +17,6 @@ namespace MLS.Jupyter.Protocol
         public string EValue { get; set; }
 
         [JsonProperty("traceback")]
-        public List<string> Traceback { get; set; }
+        public List<string> Traceback { get; set; } = new List<string>();
     }
 }

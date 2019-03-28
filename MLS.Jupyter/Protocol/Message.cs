@@ -18,10 +18,10 @@ namespace MLS.Jupyter.Protocol
         [JsonProperty("parent_header")]
         public Header ParentHeader { get; set; }
 
-        [JsonProperty("metadata")]
+        [JsonProperty("metadata", NullValueHandling = NullValueHandling.Ignore)]
         public object MetaData { get; set; } = new object();
 
-        [JsonProperty("content")]
+        [JsonProperty("content", NullValueHandling = NullValueHandling.Ignore)]
         public object Content { get; set; } = new object();
 
         [JsonProperty("buffers")]

@@ -13,7 +13,7 @@ namespace MLS.Jupyter.Protocol
         [JsonProperty("implementation_version")]
         public string ImplementationVersion { get; set; }
 
-        [JsonProperty("language_info")]
+        [JsonProperty("language_info", NullValueHandling = NullValueHandling.Ignore)]
         public LanguageInfo LanguageInfo { get; set; }
 
         [JsonProperty("banner")]

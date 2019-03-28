@@ -20,7 +20,7 @@ namespace MLS.Jupyter.Protocol
         [JsonProperty("pygments_lexer")]
         public string PygmentsLexer { get; set; }
 
-        [JsonProperty("codemirror_mode")]
+        [JsonProperty("codemirror_mode", NullValueHandling = NullValueHandling.Ignore)]
         public object CodeMirrorMode { get; set; }
 
         [JsonProperty("nbconvert_exporter")]

@@ -1,17 +1,16 @@
 ﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace MLS.Jupyter.Protocol
 {
     public class IntrospectionResponse
     {
-        public static IntrospectionResponse Ok(string source, JObject data, JObject metaData) => new IntrospectionResponse{Status = StatusValues.Ok, Source = source, Data = data, MetaData = metaData};
-        public static IntrospectionResponse Error(string source, JObject data, JObject metaData) => new IntrospectionResponse { Status = StatusValues.Error, Source = source, Data = data, MetaData = metaData };
+        public static IntrospectionResponse Ok(string source, object data, object metaData) => new IntrospectionResponse{Status = StatusValues.Ok, Source = source, Data = data, MetaData = metaData};
+        public static IntrospectionResponse Error(string source, object data, object metaData) => new IntrospectionResponse { Status = StatusValues.Error, Source = source, Data = data, MetaData = metaData };
         protected IntrospectionResponse()
         {
             Source = string.Empty;
-            Data = new JObject();
-            MetaData = new JObject();
+            Data = new object();
+            MetaData = new object();
         }
 
         [JsonProperty("status")]
@@ -20,10 +19,10 @@ namespace MLS.Jupyter.Protocol
         [JsonProperty("source")]
         public string Source { get; set; }
 
-        [JsonProperty("data")]
-        public JObject Data { get; set; }
+        [JsonProperty("data", NullValueHandling = NullValueHandling.Ignore)]
+        public object Data { get; set; }
 
-        [JsonProperty("metadata")]
-        public JObject MetaData { get; set; }
+        [JsonProperty("metadata", NullValueHandling = NullValueHandling.Ignore)]
+        public object MetaData { get; set; }
     }
 }

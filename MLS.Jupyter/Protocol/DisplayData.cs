@@ -15,11 +15,11 @@ namespace MLS.Jupyter.Protocol
         [JsonProperty("source")]
         public string Source { get; set; }
 
-        [JsonProperty("data")]
-        public JObject Data { get; set; }
+        [JsonProperty("data", NullValueHandling = NullValueHandling.Ignore)]
+        public object Data { get; set; }
 
-        [JsonProperty("metadata")]
-        public JObject MetaData { get; set; }
+        [JsonProperty("metadata", NullValueHandling = NullValueHandling.Ignore)]
+        public object MetaData { get; set; }
     }
 
     public class UpdateDisplayData : DisplayData
@@ -29,7 +29,7 @@ namespace MLS.Jupyter.Protocol
             Transient = new JObject();
         }
 
-        [JsonProperty("transient")]
-        public JObject Transient { get; set; }
+        [JsonProperty("transient", NullValueHandling = NullValueHandling.Ignore)]
+        public object Transient { get; set; }
     }
 }

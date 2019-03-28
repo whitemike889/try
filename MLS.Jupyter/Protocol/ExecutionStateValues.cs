@@ -1,6 +1,6 @@
 ﻿namespace MLS.Jupyter.Protocol
 {
-    public class ExecutionStateValues
+    public static class ExecutionStateValues
     {
         public const string Busy = "busy";
 

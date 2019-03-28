@@ -4,11 +4,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using MLS.Jupyter.Protocol;
-using NetMQ;
 using NetMQ.Sockets;
-using Newtonsoft.Json.Linq;
 using Pocket;
-using Recipes;
 using static Pocket.Logger<MLS.Jupyter.Heartbeat>;
 
 namespace MLS.Jupyter
@@ -21,6 +18,9 @@ namespace MLS.Jupyter
         private readonly string _ioPubAddress;
         private readonly SignatureValidator _signatureValidator;
         private readonly CompositeDisposable _disposables;
+        private readonly MessageBuilder _messageBuilder;
+        private readonly MessageSender _serverMessageSender;
+        private readonly MessageSender _ioPubSender;
 
         public Shell(ConnectionInformation connectionInformation)
         {
@@ -36,11 +36,15 @@ namespace MLS.Jupyter
             _server = new RouterSocket();
             _ioPubSocket = new PublisherSocket();
 
+            _serverMessageSender = new MessageSender(_server, _signatureValidator);
+            _ioPubSender = new MessageSender(_ioPubSocket, _signatureValidator);
+
             _disposables = new CompositeDisposable
                            {
                                _server, 
                                _ioPubSocket
                            };
+            _messageBuilder = new MessageBuilder();
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
@@ -65,6 +69,16 @@ namespace MLS.Jupyter
                     case MessageTypeValues.KernelShutdownRequest:
                         Log.Info("KernelShutdownRequest");
                         break;
+                    default:
+                        Log.Info($"Forward request context {message.Header.MessageType}");
+                        var context = new JupyterRequestContext(
+                            _messageBuilder, 
+                            _serverMessageSender, 
+                            _ioPubSender, 
+                            message, 
+                            new RequestHandlerStatus(message.Header, _serverMessageSender));
+
+                        break;
                 }
             }
         }
@@ -77,7 +91,9 @@ namespace MLS.Jupyter
 
         private void HandleKernelInfoRequest(Message message)
         {
-            SendStatus(message, _ioPubSocket, StatusValues.Busy);
+            var status = new RequestHandlerStatus(message.Header, new MessageSender(_ioPubSocket, _signatureValidator));
+            status.SetAsBusy();
+          
 
             var kernelInfoReply = new KernelInfoReply
                                   {
@@ -99,79 +115,13 @@ namespace MLS.Jupyter
                                    Identifiers = message.Identifiers,
                                    Signature = message.Signature,
                                    ParentHeader = message.Header,
-                                   Header = CreateHeader(MessageTypeValues.KernelInfoReply, message.Header.Session),
+                                   Header = _messageBuilder.CreateHeader(MessageTypeValues.KernelInfoReply, message.Header.Session),
                                    Content = kernelInfoReply
                                };
-
-            Send(replyMessage, _server);
+            _serverMessageSender.Send(replyMessage);
 
             // 3: Send IDLE status message to IOPub
-            SendStatus(message, _ioPubSocket, StatusValues.Idle);
-        }
-
-        public bool Send(Message message, NetMQSocket socket)
-        {
-            string hmac = _signatureValidator.CreateSignature(message);
-
-            foreach (var ident in message.Identifiers)
-            {
-                socket.TrySendFrame(ident, true);
-            }
-
-            Send(Constants.DELIMITER, socket);
-            Send(hmac, socket);
-            Send(message.Header.ToJson(), socket);
-            Send(message.ParentHeader.ToJson(), socket);
-            Send(message.MetaData.ToJson(), socket);
-            Send(message.Content.ToJson(), socket, false);
-
-            return true;
-        }
-
-        private static void Send(string message, IOutgoingSocket socket, bool sendMore = true)
-        {
-            socket.SendFrame(message, sendMore);
-        }
-
-        public bool SendStatus(Message message, PublisherSocket ioPub, string status)
-        {
-            var content = new Status
-                          {
-                              ExecutionState = status
-                          };
-
-            var ioPubMessage = CreateMessage(MessageTypeValues.Status, JObject.FromObject(content), message.Header);
-
-            return Send(ioPubMessage, ioPub);
-        }
-
-        public static Header CreateHeader(string messageType, string session)
-        {
-            var newHeader = new Header
-                            {
-                                Username = Constants.USERNAME,
-                                Session = session,
-                                MessageId = Guid.NewGuid().ToString(),
-                                MessageType = messageType,
-                                Date = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"),
-                                Version = "5.3"
-                            };
-
-            return newHeader;
-        }
-
-        public static Message CreateMessage(string messageType, JObject content, Header parentHeader)
-        {
-            var session = parentHeader.Session;
-
-            var message = new Message
-                          {
-                              ParentHeader = parentHeader,
-                              Header = CreateHeader(messageType, session),
-                              Content = content
-                          };
-
-            return message;
+            status.SetAsIdle();
         }
     }
 }
