@@ -271,7 +271,7 @@ namespace BasicConsoleApp
             };
 
             var document =
-$@"```cs --source-file Program.cs --region codeRegion
+@"```cs --source-file Program.cs --region codeRegion
 ```";
             var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor, PackageRegistry.CreateForHostedMode()).Build();
             var html = (await pipeline.RenderHtmlAsync(document)).EnforceLF();
@@ -279,9 +279,10 @@ $@"```cs --source-file Program.cs --region codeRegion
             var htmlDocument = new HtmlDocument();
             htmlDocument.LoadHtml(html);
             var output = htmlDocument.DocumentNode
-                .SelectSingleNode("//pre/code").InnerText;
+                .SelectSingleNode("//pre/code")
+                .InnerText.Trim();
 
-            output.Should().Be($"\n{regionCode.HtmlEncode()}\n");
+            output.Should().BeEquivalentTo($"{regionCode.HtmlEncode()}");
         }
 
         [Fact]

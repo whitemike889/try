@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Markdig.Parsers;
 using Markdig.Renderers.Html;
@@ -80,6 +79,10 @@ namespace MLS.Agent.Markdown
                     Lines = new Markdig.Helpers.StringLineGroup(_sourceCode);
                 }
             }
+            else if(IsInclude)
+            {
+                _sourceCode = Lines.ToString();
+            }
 
             _sourceCode = _sourceCode ?? "";
         }
@@ -97,10 +100,16 @@ namespace MLS.Agent.Markdown
                 AddAttributeIfNotNull("package", ProjectFile.FullName);
             }
 
+            if (options.Hidden)
+            {
+                AddAttribute("data-trydotnet-visibility", "hidden");
+            }
+
             AddAttributeIfNotNull("region", options.Region);
 
             AddAttributeIfNotNull("session-id", options.Session);
             
+            AddAttribute("class", $"language-{options.Language}");
 
             var fileName = await GetDestinationFileAbsolutePath();
             if (!string.IsNullOrWhiteSpace(fileName))
@@ -178,6 +187,8 @@ namespace MLS.Agent.Markdown
 
         public FileInfo ProjectFile => _options.Project;
 
+        public bool IsInclude => _options.Include;
+
         public string Package
         {
             get
@@ -192,6 +203,7 @@ namespace MLS.Agent.Markdown
         }
 
         public RelativeFilePath SourceFile => _options.SourceFile;
+        public RelativeFilePath DestinationFile => _options.DestinationFile?? _options.SourceFile;
 
         public string Region => _options.Region;
 
@@ -233,9 +245,9 @@ namespace MLS.Agent.Markdown
         public void AddDiagnostic(string message) =>
             _diagnostics.Add(message);
 
-        public async Task<Workspace.Buffer> GetBufferAsync(IDirectoryAccessor directoryAccessor, MarkdownFile markdownFile)
+        public Workspace.Buffer GetBufferAsync(IDirectoryAccessor directoryAccessor, MarkdownFile markdownFile)
         {
-            var absolutePath = (await _directoryAccessor.ValueAsync()).GetFullyQualifiedPath(SourceFile).FullName;
+            var absolutePath = directoryAccessor.GetFullyQualifiedPath(SourceFile).FullName;
             var bufferId = new BufferId(absolutePath, Region);
             return new Workspace.Buffer(bufferId, SourceCode);
         }

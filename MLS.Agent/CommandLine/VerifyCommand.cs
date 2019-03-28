@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.CommandLine;
 using System.Linq;
 using System.Threading.Tasks;
@@ -39,8 +40,13 @@ namespace MLS.Agent.CommandLine
                 console.Out.WriteLine(fullName);
                 console.Out.WriteLine(new string('-', fullName.Length));
 
-                var codeLinkBlocks = await markdownFile.GetCodeLinkBlocks();
+                var codeLinkBlocks = await markdownFile.GetSourceCodeLinkBlocks();
+
                 var sessions = codeLinkBlocks.GroupBy(block => block.Session);
+
+                var filesToInclude = await markdownFile.GetFilesToInclude(directoryAccessor);
+
+                var buffersToInclude = await markdownFile.GetBuffersToInclude(directoryAccessor);
 
                 foreach (var session in sessions)
                 {
@@ -51,16 +57,18 @@ namespace MLS.Agent.CommandLine
                         continue;
                     }
 
-                    foreach (var codeLinkBlock in session)
+                    var sourceCodeBlocks = session;
+
+                    foreach (var codeLinkBlock in sourceCodeBlocks)
                     {
                         ReportCodeLinkageResults(codeLinkBlock);
                     }
 
                     Console.ResetColor();
 
-                    if (!session.Any(block => block.Diagnostics.Any()))
+                    if (!sourceCodeBlocks.Any(block => block.Diagnostics.Any()))
                     {
-                        await ReportCompileResults(session, markdownFile);
+                        await ReportCompileResults(session, markdownFile, filesToInclude, buffersToInclude);
                     }
 
                     Console.ResetColor();
@@ -75,17 +83,43 @@ namespace MLS.Agent.CommandLine
                 returnCode = 1;
             }
 
-            async Task ReportCompileResults(IGrouping<string, CodeLinkBlock> session, MarkdownFile markdownFile)
+            async Task ReportCompileResults(IGrouping<string, CodeLinkBlock> session, MarkdownFile markdownFile, Dictionary<string, Workspace.File[]> filesToInclude, Dictionary<string, Workspace.Buffer[]> buffersToInclude)
             {
                 console.Out.WriteLine($"\n  Compiling samples for session \"{session.Key}\"\n");
 
-                var projectOrPackageName = session.First().ProjectOrPackageName();
+                var sourceCodeBlocks = session.Where(b => !b.IsInclude).ToList();
 
-                var buffers = await Task.WhenAll(session.Select(block => block.GetBufferAsync(directoryAccessor, markdownFile)).ToArray());
+                var projectOrPackageName = sourceCodeBlocks.First().ProjectOrPackageName();
+
+                var buffers = sourceCodeBlocks.Select(block => block.GetBufferAsync(directoryAccessor, markdownFile)).ToList();
+                var files = new List<Workspace.File>();
+
+                if (filesToInclude.TryGetValue("global", out var globalIncludes))
+                {
+                    files.AddRange(globalIncludes);
+                }
+
+                if (filesToInclude.TryGetValue(session.Key, out var sessionIncludes))
+                {
+                    files.AddRange(sessionIncludes);
+                }
+
+                if (buffersToInclude.TryGetValue("global", out var globalSessionBuffersToInclude))
+                {
+                    buffers.AddRange(globalSessionBuffersToInclude);
+                }
+
+                if (buffersToInclude.TryGetValue(session.Key, out var localSessionBuffersToInclude))
+                {
+                    buffers.AddRange(localSessionBuffersToInclude);
+                }
+
+
 
                 var workspace = new Workspace(
                     workspaceType: projectOrPackageName,
-                    buffers: buffers);
+                    files: files.ToArray(),
+                    buffers: buffers.ToArray());
 
                 var result = await workspaceServer.Value.Compile(new WorkspaceRequest(workspace));
 
@@ -96,7 +130,7 @@ namespace MLS.Agent.CommandLine
                 {
                     SetError();
 
-                    console.Out.WriteLine($"    Build failed for project {session.First().ProjectOrPackageName()}");
+                    console.Out.WriteLine($"    Build failed for project {projectOrPackageName}");
 
                     foreach (var diagnostic in projectDiagnostics)
                     {

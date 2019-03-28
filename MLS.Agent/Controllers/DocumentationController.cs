@@ -15,7 +15,7 @@ namespace MLS.Agent.Controllers
     {
         private readonly MarkdownProject _markdownProject;
         private readonly StartupOptions _startupOptions;
-        private static readonly string _cacheBuster = VersionSensor.Version().ToString();
+        private static readonly string _cacheBuster = VersionSensor.Version().AssemblyVersion;
 
         public DocumentationController(MarkdownProject markdownProject, StartupOptions startupOptions)
         {
@@ -54,11 +54,11 @@ namespace MLS.Agent.Controllers
 
             var hostUrl = Request.GetUri();
 
-            var blocks = await markdownFile.GetCodeLinkBlocks();
+            var blocks = await markdownFile.GetSourceCodeLinkBlocks();
             var maxEditorPerSession = blocks.Any()
                                           ? blocks
-                                            .GroupBy(b => b.Session)
-                                            .Max(editors => editors.Count())
+                                              .GroupBy(b => b.Session)
+                                              .Max(editors => editors.Count())
                                           : 0;
 
             var pipeline = _markdownProject.GetMarkdownPipelineFor(markdownFile.Path);
@@ -109,7 +109,8 @@ namespace MLS.Agent.Controllers
     <meta http-equiv=""Content-Type"" content=""text/html;charset=utf-8"">
     <script src=""/api/trydotnet.min.js?v={_cacheBuster}""></script>
     <script src=""/api/trydotnet-layout.min.js?v={_cacheBuster}""></script>
-    <link rel=""stylesheet"" href=""/css/trydotnet.css?v={_cacheBuster}"">
+    <link rel=""stylesheet"" href=""/css/trydotnet.css?v={_cacheBuster}"">  
+    <link rel=""icon"" type=""image/png"" href=""favicon-32x32.png"">
     <title>dotnet try - {markdownFile.Path.Value.HtmlEncode()}</title>
 </head>
 

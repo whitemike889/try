@@ -10,8 +10,8 @@ namespace MLS.Agent.Markdown
     public class CodeFenceOptionsParser
     {
         private readonly Parser _parser;
-        private readonly ModelBinder<CodeLinkBlockOptions> _modelBinder= new ModelBinder<CodeLinkBlockOptions>();
-        private static int sessionIndex;
+        private readonly ModelBinder<CodeLinkBlockOptions> _modelBinder = new ModelBinder<CodeLinkBlockOptions>();
+        private static int _sessionIndex;
 
         public CodeFenceOptionsParser(IDirectoryAccessor directoryAccessor)
         {
@@ -52,6 +52,7 @@ namespace MLS.Agent.Markdown
 
             options = options.ReplaceErrors(result.Errors.Select(e => e.Message));
 
+            options.Language = result.Tokens.First().Value;
             options.RunArgs = Untokenize(result);
 
             return options;
@@ -125,6 +126,8 @@ namespace MLS.Agent.Markdown
                                         argument: new Argument<RelativeFilePath>()),
                              new Option("--include",
                                  argument: new Argument<bool>()),
+                             new Option("--hidden",
+                                 argument: new Argument<bool>(defaultValue:false)),
                              new Option("--source-file",
                                         argument: sourceFileArg),
                              new Option("--project",
