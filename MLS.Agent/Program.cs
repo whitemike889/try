@@ -26,6 +26,8 @@ namespace MLS.Agent
 {
     public class Program
     {
+        private static readonly ServiceCollection _serviceCollection = new ServiceCollection();
+
         public static async Task<int> Main(string[] args)
         {
             var parser = CommandLineParser.Create(
@@ -42,8 +44,9 @@ namespace MLS.Agent
                     VerifyCommand.Do(options,
                                      console,
                                      () => new FileSystemDirectoryAccessor(options.RootDirectory),
-                                     PackageRegistry.CreateForTryMode(options.RootDirectory, null)),
-                kernel:  KernelCommand.Do);
+                                     PackageRegistry.CreateForTryMode(options.RootDirectory)),
+                jupyter:  JupyterCommand.Do,
+                _serviceCollection);
 
             return await parser.InvokeAsync(args);
         }
@@ -146,6 +149,11 @@ namespace MLS.Agent
                               }
 
                               c.AddSingleton(options);
+
+                              foreach (var serviceDescriptor in _serviceCollection)
+                              {
+                                  c.Add(serviceDescriptor);
+                              }
                           })
                           .UseEnvironment(options.EnvironmentName)
                           .UseStartup<Startup>()

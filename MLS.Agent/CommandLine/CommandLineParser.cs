@@ -3,8 +3,14 @@ using System.CommandLine;
 using System.CommandLine.Builder;
 using System.CommandLine.Invocation;
 using System.IO;
+using System.Net;
 using System.Threading.Tasks;
 using Clockwise;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using MLS.Agent.Markdown;
+using MLS.Jupyter;
+using WorkspaceServer;
 using WorkspaceServer.Packaging;
 using CommandHandler = System.CommandLine.Invocation.CommandHandler;
 
@@ -38,40 +44,34 @@ namespace MLS.Agent.CommandLine
             VerifyOptions options,
             IConsole console);
 
-        public delegate Task<int> Kernel(
-            KernelOptions options,
+        public delegate Task<int> Jupyter(
+            JupyterOptions options,
             IConsole console,
-            CommandLineParser.StartServer startServer = null,
+            StartServer startServer = null,
             InvocationContext context = null);
 
         public static Parser Create(
-            StartServer start,
+            StartServer startServer,
             Demo demo,
             TryGitHub tryGithub,
             Pack pack,
             Install install,
             Verify verify,
-            Kernel kernel)
+            Jupyter jupyter,
+            IServiceCollection services = null)
         {
-            var startHandler = CommandHandler.Create<InvocationContext, StartupOptions>((context, options) =>
-            {
-                start(options, context);
-            });
+            services = services ?? new ServiceCollection();
 
             var rootCommand = StartInTryMode();
-            rootCommand.Handler = startHandler;
 
-            var startInHostedMode = StartInHostedMode();
-            startInHostedMode.Handler = startHandler;
-
-            rootCommand.AddCommand(startInHostedMode);
+            rootCommand.AddCommand(StartInHostedMode());
             rootCommand.AddCommand(Demo());
             rootCommand.AddCommand(ListPackages());
             rootCommand.AddCommand(GitHub());
             rootCommand.AddCommand(Pack());
             rootCommand.AddCommand(Install());
             rootCommand.AddCommand(Verify());
-            rootCommand.AddCommand(Kernel());
+            rootCommand.AddCommand(Jupyter());
 
             return new CommandLineBuilder(rootCommand)
                    .UseDefaults()
@@ -115,6 +115,15 @@ namespace MLS.Agent.CommandLine
                     "Enables preview features",
                     new Argument<bool>()));
 
+                command.Handler = CommandHandler.Create<InvocationContext, StartupOptions>((context, options) =>
+                {
+                    services.AddSingleton(_ => PackageRegistry.CreateForTryMode(
+                                              options.RootDirectory,
+                                              options.AddSource));
+                 
+                    startServer(options, context);
+                });
+
                 return command;
             }
 
@@ -154,6 +163,15 @@ namespace MLS.Agent.CommandLine
                                       "--log-to-file",
                                       "Writes a log file",
                                       new Argument<bool>()));
+
+                command.Handler = CommandHandler.Create<InvocationContext, StartupOptions>((context, options) =>
+                {
+                    services.AddSingleton(_ => PackageRegistry.CreateForHostedMode());
+                    services.AddSingleton(c => new MarkdownProject(c.GetRequiredService<PackageRegistry>()));
+                    services.AddSingleton<IHostedService, Warmup>();
+
+                    startServer(options, context);
+                });
 
                 return command;
             }
@@ -197,7 +215,7 @@ namespace MLS.Agent.CommandLine
 
                 demoCommand.Handler = CommandHandler.Create<DemoOptions, InvocationContext>((options, context) =>
                 {
-                    demo(options, context.Console, start, context);
+                    demo(options, context.Console, startServer, context);
                 });
 
                 return demoCommand;
@@ -216,6 +234,28 @@ namespace MLS.Agent.CommandLine
                 github.Handler = CommandHandler.Create<TryGitHubOptions, IConsole>((repo, console) => tryGithub(repo, console));
 
                 return github;
+            }
+            
+            Command Jupyter()
+            {
+                var jupyterCommand = new Command("kernel", "Starts dotnet try as jupyter kernel");
+                var connectionFileArgument = new Argument<FileInfo>
+                                             {
+                                                 Name = "ConnectionFile"
+                                             }.ExistingOnly();
+                jupyterCommand.Argument = connectionFileArgument;
+
+                jupyterCommand.Handler = CommandHandler.Create<JupyterOptions, IConsole, InvocationContext>((options, console, context) =>
+                {
+                    services
+                        .AddSingleton(c => ConnectionInformation.Load(options.ConnectionFile))
+                        .AddSingleton<IHostedService, Shell>()
+                        .AddSingleton<IHostedService, Heartbeat>();
+
+                    return jupyter(options, console, startServer, context);
+                });
+
+                return jupyterCommand;
             }
 
             Command Pack()
@@ -267,17 +307,6 @@ namespace MLS.Agent.CommandLine
                 });
 
                 return verifyCommand;
-            }
-
-            Command Kernel()
-            {
-                var kernelCommand = new Command("kernel", "Starts dotnet try as jupyter kernel");
-                var connectionFileArgument = new Argument<FileInfo>(){Name = "ConnectionFile" }.ExistingOnly();
-
-                kernelCommand.Argument = connectionFileArgument;
-                kernelCommand.Handler = CommandHandler.Create<KernelOptions, IConsole>((options, console) => kernel(options, console));
-
-                return kernelCommand;
             }
         }
     }

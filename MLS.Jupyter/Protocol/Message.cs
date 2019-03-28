@@ -1,25 +1,16 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace MLS.Jupyter.Protocol
 {
     public class Message
     {
-        public Message()
-        {
-            Identifiers = new List<byte[]>();
-            Signature = string.Empty;
-            MetaData = new JObject();
-            Content = new JObject();
-            Buffers = new List<byte[]>();
-        }
+        [JsonIgnore]
+        public List<byte[]> Identifiers { get; set; } = new List<byte[]>();
 
         [JsonIgnore]
-        public List<byte[]> Identifiers { get; set; }
-
-        [JsonIgnore]
-        public string Signature { get; set; }
+        public string Signature { get; set; } = string.Empty;
 
         [JsonProperty("header")]
         public Header Header { get; set; }
@@ -28,12 +19,12 @@ namespace MLS.Jupyter.Protocol
         public Header ParentHeader { get; set; }
 
         [JsonProperty("metadata")]
-        public JObject MetaData { get; set; }
+        public object MetaData { get; set; } = new object();
 
         [JsonProperty("content")]
-        public JObject Content { get; set; }
+        public object Content { get; set; } = new object();
 
         [JsonProperty("buffers")]
-        public List<byte[]> Buffers { get; set; }
+        public List<byte[]> Buffers { get; } = new List<byte[]>();
     }
 }

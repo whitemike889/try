@@ -1,22 +1,20 @@
 ﻿using System;
 using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Hosting;
 using NetMQ;
 using NetMQ.Sockets;
 using Pocket;
-using static Pocket.Logger<MLS.Jupyter.HearthBeatHandler>;
+using static Pocket.Logger<MLS.Jupyter.Heartbeat>;
 
 namespace MLS.Jupyter
 {
-    public class HearthBeatHandler : IDisposable
+    public class Heartbeat : IHostedService
     {
-
         private readonly string _address;
         private readonly ResponseSocket _server;
-        private readonly ManualResetEventSlim _stopEvent;
-        private Thread _thread;
-        private bool _disposed;
 
-        public HearthBeatHandler(ConnectionInformation connectionInformation)
+        public Heartbeat(ConnectionInformation connectionInformation)
         {
             if (connectionInformation == null)
             {
@@ -27,35 +25,15 @@ namespace MLS.Jupyter
 
             Log.Info($"using address {nameof(_address)}", _address);
             _server = new ResponseSocket();
-            _stopEvent = new ManualResetEventSlim();
         }
 
-        public void Start()
-        {
-            ThrowIfDisposed();
-            _stopEvent.Reset();
-            if (_thread == null)
-            {
-                _thread = new Thread(StartServerLoop);
-                _thread.Name = "Kernel HeartBeat server";
-                _thread.Start();
-            }
-        }
-
-        private void ThrowIfDisposed()
-        {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(nameof(HearthBeatHandler));
-            }
-        }
-
-        private void StartServerLoop(object state)
+        public async Task StartAsync(CancellationToken cancellationToken)
         {
             _server.Bind(_address);
+
             using (Log.OnEnterAndExit())
             {
-                while (!_stopEvent.Wait(0))
+                while (!cancellationToken.IsCancellationRequested)
                 {
                     var data = _server.ReceiveFrameBytes();
 
@@ -63,27 +41,12 @@ namespace MLS.Jupyter
                     _server.TrySendFrame(data);
                 }
             }
-            _thread = null;
         }
 
-        public void Stop()
+        public Task StopAsync(CancellationToken cancellationToken)
         {
-            ThrowIfDisposed();
-            _stopEvent.Set();
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-        }
-
-        protected void Dispose(bool dispose)
-        {
-            if (!_disposed && dispose)
-            {
-                _disposed = true;
-                _server?.Dispose();
-            }
+            _server.Dispose();
+            return Task.CompletedTask;
         }
     }
 }

@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace MLS.Jupyter.Protocol
 {
@@ -13,7 +12,7 @@ namespace MLS.Jupyter.Protocol
         public string Version { get; set; }
 
         [JsonProperty("mimetype")]
-        public string Mimetype { get; set; }
+        public string MimeType { get; set; }
 
         [JsonProperty("file_extension")]
         public string FileExtension { get; set; }
@@ -22,12 +21,12 @@ namespace MLS.Jupyter.Protocol
         public string PygmentsLexer { get; set; }
 
         [JsonProperty("codemirror_mode")]
-        public JToken CodemirrorMode { get; set; }
+        public object CodeMirrorMode { get; set; }
 
         [JsonProperty("nbconvert_exporter")]
-        public string NbconvertExporter { get; set; }
+        public string NbConvertExporter { get; set; }
 
         [JsonProperty("help_links")]
-        public List<Link> HelpLinks { get; set; }
+        public List<Link> HelpLinks { get;  } = new List<Link>();
     }
 }

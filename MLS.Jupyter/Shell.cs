@@ -1,30 +1,33 @@
 ﻿using System;
+using System.Reactive.Disposables;
 using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Hosting;
 using MLS.Jupyter.Protocol;
 using NetMQ;
 using NetMQ.Sockets;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Pocket;
-using static Pocket.Logger<MLS.Jupyter.HearthBeatHandler>;
+using Recipes;
+using static Pocket.Logger<MLS.Jupyter.Heartbeat>;
 
 namespace MLS.Jupyter
 {
-    public class Shell : IDisposable
+    public class Shell : IHostedService
     {
         private readonly RouterSocket _server;
         private readonly PublisherSocket _ioPubSocket;
-        private readonly ManualResetEventSlim _stopEvent;
         private readonly string _shellAddress;
         private readonly string _ioPubAddress;
         private readonly SignatureValidator _signatureValidator;
-        private Thread _thread;
-        private bool _disposed;
+        private readonly CompositeDisposable _disposables;
 
         public Shell(ConnectionInformation connectionInformation)
         {
             if (connectionInformation == null)
+            {
                 throw new ArgumentNullException(nameof(connectionInformation));
+            }
 
             _shellAddress = $"{connectionInformation.Transport}://{connectionInformation.IP}:{connectionInformation.ShellPort}";
             _ioPubAddress = $"{connectionInformation.Transport}://{connectionInformation.IP}:{connectionInformation.IOPubPort}";
@@ -32,40 +35,27 @@ namespace MLS.Jupyter
             _signatureValidator = new SignatureValidator(connectionInformation.Key, signatureAlgorithm);
             _server = new RouterSocket();
             _ioPubSocket = new PublisherSocket();
-            _stopEvent = new ManualResetEventSlim();
+
+            _disposables = new CompositeDisposable
+                           {
+                               _server, 
+                               _ioPubSocket
+                           };
         }
 
-        public void Start()
-        {
-            ThrowIfDisposed();
-            _stopEvent.Reset();
-            if (_thread == null)
-            {
-                _thread = new Thread(StartServerLoop)
-                {
-                    Name = "Kernel Shell server"
-                };
-                _thread.Start();
-            }
-
-        }
-
-        public void Stop()
-        {
-            _stopEvent.Set();
-        }
-
-        private void StartServerLoop(object state)
+        public async Task StartAsync(CancellationToken cancellationToken)
         {
             _server.Bind(_shellAddress);
             _ioPubSocket.Bind(_ioPubAddress);
 
-            while (!_stopEvent.Wait(0))
+            using (Log.OnEnterAndExit())
+            while (!cancellationToken.IsCancellationRequested)
             {
                 var message = _server.GetMessage();
 
-                var messageType = message.Header.MessageType;
-                switch (messageType)
+                Log.Info("{message}", message);
+
+                switch (message.Header.MessageType)
                 {
                     case MessageTypeValues.KernelInfoRequest:
                         HandleKernelInfoRequest(message);
@@ -79,66 +69,49 @@ namespace MLS.Jupyter
             }
         }
 
+        public Task StopAsync(CancellationToken cancellationToken)
+        {
+            _disposables.Dispose();
+            return Task.CompletedTask;
+        }
+
         private void HandleKernelInfoRequest(Message message)
         {
             SendStatus(message, _ioPubSocket, StatusValues.Busy);
 
-            var kernelInfoReply = new KernelInfoReply()
-            {
-                ProtocolVersion = "5.3",
-                Implementation = "dotnet",
-                ImplementationVersion = "0.0.3",
-                LanguageInfo = new JObject()
-                {
-                    { "name",  "dotnet" },
-                    { "version", typeof(string).Assembly.ImageRuntimeVersion.Substring(1) },
-                    { "mimetype", "text/x-csharp" },
-                    { "file_extension", ".cs"},
-                    { "pygments_lexer", "c#" }
-                }
-            };
+            var kernelInfoReply = new KernelInfoReply
+                                  {
+                                      ProtocolVersion = "5.3",
+                                      Implementation = ".NET",
+                                      ImplementationVersion = "0.0.3",
+                                      LanguageInfo = new LanguageInfo
+                                                     {
+                                                         Name = "dotnet",
+                                                         Version = typeof(string).Assembly.ImageRuntimeVersion.Substring(1),
+                                                         MimeType = "text/x-csharp",
+                                                         FileExtension = ".cs",
+                                                         PygmentsLexer = "c#"
+                                                     }
+                                  };
 
-            var replyMessage = new Message()
-            {
-                Identifiers = message.Identifiers,
-                Signature = message.Signature,
-                ParentHeader = message.Header,
-                Header = CreateHeader(MessageTypeValues.KernelInfoReply, message.Header.Session),
-                Content = JObject.FromObject(kernelInfoReply)
-            };
-         
+            var replyMessage = new Message
+                               {
+                                   Identifiers = message.Identifiers,
+                                   Signature = message.Signature,
+                                   ParentHeader = message.Header,
+                                   Header = CreateHeader(MessageTypeValues.KernelInfoReply, message.Header.Session),
+                                   Content = kernelInfoReply
+                               };
+
             Send(replyMessage, _server);
 
             // 3: Send IDLE status message to IOPub
-           SendStatus(message, _ioPubSocket, StatusValues.Idle);
-        }
-     
-
-        private void ThrowIfDisposed()
-        {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(nameof(HearthBeatHandler));
-            }
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-        }
-
-        protected void Dispose(bool dispose)
-        {
-            if (!_disposed && dispose)
-            {
-                _disposed = true;
-                _server?.Dispose();
-            }
+            SendStatus(message, _ioPubSocket, StatusValues.Idle);
         }
 
         public bool Send(Message message, NetMQSocket socket)
         {
-            var hmac = _signatureValidator.CreateSignature(message);
+            string hmac = _signatureValidator.CreateSignature(message);
 
             foreach (var ident in message.Identifiers)
             {
@@ -147,10 +120,10 @@ namespace MLS.Jupyter
 
             Send(Constants.DELIMITER, socket);
             Send(hmac, socket);
-            Send(JsonConvert.ToString(message.Header), socket);
-            Send(JsonConvert.ToString(message.ParentHeader), socket);
-            Send(JsonConvert.ToString(message.MetaData), socket);
-            Send(JsonConvert.ToString(message.Content), socket, false);
+            Send(message.Header.ToJson(), socket);
+            Send(message.ParentHeader.ToJson(), socket);
+            Send(message.MetaData.ToJson(), socket);
+            Send(message.Content.ToJson(), socket, false);
 
             return true;
         }

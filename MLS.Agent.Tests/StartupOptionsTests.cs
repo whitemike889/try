@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using FluentAssertions;
 using Microsoft.AspNetCore.Hosting;
@@ -9,19 +10,19 @@ namespace MLS.Agent.Tests
     public class StartupOptionsTests
     {
         [Fact]
-        public void When_root_directory_is_null_then_hosted_mode_is_true()
+        public void When_root_directory_is_null_then_mode_is_Hosted()
         {
             var options = new StartupOptions(rootDirectory: null);
 
-            options.IsInHostedMode.Should().BeTrue();
+            options.Mode.Should().Be(StartupMode.Hosted);
         }
 
         [Fact]
-        public void When_root_directory_is_set_then_hosted_mode_is_false()
+        public void When_root_directory_is_set_then_mode_is_Try()
         {
             var options = new StartupOptions(rootDirectory: new DirectoryInfo(Directory.GetCurrentDirectory()));
 
-            options.IsInHostedMode.Should().BeFalse();
+            options.Mode.Should().Be(StartupMode.Try);
         }
 
         [Fact]

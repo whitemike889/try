@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
 using WorkspaceServer;
 using WorkspaceServer.Packaging;
 
@@ -12,10 +10,12 @@ namespace MLS.Agent.Blazor
 {
     internal sealed class BlazorPackageConfiguration
     {
-        public static void Configure(IApplicationBuilder app, IServiceProvider serviceProvider, Budget budget)
+        public static void Configure(
+            IApplicationBuilder app, 
+            IServiceProvider serviceProvider, 
+            PackageRegistry registry, 
+            Budget budget)
         {
-            var registry = serviceProvider.GetService<PackageRegistry>();
-
             List<Task> prepareTasks = new List<Task>();
 
             foreach (var builderFactory in registry)

@@ -1,5 +1,4 @@
 ﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace MLS.Jupyter.Protocol
 {
@@ -15,7 +14,7 @@ namespace MLS.Jupyter.Protocol
         public string ImplementationVersion { get; set; }
 
         [JsonProperty("language_info")]
-        public JObject LanguageInfo { get; set; }
+        public LanguageInfo LanguageInfo { get; set; }
 
         [JsonProperty("banner")]
         public string Banner { get; set; }

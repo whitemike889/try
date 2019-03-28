@@ -20,7 +20,10 @@ namespace MLS.Jupyter
             while (true)
             {
                 var delimiter = socket.ReceiveFrameBytes();
-                if (delimiter.SequenceEqual(delimiterAsBytes)) break;
+                if (delimiter.SequenceEqual(delimiterAsBytes))
+                {
+                    break;
+                }
                 message.Identifiers.Add(delimiter);
             }
 

@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using MLS.Jupyter.Protocol;
-using Newtonsoft.Json;
+using Recipes;
 
 namespace MLS.Jupyter
 {
@@ -36,19 +35,15 @@ namespace MLS.Jupyter
             _signatureGenerator.TransformFinalBlock(new byte[0], 0, 0);
 
             // Calculate the digest and remove -
-            return BitConverter.ToString(this._signatureGenerator.Hash).Replace("-", "").ToLower();
+            return BitConverter.ToString(_signatureGenerator.Hash).Replace("-", "").ToLower();
         }
 
         private static IEnumerable<string> GetMessagesToAddForDigest(Message message)
         {
-            return message == null 
-                ? Enumerable.Empty<string>() 
-                : new List<string>(){
-                    JsonConvert.ToString(message.Header),
-                    JsonConvert.ToString(message.ParentHeader),
-                    JsonConvert.ToString(message.MetaData),
-                    JsonConvert.ToString(message.Content)
-                };
+            yield return message.Header.ToJson();
+            yield return message.ParentHeader.ToJson();
+            yield return message.MetaData.ToJson();
+            yield return message.Content.ToJson();
         }
     }
 }
