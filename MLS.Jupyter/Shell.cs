@@ -102,7 +102,7 @@ namespace MLS.Jupyter
                                       ImplementationVersion = "0.0.3",
                                       LanguageInfo = new LanguageInfo
                                                      {
-                                                         Name = "dotnet",
+                                                         Name = "C#",
                                                          Version = typeof(string).Assembly.ImageRuntimeVersion.Substring(1),
                                                          MimeType = "text/x-csharp",
                                                          FileExtension = ".cs",
