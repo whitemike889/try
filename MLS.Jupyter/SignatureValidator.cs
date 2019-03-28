@@ -7,7 +7,7 @@ using Recipes;
 
 namespace MLS.Jupyter
 {
-    internal class SignatureValidator
+    public class SignatureValidator
     {
         private readonly HMAC _signatureGenerator;
         private readonly Encoding _encoder;

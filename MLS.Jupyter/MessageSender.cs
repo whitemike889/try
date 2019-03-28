@@ -5,12 +5,12 @@ using Recipes;
 
 namespace MLS.Jupyter
 {
-    internal class MessageSender : IMessageSender
+    public class MessageSender : IMessageSender
     {
-        private readonly NetMQSocket _socket;
+        private readonly IOutgoingSocket _socket;
         private readonly SignatureValidator _signatureValidator;
 
-        public MessageSender(NetMQSocket socket, SignatureValidator signatureValidator)
+        public MessageSender(IOutgoingSocket socket, SignatureValidator signatureValidator)
         {
             _socket = socket ?? throw new ArgumentNullException(nameof(socket));
             _signatureValidator = signatureValidator ?? throw new ArgumentNullException(nameof(signatureValidator));

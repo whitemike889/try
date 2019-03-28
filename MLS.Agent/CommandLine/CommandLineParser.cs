@@ -3,7 +3,6 @@ using System.CommandLine;
 using System.CommandLine.Builder;
 using System.CommandLine.Invocation;
 using System.IO;
-using System.Net;
 using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.Extensions.DependencyInjection;

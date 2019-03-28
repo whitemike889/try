@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
-using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,7 +7,7 @@ using Microsoft.Extensions.Hosting;
 using MLS.Jupyter.Protocol;
 using NetMQ.Sockets;
 using Pocket;
-using static Pocket.Logger<MLS.Jupyter.Heartbeat>;
+using static Pocket.Logger<MLS.Jupyter.Shell>;
 
 namespace MLS.Jupyter
 {
@@ -50,10 +48,7 @@ namespace MLS.Jupyter
                                _ioPubSocket
                            };
             _messageBuilder = new MessageBuilder();
-            var eventLoop = new EventLoopScheduler(start => new Thread(start) { Name = "Jupyter Shell message channel", IsBackground = false});
-
-            _disposables.Add(eventLoop);
-            _subscriptionChannel = _channel.ObserveOn(eventLoop);
+            _subscriptionChannel = _channel;
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
@@ -102,7 +97,6 @@ namespace MLS.Jupyter
         {
             var status = new RequestHandlerStatus(message.Header, new MessageSender(_ioPubSocket, _signatureValidator));
             status.SetAsBusy();
-
 
             var kernelInfoReply = new KernelInfoReply
             {
