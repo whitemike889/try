@@ -81,6 +81,7 @@ namespace MLS.Jupyter
                     {
                         Data = new JObject()
                         {
+                            { "text/html", output },
                             { "text/plain", output }
                         },
                         Transient = transient
