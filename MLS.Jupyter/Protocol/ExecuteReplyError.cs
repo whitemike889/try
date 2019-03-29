@@ -10,7 +10,7 @@ namespace MLS.Jupyter.Protocol
             Status = StatusValues.Error;
         }
 
-        public ExecuteReplyError(ExecuteError error) : this()
+        public ExecuteReplyError(Error error) : this()
         {
             EName = error.EName;
             EValue = error.EValue;
@@ -27,7 +27,7 @@ namespace MLS.Jupyter.Protocol
         public List<string> Traceback { get; set; } = new List<string>();
     }
 
-    public class ExecuteError
+    public class Error
     {
         [JsonProperty("ename")]
         public string EName { get; set; }

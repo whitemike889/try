@@ -15,15 +15,19 @@ namespace MLS.Jupyter
     public class Shell : IHostedService
     {
         private readonly ICommandScheduler<JupyterRequestContext> _scheduler;
-        private readonly RouterSocket _server;
+        private readonly RouterSocket _shell;
         private readonly PublisherSocket _ioPubSocket;
         private readonly string _shellAddress;
         private readonly string _ioPubAddress;
         private readonly SignatureValidator _signatureValidator;
         private readonly CompositeDisposable _disposables;
         private readonly MessageBuilder _messageBuilder;
-        private readonly MessageSender _serverMessageSender;
+        private readonly MessageSender _shellSender;
         private readonly MessageSender _ioPubSender;
+        private string _stdInAddress;
+        private string _controlAddress;
+        private RouterSocket _stdIn;
+        private RouterSocket _control;
 
         public Shell(
             ICommandScheduler<JupyterRequestContext> scheduler,
@@ -38,32 +42,41 @@ namespace MLS.Jupyter
 
             _shellAddress = $"{connectionInformation.Transport}://{connectionInformation.IP}:{connectionInformation.ShellPort}";
             _ioPubAddress = $"{connectionInformation.Transport}://{connectionInformation.IP}:{connectionInformation.IOPubPort}";
+            _stdInAddress = $"{connectionInformation.Transport}://{connectionInformation.IP}:{connectionInformation.StdinPort}";
+            _controlAddress = $"{connectionInformation.Transport}://{connectionInformation.IP}:{connectionInformation.ControlPort}";
+
             var signatureAlgorithm = connectionInformation.SignatureScheme.Replace("-", string.Empty).ToUpperInvariant();
             _signatureValidator = new SignatureValidator(connectionInformation.Key, signatureAlgorithm);
-            _server = new RouterSocket();
+            _shell = new RouterSocket();
             _ioPubSocket = new PublisherSocket();
+            _stdIn = new RouterSocket();
+            _control = new RouterSocket();
 
-            _serverMessageSender = new MessageSender(_server, _signatureValidator);
+            _shellSender = new MessageSender(_shell, _signatureValidator);
             _ioPubSender = new MessageSender(_ioPubSocket, _signatureValidator);
 
             _disposables = new CompositeDisposable
                            {
-                               _server,
-                               _ioPubSocket
+                               _shell,
+                               _ioPubSocket,
+                               _stdIn,
+                               _control
                            };
             _messageBuilder = new MessageBuilder();
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            _server.Bind(_shellAddress);
+            _shell.Bind(_shellAddress);
             _ioPubSocket.Bind(_ioPubAddress);
+            _stdIn.Bind(_stdInAddress);
+            _control.Bind(_controlAddress);
 
             using (var activity = Log.OnEnterAndExit())
             {
                 while (!cancellationToken.IsCancellationRequested)
                 {
-                    var message = _server.GetMessage();
+                    var message = _shell.GetMessage();
 
                     activity.Info("Received: {message}", message.ToJson());
 
@@ -82,10 +95,10 @@ namespace MLS.Jupyter
                         default:
                             var context = new JupyterRequestContext(
                                 _messageBuilder,
-                                _serverMessageSender,
+                                _shellSender,
                                 _ioPubSender,
                                 message,
-                                new RequestHandlerStatus(message.Header, _serverMessageSender));
+                                new RequestHandlerStatus(message.Header, _shellSender));
 
                             await _scheduler.Schedule(context);
 
@@ -107,9 +120,9 @@ namespace MLS.Jupyter
         {
             var kernelInfoReply = new KernelInfoReply
                                   {
-                                      ProtocolVersion = "5.3",
+                                      ProtocolVersion = "5.1.0",
                                       Implementation = ".NET",
-                                      ImplementationVersion = "0.0.3",
+                                      ImplementationVersion = "5.1.0",
                                       LanguageInfo = new LanguageInfo
                                                      {
                                                          Name = "C#",
@@ -129,7 +142,7 @@ namespace MLS.Jupyter
                                    Content = kernelInfoReply
                                };
 
-            _serverMessageSender.Send(replyMessage);
+            _shellSender.Send(replyMessage);
         }
     }
 }

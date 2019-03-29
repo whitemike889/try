@@ -26,6 +26,8 @@
 
         public const string Status = "status";
 
+        public const string Stream = "stream";
+
         public const string Error = "error";
 
         public const string DisplayData = "display_data";

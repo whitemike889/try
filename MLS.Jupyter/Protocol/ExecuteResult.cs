@@ -2,13 +2,9 @@
 
 namespace MLS.Jupyter.Protocol
 {
-    public class ExecuteReply
+    public class ExecuteResult : DisplayData
     {
-        [JsonProperty("status")]
-        public string Status { get; set; }
-
         [JsonProperty("execution_count", NullValueHandling = NullValueHandling.Ignore)]
         public int ExecutionCount { get; set; }
-
     }
 }
