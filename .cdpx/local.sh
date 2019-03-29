@@ -14,7 +14,7 @@ $REPO_ROOT/.cdpx/restore.sh
 echo building...
 $REPO_ROOT/.cdpx/build.sh
 
-# echo testing...
-# $REPO_ROOT/.cdpx/test.sh
+echo testing...
+$REPO_ROOT/.cdpx/test.sh
 
-# t-rex --path $REPO_ROOT 
+t-rex --path $REPO_ROOT 
