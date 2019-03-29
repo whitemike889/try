@@ -1,9 +1,10 @@
 {
- "argv": [
-  "dotnet-try",
-  "kernel",
-  "{connection_file}"
- ],
- "display_name": ".NET",
- "language": "c#"
+    "argv": [
+     "dotnet",
+     "try",
+     "jupyter",
+     "{connection_file}"
+    ],
+    "display_name": ".NET",
+    "language": "c#"
 }
