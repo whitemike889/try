@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Clockwise;
 using MLS.Jupyter.Protocol;
@@ -65,11 +66,54 @@ namespace MLS.Jupyter
                     if (result.Succeeded && 
                         result.Exception == null)
                     {
-                        
+
+                        // reply ok
+                        var executeReplyPayload = new ExecuteReplyOk
+                        {
+                            ExecutionCount = _executionCount
+                        };
+
+                        // send to server
+                        var executeReply = delivery.Command.Builder.CreateMessage(MessageTypeValues.ExecuteReply, executeReplyPayload, delivery.Command.Request.Header);
+                        executeReply.Identifiers = delivery.Command.Request.Identifiers;
+                        delivery.Command.ServerChannel.Send(executeReply);
+
+                        if (!executeRequest.Silent)
+                        {
+                            // display data
+                            var data = new DisplayData
+                            {
+                                Data = new JObject()
+                                {
+                                    { "text/plain", string.Join("\n",result.Output) },
+                                   
+                                }
+                            };
+
+                            var displayData = delivery.Command.Builder.CreateMessage(MessageTypeValues.DisplayData, data, delivery.Command.Request.Header);
+                            delivery.Command.IoPubChannel.Send(displayData);
+                        }
                     }
                     else
                     {
+                        var errorPayload = new ExecuteError
+                        {
+                            ExecutionCount = _executionCount,
+                            EName = string.IsNullOrWhiteSpace(result.Exception) ? "Compiler Error" : "Unhandled Exception",
+                            EValue = string.Join("\n", result.Output)
+                        };
+                       
+                        // send on io
+                        var error = delivery.Command.Builder.CreateMessage(MessageTypeValues.Error, errorPayload, delivery.Command.Request.Header);
+                        delivery.Command.IoPubChannel.Send(error);
 
+                        //  reply Error
+                        var executeReplyPayload = new ExecuteReplyError(errorPayload);
+
+                        // send to server
+                        var executeReply = delivery.Command.Builder.CreateMessage(MessageTypeValues.ExecuteReply, executeReplyPayload, delivery.Command.Request.Header);
+                        executeReply.Identifiers = delivery.Command.Request.Identifiers;
+                        delivery.Command.ServerChannel.Send(executeReply);
                     }
 
 
