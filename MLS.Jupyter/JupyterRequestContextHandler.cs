@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Clockwise;
@@ -68,10 +69,7 @@ namespace MLS.Jupyter
                     {
 
                         // reply ok
-                        var executeReplyPayload = new ExecuteReplyOk
-                        {
-                            ExecutionCount = _executionCount
-                        };
+                        var executeReplyPayload = new ExecuteReplyOk();
 
                         // send to server
                         var executeReply = delivery.Command.Builder.CreateMessage(MessageTypeValues.ExecuteReply, executeReplyPayload, delivery.Command.Request.Header);
@@ -85,8 +83,7 @@ namespace MLS.Jupyter
                             {
                                 Data = new JObject()
                                 {
-                                    { "text/plain", string.Join("\n",result.Output) },
-                                   
+                                    { "text/plain", string.Join("\n",result.Output) }
                                 }
                             };
 
@@ -98,9 +95,9 @@ namespace MLS.Jupyter
                     {
                         var errorPayload = new ExecuteError
                         {
-                            ExecutionCount = _executionCount,
                             EName = string.IsNullOrWhiteSpace(result.Exception) ? "Compiler Error" : "Unhandled Exception",
-                            EValue = string.Join("\n", result.Output)
+                            EValue = string.Join("\n", result.Output),
+                            Traceback = new List<string>()
                         };
                        
                         // send on io
@@ -108,7 +105,8 @@ namespace MLS.Jupyter
                         delivery.Command.IoPubChannel.Send(error);
 
                         //  reply Error
-                        var executeReplyPayload = new ExecuteReplyError(errorPayload);
+                        var executeReplyPayload = new ExecuteReplyError(errorPayload)
+                       ;
 
                         // send to server
                         var executeReply = delivery.Command.Builder.CreateMessage(MessageTypeValues.ExecuteReply, executeReplyPayload, delivery.Command.Request.Header);

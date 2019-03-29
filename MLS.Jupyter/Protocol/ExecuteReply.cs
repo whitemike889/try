@@ -6,8 +6,6 @@ namespace MLS.Jupyter.Protocol
     {
         [JsonProperty("status")]
         public string Status { get; set; }
-
-        [JsonProperty("execution_count")]
-        public int ExecutionCount { get; set; }
+        
     }
 }

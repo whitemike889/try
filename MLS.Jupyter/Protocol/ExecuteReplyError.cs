@@ -14,7 +14,6 @@ namespace MLS.Jupyter.Protocol
         {
             EName = error.EName;
             EValue = error.EValue;
-            ExecutionCount = error.ExecutionCount;
             Traceback = new List<string>(error.Traceback);
         }
 
@@ -30,9 +29,6 @@ namespace MLS.Jupyter.Protocol
 
     public class ExecuteError
     {
-        [JsonProperty("execution_count")]
-        public int ExecutionCount { get; set; }
-
         [JsonProperty("ename")]
         public string EName { get; set; }
 
