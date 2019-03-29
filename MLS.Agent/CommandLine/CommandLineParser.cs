@@ -237,7 +237,7 @@ namespace MLS.Agent.CommandLine
             
             Command Jupyter()
             {
-                var jupyterCommand = new Command("kernel", "Starts dotnet try as jupyter kernel");
+                var jupyterCommand = new Command("jupyter", "Starts dotnet try as a Jupyter kernel");
                 var connectionFileArgument = new Argument<FileInfo>
                                              {
                                                  Name = "ConnectionFile"

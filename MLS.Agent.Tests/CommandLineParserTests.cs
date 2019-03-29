@@ -278,11 +278,11 @@ namespace MLS.Agent.Tests
         }
 
         [Fact]
-        public async Task Kernel_parses_connection_file_path()
+        public async Task jupyter_parses_connection_file_path()
         {
             var expected =  Path.GetTempFileName();
 
-            await _parser.InvokeAsync($"kernel {expected}");
+            await _parser.InvokeAsync($"jupyter {expected}");
 
             _jupyter_Options
                 .ConnectionFile
@@ -292,23 +292,23 @@ namespace MLS.Agent.Tests
         }
 
         [Fact]
-        public async Task Kernel_returns_error_if_connection_file_path_does_not_exits()
+        public async Task jupyter_returns_error_if_connection_file_path_does_not_exits()
         {
             var expected = "not_exist.json";
 
             var testConsole = new TestConsole();
-            await _parser.InvokeAsync($"kernel {expected}", testConsole);
+            await _parser.InvokeAsync($"jupyter {expected}", testConsole);
 
             testConsole.Error.ToString().Should().Contain("File does not exist: not_exist.json");
         }
 
         [Fact]
-        public async Task Kernel_returns_error_if_connection_file_path_is_not_passed()
+        public async Task jupyter_returns_error_if_connection_file_path_is_not_passed()
         {
             var testConsole = new TestConsole();
-            await _parser.InvokeAsync("kernel", testConsole);
+            await _parser.InvokeAsync("jupyter", testConsole);
 
-            testConsole.Error.ToString().Should().Contain("Required argument missing for command: kernel");
+            testConsole.Error.ToString().Should().Contain("Required argument missing for command: jupyter");
         }
 
         [Fact]

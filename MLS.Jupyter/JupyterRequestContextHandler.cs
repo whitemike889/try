@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Clockwise;
 using MLS.Jupyter.Protocol;
@@ -40,8 +39,12 @@ namespace MLS.Jupyter
                     var workspace = new Workspace(
                         files: new[]
                                {
-                                   new Workspace.File("Program.cs", code),
+                                   new Workspace.File("Program.cs", Scaffold())
                                },
+                        buffers:new[]
+                                {
+                                    new Workspace.Buffer(new BufferId("Program.cs", "main"), code), 
+                                },
                         workspaceType: package.Name);
 
                     var workspaceRequest = new WorkspaceRequest(workspace);
@@ -50,11 +53,15 @@ namespace MLS.Jupyter
 
                     var result = await server.Run(workspaceRequest);
 
+                    var messageBuilder = delivery.Command.Builder;
+                    var ioPubChannel = delivery.Command.IoPubChannel;
+                    var serverChannel = delivery.Command.ServerChannel;
+
                     if (!executeRequest.Silent)
                     {
                         _executionCount++;
 
-                        var executeInput = delivery.Command.Builder.CreateMessage(
+                        var executeInput = messageBuilder.CreateMessage(
                             MessageTypeValues.ExecuteInput,
                             new ExecuteInput
                             {
@@ -63,33 +70,26 @@ namespace MLS.Jupyter
                             },
                             delivery.Command.Request.Header);
 
-                        delivery.Command.IoPubChannel.Send(executeInput);
+                        ioPubChannel.Send(executeInput);
                     }
 
-                    // display data
-                    var data = new DisplayData
-                    {
-                        Data = new JObject()
-                        {
-                            { "text/plain", string.Join("\n",result.Output) }
-                        },
-                        Transient = transient
-                    };
-
                     // execute result
+                    var output = string.Join("\n", result.Output);
+
                     var executeResultData = new ExecuteResult
                     {
-                        Data = new JObject()
+                        Data = new JObject
                         {
-                            { "text/plain", string.Join("\n",result.Output) }
+                            { "text/plain", output }
                         },
                         Transient = transient
                     };
 
-                    if (result.Succeeded &&
-                        result.Exception == null)
-                    {
+                    var resultSucceeded = result.Succeeded &&
+                                          result.Exception == null;
 
+                    if (resultSucceeded)
+                    {
                         // reply ok
                         var executeReplyPayload = new ExecuteReplyOk
                         {
@@ -97,23 +97,23 @@ namespace MLS.Jupyter
                         };
 
                         // send to server
-                        var executeReply = delivery.Command.Builder.CreateMessage(MessageTypeValues.ExecuteReply, executeReplyPayload, delivery.Command.Request.Header);
-                        executeReply.Identifiers = delivery.Command.Request.Identifiers;
-                        delivery.Command.ServerChannel.Send(executeReply);
+                        var executeReply = messageBuilder.CreateMessage(
+                            MessageTypeValues.ExecuteReply, 
+                            executeReplyPayload, 
+                            delivery.Command.Request.Header);
 
-                        //if (!executeRequest.Silent)
-                        //{
-                        //    // send on io
-                        //    var displayData = delivery.Command.Builder.CreateMessage(MessageTypeValues.DisplayData, data, delivery.Command.Request.Header);
-                        //    delivery.Command.IoPubChannel.Send(displayData);
-                        //}
+                        executeReply.Identifiers = delivery.Command.Request.Identifiers;
+
+                        serverChannel.Send(executeReply);
                     }
                     else
                     {
                         var errorContent = new Error
                         {
-                            EName = string.IsNullOrWhiteSpace(result.Exception) ? "Compiler Error" : "Unhandled Exception",
-                            EValue = string.Join("\n", result.Output),
+                            EName = string.IsNullOrWhiteSpace(result.Exception)
+                                        ? "Compile Error" 
+                                        : "Unhandled Exception",
+                            EValue = output,
                             Traceback = new List<string>()
                         };
 
@@ -124,30 +124,44 @@ namespace MLS.Jupyter
                         };
 
                         // send to server
-                        var executeReply = delivery.Command.Builder.CreateMessage(MessageTypeValues.ExecuteReply, executeReplyPayload, delivery.Command.Request.Header);
+                        var executeReply = messageBuilder.CreateMessage(
+                            MessageTypeValues.ExecuteReply, 
+                            executeReplyPayload, 
+                            delivery.Command.Request.Header);
+
                         executeReply.Identifiers = delivery.Command.Request.Identifiers;
-                        delivery.Command.ServerChannel.Send(executeReply);
+
+                        serverChannel.Send(executeReply);
 
                         if (!executeRequest.Silent)
                         {
                             // send on io
-                            var error = delivery.Command.Builder.CreateMessage(MessageTypeValues.Error, errorContent, delivery.Command.Request.Header);
-                            delivery.Command.IoPubChannel.Send(error);
+                            var error = messageBuilder.CreateMessage(
+                                MessageTypeValues.Error, 
+                                errorContent, 
+                                delivery.Command.Request.Header);
+                            ioPubChannel.Send(error);
 
                             // send on stderr
                             var stdErr = new StdErrStream
                             {
                                 Text = errorContent.EValue
                             };
-                            var stream = delivery.Command.Builder.CreateMessage(MessageTypeValues.Stream, stdErr, delivery.Command.Request.Header);
-                            delivery.Command.IoPubChannel.Send(stream);
+                            var stream = messageBuilder.CreateMessage(
+                                MessageTypeValues.Stream, 
+                                stdErr, 
+                                delivery.Command.Request.Header);
+                            ioPubChannel.Send(stream);
                         }
                     }
 
-                    if (!executeRequest.Silent)
+                    if (!executeRequest.Silent && resultSucceeded)
                     {
-                        var executeResult = delivery.Command.Builder.CreateMessage(MessageTypeValues.ExecuteResult, executeResultData, delivery.Command.Request.Header);
-                        delivery.Command.IoPubChannel.Send(executeResult);
+                        var executeResult = messageBuilder.CreateMessage(
+                            MessageTypeValues.ExecuteResult,
+                            executeResultData, 
+                            delivery.Command.Request.Header);
+                        ioPubChannel.Send(executeResult);
                     }
 
                     break;
@@ -155,5 +169,22 @@ namespace MLS.Jupyter
 
             return delivery.Complete();
         }
+
+        private static string Scaffold() =>
+            @"
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
+public class Program
+{
+    public static void Main()
+    {
+#region main
+#endregion
+    }
+}
+";
     }
 }

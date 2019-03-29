@@ -24,10 +24,10 @@ namespace MLS.Jupyter
         private readonly MessageBuilder _messageBuilder;
         private readonly MessageSender _shellSender;
         private readonly MessageSender _ioPubSender;
-        private string _stdInAddress;
-        private string _controlAddress;
-        private RouterSocket _stdIn;
-        private RouterSocket _control;
+        private readonly string _stdInAddress;
+        private readonly string _controlAddress;
+        private readonly RouterSocket _stdIn;
+        private readonly RouterSocket _control;
 
         public Shell(
             ICommandScheduler<JupyterRequestContext> scheduler,
