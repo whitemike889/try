@@ -153,18 +153,6 @@ namespace WorkspaceServer
                              workspace.AddPackageReference("Newtonsoft.Json");
                          });
 
-            //// Todo: soemething about nodatime 2.3 makes blazor toolchain fail to build
-            //registry.Add("blazor-nodatime.api",
-            //             workspace =>
-            //             {
-            //                 workspace.CreateUsingDotnet("classlib");
-            //                 workspace.DeleteFile("Class1.cs");
-            //                 workspace.AddPackageReference("NodaTime", "2.4.4");
-            //                 workspace.AddPackageReference("NodaTime.Testing", "2.4.4");
-            //                 workspace.AddPackageReference("Newtonsoft.Json");
-            //                 workspace.EnableBlazor(registry);
-            //             });
-
             return registry;
         }
 

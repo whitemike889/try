@@ -16,10 +16,10 @@ namespace MLS.Agent.Blazor
         {
             var registry = serviceProvider.GetService<PackageRegistry>();
 
-            var pbps = registry.GetPrebuiltBlazorPacakges().Result;
-            foreach (var pbp in pbps)
+            var preBuiltPackages = registry.GetPrebuiltBlazorPacakges().Result;
+            foreach (var preBuiltPackage in preBuiltPackages)
             {
-                SetupMappingsForBlazorContentsOfPackage(pbp, app);
+                SetupMappingsForBlazorContentsOfPackage(preBuiltPackage, app);
             }
 
             List<Task> prepareTasks = new List<Task>();
@@ -43,9 +43,6 @@ namespace MLS.Agent.Blazor
                             }
                         }));
                     }
-                    //var readyTask = Task.Run(package.Prepare);
-                    //readyTask.Wait();
-                   
                 }
             }
 

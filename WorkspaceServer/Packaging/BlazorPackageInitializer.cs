@@ -44,8 +44,6 @@ namespace WorkspaceServer.Packaging
 
             var result = await dotnet.AddPackage("MLS.WasmCodeRunner", "1.0.7880001-alpha-c895bf25");
 
-            System.Console.WriteLine(string.Join("\n", result.Error.Concat(result.Output)));
-
             result.ThrowOnFailure();
 
             foreach (var packageId in _addPackages)

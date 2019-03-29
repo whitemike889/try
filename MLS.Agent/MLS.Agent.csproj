@@ -91,9 +91,9 @@
   <ItemGroup>
     <EmbeddedResource Include="..\MLS.PackageTool\MLS.PackageTool.csproj" />
     <EmbeddedResource Include="..\MLS.PackageTool\Program.cs" />
-    <!-- <EmbeddedResource Include="$(OutputPath)/demo.zip">
+    <EmbeddedResource Include="$(OutputPath)/demo.zip">
       <LogicalName>demo.zip</LogicalName>
-    </EmbeddedResource> -->
+    </EmbeddedResource>
   </ItemGroup>
  
   <Target Name="PublishClient" BeforeTargets="PrepareForPublish">

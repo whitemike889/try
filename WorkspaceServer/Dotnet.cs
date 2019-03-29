@@ -79,7 +79,7 @@ namespace WorkspaceServer
             string[] separator = new[] { " " };
             return result.Output
                 .Skip(2)
-                . Where(s => !string.IsNullOrWhiteSpace(s))
+                .Where(s => !string.IsNullOrWhiteSpace(s))
                 .Select(s => s.Split(separator, StringSplitOptions.RemoveEmptyEntries)[2]);
         }
 
