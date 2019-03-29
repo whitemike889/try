@@ -8,7 +8,6 @@ using MLS.Protocol;
 using Pocket;
 using WorkspaceServer;
 using WorkspaceServer.Servers.Roslyn;
-using WorkspaceServer.Servers.Scripting;
 using static Pocket.Logger<MLS.Agent.Controllers.LanguageServicesController>;
 using Workspace = MLS.Protocol.Execution.Workspace;
 
@@ -17,11 +16,11 @@ namespace MLS.Agent.Controllers
     public class LanguageServicesController : Controller
     {
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
-        private readonly RoslynWorkspaceServer workspaceServer;
+        private readonly RoslynWorkspaceServer _workspaceServer;
 
         public LanguageServicesController(RoslynWorkspaceServer workspaceServer)
         {
-            this.workspaceServer = workspaceServer ?? throw new ArgumentNullException(nameof(workspaceServer));
+            _workspaceServer = workspaceServer ?? throw new ArgumentNullException(nameof(workspaceServer));
         }
 
         protected override void Dispose(bool disposing)
@@ -122,7 +121,7 @@ namespace MLS.Agent.Controllers
 
         private ILanguageService GetServerForWorkspace(Workspace workspace)
         {
-            return workspaceServer;
+            return _workspaceServer;
         }
     }
 }

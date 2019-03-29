@@ -1,3 +1,4 @@
+using System;
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.IO;
@@ -10,7 +11,7 @@ using Xunit.Abstractions;
 
 namespace MLS.Agent.Tests
 {
-    public class CommandLineParserTests
+    public class CommandLineParserTests : IDisposable
     {
         private readonly ITestOutputHelper _output;
         private readonly TestConsole _console = new TestConsole();
@@ -22,12 +23,14 @@ namespace MLS.Agent.Tests
         private DirectoryInfo _install_packageSource;
         private VerifyOptions _verifyOptions;
         private DemoOptions _demoOptions;
+        private JupyterOptions _jupyter_Options;
 
         public CommandLineParserTests(ITestOutputHelper output)
         {
             _output = output;
+
             _parser = CommandLineParser.Create(
-                start: (options, invocationContext) =>
+                startServer: (options, invocationContext) =>
                 {
                     _start_options = options;
                 },
@@ -56,7 +59,17 @@ namespace MLS.Agent.Tests
                 {
                     _verifyOptions = options;
                     return Task.FromResult(1);
-                });
+                },
+                jupyter: (options, console, startServer, context) =>
+                {
+                    _jupyter_Options = options;
+                    return Task.FromResult(1);
+                }) ;
+        }
+
+        public void Dispose()
+        {
+            _output.WriteLine(_console.Error.ToString());
         }
 
         [Fact]
@@ -167,17 +180,24 @@ namespace MLS.Agent.Tests
         }
 
         [Fact]
-        public async Task When_root_command_is_specified_then_agent_is_not_in_hosted_mode()
+        public async Task When_root_command_is_specified_then_agent_is_in_try_mode()
         {
             await _parser.InvokeAsync("", _console);
-            _start_options.IsInHostedMode.Should().BeFalse();
+            _start_options.Mode.Should().Be(StartupMode.Try);
         }
 
         [Fact]
         public async Task When_hosted_command_is_specified_then_agent_is_in_hosted_mode()
         {
             await _parser.InvokeAsync("hosted", _console);
-            _start_options.IsInHostedMode.Should().BeTrue();
+            _start_options.Mode.Should().Be(StartupMode.Hosted);
+        }
+
+        [Fact]
+        public async Task When_jupyter_command_is_specified_then_agent_is_in_jupyter_mode()
+        {
+            await _parser.InvokeAsync("hosted", _console);
+            _start_options.Mode.Should().Be(StartupMode.Hosted);
         }
 
         [Fact]
@@ -255,6 +275,40 @@ namespace MLS.Agent.Tests
                 .FullName
                 .Should()
                 .Be(expected);
+        }
+
+        [Fact]
+        public async Task jupyter_parses_connection_file_path()
+        {
+            var expected =  Path.GetTempFileName();
+
+            await _parser.InvokeAsync($"jupyter {expected}");
+
+            _jupyter_Options
+                .ConnectionFile
+                .FullName
+                .Should()
+                .Be(expected);
+        }
+
+        [Fact]
+        public async Task jupyter_returns_error_if_connection_file_path_does_not_exits()
+        {
+            var expected = "not_exist.json";
+
+            var testConsole = new TestConsole();
+            await _parser.InvokeAsync($"jupyter {expected}", testConsole);
+
+            testConsole.Error.ToString().Should().Contain("File does not exist: not_exist.json");
+        }
+
+        [Fact]
+        public async Task jupyter_returns_error_if_connection_file_path_is_not_passed()
+        {
+            var testConsole = new TestConsole();
+            await _parser.InvokeAsync("jupyter", testConsole);
+
+            testConsole.Error.ToString().Should().Contain("Required argument missing for command: jupyter");
         }
 
         [Fact]

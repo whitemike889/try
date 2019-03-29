@@ -20,15 +20,18 @@ using static Pocket.Logger<MLS.Agent.Program>;
 using SerilogLoggerConfiguration = Serilog.LoggerConfiguration;
 using WorkspaceServer;
 using MLS.Agent.CommandLine;
+using MLS.Jupyter;
 
 namespace MLS.Agent
 {
     public class Program
     {
+        private static readonly ServiceCollection _serviceCollection = new ServiceCollection();
+
         public static async Task<int> Main(string[] args)
         {
             var parser = CommandLineParser.Create(
-                start: (options, console) =>
+                startServer: (options, invocationContext) =>
                     ConstructWebHost(options).Run(),
                 demo: DemoCommand.Do,
                 tryGithub: (repo, console) =>
@@ -41,7 +44,9 @@ namespace MLS.Agent
                     VerifyCommand.Do(options,
                                      console,
                                      () => new FileSystemDirectoryAccessor(options.RootDirectory),
-                                     PackageRegistry.CreateForTryMode(options.RootDirectory, null)));
+                                     PackageRegistry.CreateForTryMode(options.RootDirectory)),
+                jupyter:  JupyterCommand.Do,
+                _serviceCollection);
 
             return await parser.InvokeAsync(args);
         }
@@ -55,7 +60,8 @@ namespace MLS.Agent
         private static readonly Assembly[] assembliesEmittingPocketLoggerLogs = {
             typeof(Startup).Assembly,
             typeof(AsyncLazy<>).Assembly,
-            typeof(RoslynWorkspaceServer).Assembly
+            typeof(RoslynWorkspaceServer).Assembly,
+            typeof(Shell).Assembly
         };
 
         private static void StartLogging(CompositeDisposable disposables, StartupOptions options)
@@ -137,12 +143,17 @@ namespace MLS.Agent
                           .UseContentRoot(Directory.GetCurrentDirectory())
                           .ConfigureServices(c =>
                           {
-                              if (!String.IsNullOrEmpty(options.ApplicationInsightsKey))
+                              if (!string.IsNullOrEmpty(options.ApplicationInsightsKey))
                               {
                                   c.AddApplicationInsightsTelemetry(options.ApplicationInsightsKey);
                               }
 
                               c.AddSingleton(options);
+
+                              foreach (var serviceDescriptor in _serviceCollection)
+                              {
+                                  c.Add(serviceDescriptor);
+                              }
                           })
                           .UseEnvironment(options.EnvironmentName)
                           .UseStartup<Startup>()

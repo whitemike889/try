@@ -12,7 +12,7 @@ namespace WorkspaceServer.PackageDiscovery
         private readonly ToolPackageLocator _locator;
         private readonly DirectoryInfo _addSource;
 
-        public LocalToolPackageDiscoveryStrategy(DirectoryInfo workingDirectory, DirectoryInfo addSource)
+        public LocalToolPackageDiscoveryStrategy(DirectoryInfo workingDirectory, DirectoryInfo addSource = null)
         { 
             _workingDirectory = workingDirectory;
             _locator = new ToolPackageLocator(workingDirectory.FullName);

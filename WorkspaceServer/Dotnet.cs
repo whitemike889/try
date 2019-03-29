@@ -64,7 +64,8 @@ namespace WorkspaceServer
         public Task<CommandLineResult> ToolInstall(
             string packageName, 
             string toolPath,
-            DirectoryInfo addSource = null, Budget budget = null)
+            DirectoryInfo addSource = null, 
+            Budget budget = null)
         {
             var args = $"{packageName} --tool-path {toolPath} --version 1.0.0";
             if (addSource != null)

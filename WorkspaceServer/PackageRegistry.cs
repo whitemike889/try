@@ -16,7 +16,7 @@ namespace WorkspaceServer
         private readonly ConcurrentDictionary<string, Task<PackageBuilder>> _packageBuilders = new ConcurrentDictionary<string, Task<PackageBuilder>>();
         private readonly ConcurrentDictionary<string, Task<Package>> _packages = new ConcurrentDictionary<string, Task<Package>>();
         private readonly IEnumerable<IPackageDiscoveryStrategy> _strategies;
-        private bool _createRebuildablePackage;
+        private readonly bool _createRebuildablePackage;
 
         public PackageRegistry(
             bool createRebuildablePackage = false,
@@ -92,7 +92,7 @@ namespace WorkspaceServer
             return packageInfos;
         }
 
-        public static PackageRegistry CreateForTryMode(DirectoryInfo project, DirectoryInfo addSource)
+        public static PackageRegistry CreateForTryMode(DirectoryInfo project, DirectoryInfo addSource = null)
         {
             var registry = new PackageRegistry(true,
                new LocalToolPackageDiscoveryStrategy(Package.DefaultPackagesDirectory, addSource));

@@ -61,7 +61,7 @@ This is some sample code:
                 new VerifyOptions(root),
                 console,
                 () => directoryAccessor,
-                PackageRegistry.CreateForTryMode(root, null));
+                PackageRegistry.CreateForTryMode(root));
 
             console.Out
                    .ToString()
@@ -90,7 +90,7 @@ This is some sample code:
                 new VerifyOptions(root),
                 console,
                 () => directoryAccessor,
-                PackageRegistry.CreateForTryMode(root, null));
+                PackageRegistry.CreateForTryMode(root));
 
             _output.WriteLine(console.Out.ToString());
 
@@ -127,7 +127,7 @@ public class EmptyClass {}
                 new VerifyOptions(root),
                 console,
                 () => directoryAccessor,
-                PackageRegistry.CreateForTryMode(root, null));
+                PackageRegistry.CreateForTryMode(root));
 
             _output.WriteLine(console.Out.ToString());
 
@@ -160,7 +160,7 @@ public class EmptyClass {}
                                  new VerifyOptions(rootDirectory),
                                  console,
                                  () => directoryAccessor,
-                                 PackageRegistry.CreateForTryMode(rootDirectory, null));
+                                 PackageRegistry.CreateForTryMode(rootDirectory));
 
             _output.WriteLine(console.Out.ToString());
 
@@ -186,7 +186,7 @@ public class EmptyClass {}
                                  new VerifyOptions(rootDirectory),
                                  console,
                                  () => directoryAccessor,
-                                 PackageRegistry.CreateForTryMode(rootDirectory, null));
+                                 PackageRegistry.CreateForTryMode(rootDirectory));
 
             resultCode.Should().NotBe(0);
         }
@@ -205,7 +205,7 @@ public class EmptyClass {}
                                  new VerifyOptions(rootDirectory),
                                  console,
                                  () => directoryAccessor,
-                                 PackageRegistry.CreateForTryMode(rootDirectory, null));
+                                 PackageRegistry.CreateForTryMode(rootDirectory));
 
             resultCode.Should().NotBe(0);
         }
@@ -238,7 +238,7 @@ public class EmptyClass {}
                                  new VerifyOptions(rootDirectory),
                                  console,
                                  () => directoryAccessor,
-                                 PackageRegistry.CreateForTryMode(rootDirectory, null));
+                                 PackageRegistry.CreateForTryMode(rootDirectory));
 
             console.Out.ToString().Should().Contain("Session cannot span projects or packages: --session one");
 
@@ -283,7 +283,7 @@ public class EmptyClass {}
                                  new VerifyOptions(directory),
                                  console,
                                  () => directoryAccessor,
-                                 PackageRegistry.CreateForTryMode(directory, null));
+                                 PackageRegistry.CreateForTryMode(directory));
 
             _output.WriteLine(console.Out.ToString());
 
@@ -324,7 +324,7 @@ public class EmptyClass {}
                                  new VerifyOptions(rootDirectory),
                                  console,
                                  () => directoryAccessor,
-                                 PackageRegistry.CreateForTryMode(rootDirectory, null));
+                                 PackageRegistry.CreateForTryMode(rootDirectory));
 
             _output.WriteLine(console.Out.ToString());
 
@@ -373,7 +373,7 @@ public class EmptyClass {}
                 new VerifyOptions(rootDirectory),
                 console,
                 () => directoryAccessor,
-                PackageRegistry.CreateForTryMode(rootDirectory, null));
+                PackageRegistry.CreateForTryMode(rootDirectory));
 
             _output.WriteLine(console.Out.ToString());
 
@@ -404,7 +404,7 @@ This is some sample code:
                 new VerifyOptions(root),
                 console,
                 () => directoryAccessor,
-                PackageRegistry.CreateForTryMode(root, null));
+                PackageRegistry.CreateForTryMode(root));
             
             _output.WriteLine(console.Out.ToString());
 
@@ -443,7 +443,7 @@ This is some sample code:
 
             var console = new TestConsole();
 
-            var packageRegistry = PackageRegistry.CreateForTryMode(rootDirectory, null);
+            var packageRegistry = PackageRegistry.CreateForTryMode(rootDirectory);
             var resultCode = await VerifyCommand.Do(
                                  new VerifyOptions(rootDirectory),
                                  console,
@@ -513,7 +513,7 @@ This is some sample code:
 
             var console = new TestConsole();
 
-            var packageRegistry = PackageRegistry.CreateForTryMode(rootDirectory, null);
+            var packageRegistry = PackageRegistry.CreateForTryMode(rootDirectory);
             var resultCode = await VerifyCommand.Do(
                                  new VerifyOptions(rootDirectory),
                                  console,
