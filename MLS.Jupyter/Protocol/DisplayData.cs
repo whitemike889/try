@@ -5,7 +5,6 @@ namespace MLS.Jupyter.Protocol
 {
     public class DisplayData
     {
-
         [JsonProperty("source", NullValueHandling = NullValueHandling.Ignore)]
         public string Source { get; set; }
 
@@ -13,7 +12,7 @@ namespace MLS.Jupyter.Protocol
         public object Data { get; set; }
 
         [JsonProperty("metadata", NullValueHandling = NullValueHandling.Ignore)]
-        public object MetaData { get; set; }
+        public object MetaData { get; } = new JObject();
 
         [JsonProperty("transient", NullValueHandling = NullValueHandling.Ignore)]
         public object Transient { get; set; }

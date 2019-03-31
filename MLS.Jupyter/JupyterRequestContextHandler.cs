@@ -76,14 +76,20 @@ namespace MLS.Jupyter
                     // execute result
                     var output = string.Join("\n", result.Output);
 
-                    var executeResultData = new ExecuteResult
+                    
+                    // executeResult data
+                    var executeResultData = new ExecuteResult()
                     {
                         Data = new JObject
                         {
+                            { "text/html", output },
                             { "text/plain", output }
                         },
-                        Transient = transient
+                        Transient = transient,
+                        ExecutionCount = _executionCount
                     };
+
+
 
                     var resultSucceeded = result.Succeeded &&
                                           result.Exception == null;
@@ -157,11 +163,12 @@ namespace MLS.Jupyter
 
                     if (!executeRequest.Silent && resultSucceeded)
                     {
-                        var executeResult = messageBuilder.CreateMessage(
+                        // send on io
+                        var executeResultMessage = messageBuilder.CreateMessage(
                             MessageTypeValues.ExecuteResult,
-                            executeResultData, 
+                            executeResultData,
                             delivery.Command.Request.Header);
-                        ioPubChannel.Send(executeResult);
+                        ioPubChannel.Send(executeResultMessage);
                     }
 
                     break;
