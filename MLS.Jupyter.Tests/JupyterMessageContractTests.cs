@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text;
 using Assent;
 using MLS.Jupyter.Protocol;
 using NetMQ;
+using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace MLS.Jupyter.Tests
@@ -52,6 +54,118 @@ namespace MLS.Jupyter.Tests
                                    Header = header,
                                    Content = kernelInfoReply
                                };
+            sender.Send(replyMessage);
+
+            var encoded = socket.GetEncodedMessage();
+            this.Assent(encoded, _configuration);
+        }
+
+        [Fact]
+        public void Execute_result_contract_has_not_been_broken()
+        {
+            var socket = new TextSocket();
+            var sender = new MessageSender(socket, new SignatureValidator("key", "HMACSHA256"));
+            var transient = new Dictionary<string, object> { { "display_id", "none" } };
+            var output = "some result";
+            var executeResult = new ExecuteResult
+            {
+                Data = new JObject
+                {
+                    { "text/html", output },
+                    { "text/plain", output }
+                },
+                Transient = transient,
+                ExecutionCount = 12
+            };
+
+            var header = new Header
+            {
+                Username = Constants.USERNAME,
+                Session = "test session",
+                MessageId = Guid.Empty.ToString(),
+                MessageType = MessageTypeValues.ExecuteResult,
+                Date = DateTime.MinValue.ToString("yyyy-MM-ddTHH:mm:ssZ"),
+                Version = "5.3"
+            };
+            var replyMessage = new Message
+            {
+                Header = header,
+                Content = executeResult
+            };
+            sender.Send(replyMessage);
+
+            var encoded = socket.GetEncodedMessage();
+            this.Assent(encoded, _configuration);
+        }
+
+        [Fact]
+        public void Display_data_contract_has_not_been_broken()
+        {
+            var socket = new TextSocket();
+            var sender = new MessageSender(socket, new SignatureValidator("key", "HMACSHA256"));
+            var transient = new Dictionary<string, object> { { "display_id", "none" } };
+            var output = "some result";
+            var displayData = new DisplayData()
+            {
+                Data = new JObject
+                {
+                    { "text/html", output },
+                    { "text/plain", output }
+                },
+                Transient = transient
+            };
+
+            var header = new Header
+            {
+                Username = Constants.USERNAME,
+                Session = "test session",
+                MessageId = Guid.Empty.ToString(),
+                MessageType = MessageTypeValues.DisplayData,
+                Date = DateTime.MinValue.ToString("yyyy-MM-ddTHH:mm:ssZ"),
+                Version = "5.3"
+            };
+            var replyMessage = new Message
+            {
+                Header = header,
+                Content = displayData
+            };
+            sender.Send(replyMessage);
+
+            var encoded = socket.GetEncodedMessage();
+            this.Assent(encoded, _configuration);
+        }
+
+        [Fact]
+        public void Update_data_contract_has_not_been_broken()
+        {
+            var socket = new TextSocket();
+            var sender = new MessageSender(socket, new SignatureValidator("key", "HMACSHA256"));
+            var transient = new Dictionary<string, object> { { "display_id", "none" } };
+            var output = "some result";
+            var displayData = new UpdateDisplayData()
+            {
+                Data = new JObject
+                {
+                    { "text/html", output },
+                    { "text/plain", output }
+                },
+                Transient = transient
+            };
+
+            var header = new Header
+            {
+                Username = Constants.USERNAME,
+                Session = "test session",
+                MessageId = Guid.Empty.ToString(),
+                MessageType = MessageTypeValues.UpdateDisplayData,
+                Date = DateTime.MinValue.ToString("yyyy-MM-ddTHH:mm:ssZ"),
+                Version = "5.3"
+            };
+            var replyMessage = new Message
+            {
+                Header = header,
+                Content = displayData
+            };
             sender.Send(replyMessage);
 
             var encoded = socket.GetEncodedMessage();
