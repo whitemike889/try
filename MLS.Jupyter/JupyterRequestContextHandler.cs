@@ -80,13 +80,13 @@ namespace MLS.Jupyter
                     // executeResult data
                     var executeResultData = new ExecuteResult()
                     {
-                        MetaData = new JObject(),
                         Data = new JObject
                         {
                             { "text/html", output },
                             { "text/plain", output }
                         },
-                        Transient = transient
+                        Transient = transient,
+                        ExecutionCount = _executionCount
                     };
 
 
