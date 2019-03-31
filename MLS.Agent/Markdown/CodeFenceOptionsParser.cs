@@ -11,7 +11,6 @@ namespace MLS.Agent.Markdown
     {
         private readonly Parser _parser;
         private readonly ModelBinder<CodeLinkBlockOptions> _modelBinder = new ModelBinder<CodeLinkBlockOptions>();
-        private static int _sessionIndex;
 
         public CodeFenceOptionsParser(IDirectoryAccessor directoryAccessor)
         {

@@ -7,7 +7,9 @@ namespace WorkspaceServer.PackageDiscovery
 {
     public class ProjectFilePackageDiscoveryStrategy : IPackageDiscoveryStrategy
     {
-        public Task<PackageBuilder> Locate(PackageDescriptor packageDescriptor, Budget budget = null)
+        public Task<PackageBuilder> Locate(
+            PackageDescriptor packageDescriptor, 
+            Budget budget = null)
         {
             var projectFile = packageDescriptor.Name;
 

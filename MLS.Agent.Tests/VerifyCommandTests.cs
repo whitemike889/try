@@ -26,13 +26,10 @@ public class Program
 
         private const string CsprojContents = @"<Project Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.1</TargetFramework>
   </PropertyGroup>
 </Project>
 ";
-
-
 
         private readonly ITestOutputHelper _output;
 
@@ -167,18 +164,35 @@ public class EmptyClass {}
             resultCode.Should().Be(0);
         }
 
-        [Fact]
-        public async Task When_there_are_markdown_errors_then_return_code_is_nonzero()
+        [Theory]
+        [InlineData("invalid")]
+        [InlineData("--source-file ./NONEXISTENT.CS")]
+        [InlineData("--source-file ./Program.cs")]
+        [InlineData("--source-file ./Program.cs --region NONEXISTENT")]
+        public async Task When_there_are_code_fence_option_errors_then_return_code_is_nonzero(string args)
         {
             var rootDirectory = new DirectoryInfo(".");
 
             var directoryAccessor = new InMemoryDirectoryAccessor(rootDirectory)
                                     {
-                                        ("doc.md", @"
-```cs Program.cs
+                                        ("doc.md", $@"
+```cs {args}
 ```
-")
-                                    };
+"),
+                                        ("Program.cs",  $@"
+using System;
+
+public class Program
+{{
+    public static void Main(string[] args)
+    {{
+#region main
+        Console.WriteLine(""Hello World!"");
+#endregion
+    }}
+}}"),
+                                        ("default.csproj", CsprojContents)
+                                    }.CreateFiles();
 
             var console = new TestConsole();
 
@@ -187,6 +201,8 @@ public class EmptyClass {}
                                  console,
                                  () => directoryAccessor,
                                  PackageRegistry.CreateForTryMode(rootDirectory));
+
+            _output.WriteLine(console.Out.ToString());
 
             resultCode.Should().NotBe(0);
         }
@@ -413,7 +429,6 @@ This is some sample code:
                    .Should()
                    .NotContain("Compiling samples for session");
         }
-
 
         [Fact]
         public async Task If_a_new_file_is_added_and_verify_is_called_the_compile_errors_in_it_are_emitted()

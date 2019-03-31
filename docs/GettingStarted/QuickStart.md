@@ -53,10 +53,10 @@ For example, the code snippet above was extended using `dotnet try`. The code fe
 
 | Option                                 | What it does                                                                                                                |
 |----------------------------------------|-----------------------------------------------------------------------------------------------------------------------------|
-| `--source-file .\Snippets\Program.cs`  | Points to the file where the sample code is found. (Required if you want the sample to be interactive.)                     |
 | `--project .\Snippets\Snippets.csproj` | Points to the project that the sample is part of. (Optional. Defaults to any .csproj in the same folder as the `.md` file.) |
 | `--region run2`                        | Identifes a C# code `#region` to focus on. (Optional. If not specified, the whole file is displayed in the editor.)         |
 | `--session "Run example 2"`            | Creates a new session and provides the text for the run button. (Optional. If not provided, all samples run together.)      |  
+| `--source-file .\Snippets\Program.cs`  | Points to the file where the sample code is pulled from.                                                                    |
 
 ### Document Verification
 

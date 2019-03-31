@@ -122,8 +122,6 @@ namespace MLS.Agent.Markdown
 
         private async Task<bool> ValidateOptions(CodeLinkBlockOptions options)
         {
-            bool succeeded = true;
-
             IDirectoryAccessor accessor = null;
             try
             {
@@ -148,13 +146,11 @@ namespace MLS.Agent.Markdown
             if (options.Package != null && !options.IsProjectImplicit)
             {
                 AddDiagnostic("Can't specify both --project and --package");
-                succeeded = false;
             }
 
             foreach (var error in options.Errors)
             {
                 AddDiagnostic(error);
-                succeeded = false;
             }
 
             if (options.Project != null)
@@ -165,11 +161,10 @@ namespace MLS.Agent.Markdown
                 {
                     AddDiagnostic(
                         $"No project file could be found at path {accessor.GetFullyQualifiedPath(new RelativeDirectoryPath("."))}");
-                    succeeded = false;
                 }
             }
 
-            return succeeded;
+            return _diagnostics.Count == 0;
         }
 
         private static string GetPackageNameFromProjectFile(FileInfo projectFile)
