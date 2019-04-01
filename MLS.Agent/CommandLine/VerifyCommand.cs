@@ -29,6 +29,7 @@ namespace MLS.Agent.CommandLine
 
             if (markdownFiles.Length == 0)
             {
+                console.Error.Write($"No markdown files found under {options.RootDirectory}");
                 return -1;
             }
 

@@ -16,7 +16,7 @@ namespace WorkspaceServer
         private readonly ConcurrentDictionary<string, Task<PackageBuilder>> _packageBuilders = new ConcurrentDictionary<string, Task<PackageBuilder>>();
         private readonly ConcurrentDictionary<string, Task<Package>> _packages = new ConcurrentDictionary<string, Task<Package>>();
         private readonly IEnumerable<IPackageDiscoveryStrategy> _strategies;
-        private bool _createRebuildablePackage;
+        private readonly bool _createRebuildablePackage;
 
         public PackageRegistry(
             bool createRebuildablePackage = false,
@@ -66,9 +66,12 @@ namespace WorkspaceServer
                     name,
                     async name2 =>
                     {
+                        var packageDescriptor = new PackageDescriptor(name2, _createRebuildablePackage);
+
                         foreach (var strategy in _strategies)
                         {
-                            var builder = await strategy.Locate(new PackageDescriptor(name2, _createRebuildablePackage), budget);
+                            var builder = await strategy.Locate(packageDescriptor, budget);
+
                             if (builder != null)
                             {
                                 return builder;
@@ -92,13 +95,7 @@ namespace WorkspaceServer
             return packageInfos;
         }
 
-        public Task<IEnumerable<BlazorPackage>> GetPrebuiltBlazorPackages()
-        {
-            var tool = new PrebuiltBlazorPackageLocator(Package.DefaultPackagesDirectory);
-            return tool.Discover();
-        }
-
-        public static PackageRegistry CreateForTryMode(DirectoryInfo project, DirectoryInfo addSource)
+        public static PackageRegistry CreateForTryMode(DirectoryInfo project, DirectoryInfo addSource = null)
         {
             var registry = new PackageRegistry(true,
                new LocalToolPackageDiscoveryStrategy(Package.DefaultPackagesDirectory, addSource));

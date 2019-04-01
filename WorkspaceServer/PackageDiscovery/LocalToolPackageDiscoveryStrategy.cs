@@ -12,7 +12,7 @@ namespace WorkspaceServer.PackageDiscovery
         private readonly ToolPackageLocator _locator;
         private readonly DirectoryInfo _addSource;
 
-        public LocalToolPackageDiscoveryStrategy(DirectoryInfo workingDirectory, DirectoryInfo addSource)
+        public LocalToolPackageDiscoveryStrategy(DirectoryInfo workingDirectory, DirectoryInfo addSource = null)
         { 
             _workingDirectory = workingDirectory;
             _locator = new ToolPackageLocator(workingDirectory.FullName);
@@ -24,10 +24,7 @@ namespace WorkspaceServer.PackageDiscovery
             var locatedPackage = await _locator.LocatePackageAsync(packageDesciptor.Name, budget);
             if (locatedPackage != null)
             {
-                var pb = new PackageBuilder(packageDesciptor.Name, 
-                    new PackageToolInitializer(Path.Combine(_workingDirectory.FullName, packageDesciptor.Name), _workingDirectory));
-                pb.Directory = locatedPackage.Directory;
-                return pb;
+                return CreatePackageBuilder(packageDesciptor, locatedPackage);
             }
 
             return await TryInstallAndLocateTool(packageDesciptor, budget);
@@ -49,15 +46,25 @@ namespace WorkspaceServer.PackageDiscovery
             }
 
             var tool = await _locator.LocatePackageAsync(packageDesciptor.Name, budget);
+
             if (tool != null)
             {
-                var pb = new PackageBuilder(packageDesciptor.Name,
-                    new PackageToolInitializer(Path.Combine(_workingDirectory.FullName, packageDesciptor.Name), _workingDirectory));
-                pb.Directory = tool.Directory;
-                return pb;
+                return CreatePackageBuilder(packageDesciptor, tool);
             }
 
             return null;
+        }
+
+        private PackageBuilder CreatePackageBuilder(PackageDescriptor packageDesciptor, Package locatedPackage)
+        {
+            var pb = new PackageBuilder(
+                packageDesciptor.Name,
+                new PackageToolInitializer(
+                    Path.Combine(
+                        _workingDirectory.FullName, packageDesciptor.Name),
+                    _workingDirectory));
+            pb.Directory = locatedPackage.Directory;
+            return pb;
         }
     }
 }

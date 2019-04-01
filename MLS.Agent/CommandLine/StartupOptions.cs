@@ -10,15 +10,17 @@ namespace MLS.Agent.CommandLine
             bool languageService = false,
             string key = null,
             string applicationInsightsKey = null,
-            bool logToFile = false,
             string id = null,
             string regionId = null,
             DirectoryInfo rootDirectory = null,
             DirectoryInfo addSource = null,
             Uri uri = null,
+            DirectoryInfo logPath = null,
+            bool verbose = false,
             bool enablePreviewFeatures = false)
         {
-            LogToFile = logToFile;
+            LogPath = logPath;
+            Verbose = verbose;
             Id = id;
             Production = production;
             IsLanguageService = languageService;
@@ -31,22 +33,28 @@ namespace MLS.Agent.CommandLine
             EnablePreviewFeatures = enablePreviewFeatures;
         }
 
-        public bool EnablePreviewFeatures { get; set; }
-        public string Id { get; set; }
-        public string RegionId { get; set; }
-        public DirectoryInfo RootDirectory { get; set; }
+        public bool EnablePreviewFeatures { get; }
+        public string Id { get; }
+        public string RegionId { get; }
+        public DirectoryInfo RootDirectory { get; }
         public DirectoryInfo AddSource { get; }
         public Uri Uri { get; }
-        public bool Production { get; set; }
+        public bool Production { get; }
         public bool IsLanguageService { get; set; }
-        public string Key { get; set; }
-        public string ApplicationInsightsKey { get; set; }
-        public bool LogToFile { get; set; }
-        public bool IsInHostedMode => RootDirectory == null;
+        public string Key { get; }
+        public string ApplicationInsightsKey { get; }
+
+        public StartupMode Mode => RootDirectory == null
+                                       ? StartupMode.Hosted
+                                       : StartupMode.Try; 
 
         public string EnvironmentName =>
-            Production || !IsInHostedMode
+            Production || Mode != StartupMode.Hosted
                 ? Microsoft.AspNetCore.Hosting.EnvironmentName.Production
                 : Microsoft.AspNetCore.Hosting.EnvironmentName.Development;
+
+        public DirectoryInfo LogPath { get;  }
+
+        public bool Verbose { get; }
     }
 }

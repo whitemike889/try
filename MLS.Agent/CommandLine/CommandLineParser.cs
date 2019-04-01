@@ -5,6 +5,11 @@ using System.CommandLine.Invocation;
 using System.IO;
 using System.Threading.Tasks;
 using Clockwise;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using MLS.Agent.Markdown;
+using MLS.Jupyter;
+using WorkspaceServer;
 using WorkspaceServer.Packaging;
 using CommandHandler = System.CommandLine.Invocation.CommandHandler;
 
@@ -38,32 +43,34 @@ namespace MLS.Agent.CommandLine
             VerifyOptions options,
             IConsole console);
 
+        public delegate Task<int> Jupyter(
+            JupyterOptions options,
+            IConsole console,
+            StartServer startServer = null,
+            InvocationContext context = null);
+
         public static Parser Create(
-            StartServer start,
+            StartServer startServer,
             Demo demo,
             TryGitHub tryGithub,
             Pack pack,
             Install install,
-            Verify verify)
+            Verify verify,
+            Jupyter jupyter,
+            IServiceCollection services = null)
         {
-            var startHandler = CommandHandler.Create<InvocationContext, StartupOptions>((context, options) =>
-            {
-                start(options, context);
-            });
+            services = services ?? new ServiceCollection();
 
             var rootCommand = StartInTryMode();
-            rootCommand.Handler = startHandler;
 
-            var startInHostedMode = StartInHostedMode();
-            startInHostedMode.Handler = startHandler;
-
-            rootCommand.AddCommand(startInHostedMode);
+            rootCommand.AddCommand(StartInHostedMode());
             rootCommand.AddCommand(Demo());
             rootCommand.AddCommand(ListPackages());
             rootCommand.AddCommand(GitHub());
             rootCommand.AddCommand(Pack());
             rootCommand.AddCommand(Install());
             rootCommand.AddCommand(Verify());
+            rootCommand.AddCommand(Jupyter());
 
             return new CommandLineBuilder(rootCommand)
                    .UseDefaults()
@@ -104,8 +111,27 @@ namespace MLS.Agent.CommandLine
 
                 command.AddOption(new Option(
                     "--enable-preview-features",
-                    "Enables preview features",
+                    "Enable preview features",
                     new Argument<bool>()));
+
+                command.AddOption(new Option(
+                    "--log-path", 
+                    "Enable file logging to the specified directory",
+                    new Argument<DirectoryInfo>()));
+
+                command.AddOption(new Option(
+                    "--verbose", 
+                    "Enable verbose logging to the console",
+                    new Argument<bool>()));
+
+                command.Handler = CommandHandler.Create<InvocationContext, StartupOptions>((context, options) =>
+                {
+                    services.AddSingleton(_ => PackageRegistry.CreateForTryMode(
+                                              options.RootDirectory,
+                                              options.AddSource));
+                 
+                    startServer(options, context);
+                });
 
                 return command;
             }
@@ -146,6 +172,15 @@ namespace MLS.Agent.CommandLine
                                       "--log-to-file",
                                       "Writes a log file",
                                       new Argument<bool>()));
+
+                command.Handler = CommandHandler.Create<InvocationContext, StartupOptions>((context, options) =>
+                {
+                    services.AddSingleton(_ => PackageRegistry.CreateForHostedMode());
+                    services.AddSingleton(c => new MarkdownProject(c.GetRequiredService<PackageRegistry>()));
+                    services.AddSingleton<IHostedService, Warmup>();
+
+                    startServer(options, context);
+                });
 
                 return command;
             }
@@ -189,7 +224,7 @@ namespace MLS.Agent.CommandLine
 
                 demoCommand.Handler = CommandHandler.Create<DemoOptions, InvocationContext>((options, context) =>
                 {
-                    demo(options, context.Console, start, context);
+                    demo(options, context.Console, startServer, context);
                 });
 
                 return demoCommand;
@@ -208,6 +243,37 @@ namespace MLS.Agent.CommandLine
                 github.Handler = CommandHandler.Create<TryGitHubOptions, IConsole>((repo, console) => tryGithub(repo, console));
 
                 return github;
+            }
+            
+            Command Jupyter()
+            {
+                var jupyterCommand = new Command("jupyter", "Starts dotnet try as a Jupyter kernel");
+                var connectionFileArgument = new Argument<FileInfo>
+                                             {
+                                                 Name = "ConnectionFile"
+                                             }.ExistingOnly();
+                jupyterCommand.Argument = connectionFileArgument;
+
+                jupyterCommand.Handler = CommandHandler.Create<JupyterOptions, IConsole, InvocationContext>((options, console, context) =>
+                {
+                    services
+                        .AddSingleton(c => ConnectionInformation.Load(options.ConnectionFile))
+                        .AddSingleton(
+                            c =>
+                            {
+                                return CommandScheduler
+                                    .Create<JupyterRequestContext>(delivery => c.GetRequiredService<ICommandHandler<JupyterRequestContext>>()
+                                                                                .Trace()
+                                                                                .Handle(delivery));
+                            })
+                        .AddSingleton(c => new JupyterRequestContextHandler(c.GetRequiredService<PackageRegistry>()).Trace())
+                        .AddSingleton<IHostedService, Shell>()
+                        .AddSingleton<IHostedService, Heartbeat>();
+
+                    return jupyter(options, console, startServer, context);
+                });
+
+                return jupyterCommand;
             }
 
             Command Pack()

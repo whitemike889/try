@@ -23,7 +23,7 @@ namespace MLS.Agent.Tests
                 var result = await Tools.CommandLine.Execute("dotnet", $"tool install --add-source {temp.FullName} BasicConsoleApp --tool-path {temp.FullName}");
                 result.ExitCode.Should().Be(0);
 
-                var strategy = new LocalToolPackageDiscoveryStrategy(temp, null);
+                var strategy = new LocalToolPackageDiscoveryStrategy(temp);
                 var tool = await strategy.Locate(new PackageDescriptor("BasicConsoleApp"));
                 tool.Should().NotBeNull();
                 tool.PackageInitializer.Should().BeOfType<PackageToolInitializer>();
@@ -36,7 +36,7 @@ namespace MLS.Agent.Tests
             using (var directory = DisposableDirectory.Create())
             {
                 var temp = directory.Directory;
-                var strategy = new LocalToolPackageDiscoveryStrategy(temp, null);
+                var strategy = new LocalToolPackageDiscoveryStrategy(temp);
 
                 strategy.Invoking(s => s.Locate(new PackageDescriptor("not-a-workspace")).Wait()).Should().NotThrow();
             }

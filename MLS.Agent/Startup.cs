@@ -3,7 +3,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Mime;
-using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.AspNetCore.Blazor.Server;
 using Microsoft.AspNetCore.Builder;
@@ -47,6 +46,7 @@ namespace MLS.Agent
                 .SetBasePath(env.ContentRootPath);
 
             Configuration = configurationBuilder.Build();
+
         }
 
         protected IConfigurationRoot Configuration { get; }
@@ -78,6 +78,53 @@ namespace MLS.Agent
 
                 services.TryAddSingleton<IBrowserLauncher>(c => new BrowserLauncher());
 
+                services.TryAddSingleton(c =>
+                {
+                    switch (StartupOptions.Mode)
+                    {
+                        case StartupMode.Hosted:
+                            return PackageRegistry.CreateForHostedMode();
+
+                        case StartupMode.Try:
+                        case StartupMode.Jupyter:
+                            return PackageRegistry.CreateForTryMode(
+                                StartupOptions.RootDirectory, 
+                                StartupOptions.AddSource);
+
+                        default:
+                            throw new NotSupportedException($"Unrecognized value for {nameof(StartupOptions)}: {StartupOptions.Mode}");
+                    }
+                });
+
+                services.AddSingleton(c => new MarkdownProject(
+                                          c.GetRequiredService<IDirectoryAccessor>(),
+                                          c.GetRequiredService<PackageRegistry>()));
+
+                services.AddSingleton<IDirectoryAccessor>(_ =>
+                {
+                    if (StartupOptions.Uri?.IsAbsoluteUri == true)
+                    {
+                        var client = new WebClient();
+                        var tempDirPath = Path.Combine(
+                            Path.GetTempPath(),
+                            Path.GetRandomFileName());
+
+                        var tempDir = Directory.CreateDirectory(tempDirPath);
+
+                        var temp = Path.Combine(
+                            tempDir.FullName,
+                            Path.GetFileName(StartupOptions.Uri.LocalPath));
+
+                        client.DownloadFile(StartupOptions.Uri, temp);
+                        var fileInfo = new FileInfo(temp);
+                        return new FileSystemDirectoryAccessor(fileInfo.Directory);
+                    }
+                    else
+                    {
+                        return new FileSystemDirectoryAccessor(StartupOptions.RootDirectory);
+                    }
+                });
+
                 services.AddResponseCompression(options =>
                 {
                     options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(new[]
@@ -86,19 +133,6 @@ namespace MLS.Agent
                         WasmMediaTypeNames.Application.Wasm
                     });
                 });
-
-                if (StartupOptions.IsInHostedMode)
-                {
-                    services.AddSingleton(_ => PackageRegistry.CreateForHostedMode());
-                    services.AddSingleton(c => new MarkdownProject(c.GetRequiredService<PackageRegistry>()));
-                    services.AddSingleton<IHostedService, Warmup>();
-                }
-                else
-                {
-                    services.AddSingleton(_ => PackageRegistry.CreateForTryMode(StartupOptions.RootDirectory, StartupOptions.AddSource));
-                    services.AddSingleton(c => new MarkdownProject(c.GetRequiredService<IDirectoryAccessor>(), c.GetRequiredService<PackageRegistry>()));
-                    services.AddSingleton(_ => CreateDirectoryAccessor());
-                }
 
                 services.Configure<ForwardedHeadersOptions>(options =>
                 {
@@ -109,36 +143,11 @@ namespace MLS.Agent
             }
         }
 
-        private IDirectoryAccessor CreateDirectoryAccessor()
-        {
-            if (StartupOptions.Uri != null)
-            {
-                if (StartupOptions.Uri.IsAbsoluteUri)
-                {
-                    var client = new WebClient();
-                    var tempDirPath = Path.Combine(
-                        Path.GetTempPath(),
-                        Path.GetRandomFileName());
-
-                    var tempDir = Directory.CreateDirectory(tempDirPath);
-
-                    var temp = Path.Combine(
-                        tempDir.FullName,
-                        Path.GetFileName(StartupOptions.Uri.LocalPath));
-
-                    client.DownloadFile(StartupOptions.Uri, temp);
-                    var fileInfo = new FileInfo(temp);
-                    return new FileSystemDirectoryAccessor(fileInfo.Directory);
-                }
-            }
-
-            return new FileSystemDirectoryAccessor(StartupOptions.RootDirectory);
-        }
-
         public void Configure(
             IApplicationBuilder app,
             IApplicationLifetime lifetime,
-            IBrowserLauncher browserLauncher)
+            IBrowserLauncher browserLauncher,
+            PackageRegistry packageRegistry)
         {
             using (var operation = Log.OnEnterAndConfirmOnExit())
             {
@@ -154,16 +163,16 @@ namespace MLS.Agent
 
                 var budget = new Budget();
                 _disposables.Add(() => budget.Cancel());
-                BlazorPackageConfiguration.Configure(app, app.ApplicationServices, budget, Environment.IsProduction());
+                BlazorPackageConfiguration.Configure(app, app.ApplicationServices, packageRegistry, budget, !Environment.IsProduction());
 
                 app.UseDefaultFiles()
-                    .UseStaticFilesFromToolLocation()
-                    .UseRouter(new StaticFilesProxyRouter())
-                    .UseMvc();
+                   .UseStaticFilesFromToolLocation()
+                   .UseRouter(new StaticFilesProxyRouter())
+                   .UseMvc();
 
                 operation.Succeed();
 
-                if (!StartupOptions.IsInHostedMode)
+                if (StartupOptions.Mode == StartupMode.Try)
                 {
                     Clock.Current
                          .Schedule(_ => LaunchBrowser(browserLauncher), TimeSpan.FromSeconds(1));

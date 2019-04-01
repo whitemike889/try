@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using FluentAssertions;
 using MLS.Agent.CommandLine;
+using MLS.Agent.Markdown;
 using WorkspaceServer;
 using WorkspaceServer.Tests;
 using Xunit;
@@ -26,13 +27,10 @@ public class Program
 
         private const string CsprojContents = @"<Project Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.1</TargetFramework>
   </PropertyGroup>
 </Project>
 ";
-
-
 
         private readonly ITestOutputHelper _output;
 
@@ -61,7 +59,7 @@ This is some sample code:
                 new VerifyOptions(root),
                 console,
                 () => directoryAccessor,
-                PackageRegistry.CreateForTryMode(root, null));
+                PackageRegistry.CreateForTryMode(root));
 
             console.Out
                    .ToString()
@@ -90,7 +88,7 @@ This is some sample code:
                 new VerifyOptions(root),
                 console,
                 () => directoryAccessor,
-                PackageRegistry.CreateForTryMode(root, null));
+                PackageRegistry.CreateForTryMode(root));
 
             _output.WriteLine(console.Out.ToString());
 
@@ -127,7 +125,7 @@ public class EmptyClass {}
                 new VerifyOptions(root),
                 console,
                 () => directoryAccessor,
-                PackageRegistry.CreateForTryMode(root, null));
+                PackageRegistry.CreateForTryMode(root));
 
             _output.WriteLine(console.Out.ToString());
 
@@ -160,25 +158,42 @@ public class EmptyClass {}
                                  new VerifyOptions(rootDirectory),
                                  console,
                                  () => directoryAccessor,
-                                 PackageRegistry.CreateForTryMode(rootDirectory, null));
+                                 PackageRegistry.CreateForTryMode(rootDirectory));
 
             _output.WriteLine(console.Out.ToString());
 
             resultCode.Should().Be(0);
         }
 
-        [Fact]
-        public async Task When_there_are_markdown_errors_then_return_code_is_nonzero()
+        [Theory]
+        [InlineData("invalid")]
+        [InlineData("--source-file ./NONEXISTENT.CS")]
+        [InlineData("--source-file ./Program.cs")]
+        [InlineData("--source-file ./Program.cs --region NONEXISTENT")]
+        public async Task When_there_are_code_fence_option_errors_then_return_code_is_nonzero(string args)
         {
             var rootDirectory = new DirectoryInfo(".");
 
             var directoryAccessor = new InMemoryDirectoryAccessor(rootDirectory)
                                     {
-                                        ("doc.md", @"
-```cs Program.cs
+                                        ("doc.md", $@"
+```cs {args}
 ```
-")
-                                    };
+"),
+                                        ("Program.cs",  $@"
+using System;
+
+public class Program
+{{
+    public static void Main(string[] args)
+    {{
+#region main
+        Console.WriteLine(""Hello World!"");
+#endregion
+    }}
+}}"),
+                                        ("default.csproj", CsprojContents)
+                                    }.CreateFiles();
 
             var console = new TestConsole();
 
@@ -186,7 +201,9 @@ public class EmptyClass {}
                                  new VerifyOptions(rootDirectory),
                                  console,
                                  () => directoryAccessor,
-                                 PackageRegistry.CreateForTryMode(rootDirectory, null));
+                                 PackageRegistry.CreateForTryMode(rootDirectory));
+
+            _output.WriteLine(console.Out.ToString());
 
             resultCode.Should().NotBe(0);
         }
@@ -205,8 +222,9 @@ public class EmptyClass {}
                                  new VerifyOptions(rootDirectory),
                                  console,
                                  () => directoryAccessor,
-                                 PackageRegistry.CreateForTryMode(rootDirectory, null));
+                                 PackageRegistry.CreateForTryMode(rootDirectory));
 
+            console.Error.ToString().Should().Contain("No markdown files found");
             resultCode.Should().NotBe(0);
         }
 
@@ -238,7 +256,7 @@ public class EmptyClass {}
                                  new VerifyOptions(rootDirectory),
                                  console,
                                  () => directoryAccessor,
-                                 PackageRegistry.CreateForTryMode(rootDirectory, null));
+                                 PackageRegistry.CreateForTryMode(rootDirectory));
 
             console.Out.ToString().Should().Contain("Session cannot span projects or packages: --session one");
 
@@ -283,7 +301,7 @@ public class EmptyClass {}
                                  new VerifyOptions(directory),
                                  console,
                                  () => directoryAccessor,
-                                 PackageRegistry.CreateForTryMode(directory, null));
+                                 PackageRegistry.CreateForTryMode(directory));
 
             _output.WriteLine(console.Out.ToString());
 
@@ -324,7 +342,7 @@ public class EmptyClass {}
                                  new VerifyOptions(rootDirectory),
                                  console,
                                  () => directoryAccessor,
-                                 PackageRegistry.CreateForTryMode(rootDirectory, null));
+                                 PackageRegistry.CreateForTryMode(rootDirectory));
 
             _output.WriteLine(console.Out.ToString());
 
@@ -373,7 +391,7 @@ public class EmptyClass {}
                 new VerifyOptions(rootDirectory),
                 console,
                 () => directoryAccessor,
-                PackageRegistry.CreateForTryMode(rootDirectory, null));
+                PackageRegistry.CreateForTryMode(rootDirectory));
 
             _output.WriteLine(console.Out.ToString());
 
@@ -404,7 +422,7 @@ This is some sample code:
                 new VerifyOptions(root),
                 console,
                 () => directoryAccessor,
-                PackageRegistry.CreateForTryMode(root, null));
+                PackageRegistry.CreateForTryMode(root));
             
             _output.WriteLine(console.Out.ToString());
 
@@ -413,7 +431,6 @@ This is some sample code:
                    .Should()
                    .NotContain("Compiling samples for session");
         }
-
 
         [Fact]
         public async Task If_a_new_file_is_added_and_verify_is_called_the_compile_errors_in_it_are_emitted()
@@ -443,7 +460,7 @@ This is some sample code:
 
             var console = new TestConsole();
 
-            var packageRegistry = PackageRegistry.CreateForTryMode(rootDirectory, null);
+            var packageRegistry = PackageRegistry.CreateForTryMode(rootDirectory);
             var resultCode = await VerifyCommand.Do(
                                  new VerifyOptions(rootDirectory),
                                  console,
@@ -513,7 +530,7 @@ This is some sample code:
 
             var console = new TestConsole();
 
-            var packageRegistry = PackageRegistry.CreateForTryMode(rootDirectory, null);
+            var packageRegistry = PackageRegistry.CreateForTryMode(rootDirectory);
             var resultCode = await VerifyCommand.Do(
                                  new VerifyOptions(rootDirectory),
                                  console,

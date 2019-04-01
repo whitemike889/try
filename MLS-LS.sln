@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.28616.25
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.489
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MLS.Agent", "MLS.Agent\MLS.Agent.csproj", "{5D63B3BA-9C25-4F06-91F0-6B0E1091FCD3}"
 EndProject
@@ -47,6 +47,10 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{E4DF1F27-3AB3-4226-B2B4-D3AC9F17CA96}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Snippets", "docs\GettingStarted\Snippets\Snippets.csproj", "{DCAA2918-F0CA-429E-86DA-C8315E23082F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MLS.Jupyter", "MLS.Jupyter\MLS.Jupyter.csproj", "{DDBAB171-7BA2-4B0F-8606-7CF21B969804}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MLS.Jupyter.Tests", "MLS.Jupyter.Tests\MLS.Jupyter.Tests.csproj", "{614B2E7B-7B05-4023-9C6E-CE708EB1673F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -118,6 +122,14 @@ Global
 		{DCAA2918-F0CA-429E-86DA-C8315E23082F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DCAA2918-F0CA-429E-86DA-C8315E23082F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DCAA2918-F0CA-429E-86DA-C8315E23082F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DDBAB171-7BA2-4B0F-8606-7CF21B969804}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DDBAB171-7BA2-4B0F-8606-7CF21B969804}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DDBAB171-7BA2-4B0F-8606-7CF21B969804}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DDBAB171-7BA2-4B0F-8606-7CF21B969804}.Release|Any CPU.Build.0 = Release|Any CPU
+		{614B2E7B-7B05-4023-9C6E-CE708EB1673F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{614B2E7B-7B05-4023-9C6E-CE708EB1673F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{614B2E7B-7B05-4023-9C6E-CE708EB1673F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{614B2E7B-7B05-4023-9C6E-CE708EB1673F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -140,6 +152,8 @@ Global
 		{9DAE862E-C8AE-452B-B27E-C6DEB1403E81} = {6EE8F484-DFA2-4F0F-939F-400CE78DFAC2}
 		{AAEF5063-5D4C-4CA7-8E22-0DAE1ADBBCD1} = {8192FEAD-BCE6-4E62-97E5-2E9EA884BD71}
 		{DCAA2918-F0CA-429E-86DA-C8315E23082F} = {E4DF1F27-3AB3-4226-B2B4-D3AC9F17CA96}
+		{DDBAB171-7BA2-4B0F-8606-7CF21B969804} = {6EE8F484-DFA2-4F0F-939F-400CE78DFAC2}
+		{614B2E7B-7B05-4023-9C6E-CE708EB1673F} = {8192FEAD-BCE6-4E62-97E5-2E9EA884BD71}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D6CD99BA-B16B-4570-8910-225CBDFFA3AD}

@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
 using WorkspaceServer;
 using WorkspaceServer.Packaging;
 
@@ -12,16 +10,13 @@ namespace MLS.Agent.Blazor
 {
     internal sealed class BlazorPackageConfiguration
     {
-        public static void Configure(IApplicationBuilder app, IServiceProvider serviceProvider, Budget budget, bool isProduction)
+        public static void Configure(
+            IApplicationBuilder app, 
+            IServiceProvider serviceProvider, 
+            PackageRegistry registry, 
+            Budget budget,
+            bool prepareIfNeeded)
         {
-            var registry = serviceProvider.GetService<PackageRegistry>();
-
-            var preBuiltPackages = registry.GetPrebuiltBlazorPackages().Result;
-            foreach (var preBuiltPackage in preBuiltPackages)
-            {
-                SetupMappingsForBlazorContentsOfPackage(preBuiltPackage, app);
-            }
-
             List<Task> prepareTasks = new List<Task>();
 
             foreach (var builderFactory in registry)
@@ -34,7 +29,7 @@ namespace MLS.Agent.Blazor
                     {
                         SetupMappingsForBlazorContentsOfPackage(package, app);
                     }
-                    else if(!isProduction)
+                    else if(prepareIfNeeded)
                     {
                         prepareTasks.Add(Task.Run(package.Prepare).ContinueWith(t => {
                             if (t.IsCompletedSuccessfully)
