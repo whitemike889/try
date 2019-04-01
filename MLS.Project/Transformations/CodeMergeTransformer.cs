@@ -9,7 +9,7 @@ namespace MLS.Project.Transformations
 {
     public class CodeMergeTransformer : IWorkspaceTransformer
     {
-        private static readonly string ProcessorName = typeof(BufferInliningTransformer).Name;
+        private static readonly string ProcessorName = typeof(CodeMergeTransformer).Name;
         private static readonly string Padding = "\n";
 
         public Task<Workspace> TransformAsync(Workspace source, Budget timeBudget = null)
@@ -21,7 +21,7 @@ namespace MLS.Project.Transformations
 
             var files = (source.Files?? Array.Empty<Workspace.File>())
                 .GroupBy(file => file.Name)
-                .Select(fileGroup => { return new Workspace.File(fileGroup.Key, string.Join(Padding, fileGroup.OrderBy(f => f.SortId).Select(f => f.Text))); });
+                .Select(fileGroup => { return new Workspace.File(fileGroup.Key, string.Join(Padding, fileGroup.OrderBy(f => f.Order).Select(f => f.Text))); });
 
             var buffers = (source.Buffers ?? Array.Empty<Workspace.Buffer>())
                 .GroupBy(buffer => buffer.Id)
@@ -44,9 +44,9 @@ namespace MLS.Project.Transformations
             var position = 0;
             var content = string.Empty;
             var sortId = 0;
-            foreach (var buffer in buffers.OrderBy(buffer => buffer.SortId))
+            foreach (var buffer in buffers.OrderBy(buffer => buffer.Order))
             {
-                sortId = buffer.SortId;
+                sortId = buffer.Order;
                 if (buffer.Position != 0)
                 {
                     position = content.Length + buffer.Position;
@@ -55,7 +55,7 @@ namespace MLS.Project.Transformations
 
                 content = content.Substring(0, content.Length - Padding.Length);
             }
-            return new Workspace.Buffer(id,content,position:position, sortId:sortId);
+            return new Workspace.Buffer(id,content,position:position, order:sortId);
         }
     }
 }

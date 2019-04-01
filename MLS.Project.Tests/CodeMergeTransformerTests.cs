@@ -9,7 +9,7 @@ namespace MLS.Project.Tests
     public class CodeMergeTransformerTests
     {
         [Fact]
-        public void Processing_fails_with_null_workspace()
+        public void When_workspace_is_null_then_the_transformer_throw_exceptio()
         {
             var processor = new CodeMergeTransformer();
             Func<Task> extraction = () => processor.TransformAsync(null);
