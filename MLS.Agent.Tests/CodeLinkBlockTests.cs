@@ -16,10 +16,11 @@ namespace MLS.Agent.Tests
         public CodeLinkBlockTests()
         {
             var rootDirectory = Create.EmptyWorkspace(isRebuildablePackage: true).Directory;
-            _directoryAccessor = new InMemoryDirectoryAccessor(rootDirectory);
+            _directoryAccessor = new InMemoryDirectoryAccessor(rootDirectory, rootDirectory);
             var registry = PackageRegistry.CreateForTryMode(rootDirectory);
             _parser = new CodeLinkBlockParser(_directoryAccessor, registry);
         }
+
         [Fact]
         public void It_requires_options_to_initialize()
         {
