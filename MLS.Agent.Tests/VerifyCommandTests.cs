@@ -411,7 +411,7 @@ public class Program
                                     {
                                         ("doc.md", @"
 This is some sample code:
-```cs Program.cs
+```cs --source-file Program.cs
 ```
 ")
                                     };

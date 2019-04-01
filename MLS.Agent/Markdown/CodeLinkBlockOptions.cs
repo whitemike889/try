@@ -35,7 +35,7 @@ namespace MLS.Agent.Markdown
             Hidden = hidden;
             Errors = errors ?? Enumerable.Empty<string>();
 
-            if (string.IsNullOrWhiteSpace(Session) && !Editable)
+            if (string.IsNullOrWhiteSpace(Session) && Editable)
             {
                 Session = $"Run{++sessionIndex}";
             }

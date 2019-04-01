@@ -265,7 +265,7 @@ This is the end of the file")
                     new InMemoryDirectoryAccessor(new DirectoryInfo(Directory.GetCurrentDirectory()))
                     {
                         ("readme.md", @"
-```cs --include
+```cs --editable false
 //some code to include
 ```
                         ")

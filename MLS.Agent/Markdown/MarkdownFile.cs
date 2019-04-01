@@ -40,13 +40,13 @@ namespace MLS.Agent.Markdown
 
         public async Task<IEnumerable<CodeLinkBlock>> GetEditableCodeLinkBlocks()
         {
-            var blocks = (await GetCodeLinkBlocks()).Where(b => !b.Editable);
+            var blocks = (await GetCodeLinkBlocks()).Where(b => b.Editable);
             return blocks;
         }
 
         public async Task<IEnumerable<CodeLinkBlock>> GetReadOnlyCodeLinkBlocks()
         {
-            var blocks = (await GetCodeLinkBlocks()).Where(b => b.Editable);
+            var blocks = (await GetCodeLinkBlocks()).Where(b => !b.Editable);
             return blocks;
         }
 
@@ -60,84 +60,80 @@ namespace MLS.Agent.Markdown
         public string ReadAllText() =>
             Project.DirectoryAccessor.ReadAllText(Path);
 
-        public async Task<Dictionary<string, Workspace.Buffer[]>> GetBuffersToInclude(IDirectoryAccessor directoryAccessor)
+        internal async Task<(Dictionary<string, Workspace.Buffer[]> buffers,  Dictionary<string, Workspace.File[]> files)> GetIncludes(IDirectoryAccessor directoryAccessor)
         {
-            var includes = new Dictionary<string, Workspace.Buffer[]>(StringComparer.InvariantCultureIgnoreCase);
+            var buffersToIncludeBySession = new Dictionary<string, Workspace.Buffer[]>(StringComparer.InvariantCultureIgnoreCase);
 
-            var includeFileBuffersBySession = new Dictionary<string, Dictionary<BufferId, StringBuilder>>(StringComparer.InvariantCultureIgnoreCase);
+            var contentBuildersByBufferBySession = new Dictionary<string, Dictionary<BufferId, StringBuilder>>(StringComparer.InvariantCultureIgnoreCase);
+
+            var filesToIncludeBySession = new Dictionary<string, Workspace.File[]>(StringComparer.InvariantCultureIgnoreCase);
+
+            var contentBuildersByFileBySession = new Dictionary<string, Dictionary<string, StringBuilder>>(StringComparer.InvariantCultureIgnoreCase);
+
 
             var blocks = await GetReadOnlyCodeLinkBlocks();
 
             foreach (var block in blocks)
             {
-                if (string.IsNullOrWhiteSpace(block.Region))
-                {
-                    continue;
-                }
-                var sessionId = string.IsNullOrWhiteSpace(block.Session) ? "global" : block.Session;
-                var filePath = block.DestinationFile ?? new RelativeFilePath($"./generated_include_file_{sessionId}.cs");
-                var bufferId =new BufferId(directoryAccessor.GetFullyQualifiedPath(filePath).FullName, block.Region);
-                if (!includeFileBuffersBySession.TryGetValue(sessionId, out var sessionFileBuffers))
-                {
-                    sessionFileBuffers = new Dictionary<BufferId, StringBuilder>();
-                    includeFileBuffersBySession[sessionId] = sessionFileBuffers;
-                }
-
-                if (!sessionFileBuffers.TryGetValue(bufferId, out var fileBuffer))
-                {
-                    fileBuffer = new StringBuilder();
-                    sessionFileBuffers[bufferId] = fileBuffer;
-                }
-
-                fileBuffer.AppendLine(block.SourceCode);
-            }
-
-            foreach (var includeFileBuffers in includeFileBuffersBySession)
-            {
-                includes[includeFileBuffers.Key] = includeFileBuffers.Value.Select((fileBuffer) => new Workspace.Buffer(fileBuffer.Key, fileBuffer.Value.ToString())).ToArray();
-            }
-
-            return includes;
-        }
-
-        public async Task<Dictionary<string, Workspace.File[]>> GetFilesToInclude(IDirectoryAccessor directoryAccessor)
-        {
-            var includes = new Dictionary<string, Workspace.File[]>(StringComparer.InvariantCultureIgnoreCase);
-
-            var includeFileBuffersBySession = new Dictionary<string, Dictionary<string, StringBuilder>>(StringComparer.InvariantCultureIgnoreCase);
-
-            var blocks = await GetReadOnlyCodeLinkBlocks();
-
-            foreach (var block in blocks)
-            {
-                if (!string.IsNullOrWhiteSpace(block.Region))
-                {
-                    continue;
-                }
                 var sessionId = string.IsNullOrWhiteSpace(block.Session) ? "global" : block.Session;
                 var filePath = block.DestinationFile ?? new RelativeFilePath($"./generated_include_file_{sessionId}.cs");
                 var absolutePath = directoryAccessor.GetFullyQualifiedPath(filePath).FullName;
-                if (!includeFileBuffersBySession.TryGetValue(sessionId, out var sessionFileBuffers))
-                {
-                    sessionFileBuffers = new Dictionary<string, StringBuilder>(StringComparer.InvariantCultureIgnoreCase);
-                    includeFileBuffersBySession[sessionId] = sessionFileBuffers;
-                }
 
-                if (!sessionFileBuffers.TryGetValue(absolutePath, out var fileBuffer))
+                if (string.IsNullOrWhiteSpace(block.Region))
                 {
-                    fileBuffer = new StringBuilder();
-                    sessionFileBuffers[absolutePath] = fileBuffer;
-                }
+                    if (!contentBuildersByFileBySession.TryGetValue(sessionId, out var sessionFileBuffers))
+                    {
+                        sessionFileBuffers = new Dictionary<string, StringBuilder>(StringComparer.InvariantCultureIgnoreCase);
+                        contentBuildersByFileBySession[sessionId] = sessionFileBuffers;
+                    }
 
-                fileBuffer.AppendLine(block.SourceCode);
+                    if (!sessionFileBuffers.TryGetValue(absolutePath, out var fileBuffer))
+                    {
+                        fileBuffer = new StringBuilder();
+                        sessionFileBuffers[absolutePath] = fileBuffer;
+                    }
+
+                    fileBuffer.AppendLine(block.SourceCode);
+                }
+                else
+                {
+                    var bufferId = new BufferId(absolutePath, block.Region);
+                    if (!contentBuildersByBufferBySession.TryGetValue(sessionId, out var sessionFileBuffers))
+                    {
+                        sessionFileBuffers = new Dictionary<BufferId, StringBuilder>();
+                        contentBuildersByBufferBySession[sessionId] = sessionFileBuffers;
+                    }
+
+                    if (!sessionFileBuffers.TryGetValue(bufferId, out var bufferContentBuilder))
+                    {
+                        bufferContentBuilder = new StringBuilder();
+                        sessionFileBuffers[bufferId] = bufferContentBuilder;
+                    }
+
+                    bufferContentBuilder.AppendLine(block.SourceCode);
+                }
             }
 
-            foreach (var includeFileBuffers in includeFileBuffersBySession)
+            foreach (var (sessionId, contentBuildersByBuffer) in contentBuildersByBufferBySession)
             {
-                includes[includeFileBuffers.Key] = includeFileBuffers.Value.Select((fileBuffer) => new Workspace.File(fileBuffer.Key, fileBuffer.Value.ToString())).ToArray();
+                buffersToIncludeBySession[sessionId] = contentBuildersByBuffer
+                    .Select(contentBuilder => new Workspace.Buffer(
+                        contentBuilder.Key,
+                        contentBuilder.Value.ToString())
+                    ).ToArray();
             }
 
-            return includes;
+            foreach (var (sessionId, contentBuildersByFile) in contentBuildersByFileBySession)
+            {
+                filesToIncludeBySession[sessionId] = contentBuildersByFile
+                    .Select(fileBuffer => new Workspace.File(
+                            fileBuffer.Key,
+                            fileBuffer.Value.ToString()
+                        )
+                    ).ToArray();
+            }
+
+            return (buffersToIncludeBySession, filesToIncludeBySession);
         }
     }
 }

@@ -81,7 +81,7 @@ namespace MLS.Agent.Markdown
                     Lines = new Markdig.Helpers.StringLineGroup(_sourceCode);
                 }
             }
-            else if(Editable)
+            else if(!Editable)
             {
                 _sourceCode = Lines.ToString();
             }
@@ -142,7 +142,7 @@ namespace MLS.Agent.Markdown
                 AddDiagnostic($"File not found: {options.SourceFile.Value}");
             }
 
-            if (!options.Editable && string.IsNullOrEmpty(options.Package) && options.Project == null)
+            if (options.Editable && string.IsNullOrEmpty(options.Package) && options.Project == null)
             {
                 AddDiagnostic("No project file or package specified");
             }

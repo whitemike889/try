@@ -45,9 +45,7 @@ namespace MLS.Agent.CommandLine
 
                 var sessions = codeLinkBlocks.GroupBy(block => block.Session);
 
-                var filesToInclude = await markdownFile.GetFilesToInclude(directoryAccessor);
-
-                var buffersToInclude = await markdownFile.GetBuffersToInclude(directoryAccessor);
+                var (buffersToInclude, filesToInclude) = await markdownFile.GetIncludes(directoryAccessor);
 
                 foreach (var session in sessions)
                 {
@@ -88,11 +86,11 @@ namespace MLS.Agent.CommandLine
             {
                 console.Out.WriteLine($"\n  Compiling samples for session \"{session.Key}\"\n");
 
-                var sourceCodeBlocks = session.Where(b => !b.Editable).ToList();
+                var editableCodeBlocks = session.Where(b => b.Editable).ToList();
 
-                var projectOrPackageName = sourceCodeBlocks.First().ProjectOrPackageName();
+                var projectOrPackageName = editableCodeBlocks.First().ProjectOrPackageName();
 
-                var buffers = sourceCodeBlocks.Select(block => block.GetBufferAsync(directoryAccessor, markdownFile)).ToList();
+                var buffers = editableCodeBlocks.Select(block => block.GetBufferAsync(directoryAccessor, markdownFile)).ToList();
                 var files = new List<Workspace.File>();
 
                 if (filesToInclude.TryGetValue("global", out var globalIncludes))
@@ -114,8 +112,6 @@ namespace MLS.Agent.CommandLine
                 {
                     buffers.AddRange(localSessionBuffersToInclude);
                 }
-
-
 
                 var workspace = new Workspace(
                     workspaceType: projectOrPackageName,
