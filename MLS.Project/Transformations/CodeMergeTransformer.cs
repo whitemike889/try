@@ -25,7 +25,7 @@ namespace MLS.Project.Transformations
 
             var buffers = (source.Buffers ?? Array.Empty<Workspace.Buffer>())
                 .GroupBy(buffer => buffer.Id)
-                .Select(bufferGroup => MergeBuffers(bufferGroup.Key, bufferGroup));
+                .SelectMany(bufferGroup => MergeBuffers(bufferGroup.Key, bufferGroup));
 
 
             var workspace = new Workspace(
@@ -54,11 +54,16 @@ namespace MLS.Project.Transformations
             return new Workspace.File(fileName, content, order: order);
         }
 
-        private Workspace.Buffer MergeBuffers(BufferId id, IEnumerable<Workspace.Buffer> buffers)
+        private IEnumerable<Workspace.Buffer> MergeBuffers(BufferId id, IEnumerable<Workspace.Buffer> buffers)
         {
             var position = 0;
             var content = string.Empty;
             var order = 0;
+
+            Workspace.Buffer preRegion = null;
+            Workspace.Buffer region = null;
+            Workspace.Buffer postRegion = null;
+
             foreach (var buffer in buffers.OrderBy(buffer => buffer.Order))
             {
                 order = buffer.Order;
@@ -69,9 +74,25 @@ namespace MLS.Project.Transformations
                 }
                 content = $"{content}{buffer.Content}{Padding}";
             }
+
             content = content.Substring(0, content.Length - Padding.Length);
 
-            return new Workspace.Buffer(id,content,position:position, order:order);
+           region = new Workspace.Buffer(id,content,position:position, order:order);
+
+           if (preRegion != null)
+           {
+               yield return preRegion;
+           }
+
+           if (region != null)
+           {
+               yield return region;
+           }
+
+           if (postRegion != null)
+           {
+               yield return postRegion;
+           }
         }
     }
 }
