@@ -66,9 +66,12 @@ namespace WorkspaceServer
                     name,
                     async name2 =>
                     {
+                        var packageDescriptor = new PackageDescriptor(name2, _createRebuildablePackage);
+
                         foreach (var strategy in _strategies)
                         {
-                            var builder = await strategy.Locate(new PackageDescriptor(name2, _createRebuildablePackage), budget);
+                            var builder = await strategy.Locate(packageDescriptor, budget);
+
                             if (builder != null)
                             {
                                 return builder;

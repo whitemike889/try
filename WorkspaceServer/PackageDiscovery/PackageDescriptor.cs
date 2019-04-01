@@ -9,6 +9,9 @@
         }
 
         public string Name { get; }
+
         public bool IsRebuildable { get; }
+
+        public override string ToString() => Name;
     }
 }

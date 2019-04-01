@@ -65,7 +65,7 @@ var trainingPipeline = dataProcessPipeline.Append(trainer);
 ```
 ### 2. Train model
 Training the model is a process of running the chosen algorithm on the given data. To perform training you need to call the Fit() method.
-```csharp --region train_model --project ./IrisClustering/IrisClustering/IrisClustering.csproj --session "iris clustering" --source-file./IrisClustering/IrisClustering/Program.cs
+```csharp --region train_model --project ./IrisClustering/IrisClustering/IrisClustering.csproj --session "iris clustering" --source-file ./IrisClustering/IrisClustering/Program.cs
 var trainedModel = trainingPipeline.Fit(trainingDataView);
 ```
 ### 3. Consume model
