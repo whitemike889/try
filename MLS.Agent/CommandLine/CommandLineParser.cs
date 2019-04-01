@@ -111,7 +111,17 @@ namespace MLS.Agent.CommandLine
 
                 command.AddOption(new Option(
                     "--enable-preview-features",
-                    "Enables preview features",
+                    "Enable preview features",
+                    new Argument<bool>()));
+
+                command.AddOption(new Option(
+                    "--log-path", 
+                    "Enable file logging to the specified directory",
+                    new Argument<DirectoryInfo>()));
+
+                command.AddOption(new Option(
+                    "--verbose", 
+                    "Enable verbose logging to the console",
                     new Argument<bool>()));
 
                 command.Handler = CommandHandler.Create<InvocationContext, StartupOptions>((context, options) =>

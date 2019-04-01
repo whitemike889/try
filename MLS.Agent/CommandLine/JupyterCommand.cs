@@ -2,7 +2,6 @@
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.Threading.Tasks;
-using Pocket;
 
 namespace MLS.Agent.CommandLine
 {
@@ -23,7 +22,5 @@ namespace MLS.Agent.CommandLine
 
             return Task.FromResult(0);
         }
-
-        private static Logger Log { get; } = new Logger(category: nameof(JupyterCommand));
     }
 }

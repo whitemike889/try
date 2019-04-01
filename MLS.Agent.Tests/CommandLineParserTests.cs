@@ -97,6 +97,31 @@ namespace MLS.Agent.Tests
         }
 
         [Fact]
+        public async Task It_parses_log_output_directory()
+        {
+            var logPath = new DirectoryInfo(Path.GetTempPath());
+
+            await _parser.InvokeAsync($"--log-path {logPath}");
+
+            _start_options
+                .LogPath
+                .FullName
+                .Should()
+                .Be(logPath.FullName);
+        }
+
+        [Fact]
+        public async Task It_parses_verbose_option()
+        {
+            await _parser.InvokeAsync($"--verbose");
+
+            _start_options
+                .Verbose
+                .Should()
+                .BeTrue();
+        }
+
+        [Fact]
         public async Task Parse_empty_command_line_has_current_directory_as_root_directory()
         {
             await _parser.InvokeAsync("", _console);

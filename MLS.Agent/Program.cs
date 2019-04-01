@@ -81,17 +81,11 @@ namespace MLS.Agent
                     }));
             }
 
-            var shouldLogToFile = options.LogToFile;
-
-#if DEBUG
-            shouldLogToFile = true;
-#endif 
-
-            if (shouldLogToFile)
+            if (options.LogPath != null)
             {
                 var log = new SerilogLoggerConfiguration()
                           .WriteTo
-                          .RollingFileAlternate("./logs", outputTemplate: "{Message}{NewLine}")
+                          .RollingFileAlternate(options.LogPath.FullName, outputTemplate: "{Message}{NewLine}")
                           .CreateLogger();
 
                 var subscription = LogEvents.Subscribe(
@@ -102,9 +96,12 @@ namespace MLS.Agent
                 disposables.Add(log);
             }
 
-            disposables.Add(
-                LogEvents.Subscribe(e => Console.WriteLine(e.ToLogString()),
-                                    assembliesEmittingPocketLoggerLogs));
+            if (options.Verbose)
+            {
+                disposables.Add(
+                    LogEvents.Subscribe(e => Console.WriteLine(e.ToLogString()),
+                                        assembliesEmittingPocketLoggerLogs));
+            }
 
             TaskScheduler.UnobservedTaskException += (sender, args) =>
             {
