@@ -16,7 +16,7 @@ namespace MLS.Agent.Blazor
         {
             var registry = serviceProvider.GetService<PackageRegistry>();
 
-            var preBuiltPackages = registry.GetPrebuiltBlazorPacakges().Result;
+            var preBuiltPackages = registry.GetPrebuiltBlazorPackages().Result;
             foreach (var preBuiltPackage in preBuiltPackages)
             {
                 SetupMappingsForBlazorContentsOfPackage(preBuiltPackage, app);

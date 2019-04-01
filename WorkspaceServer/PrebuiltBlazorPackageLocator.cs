@@ -37,7 +37,7 @@ namespace WorkspaceServer
                         if (directory.Exists)
                         {
                             var runnerSubDirectory = directory.GetDirectories("runner-*").FirstOrDefault();
-                            if (runnerSubDirectory.Exists)
+                            if (runnerSubDirectory?.Exists ?? false)
                             {
                                 var path = Path.Combine(runnerSubDirectory.FullName, "MLS.Blazor");
                                 var package = new BlazorPackage(runnerSubDirectory.Name, null, new DirectoryInfo(path));
@@ -55,6 +55,7 @@ namespace WorkspaceServer
                     }
                 }
 
+                operation.Succeed();
                 return packages;
             }
         }

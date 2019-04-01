@@ -108,7 +108,7 @@ namespace MLS.PackageTool
 
             Command ExtractPackage()
             {
-                return new Command("extract-package", "Extracts the project package zip thingz0rz.")
+                return new Command("extract-package", "Extracts the project package zip")
                 {
                     Handler = CommandHandler.Create(extract)
                 };

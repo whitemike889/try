@@ -32,13 +32,10 @@ RUN dotnet tool install -g --version 1.0.87 t-rex
 RUN dotnet new -i Microsoft.AspNetCore.Blazor.Templates::0.7.0
 
 RUN dotnet MLS.Agent.dll pack /workspaces/blazor-nodatime.api
-RUN ls /workspaces/blazor-nodatime.api
-RUN dotnet tool install --tool-path /workspaces/ --add-source /workspaces/blazor-nodatime.api dotnettry.blazor-nodatime.api
-RUN /workspaces/dotnettry.blazor-nodatime.api prepare-package
+RUN dotnet MLS.Agent.dll install dotnettry.blazor-nodatime.api --add-source /workspaces/blazor-nodatime.api
 
 RUN dotnet MLS.Agent.dll pack /workspaces/blazor-ms.logging
 RUN ls /workspaces/blazor-ms.logging
-RUN dotnet tool install --tool-path /workspaces/ --add-source /workspaces/blazor-ms.logging dotnettry.blazor-ms.logging
-RUN /workspaces/dotnettry.blazor-ms.logging prepare-package
+RUN dotnet MLS.Agent.dll install  dotnettry.blazor-ms.logging --add-source /workspaces/blazor-ms.logging
 
 ENTRYPOINT ["dotnet", "MLS.Agent.dll", "hosted"]

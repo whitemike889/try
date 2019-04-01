@@ -32,7 +32,7 @@ namespace MLS.Agent.CommandLine
                 await AddBlazorProject(temp_projects_blazorRunner_mlsblazor, GetProjectFile(temp_projects_packtarget), name);
 
                 var temp_toolproject = temp.CreateSubdirectory("project");
-                var archivePath = Path.Combine(temp_toolproject.FullName, "packagey.zip");
+                var archivePath = Path.Combine(temp_toolproject.FullName, "package.zip");
                 ZipFile.CreateFromDirectory(temp_projects.FullName, archivePath, CompressionLevel.Fastest, includeBaseDirectory: false);
 
                 console.Out.WriteLine(archivePath);

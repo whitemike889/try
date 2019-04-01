@@ -92,7 +92,7 @@ namespace WorkspaceServer
             return packageInfos;
         }
 
-        public Task<IEnumerable<BlazorPackage>> GetPrebuiltBlazorPacakges()
+        public Task<IEnumerable<BlazorPackage>> GetPrebuiltBlazorPackages()
         {
             var tool = new PrebuiltBlazorPackageLocator(Package.DefaultPackagesDirectory);
             return tool.Discover();
