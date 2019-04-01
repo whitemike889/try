@@ -2,15 +2,23 @@
 using System.CommandLine;
 using System.Threading.Tasks;
 using MLS.Agent.CommandLine;
-using MLS.Agent.Tests.TestUtility;
 using WorkspaceServer;
 using WorkspaceServer.PackageDiscovery;
+using WorkspaceServer.Tests;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace MLS.Agent.Tests
 {
     public class LocalToolPackageDiscoveryStrategyTests
     {
+        private readonly ITestOutputHelper output;
+
+        public LocalToolPackageDiscoveryStrategyTests(ITestOutputHelper _output)
+        {
+            output = _output;
+        }
+
         [Fact]
         public async Task Discover_tool_from_directory()
         {
@@ -18,13 +26,14 @@ namespace MLS.Agent.Tests
             {
                 var console = new TestConsole();
                 var temp = directory.Directory;
-                var asset = TestAssets.SampleConsole;
+                var asset = (await Create.ConsoleWorkspaceCopy()).Directory;
                 await PackCommand.Do(new PackOptions(asset, temp), console);
-                var result = await Tools.CommandLine.Execute("dotnet", $"tool install --add-source {temp.FullName} BasicConsoleApp --tool-path {temp.FullName}");
+                var result = await Tools.CommandLine.Execute("dotnet", $"tool install --add-source {temp.FullName} console --tool-path {temp.FullName}");
+                output.WriteLine(string.Join("\n", result.Error));
                 result.ExitCode.Should().Be(0);
 
                 var strategy = new LocalToolPackageDiscoveryStrategy(temp);
-                var tool = await strategy.Locate(new PackageDescriptor("BasicConsoleApp"));
+                var tool = await strategy.Locate(new PackageDescriptor("console"));
                 tool.Should().NotBeNull();
                 tool.PackageInitializer.Should().BeOfType<PackageToolInitializer>();
             }
