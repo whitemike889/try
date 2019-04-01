@@ -21,7 +21,7 @@ namespace MLS.Project.Transformations
 
             var files = (source.Files?? Array.Empty<Workspace.File>())
                 .GroupBy(file => file.Name)
-                .Select(fileGroup => { return new Workspace.File(fileGroup.Key, string.Join(Padding, fileGroup.OrderBy(f => f.Order).Select(f => f.Text))); });
+                .Select(fileGroup => MergeFiles(fileGroup.Key, fileGroup) );
 
             var buffers = (source.Buffers ?? Array.Empty<Workspace.Buffer>())
                 .GroupBy(buffer => buffer.Id)
@@ -39,23 +39,39 @@ namespace MLS.Project.Transformations
             return Task.FromResult(workspace);
         }
 
+        private Workspace.File MergeFiles(string fileName, IEnumerable<Workspace.File> files)
+        {
+            var content = string.Empty;
+            var order = 0;
+            foreach (var file in files.OrderBy(file => file.Order))
+            {
+                order = file.Order;
+                content = $"{content}{file.Text}{Padding}";
+               
+            }
+            content = content.Substring(0, content.Length - Padding.Length);
+
+            return new Workspace.File(fileName, content, order: order);
+        }
+
         private Workspace.Buffer MergeBuffers(BufferId id, IEnumerable<Workspace.Buffer> buffers)
         {
             var position = 0;
             var content = string.Empty;
-            var sortId = 0;
+            var order = 0;
             foreach (var buffer in buffers.OrderBy(buffer => buffer.Order))
             {
-                sortId = buffer.Order;
+                order = buffer.Order;
                 if (buffer.Position != 0)
                 {
                     position = content.Length + buffer.Position;
-                    content = $"{content}{buffer.Content}{Padding}";
+                   
                 }
-
-                content = content.Substring(0, content.Length - Padding.Length);
+                content = $"{content}{buffer.Content}{Padding}";
             }
-            return new Workspace.Buffer(id,content,position:position, order:sortId);
+            content = content.Substring(0, content.Length - Padding.Length);
+
+            return new Workspace.Buffer(id,content,position:position, order:order);
         }
     }
 }

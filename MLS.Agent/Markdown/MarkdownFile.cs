@@ -32,7 +32,7 @@ namespace MLS.Agent.Markdown
                 ReadAllText(),
                 pipeline);
 
-            var blocks = document.OfType<CodeLinkBlock>().OrderBy(c => c.SortId).ToList();
+            var blocks = document.OfType<CodeLinkBlock>().OrderBy(c => c.Order).ToList();
 
             await Task.WhenAll(blocks.Select(b => b.InitializeAsync()));
             return blocks;

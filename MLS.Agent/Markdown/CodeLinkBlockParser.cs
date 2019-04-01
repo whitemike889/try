@@ -11,7 +11,7 @@ namespace MLS.Agent.Markdown
     {
         private readonly CodeFenceOptionsParser _csharpLinkParser;
         private readonly IDirectoryAccessor _directoryAccessor;
-        private static int _sortId = 0;
+        private static int _sortId;
 
         private readonly PackageRegistry _registry;
 
