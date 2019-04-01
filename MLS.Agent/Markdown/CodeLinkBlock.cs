@@ -15,14 +15,15 @@ namespace MLS.Agent.Markdown
 {
     public class CodeLinkBlock : FencedCodeBlock
     {
+        public int Order { get; }
         private AsyncLazy<IDirectoryAccessor> _directoryAccessor;
         private CodeLinkBlockOptions _options;
         private string _sourceCode;
         private readonly List<string> _diagnostics = new List<string>();
 
         public CodeLinkBlock(
-            BlockParser parser) : base(parser)
-        {
+            BlockParser parser, int order = 0) : base(parser){
+            Order = order;
         }
 
         public void AddOptions(CodeLinkBlockOptions options, Func<Task<IDirectoryAccessor>> directoryAccessor)
@@ -79,7 +80,7 @@ namespace MLS.Agent.Markdown
                     Lines = new Markdig.Helpers.StringLineGroup(_sourceCode);
                 }
             }
-            else if(IsInclude)
+            else if(!Editable)
             {
                 _sourceCode = Lines.ToString();
             }
@@ -89,7 +90,9 @@ namespace MLS.Agent.Markdown
 
         private async Task AddAttributes(CodeLinkBlockOptions options)
         {
-            AddAttribute("data-trydotnet-mode", options.Include? "include" : "editor");
+            AddAttribute("data-trydotnet-order", Order.ToString("F0"));
+
+            AddAttribute("data-trydotnet-mode", options.Editable? "editor" : "include");
 
             if (!string.IsNullOrWhiteSpace(Package))
             {
@@ -138,7 +141,7 @@ namespace MLS.Agent.Markdown
                 AddDiagnostic($"File not found: {options.SourceFile.Value}");
             }
 
-            if (!options.Include && string.IsNullOrEmpty(options.Package) && options.Project == null)
+            if (options.Editable && string.IsNullOrEmpty(options.Package) && options.Project == null)
             {
                 AddDiagnostic("No project file or package specified");
             }
@@ -182,7 +185,7 @@ namespace MLS.Agent.Markdown
 
         public FileInfo ProjectFile => _options.Project;
 
-        public bool IsInclude => _options.Include;
+        public bool Editable => _options.Editable;
 
         public string Package
         {

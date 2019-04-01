@@ -123,8 +123,8 @@ namespace MLS.Agent.Markdown
                          {
                              new Option("--destination-file",
                                         argument: new Argument<RelativeFilePath>()),
-                             new Option("--include",
-                                 argument: new Argument<bool>()),
+                             new Option("--editable",
+                                 argument: new Argument<bool>(defaultValue:true)),
                              new Option("--hidden",
                                  argument: new Argument<bool>(defaultValue:false)),
                              new Option("--source-file",

@@ -18,7 +18,7 @@ namespace MLS.Agent.Markdown
             string region = null,
             string session = null,
             bool isProjectFileImplicit = false,
-            bool include = false,
+            bool editable = false,
             bool hidden = false,
             IEnumerable<string> errors = null,
             string runArgs = null)
@@ -31,11 +31,11 @@ namespace MLS.Agent.Markdown
             Session = session;
             IsProjectImplicit = isProjectFileImplicit;
             RunArgs = runArgs;
-            Include = include;
+            Editable = editable;
             Hidden = hidden;
             Errors = errors ?? Enumerable.Empty<string>();
 
-            if (string.IsNullOrWhiteSpace(Session) && !Include)
+            if (string.IsNullOrWhiteSpace(Session) && Editable)
             {
                 Session = $"Run{++sessionIndex}";
             }
@@ -53,7 +53,7 @@ namespace MLS.Agent.Markdown
                 Region,
                 Session,
                 isProjectFileImplicit,
-                Include,
+                Editable,
                 Hidden,
                 Errors,
                 RunArgs);
@@ -69,7 +69,7 @@ namespace MLS.Agent.Markdown
                 Region,
                 Session,
                 IsProjectImplicit,
-                Include,
+                Editable,
                 Hidden,
                 errors,
                 RunArgs);
@@ -83,7 +83,7 @@ namespace MLS.Agent.Markdown
         public string RunArgs { get; set; }
         public string Session { get; }
         public bool IsProjectImplicit { get; }
-        public bool Include { get; }
+        public bool Editable { get; }
         public bool Hidden { get; }
         public IEnumerable<string> Errors { get; }
         public string Language { get; set; }

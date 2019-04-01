@@ -15,7 +15,7 @@ namespace MLS.Project.Tests
     {
 
         [Fact]
-        public void Processing_fails_with_null_workspace()
+        public void When_workspace_is_null_then_the_transformer_throw_exception()
         {
             var processor = new BufferInliningTransformer();
             Func<Task> extraction = () => processor.TransformAsync(null);
