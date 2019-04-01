@@ -10,15 +10,17 @@ namespace MLS.Agent.CommandLine
             bool languageService = false,
             string key = null,
             string applicationInsightsKey = null,
-            bool logToFile = false,
             string id = null,
             string regionId = null,
             DirectoryInfo rootDirectory = null,
             DirectoryInfo addSource = null,
             Uri uri = null,
+            DirectoryInfo logPath = null,
+            bool verbose = false,
             bool enablePreviewFeatures = false)
         {
-            LogToFile = logToFile;
+            LogPath = logPath;
+            Verbose = verbose;
             Id = id;
             Production = production;
             IsLanguageService = languageService;
@@ -41,7 +43,6 @@ namespace MLS.Agent.CommandLine
         public bool IsLanguageService { get; set; }
         public string Key { get; }
         public string ApplicationInsightsKey { get; }
-        public bool LogToFile { get; }
 
         public StartupMode Mode => RootDirectory == null
                                        ? StartupMode.Hosted
@@ -51,5 +52,9 @@ namespace MLS.Agent.CommandLine
             Production || Mode != StartupMode.Hosted
                 ? Microsoft.AspNetCore.Hosting.EnvironmentName.Production
                 : Microsoft.AspNetCore.Hosting.EnvironmentName.Development;
+
+        public DirectoryInfo LogPath { get;  }
+
+        public bool Verbose { get; }
     }
 }
