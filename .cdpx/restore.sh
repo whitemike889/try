@@ -25,6 +25,12 @@ dotnet new -i Microsoft.AspNetCore.Blazor.Templates::0.7.0
 # Restore the project
 dotnet restore $REPO_ROOT/MLS-LS.sln
 
+# force MLS.WasmCodeRunner package into cache
+mkdir -p /tmp/WasmCodeRunner
+cd /tmp/WasmCodeRunner
+dotnet new console
+dotnet add package MLS.WasmCodeRunner 1.0.7880001-alpha-c895bf25
+
 # prepopulate workspaces
 
 ## Console
