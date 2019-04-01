@@ -62,9 +62,9 @@ This is some sample code:
                 PackageRegistry.CreateForTryMode(root));
 
             console.Out
-                   .ToString()
-                   .Should()
-                   .Match($"*{root}doc.md*Line 3:*{root}Program.cs (in project UNKNOWN)*File not found: ./Program.cs*No project file or package specified*");
+                .ToString()
+                .Should()
+                .Match($"*{root}doc.md*Line 3:*{root}Program.cs (in project UNKNOWN)*File not found: ./Program.cs*No project file or package specified*");
         }
 
         [Fact]
@@ -101,7 +101,7 @@ This is some sample code:
         }
 
         [Fact]
-        public async Task Include_code_fences_do_not_affect_validation()
+        public async Task Non_editable_code_fences_do_not_affect_validation()
         {
             var root = Create.EmptyWorkspace(isRebuildablePackage: true).Directory;
 
@@ -112,7 +112,7 @@ This is some sample code:
                 ("doc.md", @"
 ```cs --source-file Program.cs
 ```
-```cs --include
+```cs --editable false
 // global include
 public class EmptyClass {}
 ```
@@ -354,7 +354,7 @@ public class Program
         }
 
         [Fact]
-        public async Task When_there_are_compilation_errors_in_include_files_then_they_are_displayed()
+        public async Task When_there_are_compilation_errors_in_non_editable_fences_then_they_are_displayed()
         {
             var rootDirectory = Create.EmptyWorkspace(isRebuildablePackage: true).Directory;
 
@@ -375,7 +375,7 @@ public class Program
                 ("sample.md", @"
 ```cs --source-file Program.cs --region mask
 ```
-```cs --include
+```cs --editable false
                                     DOES NOT COMPILE
                                     DOES NOT COMPILE
                                     DOES NOT COMPILE
@@ -492,7 +492,7 @@ This is some sample code:
         {
             var rootDirectory = Create.EmptyWorkspace(isRebuildablePackage: true).Directory;
 
-            string validCode = $@"
+            var validCode = $@"
     using System;
 
     public class Program
@@ -505,7 +505,7 @@ This is some sample code:
         }}
     }}";
 
-            string invalidCode = $@"
+            var invalidCode = $@"
     using System;
 
     public class Program

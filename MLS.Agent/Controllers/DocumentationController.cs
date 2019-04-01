@@ -54,7 +54,7 @@ namespace MLS.Agent.Controllers
 
             var hostUrl = Request.GetUri();
 
-            var blocks = await markdownFile.GetSourceCodeLinkBlocks();
+            var blocks = await markdownFile.GetEditableCodeLinkBlocks();
             var maxEditorPerSession = blocks.Any()
                                           ? blocks
                                               .GroupBy(b => b.Session)

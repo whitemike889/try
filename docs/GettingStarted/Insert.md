@@ -1,7 +1,7 @@
 # Read-only code 
 
 Add these usings
-```cs  --include --region usings --destination-file .\Snippets\Program.cs
+```cs  --editable false --region usings --destination-file .\Snippets\Program.cs
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,7 +9,7 @@ using System.Linq;
 
 ```
 
-```cs --hidden --include
+```cs --hidden --editable false
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -23,20 +23,20 @@ public class DataObject{
 ```
 
 Declare a method
-```cs --include  --region custom_code
+```cs --editable false  --region custom_code
 public IEnumerable<string> PrintMe(){
     yield return "What an adventure";
 }
 ```
 
 Declare Utilities that are not on rendered in the page
-```cs --include --hidden
+```cs --editable false --hidden
 public class HiddenObject{
 
 }
 ```
 
-```cs --include --hidden --destination-file .\Snippets\Program.cs
+```cs --editable false --hidden --destination-file .\Snippets\Program.cs
  #region usings
  #endregion
 
@@ -56,7 +56,7 @@ namespace Snippets
 
 ```
 
-```cs --include --hidden --destination-file .\Snippets\Program.cs
+```cs --editable false --hidden --destination-file .\Snippets\Program.cs
     public class ProgramUtility
     {
     }

@@ -38,15 +38,15 @@ namespace MLS.Agent.Markdown
             return blocks;
         }
 
-        public async Task<IEnumerable<CodeLinkBlock>> GetSourceCodeLinkBlocks()
+        public async Task<IEnumerable<CodeLinkBlock>> GetEditableCodeLinkBlocks()
         {
-            var blocks = (await GetCodeLinkBlocks()).Where(b => !b.IsInclude);
+            var blocks = (await GetCodeLinkBlocks()).Where(b => !b.Editable);
             return blocks;
         }
 
-        public async Task<IEnumerable<CodeLinkBlock>> GetIncludeCodeLinkBlocks()
+        public async Task<IEnumerable<CodeLinkBlock>> GetReadOnlyCodeLinkBlocks()
         {
-            var blocks = (await GetCodeLinkBlocks()).Where(b => b.IsInclude);
+            var blocks = (await GetCodeLinkBlocks()).Where(b => b.Editable);
             return blocks;
         }
 
@@ -66,7 +66,7 @@ namespace MLS.Agent.Markdown
 
             var includeFileBuffersBySession = new Dictionary<string, Dictionary<BufferId, StringBuilder>>(StringComparer.InvariantCultureIgnoreCase);
 
-            var blocks = await GetIncludeCodeLinkBlocks();
+            var blocks = await GetReadOnlyCodeLinkBlocks();
 
             foreach (var block in blocks)
             {
@@ -106,7 +106,7 @@ namespace MLS.Agent.Markdown
 
             var includeFileBuffersBySession = new Dictionary<string, Dictionary<string, StringBuilder>>(StringComparer.InvariantCultureIgnoreCase);
 
-            var blocks = await GetIncludeCodeLinkBlocks();
+            var blocks = await GetReadOnlyCodeLinkBlocks();
 
             foreach (var block in blocks)
             {

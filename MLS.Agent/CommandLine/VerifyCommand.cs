@@ -41,7 +41,7 @@ namespace MLS.Agent.CommandLine
                 console.Out.WriteLine(fullName);
                 console.Out.WriteLine(new string('-', fullName.Length));
 
-                var codeLinkBlocks = await markdownFile.GetSourceCodeLinkBlocks();
+                var codeLinkBlocks = await markdownFile.GetEditableCodeLinkBlocks();
 
                 var sessions = codeLinkBlocks.GroupBy(block => block.Session);
 
@@ -88,7 +88,7 @@ namespace MLS.Agent.CommandLine
             {
                 console.Out.WriteLine($"\n  Compiling samples for session \"{session.Key}\"\n");
 
-                var sourceCodeBlocks = session.Where(b => !b.IsInclude).ToList();
+                var sourceCodeBlocks = session.Where(b => !b.Editable).ToList();
 
                 var projectOrPackageName = sourceCodeBlocks.First().ProjectOrPackageName();
 
