@@ -29,7 +29,7 @@ dotnet restore $REPO_ROOT/MLS-LS.sln
 mkdir -p /tmp/WasmCodeRunner
 cd /tmp/WasmCodeRunner
 dotnet new console
-dotnet add package MLS.WasmCodeRunner 1.0.7880001-alpha-c895bf25
+dotnet add package MLS.WasmCodeRunner --version 1.0.7880001-alpha-c895bf25
 
 # prepopulate workspaces
 

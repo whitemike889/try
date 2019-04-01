@@ -34,17 +34,14 @@ namespace WorkspaceServer.Tests
 
             using (var directory = DisposableDirectory.Create())
             {
-                var dotnet = new Dotnet(directory.Directory);
-                var result = await dotnet.ToolInstall(packageName, directory.Directory, addSource);
+                await InstallCommand.Do(new InstallOptions(addSource, packageName, directory.Directory), new TestConsole());
 
                 var exe = Path.Combine(directory.Directory.FullName, packageName);
-                result = await MLS.Agent.Tools.CommandLine.Execute(exe, "extract-package", workingDir: directory.Directory);
-                result = await MLS.Agent.Tools.CommandLine.Execute(exe, "locate-projects", workingDir: directory.Directory);
+                var result = await MLS.Agent.Tools.CommandLine.Execute(exe, "locate-projects", workingDir: directory.Directory);
                 foreach (var subdir in new DirectoryInfo(result.Output.First()).GetDirectories())
                 {
                     await (new Dotnet(subdir).Build("-o runtime / bl"));
                 }
-
 
                 var locator = new PrebuiltBlazorPackageLocator(directory.Directory);
                 var things = await locator.Discover();

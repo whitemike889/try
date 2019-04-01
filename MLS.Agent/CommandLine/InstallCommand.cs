@@ -15,10 +15,10 @@ namespace MLS.Agent.CommandLine
             var dotnet = new Dotnet();
             (await dotnet.ToolInstall(
                 options.PackageName,
-                Package.DefaultPackagesDirectory,
+                options.Location,
                 options.AddSource)).ThrowOnFailure();
 
-            var commandPath = Path.Combine(Package.DefaultPackagesDirectory.FullName, options.PackageName);
+            var commandPath = Path.Combine(options.Location.FullName, options.PackageName);
             (await MLS.Agent.Tools.CommandLine.Execute(commandPath, "extract-package")).ThrowOnFailure();
             (await MLS.Agent.Tools.CommandLine.Execute(commandPath, "prepare-package")).ThrowOnFailure();
 
