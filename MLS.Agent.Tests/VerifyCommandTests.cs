@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using FluentAssertions;
 using MLS.Agent.CommandLine;
+using MLS.Agent.Markdown;
 using WorkspaceServer;
 using WorkspaceServer.Tests;
 using Xunit;
@@ -223,6 +224,7 @@ public class Program
                                  () => directoryAccessor,
                                  PackageRegistry.CreateForTryMode(rootDirectory));
 
+            console.Error.ToString().Should().Contain("No markdown files found");
             resultCode.Should().NotBe(0);
         }
 
