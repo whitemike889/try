@@ -91,9 +91,9 @@ namespace MLS.Agent.Markdown
 
         private async Task AddAttributes(CodeLinkBlockOptions options)
         {
-            AddAttribute("data-trydotnet-sort-id", SortId.ToString("F0"));
+            AddAttribute("data-trydotnet-order", SortId.ToString("F0"));
 
-            AddAttribute("data-trydotnet-mode", options.Editable? "include" : "editor");
+            AddAttribute("data-trydotnet-mode", options.Editable? "editor" : "include");
 
             if (!string.IsNullOrWhiteSpace(Package))
             {
