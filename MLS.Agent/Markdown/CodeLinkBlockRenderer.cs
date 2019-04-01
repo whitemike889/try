@@ -46,7 +46,7 @@ namespace MLS.Agent.Markdown
 
             var height = $"{GetEditorHeightInEm(codeLinkBlock.Lines)}em";
 
-            if (!codeLinkBlock.Editable)
+            if (codeLinkBlock.Editable)
             {
                 renderer
                     .WriteLine(InlineControls
@@ -55,19 +55,19 @@ namespace MLS.Agent.Markdown
             }
 
             renderer
-                .WriteLineIf(!codeLinkBlock.Editable, @"<div class=""editor-panel"">")
+                .WriteLineIf(codeLinkBlock.Editable, @"<div class=""editor-panel"">")
                 .WriteLine(codeLinkBlock.Editable
-                               ? @"<pre>"
-                               : $@"<pre style=""border:none; height: {height}"" height=""{height}"" width=""100%"">")
+                    ? $@"<pre style=""border:none; height: {height}"" height=""{height}"" width=""100%"">":
+                    @"<pre>")
                 .Write("<code")
                 .WriteAttributes(codeLinkBlock)
                 .Write(">")
                 .WriteLeafRawLines(codeLinkBlock, true,true)
                 .Write(@"</code>")
                 .WriteLine(@"</pre>")
-                .WriteLineIf(!codeLinkBlock.Editable, @"</div >");
+                .WriteLineIf(codeLinkBlock.Editable, @"</div >");
 
-            if (InlineControls && !codeLinkBlock.Editable)
+            if (InlineControls && codeLinkBlock.Editable)
             {
               
                 renderer
@@ -79,7 +79,7 @@ namespace MLS.Agent.Markdown
                         : $@"<div class=""output-panel-inline collapsed"" data-trydotnet-mode=""runResult"" data-trydotnet-session-id=""{codeLinkBlock.Session}""></div>");
             }
 
-            if (!codeLinkBlock.Editable)
+            if (codeLinkBlock.Editable)
             {
                 renderer.WriteLine("</div>");
             }
