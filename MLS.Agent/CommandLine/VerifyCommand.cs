@@ -41,11 +41,10 @@ namespace MLS.Agent.CommandLine
                 console.Out.WriteLine(fullName);
                 console.Out.WriteLine(new string('-', fullName.Length));
 
-                var codeLinkBlocks = await markdownFile.GetEditableCodeLinkBlocks();
+                var codeLinkBlocks = await markdownFile.GetCodeLinkBlocks();
 
                 var sessions = codeLinkBlocks.GroupBy(block => block.Session);
-
-                var (buffersToInclude, filesToInclude) = await markdownFile.GetIncludes(directoryAccessor);
+             
 
                 foreach (var session in sessions)
                 {
@@ -67,6 +66,7 @@ namespace MLS.Agent.CommandLine
 
                     if (!sourceCodeBlocks.Any(block => block.Diagnostics.Any()))
                     {
+                        var (buffersToInclude, filesToInclude) = await markdownFile.GetIncludes(directoryAccessor);
                         await ReportCompileResults(session, markdownFile, filesToInclude, buffersToInclude);
                     }
 
@@ -88,7 +88,9 @@ namespace MLS.Agent.CommandLine
 
                 var editableCodeBlocks = session.Where(b => b.Editable).ToList();
 
-                var projectOrPackageName = editableCodeBlocks.First().ProjectOrPackageName();
+                var projectOrPackageName = session
+                    .Select(b => b.ProjectOrPackageName())
+                    .FirstOrDefault(name => !string.IsNullOrWhiteSpace(name));
 
                 var buffers = editableCodeBlocks.Select(block => block.GetBufferAsync(directoryAccessor, markdownFile)).ToList();
                 var files = new List<Workspace.File>();
@@ -98,7 +100,7 @@ namespace MLS.Agent.CommandLine
                     files.AddRange(globalIncludes);
                 }
 
-                if (filesToInclude.TryGetValue(session.Key, out var sessionIncludes))
+                if (!string.IsNullOrWhiteSpace(session.Key) && filesToInclude.TryGetValue(session.Key, out var sessionIncludes))
                 {
                     files.AddRange(sessionIncludes);
                 }
@@ -108,7 +110,7 @@ namespace MLS.Agent.CommandLine
                     buffers.AddRange(globalSessionBuffersToInclude);
                 }
 
-                if (buffersToInclude.TryGetValue(session.Key, out var localSessionBuffersToInclude))
+                if (!string.IsNullOrWhiteSpace(session.Key) && buffersToInclude.TryGetValue(session.Key, out var localSessionBuffersToInclude))
                 {
                     buffers.AddRange(localSessionBuffersToInclude);
                 }
