@@ -29,7 +29,7 @@ namespace WorkspaceServer.Packaging
 {
     public abstract class Package
     {
-        const string CSharpLanguageVersion = "7.3";
+        const string CSharpLanguageVersion = "preview";
     
         private static readonly ConcurrentDictionary<string, SemaphoreSlim> _packageBuildSemaphores = new ConcurrentDictionary<string, SemaphoreSlim>();
         private static ConcurrentDictionary<string, SemaphoreSlim> _packagePublishSemaphores = new ConcurrentDictionary<string, SemaphoreSlim>();
