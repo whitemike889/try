@@ -2,15 +2,19 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using System.Xml;
+using System.Xml.Linq;
+using System.Xml.XPath;
 using Clockwise;
 
 namespace WorkspaceServer.Packaging
 {
     public class PackageBuilder
     {
-        private Package package;
+        private Package _package;
         private readonly List<Func<Package, Budget, Task>> _afterCreateActions = new List<Func<Package, Budget, Task>>();
         private readonly List<string> _addPackages = new List<string>();
+        private string _languageVersion = "8.0";
 
         public PackageBuilder(string packageName, IPackageInitializer packageInitializer = null)
         {
@@ -62,12 +66,12 @@ namespace WorkspaceServer.Packaging
 
         public void EnableBlazor(PackageRegistry registry)
         {
-            if (this.BlazorSupported)
+            if (BlazorSupported)
             {
                 throw new Exception($"Package {PackageName} is already a blazor package");
             }
 
-            var name = $"runner-{this.PackageName}";
+            var name = $"runner-{PackageName}";
             registry.Add(name, pb =>
             {
 
@@ -75,6 +79,40 @@ namespace WorkspaceServer.Packaging
                 pb.PackageInitializer = initializer;
                 pb.BlazorSupported = true;
                 pb.Directory = new DirectoryInfo(Path.Combine(Package.DefaultPackagesDirectory.FullName, pb.PackageName, "MLS.Blazor"));
+            });
+        }
+
+        public void SetLanguageVersion(string version)
+        {
+            _languageVersion = version;
+          
+            _afterCreateActions.Add(async (package, budget) =>
+            {
+                async Task Action()
+                {
+                    await Task.Yield();
+                    var projects = package.Directory.GetFiles("*.csproj");
+
+                    foreach (var project in projects)
+                    {
+                        var dom = XElement.Parse(File.ReadAllText(project.FullName));
+                        var langElement = dom.XPathSelectElement("//LangVersion");
+
+                        if (langElement != null)
+                        {
+                            langElement.Value = _languageVersion;
+                        }
+                        else
+                        {
+                            var propertyGroup = dom.XPathSelectElement("//PropertyGroup");
+                            propertyGroup?.Add(new XElement("LangVersion", _languageVersion));
+                        }
+
+                        File.WriteAllText(project.FullName, dom.ToString());
+                    }
+                }
+
+                await Action();
             });
         }
 
@@ -90,27 +128,27 @@ namespace WorkspaceServer.Packaging
 
         public Package GetPackage(Budget budget = null)
         {
-            if (package == null)
+            if (_package == null)
             {
                 PreparePackage(budget);
             }
 
             budget?.RecordEntry();
-            return package;
+            return _package;
         }
 
         public PackageInfo GetPackageInfo()
         {
             PackageInfo info = null;
-            if (package != null)
+            if (_package != null)
             {
                 info = new PackageInfo(
-                    package.Name,
-                    package.LastSuccessfulBuildTime,
-                    package.ConstructionTime,
-                    package.PublicationTime,
-                    package.CreationTime,
-                    package.ReadyTime
+                    _package.Name,
+                    _package.LastSuccessfulBuildTime,
+                    _package.ConstructionTime,
+                    _package.PublicationTime,
+                    _package.CreationTime,
+                    _package.ReadyTime
                 );
             }
 
@@ -123,21 +161,21 @@ namespace WorkspaceServer.Packaging
 
             if (PackageInitializer is BlazorPackageInitializer)
             {
-                package = new BlazorPackage(
+                _package = new BlazorPackage(
                         PackageName,
                         PackageInitializer,
                         Directory);
             }
             else if (CreateRebuildablePackage)
             {
-                package = new RebuildablePackage(
+                _package = new RebuildablePackage(
                         PackageName,
                         PackageInitializer,
                         Directory);
             }
             else
             {
-                package = new NonrebuildablePackage(
+                _package = new NonrebuildablePackage(
                         PackageName,
                         PackageInitializer,
                         Directory);
@@ -150,7 +188,7 @@ namespace WorkspaceServer.Packaging
         {
             foreach (var action in _afterCreateActions)
             {
-                await action(package, budget);
+                await action(_package, budget);
             }
         }
     }

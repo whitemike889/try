@@ -850,7 +850,7 @@ public static class Hello
 
             Log.Trace(result.ToString());
 
-            result.ShouldSucceedWithNoOutput();
+            result.ShouldSucceedWithOutput("3, 6");
         }
 
         private IDictionary<String, IEnumerable<LinePositionSpan>> ToLinePositionSpan(IDictionary<String, ImmutableArray<TextSpan>> input, string code)
