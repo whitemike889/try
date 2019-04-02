@@ -26,10 +26,13 @@ namespace MLS.Agent.CommandLine
                 var temp_projects_packtarget = temp_projects.CreateSubdirectory("packTarget");
                 DirectoryCopy(options.PackTarget, temp_projects_packtarget.FullName, copySubDirs: true);
 
-                string runnerDirectoryName = $"runner-{name}";
-                var temp_projects_blazorRunner = temp_projects.CreateSubdirectory(runnerDirectoryName);
-                var temp_projects_blazorRunner_mlsblazor = temp_projects_blazorRunner.CreateSubdirectory("MLS.Blazor");
-                await AddBlazorProject(temp_projects_blazorRunner_mlsblazor, GetProjectFile(temp_projects_packtarget), name);
+                if (options.EnableBlazor)
+                {
+                    string runnerDirectoryName = $"runner-{name}";
+                    var temp_projects_blazorRunner = temp_projects.CreateSubdirectory(runnerDirectoryName);
+                    var temp_projects_blazorRunner_mlsblazor = temp_projects_blazorRunner.CreateSubdirectory("MLS.Blazor");
+                    await AddBlazorProject(temp_projects_blazorRunner_mlsblazor, GetProjectFile(temp_projects_packtarget), name);
+                }
 
                 var temp_toolproject = temp.CreateSubdirectory("project");
                 var archivePath = Path.Combine(temp_toolproject.FullName, "package.zip");

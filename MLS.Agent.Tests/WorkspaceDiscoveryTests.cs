@@ -83,7 +83,7 @@ namespace MLS.Agent.Tests
                 console);
 
             await InstallCommand.Do(
-                new InstallOptions(packageLocation, projectName),
+                new InstallOptions(packageLocation, "dotnettry." + projectName),
                 console);
 
             return copy;

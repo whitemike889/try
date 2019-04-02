@@ -58,7 +58,7 @@ namespace MLS.Agent.Tests
             var asset = await LocalToolHelpers.CreateTool(console);
 
             var strategy = new LocalToolPackageDiscoveryStrategy(asset, asset);
-            var package = await strategy.Locate(new PackageDescriptor("console"));
+            var package = await strategy.Locate(new PackageDescriptor("dotnettry.blazor-console"));
             package.Should().NotBeNull();
         }
     }

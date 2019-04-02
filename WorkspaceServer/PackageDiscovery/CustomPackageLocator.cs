@@ -23,6 +23,7 @@ namespace WorkspaceServer.PackageDiscovery
             CommandLineResult result;
             try
             {
+                result = await CommandLine.Execute(fileName, "extract-package", budget: budget);
                 result = await CommandLine.Execute(fileName, "locate-projects", budget: budget);
             }
             catch (System.ComponentModel.Win32Exception)
@@ -31,7 +32,7 @@ namespace WorkspaceServer.PackageDiscovery
             }
 
             var output = result.Output.FirstOrDefault();
-            if (output == null || !File.Exists(output))
+            if (output == null || !Directory.Exists(output))
             {
                 return null;
             }

@@ -33,6 +33,7 @@ namespace WorkspaceServer.PackageDiscovery
         private async Task<PackageBuilder> TryInstallAndLocateTool(PackageDescriptor packageDesciptor, Budget budget)
         {
             var dotnet = new Dotnet();
+
             var installationResult = await dotnet.ToolInstall(
                 packageDesciptor.Name,
                 _workingDirectory,
