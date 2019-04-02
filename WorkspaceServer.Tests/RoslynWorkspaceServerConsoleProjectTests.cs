@@ -95,7 +95,7 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task When_compile_fails_then_diagnostics_are_aligned_with_buffer_span()
         {
-            var (server, build) = await GetCompilerAndWorkpaceBuild();
+            var (server, build) = await GetCompilerAndWorkspaceBuild();
 
             var workspace = new Workspace(
                 workspaceType: build.Name,
@@ -116,7 +116,7 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task When_compile_fails_then_diagnostics_are_aligned_with_buffer_span_when_code_is_multi_line()
         {
-            var (server, build) = await GetCompilerAndWorkpaceBuild();
+            var (server, build) = await GetCompilerAndWorkspaceBuild();
 
             var workspace = new Workspace(
                 workspaceType: build.Name,
@@ -136,7 +136,7 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task When_compile_diagnostics_are_outside_of_viewport_then_they_are_omitted()
         {
-            var (server, build) = await GetCompilerAndWorkpaceBuild();
+            var (server, build) = await GetCompilerAndWorkspaceBuild();
 
             var workspace = new Workspace(
                 workspaceType: build.Name,
@@ -191,7 +191,7 @@ namespace FibonacciTest
 }";
             #endregion
 
-            var (server, build) = await GetCompilerAndWorkpaceBuild();
+            var (server, build) = await GetCompilerAndWorkspaceBuild();
 
             var request = new WorkspaceRequest(
                 new Workspace(
@@ -793,7 +793,7 @@ namespace FibonacciTest
 }";
             #endregion
 
-            var (server, build) = await GetCompilerAndWorkpaceBuild();
+            var (server, build) = await GetCompilerAndWorkspaceBuild();
 
             var workspace = new Workspace(workspaceType: build.Name, buffers: new[]
             {
@@ -809,7 +809,7 @@ namespace FibonacciTest
         [Fact]
         public async Task Compile_fails_when_instrumentation_enabled_and_there_is_an_error()
         {
-            var (server, build) = await GetCompilerAndWorkpaceBuild();
+            var (server, build) = await GetCompilerAndWorkspaceBuild();
             var workspace = new Workspace(
                  workspaceType: build.Name,
                  files: new[] { new Workspace.File("Program.cs", SourceCodeProvider.ConsoleProgramSingleRegion) },
@@ -824,6 +824,33 @@ namespace FibonacciTest
                 Output = new[] { "(1,19): error CS0103: The name \'banana\' does not exist in the current context" },
                 Exception = (string)null, // we already display the error in Output
             }, config => config.ExcludingMissingMembers());
+        }
+
+        [Fact]
+        public async Task Can_compile_c_sharp_8_features()
+        {
+            var (server, build) = await GetRunnerAndWorkspaceBuild();
+
+            var workspace = Workspace.FromSource(@"
+using System;
+
+public static class Hello
+{
+    public static void Main()
+    {
+        var i1 = 3;  // number 3 from beginning
+        var i2 = ^4; // number 4 from end
+        var a = new[]{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+        Console.WriteLine($""{a[i1]}, {a[i2]}"");
+    }
+}
+", workspaceType: build.Name);
+
+            var result = await server.Run(new WorkspaceRequest(workspace));
+
+            Log.Trace(result.ToString());
+
+            result.ShouldSucceedWithNoOutput();
         }
 
         private IDictionary<String, IEnumerable<LinePositionSpan>> ToLinePositionSpan(IDictionary<String, ImmutableArray<TextSpan>> input, string code)
@@ -841,7 +868,7 @@ namespace FibonacciTest
             return (server, workspace);
         }
 
-        protected async Task<(ICodeCompiler compiler, Package workspace)> GetCompilerAndWorkpaceBuild(
+        protected async Task<(ICodeCompiler compiler, Package workspace)> GetCompilerAndWorkspaceBuild(
             [CallerMemberName] string testName = null)
         {
             var workspace = await Create.ConsoleWorkspaceCopy(testName);

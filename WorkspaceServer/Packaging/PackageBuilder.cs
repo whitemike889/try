@@ -64,14 +64,14 @@ namespace WorkspaceServer.Packaging
         {
             if (this.BlazorSupported)
             {
-                throw new Exception($"Package {this.PackageName} is already a blazor package");
+                throw new Exception($"Package {PackageName} is already a blazor package");
             }
 
             var name = $"runner-{this.PackageName}";
             registry.Add(name, pb =>
             {
 
-                var initializer = new BlazorPackageInitializer(this.PackageName, _addPackages);
+                var initializer = new BlazorPackageInitializer(PackageName, _addPackages);
                 pb.PackageInitializer = initializer;
                 pb.BlazorSupported = true;
                 pb.Directory = new DirectoryInfo(Path.Combine(Package.DefaultPackagesDirectory.FullName, pb.PackageName, "MLS.Blazor"));

@@ -337,10 +337,12 @@ public static class Hello
             var workspace = CreateWorkspaceWithMainContaining($@"
 using System;
 using System;
+
 public static class Hello
 {{
     public static void Main()
     {{
+        var a = 0;
         Console.WriteLine(""{output}"");
     }}
 }}", build);
@@ -361,11 +363,12 @@ public static class Hello
 
             var workspace = CreateWorkspaceWithMainContaining($@"
 using System;
-using System;
+
 public static class Hello
 {{
     public static void Main()
     {{
+        var a = 0;
         Console.WriteLine(""{output}"")
     }}
 }}", build);
