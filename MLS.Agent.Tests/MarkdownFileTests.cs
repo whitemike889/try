@@ -255,7 +255,7 @@ This is the end of the file")
             }
 
             [Fact]
-            public async Task When_is_include_argument_is_specified_then_it_inserts_code_present_in_markdown()
+            public async Task Non_editable_code_inserts_code_present_in_markdown()
             {
                 var console = new TestConsole();
                 var asset = await LocalToolHelpers.CreateTool(console);
@@ -265,7 +265,7 @@ This is the end of the file")
                     new InMemoryDirectoryAccessor(new DirectoryInfo(Directory.GetCurrentDirectory()))
                     {
                         ("readme.md", @"
-```cs --include
+```cs --editable false
 //some code to include
 ```
                         ")

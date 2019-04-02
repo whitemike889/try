@@ -41,13 +41,10 @@ namespace MLS.Agent.CommandLine
                 console.Out.WriteLine(fullName);
                 console.Out.WriteLine(new string('-', fullName.Length));
 
-                var codeLinkBlocks = await markdownFile.GetSourceCodeLinkBlocks();
+                var codeLinkBlocks = await markdownFile.GetCodeLinkBlocks();
 
                 var sessions = codeLinkBlocks.GroupBy(block => block.Session);
-
-                var filesToInclude = await markdownFile.GetFilesToInclude(directoryAccessor);
-
-                var buffersToInclude = await markdownFile.GetBuffersToInclude(directoryAccessor);
+             
 
                 foreach (var session in sessions)
                 {
@@ -69,6 +66,7 @@ namespace MLS.Agent.CommandLine
 
                     if (!sourceCodeBlocks.Any(block => block.Diagnostics.Any()))
                     {
+                        var (buffersToInclude, filesToInclude) = await markdownFile.GetIncludes(directoryAccessor);
                         await ReportCompileResults(session, markdownFile, filesToInclude, buffersToInclude);
                     }
 
@@ -88,11 +86,13 @@ namespace MLS.Agent.CommandLine
             {
                 console.Out.WriteLine($"\n  Compiling samples for session \"{session.Key}\"\n");
 
-                var sourceCodeBlocks = session.Where(b => !b.IsInclude).ToList();
+                var editableCodeBlocks = session.Where(b => b.Editable).ToList();
 
-                var projectOrPackageName = sourceCodeBlocks.First().ProjectOrPackageName();
+                var projectOrPackageName = session
+                    .Select(b => b.ProjectOrPackageName())
+                    .FirstOrDefault(name => !string.IsNullOrWhiteSpace(name));
 
-                var buffers = sourceCodeBlocks.Select(block => block.GetBufferAsync(directoryAccessor, markdownFile)).ToList();
+                var buffers = editableCodeBlocks.Select(block => block.GetBufferAsync(directoryAccessor, markdownFile)).ToList();
                 var files = new List<Workspace.File>();
 
                 if (filesToInclude.TryGetValue("global", out var globalIncludes))
@@ -100,7 +100,7 @@ namespace MLS.Agent.CommandLine
                     files.AddRange(globalIncludes);
                 }
 
-                if (filesToInclude.TryGetValue(session.Key, out var sessionIncludes))
+                if (!string.IsNullOrWhiteSpace(session.Key) && filesToInclude.TryGetValue(session.Key, out var sessionIncludes))
                 {
                     files.AddRange(sessionIncludes);
                 }
@@ -110,12 +110,10 @@ namespace MLS.Agent.CommandLine
                     buffers.AddRange(globalSessionBuffersToInclude);
                 }
 
-                if (buffersToInclude.TryGetValue(session.Key, out var localSessionBuffersToInclude))
+                if (!string.IsNullOrWhiteSpace(session.Key) && buffersToInclude.TryGetValue(session.Key, out var localSessionBuffersToInclude))
                 {
                     buffers.AddRange(localSessionBuffersToInclude);
                 }
-
-
 
                 var workspace = new Workspace(
                     workspaceType: projectOrPackageName,

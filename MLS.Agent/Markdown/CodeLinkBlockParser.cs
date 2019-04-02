@@ -11,6 +11,7 @@ namespace MLS.Agent.Markdown
     {
         private readonly CodeFenceOptionsParser _csharpLinkParser;
         private readonly IDirectoryAccessor _directoryAccessor;
+        private static int _sortId;
 
         private readonly PackageRegistry _registry;
 
@@ -24,16 +25,14 @@ namespace MLS.Agent.Markdown
         }
 
         protected override CodeLinkBlock CreateFencedBlock(BlockProcessor processor) =>
-            new CodeLinkBlock(this);
+            new CodeLinkBlock(this, _sortId++);
 
         private bool ParseCodeOptions(
             BlockProcessor state,
             ref StringSlice line,
             IFencedBlock fenced)
         {
-            var codeLinkBlock = fenced as CodeLinkBlock;
-
-            if (codeLinkBlock == null)
+            if (!(fenced is CodeLinkBlock codeLinkBlock))
             {
                 return false;
             }
@@ -101,6 +100,11 @@ namespace MLS.Agent.Markdown
             }
 
             return BlockState.Continue;
+        }
+
+        internal static void ResetSortIdCounter()
+        {
+            _sortId = 0;
         }
     }
 }

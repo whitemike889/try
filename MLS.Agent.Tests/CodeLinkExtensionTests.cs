@@ -78,7 +78,7 @@ $@"```{language} --source-file Program.cs
             var directoryAccessor = new InMemoryDirectoryAccessor(testDir);
             var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor, PackageRegistry.CreateForHostedMode()).Build();
             var document = @"
-```js Program.cs
+```js  --source-file Program.cs
 console.log(""Hello World"");
 ```";
             var html = (await pipeline.RenderHtmlAsync(document)).EnforceLF();
@@ -130,7 +130,7 @@ Console.WriteLine(""Hello World"");
             };
             var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor, PackageRegistry.CreateForHostedMode()).Build();
             var document =
-@"```cs Program.cs
+@"```cs  --source-file Program.cs
 ```";
             var html = (await pipeline.RenderHtmlAsync(document)).EnforceLF();
 
@@ -148,7 +148,7 @@ Console.WriteLine(""Hello World"");
             var projectPath = "sample.csproj";
 
             var document =
-$@"```cs --project {projectPath} Program.cs
+$@"```cs --project {projectPath}  --source-file Program.cs
 ```";
             var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor, PackageRegistry.CreateForHostedMode()).Build();
             var html = (await pipeline.RenderHtmlAsync(document)).EnforceLF();

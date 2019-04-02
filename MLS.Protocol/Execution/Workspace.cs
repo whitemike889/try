@@ -50,15 +50,17 @@ namespace MLS.Protocol.Execution
 
         public class File
         {
-            public File(string name, string text)
+            public File(string name, string text, int order = 0)
             {
                 Name = name;
                 Text = text;
+                Order = order;
             }
 
             public string Name { get; }
 
             public string Text { get; }
+            public int Order { get; }
 
             public override string ToString() => $"{nameof(File)}: {Name}";
         }
@@ -67,12 +69,13 @@ namespace MLS.Protocol.Execution
         {
             private readonly int offSetFromParentBuffer;
 
-            public Buffer(BufferId id, string content, int position = 0, int offSetFromParentBuffer = 0)
+            public Buffer(BufferId id, string content, int position = 0, int offSetFromParentBuffer = 0, int order = 0)
             {
                 this.offSetFromParentBuffer = offSetFromParentBuffer;
                 Id = id ?? throw new ArgumentNullException(nameof(id));
                 Content = content;
                 Position = position;
+                Order = order;
             }
 
             public BufferId Id { get; }
@@ -80,6 +83,7 @@ namespace MLS.Protocol.Execution
             public string Content { get; }
 
             public int Position { get; internal set; }
+            public int Order { get; }
 
             [JsonIgnore]
             public int AbsolutePosition => Position + offSetFromParentBuffer;
