@@ -42,8 +42,9 @@ namespace MLS.Agent.Tests
         [Fact]
         public async Task Project_file_path_workspace_can_be_discovered_and_run_with_buffer_inlining()
         {
-            var csproj = TestAssets.SampleConsole.GetFiles("*.csproj")[0];
-            var programCs = TestAssets.SampleConsole.GetFiles("*.cs")[0];
+            var workspace = (await Create.ConsoleWorkspaceCopy()).Directory;
+            var csproj = workspace.GetFiles("*.csproj")[0];
+            var programCs = workspace.GetFiles("*.cs")[0];
 
             var output = Guid.NewGuid().ToString();
             var ws = new Workspace(
@@ -77,7 +78,8 @@ namespace MLS.Agent.Tests
             await PackCommand.Do(
                 new PackOptions(
                     copy.Directory,
-                    packageLocation),
+                    packageLocation,
+                    enableBlazor: false),
                 console);
 
             await InstallCommand.Do(

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using MLS.Agent.Tests.TestUtility;
 using WorkspaceServer;
+using WorkspaceServer.Tests;
 
 namespace MLS.Agent.Tests
 {
@@ -14,7 +15,7 @@ namespace MLS.Agent.Tests
         public async Task Discover_package_from_project_file()
         {
             var strategy = new ProjectFilePackageDiscoveryStrategy();
-            var sampleProject = TestAssets.SampleConsole;
+            var sampleProject = (await Create.ConsoleWorkspaceCopy()).Directory;
             var projectFile = sampleProject.GetFiles("*.csproj").Single();
             var packageBuilder = await strategy.Locate(new PackageDescriptor(projectFile.FullName));
             packageBuilder.PackageName.Should().Be(projectFile.FullName);
