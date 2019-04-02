@@ -15,7 +15,7 @@ namespace MLS.Agent.Tests
         [Fact]
         public async Task Pack_project_works()
         {
-            var asset = await Create.ConsoleWorkspaceCopy();
+            var asset = await Create.NetstandardWorkspaceCopy();
 
             var console = new TestConsole();
 
@@ -63,7 +63,7 @@ namespace MLS.Agent.Tests
 
             var result = await dotnet.ToolInstall(packageName, asset.Directory, asset.Directory);
 
-            var exe = asset.Directory.GetFiles("*.exe").First();
+            var exe = Path.Combine(asset.Directory.FullName, packageName);
 
             result = await MLS.Agent.Tools.CommandLine.Execute(exe, "extract-package", workingDir: asset.Directory);
             result = await MLS.Agent.Tools.CommandLine.Execute(exe, "locate-projects", workingDir: asset.Directory);
