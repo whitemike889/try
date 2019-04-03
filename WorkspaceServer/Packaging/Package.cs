@@ -29,8 +29,25 @@ namespace WorkspaceServer.Packaging
 {
     public abstract class Package
     {
-        const string CSharpLanguageVersion = "8.0";
-    
+        private static Dictionary<string, string> CSharpLanguageVersions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) {
+        { "netcoreapp2.0", "7.3" },
+        { "netcoreapp2.1", "7.3" },
+        { "netstandard2.0", "7.3" },
+        { "netcoreapp3.0", "8.0" },
+        { "netstandard2.1", "8.0" },
+        };
+
+        const string DefaultCSharpLanguageVersion = "7.3";
+
+        private static string GetCSharpLanguageVersion(string targetFramework)
+        {
+            if (!CSharpLanguageVersions.TryGetValue(targetFramework, out var version))
+            {
+                version = DefaultCSharpLanguageVersion;
+            }
+
+            return version;
+        }
         private static readonly ConcurrentDictionary<string, SemaphoreSlim> _packageBuildSemaphores = new ConcurrentDictionary<string, SemaphoreSlim>();
         private static ConcurrentDictionary<string, SemaphoreSlim> _packagePublishSemaphores = new ConcurrentDictionary<string, SemaphoreSlim>();
 
@@ -780,7 +797,9 @@ namespace WorkspaceServer.Packaging
 
                 var analyzer = manager.GetProject(csProj.FullName);
                 analyzer.AddBinaryLogger(Path.Combine(Directory.FullName, DesignTimeBuildBinlogFileName));
-                analyzer.SetGlobalProperty("langVersion", CSharpLanguageVersion);
+                var targetFramework = csProj.GetTargetFramework();
+                var languageVersion = GetCSharpLanguageVersion(targetFramework);
+                analyzer.SetGlobalProperty("langVersion", languageVersion);
                 var result = analyzer.Build().Results.First();
                 DesignTimeBuildResult = result;
                 LastDesignTimeBuild = Clock.Current.Now();

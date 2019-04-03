@@ -151,7 +151,6 @@ namespace WorkspaceServer
                          workspace =>
                          {
                              workspace.CreateUsingDotnet("classlib");
-                             workspace.SetLanguageVersion("8.0");
                              workspace.AddPackageReference("Newtonsoft.Json");
                          });
 
@@ -160,7 +159,6 @@ namespace WorkspaceServer
                          workspace =>
                          {
                              workspace.CreateUsingDotnet("classlib");
-                             workspace.SetLanguageVersion("8.0");
                              workspace.DeleteFile("Class1.cs");
                              workspace.AddPackageReference("NodaTime", "2.4.4");
                              workspace.AddPackageReference("NodaTime.Testing", "2.4.4");

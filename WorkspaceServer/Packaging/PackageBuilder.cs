@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using System.Xml;
-using System.Xml.Linq;
-using System.Xml.XPath;
 using Clockwise;
 
 namespace WorkspaceServer.Packaging
@@ -82,6 +80,8 @@ namespace WorkspaceServer.Packaging
             });
         }
 
+     
+        
         public void SetLanguageVersion(string version)
         {
             _languageVersion = version;
@@ -95,20 +95,7 @@ namespace WorkspaceServer.Packaging
 
                     foreach (var project in projects)
                     {
-                        var dom = XElement.Parse(File.ReadAllText(project.FullName));
-                        var langElement = dom.XPathSelectElement("//LangVersion");
-
-                        if (langElement != null)
-                        {
-                            langElement.Value = _languageVersion;
-                        }
-                        else
-                        {
-                            var propertyGroup = dom.XPathSelectElement("//PropertyGroup");
-                            propertyGroup?.Add(new XElement("LangVersion", _languageVersion));
-                        }
-
-                        File.WriteAllText(project.FullName, dom.ToString());
+                        project.SetLanguageVersion(_languageVersion);
                     }
                 }
 
