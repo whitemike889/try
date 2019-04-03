@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/core/sdk:3.0-alpine
+FROM microsoft/dotnet:2.1.503-sdk-alpine
 
 # configure environment
 ENV NUGET_PACKAGES=/dependencies/.nuget/packages
