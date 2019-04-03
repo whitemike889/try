@@ -849,10 +849,10 @@ public static class Hello
             var result = await server.Run(new WorkspaceRequest(workspace));
 
             Log.Trace(result.ToString());
-                
-            result.ShouldSucceedWithOutputAsOneOf(
-                "3, 6", 
-                "Program.cs(9,18): error CS8652: The feature 'index operator' is currently in Preview and *unsupported*. To use Preview features, use the 'preview' language version.");
+
+            result.Output.ShouldMatch(result.Succeeded
+                ?  "3, 6"
+                :  "*The feature 'index operator' is currently in Preview and *unsupported*. To use Preview features, use the 'preview' language version.");
         }
 
         private IDictionary<string, IEnumerable<LinePositionSpan>> ToLinePositionSpan(IDictionary<String, ImmutableArray<TextSpan>> input, string code)
