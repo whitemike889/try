@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using FluentAssertions;
 using FluentAssertions.Execution;
 using MLS.Protocol.Execution;
@@ -23,6 +24,15 @@ namespace WorkspaceServer.Tests
             {
                 result.Succeeded.Should().BeTrue();
                 result.Output.ShouldMatch(expected);
+                result.Exception.Should().BeNull();
+            }
+        }
+        public static void ShouldSucceedWithOutputAsOneOf(this RunResult result, params string[] expected)
+        {
+            using (new AssertionScope("result"))
+            {
+                result.Succeeded.Should().BeTrue();
+                result.Output.Should().Contain(s => expected.Any(e => e==s)  );
                 result.Exception.Should().BeNull();
             }
         }

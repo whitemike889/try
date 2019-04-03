@@ -849,11 +849,13 @@ public static class Hello
             var result = await server.Run(new WorkspaceRequest(workspace));
 
             Log.Trace(result.ToString());
-
-            result.ShouldSucceedWithOutput("3, 6");
+                
+            result.ShouldSucceedWithOutputAsOneOf(
+                "3, 6", 
+                "Program.cs(9,18): error CS8652: The feature 'index operator' is currently in Preview and *unsupported*. To use Preview features, use the 'preview' language version.");
         }
 
-        private IDictionary<String, IEnumerable<LinePositionSpan>> ToLinePositionSpan(IDictionary<String, ImmutableArray<TextSpan>> input, string code)
+        private IDictionary<string, IEnumerable<LinePositionSpan>> ToLinePositionSpan(IDictionary<String, ImmutableArray<TextSpan>> input, string code)
             => input.ToDictionary(
                 kv => kv.Key,
                 kv => kv.Value.Select(span => span.ToLinePositionSpan(SourceText.From(code))));
