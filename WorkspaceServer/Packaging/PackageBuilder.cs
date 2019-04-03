@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using System.Xml;
 using Clockwise;
+
 
 namespace WorkspaceServer.Packaging
 {
@@ -96,6 +96,27 @@ namespace WorkspaceServer.Packaging
                     foreach (var project in projects)
                     {
                         project.SetLanguageVersion(_languageVersion);
+                    }
+                }
+
+                await Action();
+            });
+        }
+
+        public void TrySetLanguageVersion(string version)
+        {
+            _languageVersion = version;
+
+            _afterCreateActions.Add(async (package, budget) =>
+            {
+                async Task Action()
+                {
+                    await Task.Yield();
+                    var projects = package.Directory.GetFiles("*.csproj");
+
+                    foreach (var project in projects)
+                    {
+                        project.TrySetLanguageVersion(_languageVersion);
                     }
                 }
 

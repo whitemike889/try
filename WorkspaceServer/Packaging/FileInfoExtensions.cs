@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Xml.Linq;
 using System.Xml.XPath;
 
@@ -44,6 +45,31 @@ namespace WorkspaceServer.Packaging
             }
 
             File.WriteAllText(project.FullName, dom.ToString());
+        }
+
+        public static void TrySetLanguageVersion(this FileInfo project, string version)
+        {
+            var supported = CSharpLanguageSelector.GetCSharpLanguageVersion(project.GetTargetFramework());
+
+            var canSet = StringComparer.OrdinalIgnoreCase.Equals( supported ,version);
+            if (canSet)
+            {
+
+                var dom = XElement.Parse(File.ReadAllText(project.FullName));
+                var langElement = dom.XPathSelectElement("//LangVersion");
+
+                if (langElement != null)
+                {
+                    langElement.Value = version;
+                }
+                else
+                {
+                    var propertyGroup = dom.XPathSelectElement("//PropertyGroup");
+                    propertyGroup?.Add(new XElement("LangVersion", version));
+                }
+
+                File.WriteAllText(project.FullName, dom.ToString());
+            }
         }
     }
 }

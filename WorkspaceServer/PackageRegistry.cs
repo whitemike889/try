@@ -117,7 +117,7 @@ namespace WorkspaceServer
                          workspace =>
                          {
                              workspace.CreateUsingDotnet("console");
-                             workspace.SetLanguageVersion("8.0");
+                             workspace.TrySetLanguageVersion("8.0");
                              workspace.AddPackageReference("Newtonsoft.Json");
                          });
 
@@ -125,7 +125,7 @@ namespace WorkspaceServer
                          workspace =>
                          {
                              workspace.CreateUsingDotnet("console");
-                             workspace.SetLanguageVersion("8.0");
+                             workspace.TrySetLanguageVersion("8.0");
                              workspace.AddPackageReference("NodaTime", "2.3.0");
                              workspace.AddPackageReference("NodaTime.Testing", "2.3.0");
                              workspace.AddPackageReference("Newtonsoft.Json");
@@ -135,14 +135,14 @@ namespace WorkspaceServer
                          workspace =>
                          {
                              workspace.CreateUsingDotnet("webapi");
-                             workspace.SetLanguageVersion("8.0");
+                             workspace.TrySetLanguageVersion("8.0");
                          });
 
             registry.Add("xunit",
                          workspace =>
                          {
                              workspace.CreateUsingDotnet("xunit", "tests");
-                             workspace.SetLanguageVersion("8.0");
+                             workspace.TrySetLanguageVersion("8.0");
                              workspace.AddPackageReference("Newtonsoft.Json");
                              workspace.DeleteFile("UnitTest1.cs");
                          });
