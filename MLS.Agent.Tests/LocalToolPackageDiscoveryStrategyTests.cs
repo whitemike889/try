@@ -33,7 +33,7 @@ namespace MLS.Agent.Tests
                 result.ExitCode.Should().Be(0);
 
                 var strategy = new LocalToolPackageDiscoveryStrategy(temp);
-                var tool = await strategy.Locate(new PackageDescriptor("console"));
+                var tool = await strategy.Locate(new PackageDescriptor("dotnettry.console"));
                 tool.Should().NotBeNull();
                 tool.PackageInitializer.Should().BeOfType<PackageToolInitializer>();
             }

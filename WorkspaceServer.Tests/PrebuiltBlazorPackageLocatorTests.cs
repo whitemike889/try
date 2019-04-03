@@ -20,7 +20,7 @@ namespace WorkspaceServer.Tests
             var name = Path.GetFileNameWithoutExtension(asset.Directory.GetFiles("*.csproj").First().Name);
             string packageName = $"dotnettry.{name}";
             var console = new TestConsole();
-            await PackCommand.Do(new PackOptions(asset.Directory), console);
+            await PackCommand.Do(new PackOptions(asset.Directory, enableBlazor: true), console);
             var nupkg = asset.Directory
                 .GetFiles("*.nupkg").Single();
 
