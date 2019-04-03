@@ -96,8 +96,9 @@
       <LogicalName>demo.zip</LogicalName>
     </EmbeddedResource>
   </ItemGroup>
-
+ 
   <Target Name="PublishClient" BeforeTargets="PrepareForPublish">
+    <Exec Command="npm rebuild node-sass" WorkingDirectory="..\MLS.Styles" />
     <Exec Command="npm i" WorkingDirectory="..\MLS.Styles" />
     <Exec Command="npm run release -- $(ProjectDir)/wwwroot/css/trydotnet.css" WorkingDirectory="..\MLS.Styles" />
   </Target>

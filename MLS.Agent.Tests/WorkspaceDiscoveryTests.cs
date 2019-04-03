@@ -13,6 +13,7 @@ using WorkspaceServer.Packaging;
 using WorkspaceServer.Tests;
 using Xunit;
 using Xunit.Abstractions;
+using MLS.TestSupport;
 
 namespace MLS.Agent.Tests
 {
@@ -42,13 +43,14 @@ namespace MLS.Agent.Tests
         [Fact]
         public async Task Project_file_path_workspace_can_be_discovered_and_run_with_buffer_inlining()
         {
-            var csproj = TestAssets.SampleConsole.GetFiles("*.csproj")[0];
-            var programCs = TestAssets.SampleConsole.GetFiles("*.cs")[0];
+            var workspace = (await Create.ConsoleWorkspaceCopy()).Directory;
+            var csproj = workspace.GetFiles("*.csproj")[0];
+            var programCs = workspace.GetFiles("*.cs")[0];
 
             var output = Guid.NewGuid().ToString();
             var ws = new Workspace(
-                files: new[] {  new Workspace.File(programCs.FullName, null) },
-                buffers: new[] { new Workspace.Buffer(new BufferId(programCs.FullName, "theregion"), $"Console.WriteLine(\"{output}\");") },
+                files: new[] {  new Workspace.File(programCs.FullName, SourceCodeProvider.ConsoleProgramSingleRegion) },
+                buffers: new[] { new Workspace.Buffer(new BufferId(programCs.FullName, "alpha"), $"Console.WriteLine(\"{output}\");") },
                 workspaceType: csproj.FullName);
 
             var requestJson = new WorkspaceRequest(ws, requestId: "TestRun").ToJson();
@@ -77,11 +79,12 @@ namespace MLS.Agent.Tests
             await PackCommand.Do(
                 new PackOptions(
                     copy.Directory,
-                    packageLocation),
+                    packageLocation,
+                    enableBlazor: false),
                 console);
 
             await InstallCommand.Do(
-                new InstallOptions(packageLocation, projectName),
+                new InstallOptions(packageLocation, "dotnettry." + projectName),
                 console);
 
             return copy;

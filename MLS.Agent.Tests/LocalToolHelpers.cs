@@ -10,7 +10,7 @@ namespace MLS.Agent.Tests
     {
         public static async Task<DirectoryInfo> CreateTool(TestConsole console)
         {
-            var asset = await Create.ConsoleWorkspaceCopy();
+            var asset = await Create.NetstandardWorkspaceCopy();
             await PackCommand.Do(new PackOptions(asset.Directory), console);
             return asset.Directory;
         }

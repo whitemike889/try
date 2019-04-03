@@ -1,4 +1,5 @@
 ﻿using System.CommandLine;
+using System.IO;
 using System.Threading.Tasks;
 using MLS.Agent.CommandLine;
 using MLS.Agent.Tools;
@@ -14,8 +15,12 @@ namespace MLS.Agent.CommandLine
             var dotnet = new Dotnet();
             (await dotnet.ToolInstall(
                 options.PackageName,
-                Package.DefaultPackagesDirectory.FullName,
+                options.Location,
                 options.AddSource)).ThrowOnFailure();
+
+            var commandPath = Path.Combine(options.Location.FullName, options.PackageName);
+            (await MLS.Agent.Tools.CommandLine.Execute(commandPath, "extract-package")).ThrowOnFailure();
+            (await MLS.Agent.Tools.CommandLine.Execute(commandPath, "prepare-package")).ThrowOnFailure();
 
         }
     }

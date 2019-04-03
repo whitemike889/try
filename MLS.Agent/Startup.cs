@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using MLS.Agent.Blazor;
 using MLS.Agent.CommandLine;
 using MLS.Agent.Markdown;
@@ -162,7 +163,7 @@ namespace MLS.Agent
 
                 var budget = new Budget();
                 _disposables.Add(() => budget.Cancel());
-                BlazorPackageConfiguration.Configure(app, app.ApplicationServices, packageRegistry, budget);
+                BlazorPackageConfiguration.Configure(app, app.ApplicationServices, packageRegistry, budget, !Environment.IsProduction());
 
                 app.UseDefaultFiles()
                    .UseStaticFilesFromToolLocation()

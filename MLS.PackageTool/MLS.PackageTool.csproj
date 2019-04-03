@@ -12,11 +12,11 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <None Remove="packagey.zip" />
+    <None Remove="package.zip" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="packagey.zip" />
+    <EmbeddedResource Include="package.zip" />
   </ItemGroup>
 
   <ItemGroup>

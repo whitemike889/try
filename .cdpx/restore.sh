@@ -25,6 +25,12 @@ dotnet new -i Microsoft.AspNetCore.Blazor.Templates::0.7.0
 # Restore the project
 dotnet restore $REPO_ROOT/MLS-LS.sln
 
+# force MLS.WasmCodeRunner package into cache
+mkdir -p /tmp/WasmCodeRunner
+cd /tmp/WasmCodeRunner
+dotnet new console
+dotnet add package MLS.WasmCodeRunner --version 1.0.7880001-alpha-c895bf25
+
 # prepopulate workspaces
 
 ## Console
@@ -41,8 +47,8 @@ cd $WORKSPACES_ROOT/nodatime.api
 dotnet new console
 xmlstarlet ed --inplace --insert "/Project/PropertyGroup/OutputType" --type elem -n "LangVersion" --value "7.3" nodatime.api.csproj
 dotnet add package Newtonsoft.Json
-dotnet add package NodaTime -v 2.3.0
-dotnet add package NodaTime.Testing -v 2.3.0
+dotnet add package NodaTime -v 2.4.0
+dotnet add package NodaTime.Testing -v 2.4.0
 dotnet build /bl:package_fullBuild.binlog
 
 mkdir -p $WORKSPACES_ROOT/aspnet.webapi
@@ -81,3 +87,20 @@ dotnet add package Newtonsoft.Json
 xmlstarlet ed --inplace --insert "/Project/PropertyGroup/OutputType" --type elem -n "LangVersion" --value "7.3" blazor-console.csproj
 dotnet build /bl:package_fullBuild.binlog
 
+## NodaTime
+mkdir -p $WORKSPACES_ROOT/blazor-nodatime.api
+cd $WORKSPACES_ROOT/blazor-nodatime.api
+dotnet new classlib
+xmlstarlet ed --inplace --insert "/Project/PropertyGroup/OutputType" --type elem -n "LangVersion" --value "7.3" blazor-nodatime.api.csproj
+dotnet add package Newtonsoft.Json
+dotnet add package NodaTime -v 2.4.0
+dotnet add package NodaTime.Testing -v 2.4.0
+dotnet build /bl:package_fullBuild.binlog
+
+## Logging
+mkdir -p $WORKSPACES_ROOT/blazor-ms.logging
+cd $WORKSPACES_ROOT/blazor-ms.logging
+dotnet new classlib
+xmlstarlet ed --inplace --insert "/Project/PropertyGroup/OutputType" --type elem -n "LangVersion" --value "7.3" blazor-ms.logging.csproj
+dotnet add package Microsoft.Extensions.Logging
+dotnet build /bl:package_fullBuild.binlog

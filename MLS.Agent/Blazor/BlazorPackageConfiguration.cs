@@ -14,7 +14,8 @@ namespace MLS.Agent.Blazor
             IApplicationBuilder app, 
             IServiceProvider serviceProvider, 
             PackageRegistry registry, 
-            Budget budget)
+            Budget budget,
+            bool prepareIfNeeded)
         {
             List<Task> prepareTasks = new List<Task>();
 
@@ -28,7 +29,7 @@ namespace MLS.Agent.Blazor
                     {
                         SetupMappingsForBlazorContentsOfPackage(package, app);
                     }
-                    else
+                    else if(prepareIfNeeded)
                     {
                         prepareTasks.Add(Task.Run(package.Prepare).ContinueWith(t => {
                             if (t.IsCompletedSuccessfully)

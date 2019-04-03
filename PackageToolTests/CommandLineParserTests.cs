@@ -29,7 +29,7 @@ namespace MLS.PackageTool.Tests
         [Fact]
         public async Task Parse_locate_assembly_locates_assembly()
         {
-            await _parser.InvokeAsync("locate-assembly", _console);
+            await _parser.InvokeAsync("locate-projects", _console);
             _command.Should().Be("getAssembly");
         }
 

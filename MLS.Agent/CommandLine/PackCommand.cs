@@ -21,21 +21,24 @@ namespace MLS.Agent.CommandLine
                 var temp = disposableDirectory.Directory;
                 var temp_projects = temp.CreateSubdirectory("projects");
 
+                string name = GetProjectFileName(options);
+
                 var temp_projects_packtarget = temp_projects.CreateSubdirectory("packTarget");
                 DirectoryCopy(options.PackTarget, temp_projects_packtarget.FullName, copySubDirs: true);
 
                 if (options.EnableBlazor)
                 {
-                    var temp_projects_mlsblazor = temp_projects.CreateSubdirectory("MLS.Blazor");
-                    await AddBlazorProject(temp_projects_mlsblazor, GetProjectFile(temp_projects_packtarget));
+                    string runnerDirectoryName = $"runner-{name}";
+                    var temp_projects_blazorRunner = temp_projects.CreateSubdirectory(runnerDirectoryName);
+                    var temp_projects_blazorRunner_mlsblazor = temp_projects_blazorRunner.CreateSubdirectory("MLS.Blazor");
+                    await AddBlazorProject(temp_projects_blazorRunner_mlsblazor, GetProjectFile(temp_projects_packtarget), name);
                 }
 
                 var temp_toolproject = temp.CreateSubdirectory("project");
-                var archivePath = Path.Combine(temp_toolproject.FullName, "packagey.zip");
+                var archivePath = Path.Combine(temp_toolproject.FullName, "package.zip");
                 ZipFile.CreateFromDirectory(temp_projects.FullName, archivePath, CompressionLevel.Fastest, includeBaseDirectory: false);
 
                 console.Out.WriteLine(archivePath);
-                string name = GetProjectFileName(options);
 
                 var projectFilePath = Path.Combine(temp_toolproject.FullName, "package-tool.csproj");
                 var contentFilePath = Path.Combine(temp_toolproject.FullName, "program.cs");
@@ -51,7 +54,7 @@ namespace MLS.Agent.CommandLine
 
                 result.ThrowOnFailure("Failed to build intermediate project.");
 
-                result = await dotnet.Pack($"/p:PackageId={name} /p:ToolCommandName={name} {projectFilePath} -o {options.OutputDirectory.FullName}");
+                result = await dotnet.Pack($"/p:PackageId=dotnettry.{name} /p:ToolCommandName=dotnettry.{name} {projectFilePath} -o {options.OutputDirectory.FullName}");
 
                 result.ThrowOnFailure("Package build failed.");
             }
@@ -64,9 +67,9 @@ namespace MLS.Agent.CommandLine
             return name;
         }
 
-        private static async Task AddBlazorProject(DirectoryInfo blazorTargetDirectory, FileInfo projectToReference)
+        private static async Task AddBlazorProject(DirectoryInfo blazorTargetDirectory, FileInfo projectToReference, string name)
         {
-            var initializer = new BlazorPackageInitializer("project", new System.Collections.Generic.List<string>());
+            var initializer = new BlazorPackageInitializer(name, new System.Collections.Generic.List<string>());
             await initializer.Initialize(blazorTargetDirectory);
 
             await AddReference(blazorTargetDirectory, projectToReference);
