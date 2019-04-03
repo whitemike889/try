@@ -1,33 +1,27 @@
 ﻿using System;
-using System.Threading.Tasks;
 using Markdig.Helpers;
 using Markdig.Parsers;
 using Markdig.Syntax;
-using WorkspaceServer;
+using Microsoft.DotNet.Try.Markdown;
 
 namespace MLS.Agent.Markdown
 {
     public class CodeLinkBlockParser : FencedBlockParserBase<CodeLinkBlock>
     {
-        private readonly CodeFenceOptionsParser _csharpLinkParser;
-        private readonly IDirectoryAccessor _directoryAccessor;
-        private static int _sortId;
+        private readonly CodeFenceOptionsParser _codeFenceOptionsParser;
+        private static int _order;
 
-        private readonly PackageRegistry _registry;
-
-        public CodeLinkBlockParser(IDirectoryAccessor directoryAccessor, PackageRegistry registry)
+        public CodeLinkBlockParser(CodeFenceOptionsParser codeFenceOptionsParser)
         {
+            _codeFenceOptionsParser = codeFenceOptionsParser ?? throw new ArgumentNullException(nameof(codeFenceOptionsParser));
             OpeningCharacters = new[] { '`' };
             InfoParser = ParseCodeOptions;
-            _directoryAccessor = directoryAccessor ?? throw new ArgumentNullException(nameof(directoryAccessor));
-            _registry = registry ?? throw new ArgumentNullException(nameof(registry));
-            _csharpLinkParser = new CodeFenceOptionsParser(_directoryAccessor);
         }
 
         protected override CodeLinkBlock CreateFencedBlock(BlockProcessor processor) =>
-            new CodeLinkBlock(this, _sortId++);
+            new CodeLinkBlock(this, _order++);
 
-        private bool ParseCodeOptions(
+        protected bool ParseCodeOptions(
             BlockProcessor state,
             ref StringSlice line,
             IFencedBlock fenced)
@@ -37,35 +31,33 @@ namespace MLS.Agent.Markdown
                 return false;
             }
 
-            var parseResult = _csharpLinkParser.Parse(line.ToString());
+            var result = _codeFenceOptionsParser.TryParseCodeFenceOptions(
+                line.ToString());
 
-            if (parseResult == null)
+            switch (result)
             {
-                return false;
-            }
+                case NoCodeFenceOptions _:
+                    return false;
+                case FailedCodeFenceOptionParseResult failed:
+                    foreach (var errorMessage in failed.ErrorMessages)
+                    {
+                        codeLinkBlock.Diagnostics.Add(errorMessage);
+                    }
 
-            codeLinkBlock.AddOptions(parseResult, () => GetAccessor(parseResult.Package, _registry, _directoryAccessor));
+                    break;
+                case SuccessfulCodeFenceOptionParseResult successful:
+                    codeLinkBlock.Options = successful.Options;
+                    break;
+            }
 
             return true;
         }
 
-        private static async Task<IDirectoryAccessor> GetAccessor(string package, PackageRegistry registry, IDirectoryAccessor defaultAccessor)
+        public override BlockState TryContinue(
+            BlockProcessor processor,
+            Block block)
         {
-            if (package != null)
-            {
-                var installedPackage = await registry.Get(package);
-                if (installedPackage?.Directory != null)
-                {
-                    return new FileSystemDirectoryAccessor(installedPackage.Directory);
-                }
-            }
-
-            return defaultAccessor;
-        }
-
-        public override BlockState TryContinue(BlockProcessor processor, Block block)
-        {
-            var fence = (IFencedBlock)block;
+            var fence = (IFencedBlock) block;
             var count = fence.FencedCharCount;
             var matchChar = fence.FencedChar;
             var c = processor.CurrentChar;
@@ -93,8 +85,9 @@ namespace MLS.Agent.Markdown
 
             var codeBlock = block as CodeLinkBlock;
 
-            //if we already have the source code discard the lines that are inside the fenced code
-            if (codeBlock?.SourceFile != null)
+            // if we already have the source code discard the lines that are inside the fenced code
+            if (codeBlock?.Options is LocalCodeLinkBlockOptions localOptions &&
+                localOptions.SourceFile != null)
             {
                 return BlockState.ContinueDiscard;
             }
@@ -102,9 +95,9 @@ namespace MLS.Agent.Markdown
             return BlockState.Continue;
         }
 
-        internal static void ResetSortIdCounter()
+        internal static void ResetOrder()
         {
-            _sortId = 0;
+            _order = 0;
         }
     }
 }

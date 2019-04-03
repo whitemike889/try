@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace MLS.Agent
+namespace Microsoft.DotNet.Try.Markdown
 {
     public class RelativeFilePath :
         RelativePath,
@@ -18,7 +18,7 @@ namespace MLS.Agent
 
             FileName = fileName;
 
-            ThrowIfContainsDisallowedFilePathChars(FileName);
+            RelativePath.ThrowIfContainsDisallowedFilePathChars(FileName);
 
             Directory = new RelativeDirectoryPath(directoryPath);
 
@@ -38,7 +38,7 @@ namespace MLS.Agent
 
             var directoryPath = filePath.Substring(0, lastDirectorySeparatorPos);
 
-            directoryPath = NormalizeDirectory(directoryPath);
+            directoryPath = RelativePath.NormalizeDirectory(directoryPath);
 
             return (directoryPath, fileName);
         }
@@ -76,7 +76,7 @@ namespace MLS.Agent
                 return true;
             }
 
-            return string.Equals(FileName, other.FileName) &&
+            return string.Equals((string) FileName, (string) other.FileName) &&
                    Equals(Directory, other.Directory);
         }
 

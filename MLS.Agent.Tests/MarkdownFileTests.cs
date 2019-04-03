@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using HtmlAgilityPack;
+using Microsoft.DotNet.Try.Markdown;
+using MLS.Agent.CommandLine;
 using MLS.Agent.Markdown;
 using MLS.Agent.Tests.TestUtility;
 using MLS.Project.Generators;
@@ -302,6 +304,36 @@ This is the end of the file")
                 var thing = project.GetAllMarkdownFiles().Single();
                 var text = (await thing.ToHtmlContentAsync()).ToString();
                 text.Should().Contain("Hello World!");
+            }
+
+            [Fact]
+            public async Task Package_option_defaults_to_startup_options()
+            {
+                var expectedPackage = "console";
+                var expectedPackageVersion = "1.2.3";
+
+                var project = new MarkdownProject(
+                    new InMemoryDirectoryAccessor(new DirectoryInfo(Directory.GetCurrentDirectory()))
+                    {
+                        ("readme.md", @"
+```cs --source-file Program.cs
+```
+                        "),
+                        ("Program.cs", "")
+                    },
+                    new PackageRegistry(),
+                    new StartupOptions(
+                        package: expectedPackage,
+                        packageVersion: expectedPackageVersion)
+                );
+
+                var html = (await project.GetAllMarkdownFiles()
+                                         .Single()
+                                         .ToHtmlContentAsync())
+                    .ToString();
+
+                html.Should()
+                    .Contain($"data-trydotnet-package=\"{expectedPackage}\" data-trydotnet-package-version=\"{expectedPackageVersion}\"");
             }
         }
     }

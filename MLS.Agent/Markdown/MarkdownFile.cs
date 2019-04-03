@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
+using Microsoft.DotNet.Try.Markdown;
 using MLS.Protocol.Execution;
 
 namespace MLS.Agent.Markdown
@@ -26,27 +27,34 @@ namespace MLS.Agent.Markdown
         {
             var pipeline = Project.GetMarkdownPipelineFor(Path);
 
-            CodeLinkBlockParser.ResetSortIdCounter();
+            // FIX: (GetCodeLinkBlocks)    CodeLinkBlockParser.ResetOrder();
 
             var document = Markdig.Markdown.Parse(
                 ReadAllText(),
                 pipeline);
 
-            var blocks = document.OfType<CodeLinkBlock>().OrderBy(c => c.Order).ToList();
+            var blocks = document
+                         .OfType<CodeLinkBlock>()
+                         .OrderBy(c => c.Order)
+                         .ToList();
 
-            await Task.WhenAll(blocks.Select(b => b.InitializeAsync()));
+            await Task.WhenAll(blocks.Select(async b =>
+            {
+                await b.InitializeAsync();
+            }));
+
             return blocks;
         }
 
         public async Task<IEnumerable<CodeLinkBlock>> GetEditableCodeLinkBlocks()
         {
-            var blocks = (await GetCodeLinkBlocks()).Where(b => b.Editable);
+            var blocks = (await GetCodeLinkBlocks()).Where(b => b.Options.Editable);
             return blocks;
         }
 
         public async Task<IEnumerable<CodeLinkBlock>> GetReadOnlyCodeLinkBlocks()
         {
-            var blocks = (await GetCodeLinkBlocks()).Where(b => !b.Editable);
+            var blocks = (await GetCodeLinkBlocks()).Where(b => !b.Options.Editable);
             return blocks;
         }
 
@@ -70,16 +78,15 @@ namespace MLS.Agent.Markdown
 
             var contentBuildersByFileBySession = new Dictionary<string, Dictionary<string, StringBuilder>>(StringComparer.InvariantCultureIgnoreCase);
 
-
             var blocks = await GetReadOnlyCodeLinkBlocks();
 
             foreach (var block in blocks)
             {
-                var sessionId = string.IsNullOrWhiteSpace(block.Session) ? "global" : block.Session;
-                var filePath = block.DestinationFile ?? new RelativeFilePath($"./generated_include_file_{sessionId}.cs");
+                var sessionId = string.IsNullOrWhiteSpace(block.Options.Session) ? "global" : block.Options.Session;
+                var filePath = block.Options.DestinationFile ?? new RelativeFilePath($"./generated_include_file_{sessionId}.cs");
                 var absolutePath = directoryAccessor.GetFullyQualifiedPath(filePath).FullName;
 
-                if (string.IsNullOrWhiteSpace(block.Region))
+                if (string.IsNullOrWhiteSpace(block.Options.Region))
                 {
                     if (!contentBuildersByFileBySession.TryGetValue(sessionId, out var sessionFileBuffers))
                     {
@@ -97,7 +104,7 @@ namespace MLS.Agent.Markdown
                 }
                 else
                 {
-                    var bufferId = new BufferId(absolutePath, block.Region);
+                    var bufferId = new BufferId(absolutePath, block.Options.Region);
                     if (!contentBuildersByBufferBySession.TryGetValue(sessionId, out var sessionFileBuffers))
                     {
                         sessionFileBuffers = new Dictionary<BufferId, StringBuilder>();

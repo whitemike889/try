@@ -3,6 +3,7 @@ using Markdig.Renderers;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.DotNet.Try.Markdown;
 
 namespace MLS.Agent.Markdown
 {
@@ -10,7 +11,8 @@ namespace MLS.Agent.Markdown
     {
         public static async Task<string> RenderHtmlAsync(this MarkdownPipeline pipeline, string text)
         {
-            CodeLinkBlockParser.ResetSortIdCounter();
+            // FIX: (RenderHtmlAsync)  CodeLinkBlockParser.ResetOrder();
+
             var document = Markdig.Markdown.Parse(
                text,
                pipeline);

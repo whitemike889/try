@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using WorkspaceServer;
 using System.CommandLine;
 using System.Linq;
+using Microsoft.DotNet.Try.Markdown;
 using MLS.Agent.Controllers;
 using MLS.Agent.Tests.TestUtility;
 using MLS.Agent.Tools;
@@ -198,7 +199,6 @@ $@"```cs --project {package} --source-file ../src/sample/Program.cs
 
             var (registry, package) = await _package.ValueAsync();
             var pipeline = new MarkdownPipelineBuilder().UseCodeLinks(directoryAccessor, registry).Build();
-
 
             var document =
 $@"```cs --package {package} --source-file Program.cs

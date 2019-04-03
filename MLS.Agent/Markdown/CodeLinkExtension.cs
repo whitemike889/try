@@ -1,5 +1,7 @@
-﻿using Markdig;
+﻿using System;
+using Markdig;
 using Markdig.Renderers;
+using Microsoft.DotNet.Try.Markdown;
 using WorkspaceServer;
 
 namespace MLS.Agent.Markdown
@@ -8,13 +10,16 @@ namespace MLS.Agent.Markdown
     {
         private readonly IDirectoryAccessor _directoryAccessor;
         private readonly PackageRegistry _packageRegistry;
-    
+        private readonly IDefaultCodeLinkBlockOptions _defaultOptions;
 
-
-        public CodeLinkExtension(IDirectoryAccessor directoryAccessor, PackageRegistry packageRegistry)
+        public CodeLinkExtension(
+            IDirectoryAccessor directoryAccessor, 
+            PackageRegistry packageRegistry,
+            IDefaultCodeLinkBlockOptions defaultOptions = null)
         {
-            _directoryAccessor = directoryAccessor;
-            _packageRegistry = packageRegistry;
+            _directoryAccessor = directoryAccessor ?? throw new ArgumentNullException(nameof(directoryAccessor));
+            _packageRegistry = packageRegistry ?? throw new ArgumentNullException(nameof(packageRegistry));
+            _defaultOptions = defaultOptions;
         }
 
         public bool InlineControls { get; set; }
@@ -25,8 +30,15 @@ namespace MLS.Agent.Markdown
         {
             if (!pipeline.BlockParsers.Contains<CodeLinkBlockParser>())
             {
+                var optionsParser = new LocalCodeFenceOptionsParser(
+                    _directoryAccessor, 
+                    _packageRegistry,
+                    _defaultOptions);
+
                 // It should execute before the FencedCodeBlockParser
-                pipeline.BlockParsers.Insert(0, new CodeLinkBlockParser(_directoryAccessor, _packageRegistry));
+                pipeline.BlockParsers.Insert(
+                    index: 0, 
+                    new CodeLinkBlockParser(optionsParser));
             }
         }
 

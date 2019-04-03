@@ -78,7 +78,7 @@ namespace WorkspaceServer
                             }
                         }
 
-                        throw new ArgumentException($"Package named \"{name2}\" not found.");
+                        throw new PackageNotFoundException($"Package named \"{name2}\" not found.");
                     });
 
                 var p = packageBuilder.GetPackage(budget);

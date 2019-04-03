@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.CommandLine;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.DotNet.Try.Markdown;
 using MLS.Agent.Markdown;
 using MLS.Protocol;
 using MLS.Protocol.Diagnostics;
@@ -18,10 +19,14 @@ namespace MLS.Agent.CommandLine
             VerifyOptions options,
             IConsole console,
             Func<IDirectoryAccessor> getDirectoryAccessor,
-            PackageRegistry packageRegistry)
+            PackageRegistry packageRegistry,
+            StartupOptions startupOptions = null)
         {
             var directoryAccessor = getDirectoryAccessor();
-            var markdownProject = new MarkdownProject(directoryAccessor, packageRegistry);
+            var markdownProject = new MarkdownProject(
+                directoryAccessor, 
+                packageRegistry,
+                startupOptions);
             var returnCode = 0;
             var workspaceServer = new Lazy<RoslynWorkspaceServer>(() => new RoslynWorkspaceServer(packageRegistry));
 
@@ -43,28 +48,25 @@ namespace MLS.Agent.CommandLine
 
                 var codeLinkBlocks = await markdownFile.GetCodeLinkBlocks();
 
-                var sessions = codeLinkBlocks.GroupBy(block => block.Session);
-             
+                var sessions = codeLinkBlocks.GroupBy(block => block.Options?.Session);
 
                 foreach (var session in sessions)
                 {
-                    if (session.Select(s => s.ProjectOrPackageName()).Distinct().Count() != 1)
+                    if (session.Select(block => block.ProjectOrPackageName()).Distinct().Count() != 1)
                     {
                         SetError();
                         console.Out.WriteLine($"Session cannot span projects or packages: --session {session.Key}");
                         continue;
                     }
 
-                    var sourceCodeBlocks = session;
-
-                    foreach (var codeLinkBlock in sourceCodeBlocks)
+                    foreach (var codeLinkBlock in session)
                     {
                         ReportCodeLinkageResults(codeLinkBlock);
                     }
 
                     Console.ResetColor();
 
-                    if (!sourceCodeBlocks.Any(block => block.Diagnostics.Any()))
+                    if (!session.Any(block => block.Diagnostics.Any()))
                     {
                         var (buffersToInclude, filesToInclude) = await markdownFile.GetIncludes(directoryAccessor);
                         await ReportCompileResults(session, markdownFile, filesToInclude, buffersToInclude);
@@ -86,13 +88,16 @@ namespace MLS.Agent.CommandLine
             {
                 console.Out.WriteLine($"\n  Compiling samples for session \"{session.Key}\"\n");
 
-                var editableCodeBlocks = session.Where(b => b.Editable).ToList();
+                var editableCodeBlocks = session.Where(b => b.Options.Editable).ToList();
 
                 var projectOrPackageName = session
                     .Select(b => b.ProjectOrPackageName())
                     .FirstOrDefault(name => !string.IsNullOrWhiteSpace(name));
 
-                var buffers = editableCodeBlocks.Select(block => block.GetBufferAsync(directoryAccessor, markdownFile)).ToList();
+                var buffers = editableCodeBlocks
+                              .Select(block => block.GetBufferAsync(directoryAccessor, markdownFile))
+                              .ToList();
+
                 var files = new List<Workspace.File>();
 
                 if (filesToInclude.TryGetValue("global", out var globalIncludes))
@@ -178,12 +183,14 @@ namespace MLS.Agent.CommandLine
                     Console.ForegroundColor = ConsoleColor.Green;
                 }
 
+                var blockOptions = (LocalCodeLinkBlockOptions) codeLinkBlock.Options;
+
                 var sourceFile =
-                    codeLinkBlock.SourceFile != null
-                        ? directoryAccessor.GetFullyQualifiedPath(codeLinkBlock.SourceFile).FullName
+                    blockOptions?.SourceFile != null
+                        ? directoryAccessor.GetFullyQualifiedPath(blockOptions.SourceFile).FullName
                         : "UNKNOWN";
 
-                var project = codeLinkBlock.ProjectFile?.FullName ?? "UNKNOWN";
+                var project = blockOptions?.Project?.FullName ?? "UNKNOWN";
 
                 var symbol = diagnostics.Any()
                                  ? "X"

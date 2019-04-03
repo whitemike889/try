@@ -98,7 +98,8 @@ namespace MLS.Agent
 
                 services.AddSingleton(c => new MarkdownProject(
                                           c.GetRequiredService<IDirectoryAccessor>(),
-                                          c.GetRequiredService<PackageRegistry>()));
+                                          c.GetRequiredService<PackageRegistry>(),
+                                          StartupOptions));
 
                 services.AddSingleton<IDirectoryAccessor>(_ =>
                 {

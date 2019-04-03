@@ -1,9 +1,9 @@
 ﻿using System.Web;
 using Microsoft.AspNetCore.Html;
 
-namespace MLS.Agent
+namespace Microsoft.DotNet.Try.Markdown
 {
-    public static class HtmlExtensions
+    internal static class HtmlExtensions
     {
         public static IHtmlContent HtmlEncode(this string content)
         {

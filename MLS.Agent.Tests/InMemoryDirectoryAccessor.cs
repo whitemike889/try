@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Microsoft.DotNet.Try.Markdown;
 using MLS.Agent.Markdown;
 using MLS.Agent.Tests.TestUtility;
 

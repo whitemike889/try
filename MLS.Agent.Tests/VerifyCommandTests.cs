@@ -2,8 +2,8 @@
 using System.IO;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.DotNet.Try.Markdown;
 using MLS.Agent.CommandLine;
-using MLS.Agent.Markdown;
 using WorkspaceServer;
 using WorkspaceServer.Tests;
 using Xunit;
@@ -235,7 +235,7 @@ public class Program
 ```cs --source-file Program.cs --session one --project b.csproj
 ```")]
         [InlineData(@"
-```cs --source-file Program.cs --session one --package some-package
+```cs --source-file Program.cs --session one --package console
 ```
 ```cs --source-file Program.cs --session one --project b.csproj
 ```")]

@@ -3,7 +3,6 @@ using System.IO;
 using System.Threading.Tasks;
 using FluentAssertions;
 using MLS.Agent.Tools;
-using WorkspaceServer.Packaging;
 using Xunit;
 using System.Linq;
 using MLS.Agent.CommandLine;
