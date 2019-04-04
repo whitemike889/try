@@ -27,8 +27,6 @@ namespace MLS.Agent.Markdown
         {
             var pipeline = Project.GetMarkdownPipelineFor(Path);
 
-            // FIX: (GetCodeLinkBlocks)    CodeLinkBlockParser.ResetOrder();
-
             var document = Markdig.Markdown.Parse(
                 ReadAllText(),
                 pipeline);
@@ -38,10 +36,7 @@ namespace MLS.Agent.Markdown
                          .OrderBy(c => c.Order)
                          .ToList();
 
-            await Task.WhenAll(blocks.Select(async b =>
-            {
-                await b.InitializeAsync();
-            }));
+            await Task.WhenAll(blocks.Select(b => b.InitializeAsync()));
 
             return blocks;
         }

@@ -9,7 +9,7 @@ namespace MLS.Agent.Markdown
     public class CodeLinkBlockParser : FencedBlockParserBase<CodeLinkBlock>
     {
         private readonly CodeFenceOptionsParser _codeFenceOptionsParser;
-        private static int _order;
+        private int _order;
 
         public CodeLinkBlockParser(CodeFenceOptionsParser codeFenceOptionsParser)
         {
@@ -93,11 +93,6 @@ namespace MLS.Agent.Markdown
             }
 
             return BlockState.Continue;
-        }
-
-        internal static void ResetOrder()
-        {
-            _order = 0;
         }
     }
 }

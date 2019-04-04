@@ -11,8 +11,6 @@ namespace MLS.Agent.Markdown
     {
         public static async Task<string> RenderHtmlAsync(this MarkdownPipeline pipeline, string text)
         {
-            // FIX: (RenderHtmlAsync)  CodeLinkBlockParser.ResetOrder();
-
             var document = Markdig.Markdown.Parse(
                text,
                pipeline);
