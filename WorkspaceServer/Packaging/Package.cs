@@ -781,8 +781,7 @@ namespace WorkspaceServer.Packaging
 
                 var analyzer = manager.GetProject(csProj.FullName);
                 analyzer.AddBinaryLogger(Path.Combine(Directory.FullName, DesignTimeBuildBinlogFileName));
-                var targetFramework = csProj.GetTargetFramework();
-                var languageVersion = CSharpLanguageSelector.GetCSharpLanguageVersion(targetFramework);
+                var languageVersion = csProj.SuggestedLanguageVersion();
                 analyzer.SetGlobalProperty("langVersion", languageVersion);
                 var result = analyzer.Build().Results.First();
                 DesignTimeBuildResult = result;

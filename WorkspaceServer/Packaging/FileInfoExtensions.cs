@@ -38,7 +38,31 @@ namespace WorkspaceServer.Packaging
 
             var dom = XElement.Parse(File.ReadAllText(project.FullName));
             var languageVersion = dom.XPathSelectElement("//LangVersion");
-            return languageVersion?.Value ?? "7.3";
+            string version;
+            if (languageVersion == null || string.IsNullOrWhiteSpace(languageVersion?.Value))
+            {
+                version = project.SuggestedLanguageVersion();
+            }
+            else
+            {
+                version = languageVersion.Value;
+            }
+            return version;
+        }
+
+        public static string SuggestedLanguageVersion(this FileInfo project)
+        {
+            if (project == null)
+            {
+                throw new ArgumentNullException(nameof(project));
+            }
+
+            if (!project.Exists)
+            {
+                throw new FileNotFoundException();
+            }
+
+            return CSharpLanguageSelector.GetCSharpLanguageVersion(project.GetTargetFramework());
         }
 
         public static void SetLanguageVersion(this FileInfo project, string version)
