@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace MLS.Agent
+namespace Microsoft.DotNet.Try.Markdown
 {
     public abstract class RelativePath
     {
-        public string Value { get; private protected set; }
+        public string Value { get; protected set; }
 
         public override int GetHashCode() =>
             Value.GetHashCode();

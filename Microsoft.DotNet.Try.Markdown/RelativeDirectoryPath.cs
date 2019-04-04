@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace MLS.Agent
+namespace Microsoft.DotNet.Try.Markdown
 {
     public class RelativeDirectoryPath :
         RelativePath,

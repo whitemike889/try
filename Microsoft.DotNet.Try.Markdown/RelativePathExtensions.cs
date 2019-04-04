@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace MLS.Agent
+namespace Microsoft.DotNet.Try.Markdown
 {
     public static class RelativePathExtensions
     {

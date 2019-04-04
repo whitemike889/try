@@ -1,4 +1,4 @@
 This is a sample *markdown file*
 
-```cs Program.cs
+```cs --source-file Program.cs
 ```

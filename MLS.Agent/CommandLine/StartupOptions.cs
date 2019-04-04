@@ -1,9 +1,11 @@
 using System;
 using System.IO;
+using Microsoft.DotNet.Try.Markdown;
+using MLS.Agent.Markdown;
 
 namespace MLS.Agent.CommandLine
 {
-    public class StartupOptions
+    public class StartupOptions : IDefaultCodeLinkBlockOptions
     {
         public StartupOptions(
             bool production = false,
@@ -17,7 +19,9 @@ namespace MLS.Agent.CommandLine
             Uri uri = null,
             DirectoryInfo logPath = null,
             bool verbose = false,
-            bool enablePreviewFeatures = false)
+            bool enablePreviewFeatures = false,
+            string package = null,
+            string packageVersion = null)
         {
             LogPath = logPath;
             Verbose = verbose;
@@ -31,6 +35,8 @@ namespace MLS.Agent.CommandLine
             AddSource = addSource;
             Uri = uri;
             EnablePreviewFeatures = enablePreviewFeatures;
+            Package = package;
+            PackageVersion = packageVersion;
         }
 
         public bool EnablePreviewFeatures { get; }
@@ -56,5 +62,9 @@ namespace MLS.Agent.CommandLine
         public DirectoryInfo LogPath { get;  }
 
         public bool Verbose { get; }
+
+        public string Package { get; }
+
+        public string PackageVersion { get; }
     }
 }

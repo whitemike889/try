@@ -1,5 +1,6 @@
 ﻿using FluentAssertions;
 using System;
+using Microsoft.DotNet.Try.Markdown;
 using Xunit;
 
 namespace MLS.Agent.Tests

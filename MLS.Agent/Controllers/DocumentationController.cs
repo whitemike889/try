@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.DotNet.Try.Markdown;
 using MLS.Agent.CommandLine;
 using MLS.Agent.Markdown;
 using Recipes;
@@ -57,7 +58,7 @@ namespace MLS.Agent.Controllers
             var blocks = await markdownFile.GetEditableCodeLinkBlocks();
             var maxEditorPerSession = blocks.Any()
                                           ? blocks
-                                              .GroupBy(b => b.Session)
+                                              .GroupBy(b => b.Options.Session)
                                               .Max(editors => editors.Count())
                                           : 0;
 
@@ -84,13 +85,13 @@ namespace MLS.Agent.Controllers
         {
             var sessions = (await markdownFile
                    .GetCodeLinkBlocks())
-                   .GroupBy(b => b.Session);
+                   .GroupBy(b => b.Options.Session);
 
             var sb = new StringBuilder();
 
             foreach (var session in sessions)
             {
-                sb.AppendLine($@"<button class=""run"" data-trydotnet-mode=""run"" data-trydotnet-session-id=""{session.Key}"" data-trydotnet-run-args=""{session.First().RunArgs.HtmlAttributeEncode()}"">{session.Key}</button>");
+                sb.AppendLine($@"<button class=""run"" data-trydotnet-mode=""run"" data-trydotnet-session-id=""{session.Key}"" data-trydotnet-run-args=""{session.First().Options.RunArgs.HtmlAttributeEncode()}"">{session.Key}</button>");
 
                 sb.AppendLine(enablePreviewFeatures
                     ? $@"<div class=""output-panel"" data-trydotnet-mode=""runResult"" data-trydotnet-output-type=""terminal"" data-trydotnet-session-id=""{session.Key}""></div>"

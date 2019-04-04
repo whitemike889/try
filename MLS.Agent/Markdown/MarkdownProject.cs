@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Markdig;
+using Microsoft.DotNet.Try.Markdown;
 using Recipes;
 using WorkspaceServer;
 
@@ -39,19 +40,25 @@ namespace MLS.Agent.Markdown
         }
       
         internal IDirectoryAccessor DirectoryAccessor { get; }
+
         private readonly PackageRegistry _packageRegistry;
 
         private readonly Dictionary<RelativeFilePath, MarkdownPipeline> _markdownPipelines = new Dictionary<RelativeFilePath, MarkdownPipeline>();
 
+        private readonly IDefaultCodeLinkBlockOptions _defaultOptions;
+
         internal MarkdownProject(PackageRegistry packageRegistry) : this(new NullDirectoryAccessor(), packageRegistry)
         {
-
         }
 
-        public MarkdownProject(IDirectoryAccessor directoryAccessor, PackageRegistry packageRegistry)
+        public MarkdownProject(
+            IDirectoryAccessor directoryAccessor, 
+            PackageRegistry packageRegistry,
+            IDefaultCodeLinkBlockOptions defaultOptions = null)
         {
             DirectoryAccessor = directoryAccessor ?? throw new ArgumentNullException(nameof(directoryAccessor));
             _packageRegistry = packageRegistry ?? throw new ArgumentNullException(nameof(packageRegistry));
+            _defaultOptions = defaultOptions;
         }
 
         public IEnumerable<MarkdownFile> GetAllMarkdownFiles() =>
@@ -79,7 +86,10 @@ namespace MLS.Agent.Markdown
 
                 return new MarkdownPipelineBuilder()
                     .UseAdvancedExtensions()
-                    .UseCodeLinks(relativeAccessor, _packageRegistry)
+                    .UseCodeLinks(
+                        relativeAccessor, 
+                        _packageRegistry, 
+                        _defaultOptions)
                     .Build();
             });
         }

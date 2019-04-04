@@ -4,6 +4,7 @@ using System.Linq;
 using Xunit;
 using WorkspaceServer;
 using System.Threading.Tasks;
+using Microsoft.DotNet.Try.Markdown;
 using MLS.Agent.Markdown;
 using MLS.Agent.Tests.TestUtility;
 
@@ -67,12 +68,19 @@ namespace MLS.Agent.Tests
                     },
                     PackageRegistry.CreateForHostedMode());
 
-                var files = await Task.WhenAll(project.GetAllMarkdownFiles().Select(f => f.GetCodeLinkBlocks()));
-                files.SelectMany(f => f).Select(b => b.ProjectFile)
-                       .Should()
-                       .Contain(p => p.Directory.Name == "Project1")
-                       .And
-                       .Contain(p => p.Directory.Name == "Project2");
+                var markdownFiles = project.GetAllMarkdownFiles();
+
+                var codeLinkBlocks = await Task.WhenAll(markdownFiles.Select(f => f.GetCodeLinkBlocks()));
+
+                codeLinkBlocks
+                    .SelectMany(f => f)
+                    .Select(block => block.Options)
+                    .OfType<LocalCodeLinkBlockOptions>()
+                    .Select(b => b.Project)
+                    .Should()
+                    .Contain(p => p.Directory.Name == "Project1")
+                    .And
+                    .Contain(p => p.Directory.Name == "Project2");
             }
         }
     }
