@@ -19,9 +19,9 @@ namespace MLS.Project.Transformations
                 throw new ArgumentNullException(nameof(source));
             }
 
-            var files = (source.Files?? Array.Empty<Workspace.File>())
+            var files = (source.Files ?? Array.Empty<Workspace.File>())
                 .GroupBy(file => file.Name)
-                .Select(fileGroup => MergeFiles(fileGroup.Key, fileGroup) );
+                .Select(fileGroup => MergeFiles(fileGroup.Key, fileGroup));
 
             var buffers = (source.Buffers ?? Array.Empty<Workspace.Buffer>())
                 .GroupBy(buffer => buffer.Id)
@@ -30,7 +30,7 @@ namespace MLS.Project.Transformations
 
             var workspace = new Workspace(
                 workspaceType: source.WorkspaceType,
-                usings: source.Usings, 
+                usings: source.Usings,
                 files: files.ToArray(),
                 buffers: buffers.ToArray());
 
@@ -47,7 +47,7 @@ namespace MLS.Project.Transformations
             {
                 order = file.Order;
                 content = $"{content}{file.Text}{Padding}";
-               
+
             }
             content = content.Substring(0, content.Length - Padding.Length);
 
@@ -70,29 +70,29 @@ namespace MLS.Project.Transformations
                 if (buffer.Position != 0)
                 {
                     position = content.Length + buffer.Position;
-                   
+
                 }
                 content = $"{content}{buffer.Content}{Padding}";
             }
 
             content = content.Substring(0, content.Length - Padding.Length);
 
-           region = new Workspace.Buffer(id,content,position:position, order:order);
+            region = new Workspace.Buffer(id, content, position: position, order: order);
 
-           if (preRegion != null)
-           {
-               yield return preRegion;
-           }
+            if (preRegion != null)
+            {
+                yield return preRegion;
+            }
 
-           if (region != null)
-           {
-               yield return region;
-           }
+            if (region != null)
+            {
+                yield return region;
+            }
 
-           if (postRegion != null)
-           {
-               yield return postRegion;
-           }
+            if (postRegion != null)
+            {
+                yield return postRegion;
+            }
         }
     }
 }

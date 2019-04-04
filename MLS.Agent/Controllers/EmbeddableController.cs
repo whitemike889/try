@@ -40,7 +40,7 @@ namespace MLS.Agent.Controllers
         {
             var referrer = HttpContext.Request.Headers["referer"].ToString();
 
-            if (Uri.TryCreate(referrer, UriKind.Absolute, out var uri))
+            if (!string.IsNullOrWhiteSpace(referrer) && Uri.TryCreate(referrer, UriKind.Absolute, out var uri))
             {
                 var parameters = new ClientParameters
                                  {
