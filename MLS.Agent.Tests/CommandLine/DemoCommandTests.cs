@@ -1,8 +1,8 @@
 ﻿using System;
 using System.CommandLine;
 using System.IO;
-using FluentAssertions;
 using System.Threading.Tasks;
+using FluentAssertions;
 using MLS.Agent.CommandLine;
 using MLS.Agent.Markdown;
 using WorkspaceServer;
@@ -10,7 +10,7 @@ using WorkspaceServer.Tests;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace MLS.Agent.Tests
+namespace MLS.Agent.Tests.CommandLine
 {
     public class DemoCommandTests
     {

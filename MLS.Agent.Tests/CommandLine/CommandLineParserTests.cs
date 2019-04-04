@@ -2,14 +2,14 @@ using System;
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.IO;
-using FluentAssertions;
 using System.Threading.Tasks;
+using FluentAssertions;
 using MLS.Agent.CommandLine;
 using MLS.Agent.Tests.TestUtility;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace MLS.Agent.Tests
+namespace MLS.Agent.Tests.CommandLine
 {
     public class CommandLineParserTests : IDisposable
     {

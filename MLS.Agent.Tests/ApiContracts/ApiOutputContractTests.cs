@@ -10,7 +10,7 @@ using WorkspaceServer.Tests;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace MLS.Agent.Tests
+namespace MLS.Agent.Tests.ApiContracts
 {
     public class ApiOutputContractTests : ApiViaHttpTestsBase
     {

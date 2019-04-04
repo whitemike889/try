@@ -2,10 +2,9 @@
 using FluentAssertions;
 using Markdig.Parsers;
 using Microsoft.DotNet.Try.Markdown;
-using MLS.Agent.Markdown;
 using Xunit;
 
-namespace MLS.Agent.Tests
+namespace Microsoft.Dotnet.Try.Markdown.Tests
 {
     public class CodeLinkBlockTests
     {
@@ -19,7 +18,7 @@ namespace MLS.Agent.Tests
 
         protected virtual BlockParser CreateParser()
         {
-            return new CodeLinkBlockParser(new CodeFenceOptionsParser());
+            return null;//FIX new CodeLinkBlockParser(new CodeFenceOptionsParser());
         }
     }
 }

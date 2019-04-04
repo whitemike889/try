@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Hosting;
 using MLS.Agent.CommandLine;
 using Xunit;
 
-namespace MLS.Agent.Tests
+namespace MLS.Agent.Tests.CommandLine
 {
     public class StartupOptionsTests
     {

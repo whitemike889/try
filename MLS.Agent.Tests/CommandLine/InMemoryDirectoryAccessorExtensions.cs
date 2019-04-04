@@ -1,7 +1,8 @@
 ﻿using System.IO;
 using MLS.Agent.Markdown;
+using MLS.Agent.Tests.Markdown;
 
-namespace MLS.Agent.Tests
+namespace MLS.Agent.Tests.CommandLine
 {
     internal static class InMemoryDirectoryAccessorExtensions
     {

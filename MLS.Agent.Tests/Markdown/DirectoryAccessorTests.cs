@@ -1,12 +1,12 @@
-﻿using FluentAssertions;
-using MLS.Agent.Markdown;
-using System;
+﻿using System;
 using System.IO;
+using FluentAssertions;
 using Microsoft.DotNet.Try.Markdown;
+using MLS.Agent.Markdown;
 using MLS.Agent.Tests.TestUtility;
 using Xunit;
 
-namespace MLS.Agent.Tests
+namespace MLS.Agent.Tests.Markdown
 {
     public abstract class DirectoryAccessorTests
     {

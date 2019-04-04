@@ -1,13 +1,13 @@
 using System.Threading.Tasks;
 using FluentAssertions;
-using Recipes;
 using MLS.Protocol.Completion;
+using MLS.Protocol.Execution;
 using MLS.Protocol.SignatureHelp;
+using Recipes;
 using Xunit;
 using Xunit.Abstractions;
-using MLS.Protocol.Execution;
 
-namespace MLS.Agent.Tests
+namespace MLS.Agent.Tests.ApiContracts
 {
     public class ApiInputContractChangeTests : ApiViaHttpTestsBase
     {

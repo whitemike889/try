@@ -4,13 +4,14 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.DotNet.Try.Markdown;
 using MLS.Agent.CommandLine;
+using MLS.Agent.Tests.Markdown;
 using WorkspaceServer;
 using WorkspaceServer.Tests;
 using Xunit;
 using Xunit.Abstractions;
 using CodeManipulation = MLS.Project.Generators.CodeManipulation;
 
-namespace MLS.Agent.Tests
+namespace MLS.Agent.Tests.CommandLine
 {
     public class VerifyCommandTests
     {

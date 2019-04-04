@@ -1,21 +1,21 @@
-﻿using FluentAssertions;
-using Markdig;
-using MLS.Agent.Markdown;
-using MLS.Project.Generators;
+﻿using System.CommandLine;
 using System.IO;
-using Xunit;
-using HtmlAgilityPack;
-using System.Threading.Tasks;
-using WorkspaceServer;
-using System.CommandLine;
 using System.Linq;
+using System.Threading.Tasks;
+using FluentAssertions;
+using HtmlAgilityPack;
+using Markdig;
 using Microsoft.DotNet.Try.Markdown;
 using MLS.Agent.Controllers;
+using MLS.Agent.Markdown;
 using MLS.Agent.Tests.TestUtility;
 using MLS.Agent.Tools;
+using MLS.Project.Generators;
+using WorkspaceServer;
 using WorkspaceServer.PackageDiscovery;
+using Xunit;
 
-namespace MLS.Agent.Tests
+namespace MLS.Agent.Tests.Markdown
 {
     public class CodeLinkExtensionTests
     {

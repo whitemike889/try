@@ -7,6 +7,7 @@ using HtmlAgilityPack;
 using Microsoft.DotNet.Try.Markdown;
 using MLS.Agent.CommandLine;
 using MLS.Agent.Markdown;
+using MLS.Agent.Tests.Markdown;
 using MLS.Agent.Tests.TestUtility;
 using MLS.Project.Generators;
 using WorkspaceServer;

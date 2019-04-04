@@ -7,7 +7,7 @@ using Microsoft.DotNet.Try.Markdown;
 using MLS.Agent.Markdown;
 using MLS.Agent.Tests.TestUtility;
 
-namespace MLS.Agent.Tests
+namespace MLS.Agent.Tests.Markdown
 {
     internal class InMemoryDirectoryAccessor : IDirectoryAccessor, IEnumerable
     {

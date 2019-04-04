@@ -1,10 +1,10 @@
-﻿using FluentAssertions;
-using System;
+﻿using System;
+using FluentAssertions;
 using Microsoft.DotNet.Try.Markdown;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace MLS.Agent.Tests
+namespace Microsoft.Dotnet.Try.Markdown.Tests
 {
     public class RelativeFilePathTests
     {

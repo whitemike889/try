@@ -1,14 +1,15 @@
-﻿using FluentAssertions;
-using System.CommandLine;
-using System.Threading.Tasks;
-using MLS.Agent.CommandLine;
-using Xunit;
-using WorkspaceServer.Tests;
-using WorkspaceServer;
-using System.Linq;
+﻿using System.CommandLine;
 using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using FluentAssertions;
+using MLS.Agent.CommandLine;
+using WorkspaceServer;
+using WorkspaceServer.Tests;
+using Xunit;
 
-namespace MLS.Agent.Tests
+namespace MLS.Agent.Tests.CommandLine
+
 {
     public class PackCommandTests
     {
