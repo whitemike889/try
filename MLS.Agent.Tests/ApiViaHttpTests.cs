@@ -6,7 +6,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Clockwise;
 using FluentAssertions;
-using Humanizer;
 using MLS.Project.Transformations;
 using MLS.Protocol;
 using MLS.Protocol.Completion;
@@ -23,6 +22,7 @@ using Xunit.Abstractions;
 using static Pocket.Logger<MLS.Agent.Tests.ApiViaHttpTests>;
 using Workspace = MLS.Protocol.Execution.Workspace;
 using MLS.Agent.CommandLine;
+using FluentAssertions.Extensions;
 
 namespace MLS.Agent.Tests
 {

@@ -29,8 +29,9 @@ namespace WorkspaceServer.Packaging
 {
     public abstract class Package
     {
-        const string CSharpLanguageVersion = "7.3";
-    
+     
+
+      
         private static readonly ConcurrentDictionary<string, SemaphoreSlim> _packageBuildSemaphores = new ConcurrentDictionary<string, SemaphoreSlim>();
         private static ConcurrentDictionary<string, SemaphoreSlim> _packagePublishSemaphores = new ConcurrentDictionary<string, SemaphoreSlim>();
 
@@ -780,7 +781,8 @@ namespace WorkspaceServer.Packaging
 
                 var analyzer = manager.GetProject(csProj.FullName);
                 analyzer.AddBinaryLogger(Path.Combine(Directory.FullName, DesignTimeBuildBinlogFileName));
-                analyzer.SetGlobalProperty("langVersion", CSharpLanguageVersion);
+                var languageVersion = csProj.SuggestedLanguageVersion();
+                analyzer.SetGlobalProperty("langVersion", languageVersion);
                 var result = analyzer.Build().Results.First();
                 DesignTimeBuildResult = result;
                 LastDesignTimeBuild = Clock.Current.Now();
