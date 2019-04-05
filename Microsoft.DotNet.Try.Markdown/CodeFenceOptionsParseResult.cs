@@ -2,15 +2,16 @@
 
 namespace Microsoft.DotNet.Try.Markdown
 {
-    public class CodeFenceOptionsParseResult
+    public abstract class CodeFenceOptionsParseResult
     {
-        public static FailedCodeFenceOptionParseResult Failed(IList<string> errorMessages) => new FailedCodeFenceOptionParseResult(errorMessages);
-
-        public static NoCodeFenceOptions None { get; } = new NoCodeFenceOptions();
-
-        public static SuccessfulCodeFenceOptionParseResult Succeeded(CodeLinkBlockOptions options)
+        internal CodeFenceOptionsParseResult()
         {
-            return new SuccessfulCodeFenceOptionParseResult(options);
         }
+
+        public static CodeFenceOptionsParseResult Failed(IList<string> errorMessages) => new FailedCodeFenceOptionParseResult(errorMessages);
+
+        public static CodeFenceOptionsParseResult None { get; } = new NoCodeFenceOptions();
+
+        public static CodeFenceOptionsParseResult Succeeded(CodeLinkBlockOptions options) => new SuccessfulCodeFenceOptionParseResult(options);
     }
 }

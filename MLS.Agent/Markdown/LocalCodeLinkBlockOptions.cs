@@ -41,7 +41,7 @@ namespace MLS.Agent.Markdown
 
         public AsyncLazy<IDirectoryAccessor> DirectoryAccessor { get; set; }
 
-        public override async Task<CodeLinkBlockResult> TryGetExternalContent()
+        public override async Task<CodeBlockContentFetchResult> TryGetExternalContent()
         {
             string content = null;
 
@@ -49,41 +49,51 @@ namespace MLS.Agent.Markdown
 
             await Validate(errors);
 
-            if (!errors.Any() && 
-                SourceFile != null)
+            if (!errors.Any())
             {
+                if (SourceFile == null)
+                {
+                    return CodeBlockContentFetchResult.None;
+                }
+
                 content = (await DirectoryAccessor.ValueAsync()).ReadAllText(SourceFile);
 
-                if (!string.IsNullOrWhiteSpace(Region))
+                if (string.IsNullOrWhiteSpace(Region))
                 {
-                    var sourceText = SourceText.From(content);
-                    var sourceFileAbsolutePath = await GetSourceFileAbsolutePath();
-
-                    var buffers = sourceText.ExtractBuffers(sourceFileAbsolutePath)
-                                            .Where(b => b.Id.RegionName == Region)
-                                            .ToArray();
-
-                    if (buffers.Length == 0)
-                    {
-                        errors.Add($"Region \"{Region}\" not found in file {sourceFileAbsolutePath}");
-                    }
-                    else if (buffers.Length > 1)
-                    {
-                        errors.Add($"Multiple regions found: {Region}");
-                    }
-                    else
-                    {
-                        content = buffers[0].Content;
-                    }
+                    return errors.Any()
+                               ? CodeBlockContentFetchResult.Failed(errors)
+                               : CodeBlockContentFetchResult.Succeeded(content);
                 }
-            }
 
-            return new CodeLinkBlockResult(content, errors);
+                var sourceText = SourceText.From(content);
+                var sourceFileAbsolutePath = await GetSourceFileAbsolutePath();
+
+                var buffers = sourceText.ExtractBuffers(sourceFileAbsolutePath)
+                                        .Where(b => b.Id.RegionName == Region)
+                                        .ToArray();
+
+                if (buffers.Length == 0)
+                {
+                    errors.Add($"Region \"{Region}\" not found in file {sourceFileAbsolutePath}");
+                }
+                else if (buffers.Length > 1)
+                {
+                    errors.Add($"Multiple regions found: {Region}");
+                }
+                else
+                {
+                    content = buffers[0].Content;
+                }
+            } 
+
+            return errors.Any()
+                       ? CodeBlockContentFetchResult.Failed(errors)
+                       : CodeBlockContentFetchResult.Succeeded(content);
         }
 
         private async Task Validate(List<string> errors)
         {
-            IDirectoryAccessor accessor = null;
+            IDirectoryAccessor accessor;
             try
             {
                 accessor = await DirectoryAccessor.ValueAsync();

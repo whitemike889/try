@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using Markdig.Renderers;
 using Markdig.Renderers.Html;
 using Markdig.Syntax;
@@ -21,8 +20,11 @@ namespace Microsoft.DotNet.Try.Markdown
         {
             if (codeBlock is CodeLinkBlock codeLinkBlock)
             {
+                codeLinkBlock.EnsureInitialized();
+
                 if (codeLinkBlock.Diagnostics.Any())
                 {
+
                     renderer.WriteLine(@"<div class=""notification is-danger"">");
                     renderer.WriteLine(SvgResources.ErrorSvg);
 

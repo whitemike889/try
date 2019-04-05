@@ -47,20 +47,21 @@ namespace Microsoft.DotNet.Try.Markdown
             {
                 var result = await Options.TryGetExternalContent();
 
-                _diagnostics.AddRange(result.ErrorMessages);
-
-                if (!Diagnostics.Any())
+                switch (result)
                 {
-                    if (result.Content != null)
-                    {
-                        SourceCode = result.Content;
-                    }
-                    else
-                    {
-                        SourceCode = Lines.ToString();
-                    }
+                    case SuccessfulCodeBlockContentFetchResult success:
+                        SourceCode = success.Content;
+                        await AddAttributes(Options);
+                        break;
 
-                    await AddAttributes(Options);
+                    case ExternalContentNotEnabledResult _:
+                        SourceCode = Lines.ToString();
+                        await AddAttributes(Options);
+                        break;
+
+                    case FailedCodeBlockContentFetchResult failed:
+                        _diagnostics.AddRange(failed.ErrorMessages);
+                        break;
                 }
             }
         }
@@ -163,6 +164,17 @@ namespace Microsoft.DotNet.Try.Markdown
         public void AddAttribute(string key, string value)
         {
             this.GetAttributes().AddProperty(key, value);
+        }
+
+        internal void EnsureInitialized()
+        {
+            if (!_initialized)
+            {
+                InitializeAsync()
+                    .ConfigureAwait(false)
+                    .GetAwaiter()
+                    .GetResult();
+            }
         }
     }
 }

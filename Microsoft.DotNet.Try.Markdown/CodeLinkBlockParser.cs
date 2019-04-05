@@ -30,8 +30,8 @@ namespace Microsoft.DotNet.Try.Markdown
                 return false;
             }
 
-            var result = _codeFenceOptionsParser.TryParseCodeFenceOptions(
-                line.ToString());
+            var result = _codeFenceOptionsParser.TryParseCodeFenceOptions(line.ToString(),
+                state.Context);
 
             switch (result)
             {

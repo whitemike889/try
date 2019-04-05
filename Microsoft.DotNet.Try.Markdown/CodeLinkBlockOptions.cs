@@ -47,10 +47,8 @@ namespace Microsoft.DotNet.Try.Markdown
         public bool Hidden { get; }
         public string Language { get; set; }
 
-        public virtual Task<CodeLinkBlockResult> TryGetExternalContent()
-        {
-            return Task.FromResult<CodeLinkBlockResult>(null);
-        }
+        public virtual Task<CodeBlockContentFetchResult> TryGetExternalContent() => 
+            Task.FromResult(CodeBlockContentFetchResult.None);
 
         public virtual Task AddAttributes(CodeLinkBlock block)
         {

@@ -4,6 +4,7 @@ using System.CommandLine;
 using System.CommandLine.Binding;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Markdig;
 
 namespace Microsoft.DotNet.Try.Markdown
 {
@@ -12,6 +13,8 @@ namespace Microsoft.DotNet.Try.Markdown
         private readonly IDefaultCodeLinkBlockOptions _defaultOptions;
         private readonly Parser _parser;
         private readonly Lazy<ModelBinder> _modelBinder;
+        private string packageOptionName = "--package";
+        private string packageVersionOptionName = "--package-version";
 
         public CodeFenceOptionsParser(
             IDefaultCodeLinkBlockOptions defaultOptions = null,
@@ -25,10 +28,25 @@ namespace Microsoft.DotNet.Try.Markdown
         protected virtual ModelBinder CreateModelBinder() => new ModelBinder(typeof(CodeLinkBlockOptions));
 
         public virtual CodeFenceOptionsParseResult TryParseCodeFenceOptions(
-            string line)
+            string line,
+            MarkdownParserContext parserContext = null)
         {
-            var result = ParserExtensions.Parse(_parser, line);
+            if (parserContext.TryGetDefaultCodeBlockAnnotations(out var defaults))
+            {
+                if (defaults.PackageName != null &&
+                    !line.Contains(packageOptionName))
+                {
+                    line += $" {packageOptionName} {defaults.PackageName}";
+                }
 
+                if (defaults.PackageVersion != null &&
+                    !line.Contains(packageVersionOptionName))
+                {
+                    line += $" {packageVersionOptionName} {defaults.PackageVersion}";
+                }
+            }
+
+            var result = _parser.Parse(line);
 
             CodeLinkBlockOptions options = null;
 
@@ -46,13 +64,11 @@ namespace Microsoft.DotNet.Try.Markdown
             {
                 options = (CodeLinkBlockOptions) _modelBinder.Value.CreateInstance(new BindingContext(result));
 
-                // options.ReplaceErrors(errorMessages);
                 options.Language = result.Tokens.First().Value;
                 options.RunArgs = Untokenize(result);
 
                 return CodeFenceOptionsParseResult.Succeeded(options);
             }
-
         }
 
         private static string Untokenize(ParseResult result) =>
@@ -65,16 +81,16 @@ namespace Microsoft.DotNet.Try.Markdown
 
         private Parser CreateOptionsParser(Action<Command> configureCsharpCommand = null)
         {
-            var packageOption = new Option("--package",
-                                    argument: new Argument<string>());
+            var packageOption = new Option(packageOptionName,
+                                           argument: new Argument<string>());
 
             if (_defaultOptions?.Package is string defaultPackage)
             {
                 packageOption.Argument.SetDefaultValue(defaultPackage);
             }
 
-            var packageVersionOption = new Option("--package-version",
-                                           argument: new Argument<string>());
+            var packageVersionOption = new Option(packageVersionOptionName,
+                                                  argument: new Argument<string>());
 
             if (_defaultOptions?.PackageVersion is string defaultPackageVersion)
             {

@@ -4,6 +4,7 @@ using System.CommandLine.Binding;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Markdig;
 using Microsoft.DotNet.Try.Markdown;
 using MLS.Agent.Tools;
 using WorkspaceServer;
@@ -28,9 +29,11 @@ namespace MLS.Agent.Markdown
             _packageRegistry = packageRegistry ?? throw new ArgumentNullException(nameof(packageRegistry));
         }
 
-        public override CodeFenceOptionsParseResult TryParseCodeFenceOptions(string line)
+        public override CodeFenceOptionsParseResult TryParseCodeFenceOptions(
+            string line, 
+            MarkdownParserContext context = null)
         {
-            var result = base.TryParseCodeFenceOptions(line);
+            var result = base.TryParseCodeFenceOptions(line, context);
 
             if (result is SuccessfulCodeFenceOptionParseResult succeeded &&
                 succeeded.Options is LocalCodeLinkBlockOptions local)
