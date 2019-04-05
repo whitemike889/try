@@ -204,6 +204,93 @@ Console.WriteLine(""This code should not appear"");
             }
 
             [Fact]
+            public async Task Should_emit_include_mode_for_non_editable_fences()
+            {
+                var codeContent = @"using System;
+
+namespace BasicConsoleApp
+{
+    class Program
+    {
+        static void MyProgram(string[] args)
+        {
+            Console.WriteLine(""Hello World!"");
+        }
+    }
+}".EnforceLF();
+
+                var workingDir = TestAssets.SampleConsole;
+                var dirAccessor = new InMemoryDirectoryAccessor(workingDir)
+                {
+                    ("sample.csproj", ""),
+                    ("Program.cs", codeContent),
+                    ("Readme.md",
+                        @"```cs --source-file Program.cs --editable false
+Console.WriteLine(""This code should not appear"");
+```"),
+                };
+
+                var project = new MarkdownProject(dirAccessor, PackageRegistry.CreateForHostedMode());
+                project.TryGetMarkdownFile(new RelativeFilePath("Readme.md"), out var markdownFile).Should().BeTrue();
+                var htmlDocument = new HtmlDocument();
+                htmlDocument.LoadHtml((await markdownFile.ToHtmlContentAsync()).ToString());
+                var code = htmlDocument.DocumentNode
+                    .SelectSingleNode("//pre/code");
+
+                var output = code.InnerHtml.EnforceLF();
+
+                code.Attributes["data-trydotnet-mode"].Value.Should().Match("include");
+                code.ParentNode.Attributes["style"].Should().BeNull();
+
+                output.Should().Contain($"{codeContent.HtmlEncode()}");
+            }
+
+            [Fact]
+            public async Task Should_emit_pre_style_for_hidden_fences()
+            {
+                var codeContent = @"using System;
+
+namespace BasicConsoleApp
+{
+    class Program
+    {
+        static void MyProgram(string[] args)
+        {
+            Console.WriteLine(""Hello World!"");
+        }
+    }
+}".EnforceLF();
+
+                var workingDir = TestAssets.SampleConsole;
+                var dirAccessor = new InMemoryDirectoryAccessor(workingDir)
+                {
+                    ("sample.csproj", ""),
+                    ("Program.cs", codeContent),
+                    ("Readme.md",
+                        @"```cs --source-file Program.cs --editable false --hidden
+Console.WriteLine(""This code should not appear"");
+```"),
+                };
+
+                var project = new MarkdownProject(dirAccessor, PackageRegistry.CreateForHostedMode());
+                project.TryGetMarkdownFile(new RelativeFilePath("Readme.md"), out var markdownFile).Should().BeTrue();
+                var htmlDocument = new HtmlDocument();
+                htmlDocument.LoadHtml((await markdownFile.ToHtmlContentAsync()).ToString());
+
+                
+                var code = htmlDocument.DocumentNode
+                    .SelectSingleNode("//pre/code");
+
+                var output = code.InnerHtml.EnforceLF();
+
+                code.Attributes["data-trydotnet-mode"].Value.Should().Match("include");
+
+                code.ParentNode.Attributes["style"].Value.Should().Match("border:none; margin:0px; padding:0px; visibility:hidden; display: none;");
+
+                output.Should().Contain($"{codeContent.HtmlEncode()}");
+            }
+
+            [Fact]
             public async Task Multiple_fenced_code_blocks_are_correctly_rendered()
             {
                 var region1Code = @"Console.WriteLine(""I am region one code"");";
