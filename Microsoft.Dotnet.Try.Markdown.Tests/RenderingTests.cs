@@ -41,7 +41,7 @@ Console.WriteLine(""Hello world!"");
 
             context.AddDefaultCodeBlockAnnotations(defaults =>
             {
-                defaults.PackageName = packageName;
+                defaults.Package = packageName;
                 defaults.PackageVersion = packageVersion;
             });
 

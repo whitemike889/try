@@ -11,7 +11,7 @@ namespace Microsoft.DotNet.Try.Markdown
             {
                 var optionsParser = new CodeFenceOptionsParser();
 
-                // It should execute before the FencedCodeBlockParser
+                // It should execute before Markdig's default FencedCodeBlockParser
                 pipeline.BlockParsers.Insert(
                     index: 0,
                     new CodeLinkBlockParser(optionsParser));

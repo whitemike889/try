@@ -2,7 +2,7 @@
 {
     public class DefaultCodeBlockAnnotations
     {
-        public string PackageName { get; set; }
+        public string Package { get; set; }
 
         public string PackageVersion { get; set; }
     }

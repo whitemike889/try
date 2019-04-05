@@ -6,7 +6,7 @@ namespace Microsoft.DotNet.Try.Markdown
 {
     public static class MarkdownParserContextExtensions
     {
-        private static object DefaultsKey = nameof(AddDefaultCodeBlockAnnotations);
+        private const string DefaultsKey = nameof(AddDefaultCodeBlockAnnotations);
 
         public static MarkdownParserContext AddDefaultCodeBlockAnnotations(
             this MarkdownParserContext context,

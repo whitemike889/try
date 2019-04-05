@@ -33,10 +33,10 @@ namespace Microsoft.DotNet.Try.Markdown
         {
             if (parserContext.TryGetDefaultCodeBlockAnnotations(out var defaults))
             {
-                if (defaults.PackageName != null &&
+                if (defaults.Package != null &&
                     !line.Contains(packageOptionName))
                 {
-                    line += $" {packageOptionName} {defaults.PackageName}";
+                    line += $" {packageOptionName} {defaults.Package}";
                 }
 
                 if (defaults.PackageVersion != null &&
