@@ -64,7 +64,7 @@ namespace MLS.Agent.Tests
                 {
                     _jupyter_Options = options;
                     return Task.FromResult(1);
-                }) ;
+                });
         }
 
         public void Dispose()
@@ -244,7 +244,7 @@ namespace MLS.Agent.Tests
         {
             var console = new TestConsole();
             await _parser.InvokeAsync("pack", console);
-            console.Out.ToString().Should().Contain("pack <PackTarget>");
+            console.Out.ToString().Should().Contain("pack [options] <PackTarget>");
             _packOptions.Should().BeNull();
         }
 
@@ -256,6 +256,17 @@ namespace MLS.Agent.Tests
 
             await _parser.InvokeAsync($"pack {expected}", console);
             _packOptions.PackTarget.FullName.Should().Be(expected);
+        }
+
+        [Fact]
+        public async Task Pack_parses_version()
+        {
+            var console = new TestConsole();
+            var directoryName = Path.GetDirectoryName(typeof(PackCommand).Assembly.Location);
+            var expectedVersion = "2.0.0";
+
+            await _parser.InvokeAsync($"pack {directoryName} --version {expectedVersion}", console);
+            _packOptions.Version.Should().Be(expectedVersion);
         }
 
         [Fact]
@@ -284,7 +295,7 @@ namespace MLS.Agent.Tests
         public async Task Verify_argument_specifies_root_directory()
         {
             var directory = Path.GetDirectoryName(typeof(VerifyCommand).Assembly.Location);
-             await _parser.InvokeAsync($"verify {directory}");
+            await _parser.InvokeAsync($"verify {directory}");
             _verifyOptions.RootDirectory.FullName.Should().Be(directory);
         }
 
@@ -305,7 +316,7 @@ namespace MLS.Agent.Tests
         [Fact]
         public async Task jupyter_parses_connection_file_path()
         {
-            var expected =  Path.GetTempFileName();
+            var expected = Path.GetTempFileName();
 
             await _parser.InvokeAsync($"jupyter {expected}");
 

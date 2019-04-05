@@ -79,7 +79,7 @@ namespace MLS.Agent.Tests
             await PackCommand.Do(
                 new PackOptions(
                     copy.Directory,
-                    packageLocation,
+                    outputDirectory: packageLocation,
                     enableBlazor: false),
                 console);
 

@@ -282,6 +282,10 @@ namespace MLS.Agent.CommandLine
                 packCommand.Argument = new Argument<DirectoryInfo>();
                 packCommand.Argument.Name = nameof(PackOptions.PackTarget);
 
+                packCommand.AddOption(new Option("--version",
+                                                 "The version of the Try .NET package",
+                                                 new Argument<string>()));
+
                 packCommand.Handler = CommandHandler.Create<PackOptions, IConsole>(
                     (options, console) =>
                     {

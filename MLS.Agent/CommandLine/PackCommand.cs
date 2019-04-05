@@ -53,8 +53,14 @@ namespace MLS.Agent.CommandLine
                 var result = await dotnet.Build();
 
                 result.ThrowOnFailure("Failed to build intermediate project.");
+                var versionArg = "";
 
-                result = await dotnet.Pack($"/p:PackageId=dotnettry.{name} /p:ToolCommandName=dotnettry.{name} {projectFilePath} -o {options.OutputDirectory.FullName}");
+                if(!string.IsNullOrEmpty(options.Version))
+                {
+                    versionArg = $"/p:PackageVersion={options.Version}";
+                }
+
+                result = await dotnet.Pack($"/p:PackageId=dotnettry.{name} /p:ToolCommandName=dotnettry.{name} {versionArg} {projectFilePath} -o {options.OutputDirectory.FullName}");
 
                 result.ThrowOnFailure("Package build failed.");
             }

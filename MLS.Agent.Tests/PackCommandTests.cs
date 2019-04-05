@@ -13,18 +13,18 @@ namespace MLS.Agent.Tests
     public class PackCommandTests
     {
         [Fact]
-        public async Task Pack_project_works()
+        public async Task Pack_project_creates_a_nupkg_with_passed_version()
         {
             var asset = await Create.NetstandardWorkspaceCopy();
 
             var console = new TestConsole();
 
-            await PackCommand.Do(new PackOptions(asset.Directory), console);
+            await PackCommand.Do(new PackOptions(asset.Directory, "3.4.5"), console);
 
             asset.Directory
                  .GetFiles()
                  .Should()
-                 .Contain(f => f.Name.Contains("nupkg"));
+                 .Contain(f => f.Name.Contains("3.4.5.nupkg"));
         }
         
         [Fact]
