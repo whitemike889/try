@@ -93,24 +93,30 @@ namespace Microsoft.DotNet.Try.Markdown
 
         public void RenderTo(
             HtmlRenderer renderer,
-            bool InlineControls,
-            bool EnablePreviewFeatures)
+            bool inlineControls,
+            bool enablePreviewFeatures)
         {
             var height = $"{GetEditorHeightInEm(Lines)}em";
 
             if (Options.Editable)
             {
                 renderer
-                    .WriteLine(InlineControls
+                    .WriteLine(inlineControls
                                    ? @"<div class=""inline-code-container"">"
                                    : @"<div class=""code-container"">");
             }
 
+            var style = Options.Editable
+                ? @"style=""border:none; height: {height}"""
+                : Options.Hidden
+                    ? @"style=""border:none; margin:0px; padding:0px; visibility:hidden; display: none;"""
+                    : string.Empty;
+
             renderer
                 .WriteLineIf(Options.Editable, @"<div class=""editor-panel"">")
                 .WriteLine(Options.Editable
-                               ? $@"<pre style=""border:none; height: {height}"" height=""{height}"" width=""100%"">"
-                               : @"<pre>")
+                               ? $@"<pre {style} height=""{height}"" width=""100%"">"
+                               : $@"<pre {style}>")
                 .Write("<code")
                 .WriteAttributes(this)
                 .Write(">")
@@ -119,14 +125,14 @@ namespace Microsoft.DotNet.Try.Markdown
                 .WriteLine(@"</pre>")
                 .WriteLineIf(Options.Editable, @"</div >");
 
-            if (InlineControls && Options.Editable)
+            if (inlineControls && Options.Editable)
             {
                 renderer
                     .WriteLine(
                         $@"<button class=""run"" data-trydotnet-mode=""run"" data-trydotnet-session-id=""{Options.Session}"" data-trydotnet-run-args=""{Options.RunArgs.HtmlAttributeEncode()}"">{SvgResources.PlaySvg}</button>");
 
                 renderer
-                    .WriteLine(EnablePreviewFeatures
+                    .WriteLine(enablePreviewFeatures
                                    ? $@"<div class=""output-panel-inline collapsed"" data-trydotnet-mode=""runResult"" data-trydotnet-output-type=""terminal"" data-trydotnet-session-id=""{Options.Session}""></div>"
                                    : $@"<div class=""output-panel-inline collapsed"" data-trydotnet-mode=""runResult"" data-trydotnet-session-id=""{Options.Session}""></div>");
             }
