@@ -6,20 +6,20 @@ using WorkspaceServer;
 
 namespace MLS.Agent.Markdown
 {
-    public class CodeLinkExtension : IMarkdownExtension
+    public class AnnotatedCodeBlockExtension : IMarkdownExtension
     {
         private readonly IDirectoryAccessor _directoryAccessor;
         private readonly PackageRegistry _packageRegistry;
-        private readonly IDefaultCodeLinkBlockOptions _defaultOptions;
+        private readonly IDefaultCodeBlockAnnotations _defaultAnnotations;
 
-        public CodeLinkExtension(
+        public AnnotatedCodeBlockExtension(
             IDirectoryAccessor directoryAccessor, 
             PackageRegistry packageRegistry,
-            IDefaultCodeLinkBlockOptions defaultOptions = null)
+            IDefaultCodeBlockAnnotations defaultAnnotations = null)
         {
             _directoryAccessor = directoryAccessor ?? throw new ArgumentNullException(nameof(directoryAccessor));
             _packageRegistry = packageRegistry ?? throw new ArgumentNullException(nameof(packageRegistry));
-            _defaultOptions = defaultOptions;
+            this._defaultAnnotations = defaultAnnotations;
         }
 
         public bool InlineControls { get; set; }
@@ -28,17 +28,18 @@ namespace MLS.Agent.Markdown
 
         public void Setup(MarkdownPipelineBuilder pipeline)
         {
-            if (!pipeline.BlockParsers.Contains<CodeLinkBlockParser>())
+            // FIX: dedupe
+            if (!pipeline.BlockParsers.Contains<AnnotatedCodeBlockParser>())
             {
-                var optionsParser = new LocalCodeFenceOptionsParser(
+                var optionsParser = new LocalCodeFenceAnnotationsParser(
                     _directoryAccessor, 
                     _packageRegistry,
-                    _defaultOptions);
+                    _defaultAnnotations);
 
                 // It should execute before the FencedCodeBlockParser
                 pipeline.BlockParsers.Insert(
                     index: 0, 
-                    new CodeLinkBlockParser(optionsParser));
+                    new AnnotatedCodeBlockParser(optionsParser));
             }
         }
 
@@ -46,9 +47,9 @@ namespace MLS.Agent.Markdown
         {
             var htmlRenderer = renderer as HtmlRenderer;
             var renderers = htmlRenderer?.ObjectRenderers;
-            if (renderers != null && !renderers.Contains<CodeLinkBlockRenderer>())
+            if (renderers != null && !renderers.Contains<AnnotatedCodeBlockRenderer>())
             {
-                var codeLinkBlockRenderer = new CodeLinkBlockRenderer
+                var codeLinkBlockRenderer = new AnnotatedCodeBlockRenderer
                 {
                     InlineControls = InlineControls,
                     EnablePreviewFeatures = EnablePreviewFeatures

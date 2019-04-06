@@ -5,11 +5,11 @@ using Markdig.Syntax;
 
 namespace Microsoft.DotNet.Try.Markdown
 {
-    public class CodeLinkBlockRenderer : CodeBlockRenderer
+    public class AnnotatedCodeBlockRenderer : CodeBlockRenderer
     {
         public bool InlineControls { get; set; }
 
-        public CodeLinkBlockRenderer()
+        public AnnotatedCodeBlockRenderer()
         {
             OutputAttributesOnPre = false;
         }
@@ -18,7 +18,7 @@ namespace Microsoft.DotNet.Try.Markdown
             HtmlRenderer renderer,
             CodeBlock codeBlock)
         {
-            if (codeBlock is CodeLinkBlock codeLinkBlock)
+            if (codeBlock is AnnotatedCodeBlock codeLinkBlock)
             {
                 codeLinkBlock.EnsureInitialized();
 

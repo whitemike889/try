@@ -1,6 +1,6 @@
 namespace Microsoft.DotNet.Try.Markdown
 {
-    public interface IDefaultCodeLinkBlockOptions
+    public interface IDefaultCodeBlockAnnotations
     {
         string Package { get; }
 

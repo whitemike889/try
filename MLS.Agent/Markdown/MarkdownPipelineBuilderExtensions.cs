@@ -7,21 +7,21 @@ namespace MLS.Agent.Markdown
 {
     public static class MarkdownPipelineBuilderExtensions
     {
-        public static MarkdownPipelineBuilder UseCodeLinks(
+        public static MarkdownPipelineBuilder UseCodeBlockAnnotations(
             this MarkdownPipelineBuilder pipeline,
             IDirectoryAccessor directoryAccessor,
             PackageRegistry packageRegistry,
-            IDefaultCodeLinkBlockOptions defaultOptions = null)
+            IDefaultCodeBlockAnnotations defaultAnnotations = null)
         {
             var extensions = pipeline.Extensions;
 
-            if (!extensions.Contains<CodeLinkExtension>())
+            if (!extensions.Contains<AnnotatedCodeBlockExtension>())
             {
                 extensions.Add(
-                    new CodeLinkExtension(
+                    new AnnotatedCodeBlockExtension(
                         directoryAccessor,
                         packageRegistry,
-                        defaultOptions ?? new StartupOptions()));
+                        defaultAnnotations ?? new StartupOptions()));
             }
 
             return pipeline;

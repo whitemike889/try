@@ -12,6 +12,6 @@ namespace Microsoft.DotNet.Try.Markdown
 
         public static CodeFenceOptionsParseResult None { get; } = new NoCodeFenceOptions();
 
-        public static CodeFenceOptionsParseResult Succeeded(CodeLinkBlockOptions options) => new SuccessfulCodeFenceOptionParseResult(options);
+        public static CodeFenceOptionsParseResult Succeeded(CodeBlockAnnotations annotations) => new SuccessfulCodeFenceOptionParseResult(annotations);
     }
 }

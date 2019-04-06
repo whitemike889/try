@@ -4,7 +4,7 @@ namespace Microsoft.DotNet.Try.Markdown
 {
     public static class MarkdownPipelineBuilderExtensions
     {
-        public static MarkdownPipelineBuilder UseAnnotatedCodeBlocks(
+        public static MarkdownPipelineBuilder UseCodeBlockAnnotations(
             this MarkdownPipelineBuilder pipeline)
         {
             var extensions = pipeline.Extensions;

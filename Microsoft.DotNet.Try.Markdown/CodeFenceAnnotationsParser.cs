@@ -8,24 +8,24 @@ using Markdig;
 
 namespace Microsoft.DotNet.Try.Markdown
 {
-    public class CodeFenceOptionsParser
+    public class CodeFenceAnnotationsParser
     {
-        private readonly IDefaultCodeLinkBlockOptions _defaultOptions;
+        private readonly IDefaultCodeBlockAnnotations defaultAnnotations;
         private readonly Parser _parser;
         private readonly Lazy<ModelBinder> _modelBinder;
         private string packageOptionName = "--package";
         private string packageVersionOptionName = "--package-version";
 
-        public CodeFenceOptionsParser(
-            IDefaultCodeLinkBlockOptions defaultOptions = null,
+        public CodeFenceAnnotationsParser(
+            IDefaultCodeBlockAnnotations defaultAnnotations = null,
             Action<Command> configureCsharpCommand = null)
         {
-            _defaultOptions = defaultOptions;
+            this.defaultAnnotations = defaultAnnotations;
             _parser = CreateOptionsParser(configureCsharpCommand);
             _modelBinder = new Lazy<ModelBinder>(CreateModelBinder);
         }
 
-        protected virtual ModelBinder CreateModelBinder() => new ModelBinder(typeof(CodeLinkBlockOptions));
+        protected virtual ModelBinder CreateModelBinder() => new ModelBinder(typeof(CodeBlockAnnotations));
 
         public virtual CodeFenceOptionsParseResult TryParseCodeFenceOptions(
             string line,
@@ -48,7 +48,7 @@ namespace Microsoft.DotNet.Try.Markdown
 
             var result = _parser.Parse(line);
 
-            CodeLinkBlockOptions options = null;
+            CodeBlockAnnotations annotations = null;
 
             if (result.CommandResult.Name != "csharp" ||
                 result.Tokens.Count == 1)
@@ -62,12 +62,12 @@ namespace Microsoft.DotNet.Try.Markdown
             }
             else
             {
-                options = (CodeLinkBlockOptions) _modelBinder.Value.CreateInstance(new BindingContext(result));
+                annotations = (CodeBlockAnnotations) _modelBinder.Value.CreateInstance(new BindingContext(result));
 
-                options.Language = result.Tokens.First().Value;
-                options.RunArgs = Untokenize(result);
+                annotations.Language = result.Tokens.First().Value;
+                annotations.RunArgs = Untokenize(result);
 
-                return CodeFenceOptionsParseResult.Succeeded(options);
+                return CodeFenceOptionsParseResult.Succeeded(annotations);
             }
         }
 
@@ -84,7 +84,7 @@ namespace Microsoft.DotNet.Try.Markdown
             var packageOption = new Option(packageOptionName,
                                            argument: new Argument<string>());
 
-            if (_defaultOptions?.Package is string defaultPackage)
+            if (defaultAnnotations?.Package is string defaultPackage)
             {
                 packageOption.Argument.SetDefaultValue(defaultPackage);
             }
@@ -92,7 +92,7 @@ namespace Microsoft.DotNet.Try.Markdown
             var packageVersionOption = new Option(packageVersionOptionName,
                                                   argument: new Argument<string>());
 
-            if (_defaultOptions?.PackageVersion is string defaultPackageVersion)
+            if (defaultAnnotations?.PackageVersion is string defaultPackageVersion)
             {
                 packageVersionOption.Argument.SetDefaultValue(defaultPackageVersion);
             }

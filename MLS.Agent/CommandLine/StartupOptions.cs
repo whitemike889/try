@@ -5,7 +5,7 @@ using MLS.Agent.Markdown;
 
 namespace MLS.Agent.CommandLine
 {
-    public class StartupOptions : IDefaultCodeLinkBlockOptions
+    public class StartupOptions : IDefaultCodeBlockAnnotations
     {
         public StartupOptions(
             bool production = false,

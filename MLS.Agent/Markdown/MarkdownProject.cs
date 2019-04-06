@@ -45,7 +45,7 @@ namespace MLS.Agent.Markdown
 
         private readonly Dictionary<RelativeFilePath, MarkdownPipeline> _markdownPipelines = new Dictionary<RelativeFilePath, MarkdownPipeline>();
 
-        private readonly IDefaultCodeLinkBlockOptions _defaultOptions;
+        private readonly IDefaultCodeBlockAnnotations defaultAnnotations;
 
         internal MarkdownProject(PackageRegistry packageRegistry) : this(new NullDirectoryAccessor(), packageRegistry)
         {
@@ -54,11 +54,11 @@ namespace MLS.Agent.Markdown
         public MarkdownProject(
             IDirectoryAccessor directoryAccessor, 
             PackageRegistry packageRegistry,
-            IDefaultCodeLinkBlockOptions defaultOptions = null)
+            IDefaultCodeBlockAnnotations defaultAnnotations = null)
         {
             DirectoryAccessor = directoryAccessor ?? throw new ArgumentNullException(nameof(directoryAccessor));
             _packageRegistry = packageRegistry ?? throw new ArgumentNullException(nameof(packageRegistry));
-            _defaultOptions = defaultOptions;
+            this.defaultAnnotations = defaultAnnotations;
         }
 
         public IEnumerable<MarkdownFile> GetAllMarkdownFiles() =>
@@ -86,10 +86,10 @@ namespace MLS.Agent.Markdown
 
                 return new MarkdownPipelineBuilder()
                     .UseAdvancedExtensions()
-                    .UseCodeLinks(
+                    .UseCodeBlockAnnotations(
                         relativeAccessor, 
                         _packageRegistry, 
-                        _defaultOptions)
+                        defaultAnnotations)
                     .Build();
             });
         }

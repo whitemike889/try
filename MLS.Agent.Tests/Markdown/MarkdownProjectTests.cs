@@ -71,12 +71,12 @@ namespace MLS.Agent.Tests
 
                 var markdownFiles = project.GetAllMarkdownFiles();
 
-                var codeLinkBlocks = await Task.WhenAll(markdownFiles.Select(f => f.GetCodeLinkBlocks()));
+                var codeLinkBlocks = await Task.WhenAll(markdownFiles.Select(f => f.GetAnnotatedCodeBlocks()));
 
                 codeLinkBlocks
                     .SelectMany(f => f)
-                    .Select(block => block.Options)
-                    .OfType<LocalCodeLinkBlockOptions>()
+                    .Select(block => block.Annotations)
+                    .OfType<LocalCodeBlockAnnotations>()
                     .Select(b => b.Project)
                     .Should()
                     .Contain(p => p.Directory.Name == "Project1")

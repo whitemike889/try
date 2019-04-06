@@ -10,30 +10,30 @@ using Markdig.Syntax;
 
 namespace Microsoft.DotNet.Try.Markdown
 {
-    public class CodeLinkBlock : FencedCodeBlock
+    public class AnnotatedCodeBlock : FencedCodeBlock
     {
         protected readonly List<string> _diagnostics = new List<string>();
         private string _sourceCode;
         private bool _initialized;
 
-        public CodeLinkBlock(
-            BlockParser parser,
-            int order = 0) : base(parser)
+        public AnnotatedCodeBlock(
+            BlockParser parser = null,
+            int order = 0) : base(parser ?? new AnnotatedCodeBlockParser(new CodeFenceAnnotationsParser()))
         {
             Order = order;
         }
 
         public IList<string> Diagnostics => _diagnostics;
 
-        public CodeLinkBlockOptions Options { get; set; }
+        public CodeBlockAnnotations Annotations { get; set; }
 
         public int Order { get; }
 
         public virtual async Task InitializeAsync()
         {
-            if (Options == null && Diagnostics.Count == 0)
+            if (Annotations == null && Diagnostics.Count == 0)
             {
-                throw new InvalidOperationException("Attempted to initialize block before parsing code fence options");
+                throw new InvalidOperationException("Attempted to initialize block before parsing code fence annotations");
             }
 
             if (_initialized)
@@ -43,20 +43,20 @@ namespace Microsoft.DotNet.Try.Markdown
 
             _initialized = true;
 
-            if (Options != null)
+            if (Annotations != null)
             {
-                var result = await Options.TryGetExternalContent();
+                var result = await Annotations.TryGetExternalContent();
 
                 switch (result)
                 {
                     case SuccessfulCodeBlockContentFetchResult success:
                         SourceCode = success.Content;
-                        await AddAttributes(Options);
+                        await AddAttributes(Annotations);
                         break;
 
                     case ExternalContentNotEnabledResult _:
                         SourceCode = Lines.ToString();
-                        await AddAttributes(Options);
+                        await AddAttributes(Annotations);
                         break;
 
                     case FailedCodeBlockContentFetchResult failed:
@@ -74,22 +74,22 @@ namespace Microsoft.DotNet.Try.Markdown
             }
         }
 
-        protected virtual async Task AddAttributes(CodeLinkBlockOptions options)
+        protected virtual async Task AddAttributes(CodeBlockAnnotations annotations)
         {
-            await options.AddAttributes(this);
+            await annotations.AddAttributes(this);
 
             AddAttribute("data-trydotnet-order", Order.ToString("F0"));
 
-            AddAttribute("data-trydotnet-mode", options.Editable ? "editor" : "include");
+            AddAttribute("data-trydotnet-mode", annotations.Editable ? "editor" : "include");
 
-            if (options.Hidden)
+            if (annotations.Hidden)
             {
                 AddAttribute("data-trydotnet-visibility", "hidden");
             }
 
-            AddAttributeIfNotNull("data-trydotnet-region", options.Region);
-            AddAttributeIfNotNull("data-trydotnet-session-id", options.Session);
-            AddAttribute("class", $"language-{options.Language}");
+            AddAttributeIfNotNull("data-trydotnet-region", annotations.Region);
+            AddAttributeIfNotNull("data-trydotnet-session-id", annotations.Session);
+            AddAttribute("class", $"language-{annotations.Language}");
         }
 
         public void RenderTo(
@@ -99,7 +99,7 @@ namespace Microsoft.DotNet.Try.Markdown
         {
             var height = $"{GetEditorHeightInEm(Lines)}em";
 
-            if (Options.Editable)
+            if (Annotations.Editable)
             {
                 renderer
                     .WriteLine(inlineControls
@@ -107,15 +107,15 @@ namespace Microsoft.DotNet.Try.Markdown
                                    : @"<div class=""code-container"">");
             }
 
-            var htmlStyle = Options.Editable
+            var htmlStyle = Annotations.Editable
                 ? new EditablePreHtmlStyle(height)
-                : Options.Hidden
+                : Annotations.Hidden
                     ? new HiddenPreHtmlStyle() as HtmlStyleAttribute
                     : new EmptyHtmlStyle();
 
             renderer
-                .WriteLineIf(Options.Editable, @"<div class=""editor-panel"">")
-                .WriteLine(Options.Editable
+                .WriteLineIf(Annotations.Editable, @"<div class=""editor-panel"">")
+                .WriteLine(Annotations.Editable
                                ? $@"<pre {htmlStyle} height=""{height}"" width=""100%"">"
                                : $@"<pre {htmlStyle}>")
                 .Write("<code")
@@ -124,21 +124,21 @@ namespace Microsoft.DotNet.Try.Markdown
                 .WriteLeafRawLines(this, true, true)
                 .Write(@"</code>")
                 .WriteLine(@"</pre>")
-                .WriteLineIf(Options.Editable, @"</div >");
+                .WriteLineIf(Annotations.Editable, @"</div >");
 
-            if (inlineControls && Options.Editable)
+            if (inlineControls && Annotations.Editable)
             {
                 renderer
                     .WriteLine(
-                        $@"<button class=""run"" data-trydotnet-mode=""run"" data-trydotnet-session-id=""{Options.Session}"" data-trydotnet-run-args=""{Options.RunArgs.HtmlAttributeEncode()}"">{SvgResources.PlaySvg}</button>");
+                        $@"<button class=""run"" data-trydotnet-mode=""run"" data-trydotnet-session-id=""{Annotations.Session}"" data-trydotnet-run-args=""{Annotations.RunArgs.HtmlAttributeEncode()}"">{SvgResources.PlaySvg}</button>");
 
                 renderer
                     .WriteLine(enablePreviewFeatures
-                                   ? $@"<div class=""output-panel-inline collapsed"" data-trydotnet-mode=""runResult"" data-trydotnet-output-type=""terminal"" data-trydotnet-session-id=""{Options.Session}""></div>"
-                                   : $@"<div class=""output-panel-inline collapsed"" data-trydotnet-mode=""runResult"" data-trydotnet-session-id=""{Options.Session}""></div>");
+                                   ? $@"<div class=""output-panel-inline collapsed"" data-trydotnet-mode=""runResult"" data-trydotnet-output-type=""terminal"" data-trydotnet-session-id=""{Annotations.Session}""></div>"
+                                   : $@"<div class=""output-panel-inline collapsed"" data-trydotnet-mode=""runResult"" data-trydotnet-session-id=""{Annotations.Session}""></div>");
             }
 
-            if (Options.Editable)
+            if (Annotations.Editable)
             {
                 renderer.WriteLine("</div>");
             }

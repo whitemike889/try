@@ -25,7 +25,7 @@ namespace Microsoft.Dotnet.Try.Markdown.Tests
             var packageVersion = "1.2.3";
 
             var pipeline = new MarkdownPipelineBuilder()
-                           .UseAnnotatedCodeBlocks()
+                           .UseCodeBlockAnnotations()
                            .Build();
 
             var markdown = @"

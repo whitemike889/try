@@ -2,11 +2,11 @@
 {
     public sealed class SuccessfulCodeFenceOptionParseResult : CodeFenceOptionsParseResult
     {
-        public SuccessfulCodeFenceOptionParseResult(CodeLinkBlockOptions options)
+        public SuccessfulCodeFenceOptionParseResult(CodeBlockAnnotations annotations)
         {
-            Options = options;
+            Annotations = annotations;
         }
 
-        public CodeLinkBlockOptions Options { get; }
+        public CodeBlockAnnotations Annotations { get; }
     }
 }

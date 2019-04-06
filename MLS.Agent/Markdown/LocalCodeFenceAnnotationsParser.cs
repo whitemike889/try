@@ -11,15 +11,15 @@ using WorkspaceServer;
 
 namespace MLS.Agent.Markdown
 {
-    public class LocalCodeFenceOptionsParser : CodeFenceOptionsParser
+    public class LocalCodeFenceAnnotationsParser : CodeFenceAnnotationsParser
     {
         private readonly IDirectoryAccessor _directoryAccessor;
         private readonly PackageRegistry _packageRegistry;
 
-        public LocalCodeFenceOptionsParser(
+        public LocalCodeFenceAnnotationsParser(
             IDirectoryAccessor directoryAccessor,
             PackageRegistry packageRegistry,
-            IDefaultCodeLinkBlockOptions defaultOptions = null) : base(defaultOptions, csharp =>
+            IDefaultCodeBlockAnnotations defaultAnnotations = null) : base(defaultAnnotations, csharp =>
         {
             AddProjectOption(csharp, directoryAccessor);
             AddSourceFileOption(csharp);
@@ -36,7 +36,7 @@ namespace MLS.Agent.Markdown
             var result = base.TryParseCodeFenceOptions(line, context);
 
             if (result is SuccessfulCodeFenceOptionParseResult succeeded &&
-                succeeded.Options is LocalCodeLinkBlockOptions local)
+                succeeded.Annotations is LocalCodeBlockAnnotations local)
             {
                 local.DirectoryAccessor =
                     new AsyncLazy<IDirectoryAccessor>(async () =>
@@ -55,12 +55,12 @@ namespace MLS.Agent.Markdown
         }
 
         private static async Task<IDirectoryAccessor> GetDirectoryAccessorForPackage(
-            CodeLinkBlockOptions options,
+            CodeBlockAnnotations annotations,
             PackageRegistry packageRegistry)
         {
-            if (options.Package != null)
+            if (annotations.Package != null)
             {
-                var installedPackage = await packageRegistry.Get(options.Package);
+                var installedPackage = await packageRegistry.Get(annotations.Package);
 
                 if (installedPackage?.Directory != null)
                 {
@@ -73,7 +73,7 @@ namespace MLS.Agent.Markdown
 
         protected override ModelBinder CreateModelBinder()
         {
-            return new ModelBinder(typeof(LocalCodeLinkBlockOptions));
+            return new ModelBinder(typeof(LocalCodeBlockAnnotations));
         }
 
         private static void AddSourceFileOption(Command csharp)

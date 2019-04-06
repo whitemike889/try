@@ -12,9 +12,9 @@ using WorkspaceServer;
 
 namespace MLS.Agent.Markdown
 {
-    public class LocalCodeLinkBlockOptions : CodeLinkBlockOptions
+    public class LocalCodeBlockAnnotations : CodeBlockAnnotations
     {
-        public LocalCodeLinkBlockOptions(
+        public LocalCodeBlockAnnotations(
             RelativeFilePath sourceFile = null,
             RelativeFilePath destinationFile = null,
             FileInfo project = null,
@@ -130,7 +130,7 @@ namespace MLS.Agent.Markdown
             }
         }
 
-        public override async Task AddAttributes(CodeLinkBlock block)
+        public override async Task AddAttributes(AnnotatedCodeBlock block)
         {
             if (Package == null && Project?.FullName != null)
             {

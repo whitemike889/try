@@ -7,14 +7,14 @@ namespace Microsoft.DotNet.Try.Markdown
     {
         public void Setup(MarkdownPipelineBuilder pipeline)
         {
-            if (!pipeline.BlockParsers.Contains<CodeLinkBlockParser>())
+            if (!pipeline.BlockParsers.Contains<AnnotatedCodeBlockParser>())
             {
-                var optionsParser = new CodeFenceOptionsParser();
+                var optionsParser = new CodeFenceAnnotationsParser();
 
                 // It should execute before Markdig's default FencedCodeBlockParser
                 pipeline.BlockParsers.Insert(
                     index: 0,
-                    new CodeLinkBlockParser(optionsParser));
+                    new AnnotatedCodeBlockParser(optionsParser));
             }
         }
 
@@ -22,9 +22,9 @@ namespace Microsoft.DotNet.Try.Markdown
         {
             var htmlRenderer = renderer as HtmlRenderer;
             var renderers = htmlRenderer?.ObjectRenderers;
-            if (renderers != null && !renderers.Contains<CodeLinkBlockRenderer>())
+            if (renderers != null && !renderers.Contains<AnnotatedCodeBlockRenderer>())
             {
-                var codeLinkBlockRenderer = new CodeLinkBlockRenderer();
+                var codeLinkBlockRenderer = new AnnotatedCodeBlockRenderer();
                 renderers.Insert(0, codeLinkBlockRenderer);
             }
         }

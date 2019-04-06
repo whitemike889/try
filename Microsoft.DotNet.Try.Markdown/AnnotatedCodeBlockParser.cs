@@ -5,32 +5,32 @@ using Markdig.Syntax;
 
 namespace Microsoft.DotNet.Try.Markdown
 {
-    public class CodeLinkBlockParser : FencedBlockParserBase<CodeLinkBlock>
+    public class AnnotatedCodeBlockParser : FencedBlockParserBase<AnnotatedCodeBlock>
     {
-        private readonly CodeFenceOptionsParser _codeFenceOptionsParser;
+        private readonly CodeFenceAnnotationsParser codeFenceAnnotationsParser;
         private int _order;
 
-        public CodeLinkBlockParser(CodeFenceOptionsParser codeFenceOptionsParser)
+        public AnnotatedCodeBlockParser(CodeFenceAnnotationsParser codeFenceAnnotationsParser)
         {
-            _codeFenceOptionsParser = codeFenceOptionsParser ?? throw new ArgumentNullException(nameof(codeFenceOptionsParser));
+            this.codeFenceAnnotationsParser = codeFenceAnnotationsParser ?? throw new ArgumentNullException(nameof(codeFenceAnnotationsParser));
             OpeningCharacters = new[] { '`' };
             InfoParser = ParseCodeOptions;
         }
 
-        protected override CodeLinkBlock CreateFencedBlock(BlockProcessor processor) =>
-            new CodeLinkBlock(this, _order++);
+        protected override AnnotatedCodeBlock CreateFencedBlock(BlockProcessor processor) =>
+            new AnnotatedCodeBlock(this, _order++);
 
         protected bool ParseCodeOptions(
             BlockProcessor state,
             ref StringSlice line,
             IFencedBlock fenced)
         {
-            if (!(fenced is CodeLinkBlock codeLinkBlock))
+            if (!(fenced is AnnotatedCodeBlock codeLinkBlock))
             {
                 return false;
             }
 
-            var result = _codeFenceOptionsParser.TryParseCodeFenceOptions(line.ToString(),
+            var result = codeFenceAnnotationsParser.TryParseCodeFenceOptions(line.ToString(),
                 state.Context);
 
             switch (result)
@@ -45,7 +45,7 @@ namespace Microsoft.DotNet.Try.Markdown
 
                     break;
                 case SuccessfulCodeFenceOptionParseResult successful:
-                    codeLinkBlock.Options = successful.Options;
+                    codeLinkBlock.Annotations = successful.Annotations;
                     break;
             }
 
@@ -81,16 +81,6 @@ namespace Microsoft.DotNet.Try.Markdown
 
             // Reset the indentation to the column before the indent
             processor.GoToColumn(processor.ColumnBeforeIndent);
-
-            var codeBlock = block as CodeLinkBlock;
-
-            // FIX: (TryContinue) 
-            // if we already have the source code discard the lines that are inside the fenced code
-            // if (codeBlock?.Options is LocalCodeLinkBlockOptions localOptions &&
-            //     localOptions.SourceFile != null)
-            // {
-            //     return BlockState.ContinueDiscard;
-            // }
 
             return BlockState.Continue;
         }

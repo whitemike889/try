@@ -3,17 +3,17 @@ using MLS.Protocol.Execution;
 
 namespace MLS.Agent.Markdown
 {
-    public static class CodeLinkBlockExtensions
+    public static class AnnotatedCodeBlockExtensions
     {
         public static Workspace.Buffer GetBufferAsync(
-            this CodeLinkBlock block,
+            this AnnotatedCodeBlock block,
             IDirectoryAccessor directoryAccessor,
             MarkdownFile markdownFile)
         {
-            if (block.Options is LocalCodeLinkBlockOptions localOptions)
+            if (block.Annotations is LocalCodeBlockAnnotations localOptions)
             {
                 var absolutePath = directoryAccessor.GetFullyQualifiedPath(localOptions.SourceFile).FullName;
-                var bufferId = new BufferId(absolutePath, block.Options.Region);
+                var bufferId = new BufferId(absolutePath, block.Annotations.Region);
                 return new Workspace.Buffer(bufferId, block.SourceCode);
             }
             else
@@ -22,11 +22,11 @@ namespace MLS.Agent.Markdown
             }
         }
 
-        public static string ProjectOrPackageName(this CodeLinkBlock block)
+        public static string ProjectOrPackageName(this AnnotatedCodeBlock block)
         {
             return
-                (block.Options as LocalCodeLinkBlockOptions)?.Project?.FullName ??
-                block.Options?.Package;
+                (block.Annotations as LocalCodeBlockAnnotations)?.Project?.FullName ??
+                block.Annotations?.Package;
         }
     }
 }

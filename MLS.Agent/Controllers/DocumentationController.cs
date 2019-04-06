@@ -55,15 +55,15 @@ namespace MLS.Agent.Controllers
 
             var hostUrl = Request.GetUri();
 
-            var blocks = await markdownFile.GetEditableCodeLinkBlocks();
+            var blocks = await markdownFile.GetEditableAnnotatedCodeBlocks();
             var maxEditorPerSession = blocks.Any()
                                           ? blocks
-                                              .GroupBy(b => b.Options.Session)
+                                              .GroupBy(b => b.Annotations.Session)
                                               .Max(editors => editors.Count())
                                           : 0;
 
             var pipeline = _markdownProject.GetMarkdownPipelineFor(markdownFile.Path);
-            var extension = pipeline.Extensions.FindExact<CodeLinkExtension>();
+            var extension = pipeline.Extensions.FindExact<AnnotatedCodeBlockExtension>();
             if (extension != null)
             {
                 extension.InlineControls = maxEditorPerSession <= 1;
@@ -84,14 +84,14 @@ namespace MLS.Agent.Controllers
         public static async Task<IHtmlContent> SessionControlsHtml(MarkdownFile markdownFile, bool enablePreviewFeatures = false)
         {
             var sessions = (await markdownFile
-                   .GetCodeLinkBlocks())
-                   .GroupBy(b => b.Options.Session);
+                   .GetAnnotatedCodeBlocks())
+                   .GroupBy(b => b.Annotations.Session);
 
             var sb = new StringBuilder();
 
             foreach (var session in sessions)
             {
-                sb.AppendLine($@"<button class=""run"" data-trydotnet-mode=""run"" data-trydotnet-session-id=""{session.Key}"" data-trydotnet-run-args=""{session.First().Options.RunArgs.HtmlAttributeEncode()}"">{session.Key}</button>");
+                sb.AppendLine($@"<button class=""run"" data-trydotnet-mode=""run"" data-trydotnet-session-id=""{session.Key}"" data-trydotnet-run-args=""{session.First().Annotations.RunArgs.HtmlAttributeEncode()}"">{session.Key}</button>");
 
                 sb.AppendLine(enablePreviewFeatures
                     ? $@"<div class=""output-panel"" data-trydotnet-mode=""runResult"" data-trydotnet-output-type=""terminal"" data-trydotnet-session-id=""{session.Key}""></div>"

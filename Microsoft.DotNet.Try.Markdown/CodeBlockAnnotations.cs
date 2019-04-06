@@ -5,11 +5,11 @@ using System.Threading.Tasks;
 
 namespace Microsoft.DotNet.Try.Markdown
 {
-    public class CodeLinkBlockOptions
+    public class CodeBlockAnnotations
     {
         protected static int _sessionIndex;
 
-        public CodeLinkBlockOptions(
+        public CodeBlockAnnotations(
             RelativeFilePath destinationFile = null,
             string package = null,
             string region = null,
@@ -50,7 +50,7 @@ namespace Microsoft.DotNet.Try.Markdown
         public virtual Task<CodeBlockContentFetchResult> TryGetExternalContent() => 
             Task.FromResult(CodeBlockContentFetchResult.None);
 
-        public virtual Task AddAttributes(CodeLinkBlock block)
+        public virtual Task AddAttributes(AnnotatedCodeBlock block)
         {
             if (Package != null)
             {
