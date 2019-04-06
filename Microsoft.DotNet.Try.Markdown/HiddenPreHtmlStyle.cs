@@ -1,10 +1,12 @@
-﻿namespace Microsoft.DotNet.Try.Markdown
+﻿using Microsoft.AspNetCore.Html;
+
+namespace Microsoft.DotNet.Try.Markdown
 {
     internal class HiddenPreHtmlStyle : HtmlStyleAttribute
     {
-        protected override string StyleAttributeString()
+        protected override IHtmlContent StyleAttributeString()
         {
-            return @"style=""border:none; margin:0px; padding:0px; visibility:hidden; display: none;""";
+            return new HtmlString( @"style=""border:none; margin:0px; padding:0px; visibility:hidden; display: none;""");
         }
     }
 }

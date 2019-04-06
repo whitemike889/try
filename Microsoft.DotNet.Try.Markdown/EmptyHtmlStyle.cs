@@ -1,10 +1,12 @@
-﻿namespace Microsoft.DotNet.Try.Markdown
+﻿using Microsoft.AspNetCore.Html;
+
+namespace Microsoft.DotNet.Try.Markdown
 {
     internal class EmptyHtmlStyle : HtmlStyleAttribute
     {
-        protected override string StyleAttributeString()
+        protected override IHtmlContent StyleAttributeString()
         {
-            return string.Empty;
+            return HtmlString.Empty;
         }
     }
 }

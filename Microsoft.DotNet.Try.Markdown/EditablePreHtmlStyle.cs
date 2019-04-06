@@ -1,4 +1,6 @@
-﻿namespace Microsoft.DotNet.Try.Markdown
+﻿using Microsoft.AspNetCore.Html;
+
+namespace Microsoft.DotNet.Try.Markdown
 {
     internal class EditablePreHtmlStyle : HtmlStyleAttribute
     {
@@ -9,9 +11,9 @@
             _height = height;
         }
 
-        protected override string StyleAttributeString()
+        protected override IHtmlContent StyleAttributeString()
         {
-            return $@"style=""border:none; height:{_height}""";
+            return new HtmlString(  $@"style=""border:none; height:{_height}""");
         }
     }
 }

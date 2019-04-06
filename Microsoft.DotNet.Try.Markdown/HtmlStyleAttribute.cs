@@ -1,12 +1,14 @@
-﻿namespace Microsoft.DotNet.Try.Markdown
+﻿using Microsoft.AspNetCore.Html;
+
+namespace Microsoft.DotNet.Try.Markdown
 {
     internal abstract class HtmlStyleAttribute
     {
         public override string ToString()
         {
-            return StyleAttributeString();
+            return StyleAttributeString().ToString();
         }
 
-        protected abstract string StyleAttributeString();
+        protected abstract IHtmlContent StyleAttributeString();
     }
 }
