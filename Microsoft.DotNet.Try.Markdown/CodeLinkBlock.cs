@@ -107,7 +107,7 @@ namespace Microsoft.DotNet.Try.Markdown
             }
 
             var style = Options.Editable
-                ? @"style=""border:none; height: {height}"""
+                ? $@"style=""border:none; height:{height}"""
                 : Options.Hidden
                     ? @"style=""border:none; margin:0px; padding:0px; visibility:hidden; display: none;"""
                     : string.Empty;
