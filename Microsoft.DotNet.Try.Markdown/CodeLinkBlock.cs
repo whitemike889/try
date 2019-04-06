@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -106,17 +106,17 @@ namespace Microsoft.DotNet.Try.Markdown
                                    : @"<div class=""code-container"">");
             }
 
-            var style = Options.Editable
-                ? $@"style=""border:none; height:{height}"""
+            var htmlStyle = Options.Editable
+                ? new EditablePreHtmlStyle(height)
                 : Options.Hidden
-                    ? @"style=""border:none; margin:0px; padding:0px; visibility:hidden; display: none;"""
-                    : string.Empty;
+                    ? new HiddenPreHtmlStyle() as HtmlStyleAttribute
+                    : new EmptyHtmlStyle();
 
             renderer
                 .WriteLineIf(Options.Editable, @"<div class=""editor-panel"">")
                 .WriteLine(Options.Editable
-                               ? $@"<pre {style} height=""{height}"" width=""100%"">"
-                               : $@"<pre {style}>")
+                               ? $@"<pre {htmlStyle} height=""{height}"" width=""100%"">"
+                               : $@"<pre {htmlStyle}>")
                 .Write("<code")
                 .WriteAttributes(this)
                 .Write(">")
