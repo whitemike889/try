@@ -55,15 +55,18 @@ namespace MLS.Agent.Controllers
 
             var hostUrl = Request.GetUri();
 
-            var blocks = await markdownFile.GetEditableAnnotatedCodeBlocks();
-            var maxEditorPerSession = blocks.Any()
+            var blocks = (await markdownFile.GetEditableAnnotatedCodeBlocks()).ToArray();
+
+            var maxEditorPerSession = blocks.Length > 0
                                           ? blocks
                                               .GroupBy(b => b.Annotations.Session)
                                               .Max(editors => editors.Count())
                                           : 0;
 
             var pipeline = _markdownProject.GetMarkdownPipelineFor(markdownFile.Path);
-            var extension = pipeline.Extensions.FindExact<AnnotatedCodeBlockExtension>();
+
+            var extension = pipeline.Extensions.FindExact<CodeBlockAnnotationExtension>();
+
             if (extension != null)
             {
                 extension.InlineControls = maxEditorPerSession <= 1;

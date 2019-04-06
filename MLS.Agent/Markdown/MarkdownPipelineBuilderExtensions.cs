@@ -1,6 +1,5 @@
 ﻿using Markdig;
 using Microsoft.DotNet.Try.Markdown;
-using MLS.Agent.CommandLine;
 using WorkspaceServer;
 
 namespace MLS.Agent.Markdown
@@ -13,18 +12,11 @@ namespace MLS.Agent.Markdown
             PackageRegistry packageRegistry,
             IDefaultCodeBlockAnnotations defaultAnnotations = null)
         {
-            var extensions = pipeline.Extensions;
-
-            if (!extensions.Contains<AnnotatedCodeBlockExtension>())
-            {
-                extensions.Add(
-                    new AnnotatedCodeBlockExtension(
-                        directoryAccessor,
-                        packageRegistry,
-                        defaultAnnotations ?? new StartupOptions()));
-            }
-
-            return pipeline;
+            return pipeline.UseCodeBlockAnnotations(
+                new LocalCodeFenceAnnotationsParser(
+                    directoryAccessor,
+                    packageRegistry,
+                    defaultAnnotations));
         }
     }
 }

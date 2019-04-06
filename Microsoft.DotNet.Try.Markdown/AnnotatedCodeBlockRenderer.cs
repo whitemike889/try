@@ -7,8 +7,6 @@ namespace Microsoft.DotNet.Try.Markdown
 {
     public class AnnotatedCodeBlockRenderer : CodeBlockRenderer
     {
-        public bool InlineControls { get; set; }
-
         public AnnotatedCodeBlockRenderer()
         {
             OutputAttributesOnPre = false;
@@ -51,5 +49,7 @@ namespace Microsoft.DotNet.Try.Markdown
         }
 
         public bool EnablePreviewFeatures { get; set; }
+
+        public bool InlineControls { get; set; }
     }
 }
