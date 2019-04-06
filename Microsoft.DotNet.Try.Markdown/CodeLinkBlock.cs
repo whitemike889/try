@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -51,7 +51,14 @@ namespace Microsoft.DotNet.Try.Markdown
 
                 if (!Diagnostics.Any())
                 {
-                    SourceCode = result.Content ?? Lines.ToString();
+                    if (result.Content != null)
+                    {
+                        SourceCode = result.Content;
+                    }
+                    else
+                    {
+                        SourceCode = Lines.ToString();
+                    }
 
                     await AddAttributes(Options);
                 }
