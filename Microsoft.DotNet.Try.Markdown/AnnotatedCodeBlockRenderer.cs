@@ -50,6 +50,6 @@ namespace Microsoft.DotNet.Try.Markdown
 
         public bool EnablePreviewFeatures { get; set; }
 
-        public bool InlineControls { get; set; }
+        public bool InlineControls { get; set; } = true;
     }
 }
