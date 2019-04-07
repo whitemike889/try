@@ -46,9 +46,9 @@ namespace MLS.Agent.CommandLine
                 console.Out.WriteLine(fullName);
                 console.Out.WriteLine(new string('-', fullName.Length));
 
-                var codeLinkBlocks = await markdownFile.GetCodeLinkBlocks();
+                var codeLinkBlocks = await markdownFile.GetAnnotatedCodeBlocks();
 
-                var sessions = codeLinkBlocks.GroupBy(block => block.Options?.Session);
+                var sessions = codeLinkBlocks.GroupBy(block => block.Annotations?.Session);
 
                 foreach (var session in sessions)
                 {
@@ -84,11 +84,11 @@ namespace MLS.Agent.CommandLine
                 returnCode = 1;
             }
 
-            async Task ReportCompileResults(IGrouping<string, CodeLinkBlock> session, MarkdownFile markdownFile, Dictionary<string, Workspace.File[]> filesToInclude, Dictionary<string, Workspace.Buffer[]> buffersToInclude)
+            async Task ReportCompileResults(IGrouping<string, AnnotatedCodeBlock> session, MarkdownFile markdownFile, Dictionary<string, Workspace.File[]> filesToInclude, Dictionary<string, Workspace.Buffer[]> buffersToInclude)
             {
                 console.Out.WriteLine($"\n  Compiling samples for session \"{session.Key}\"\n");
 
-                var editableCodeBlocks = session.Where(b => b.Options.Editable).ToList();
+                var editableCodeBlocks = session.Where(b => b.Annotations.Editable).ToList();
 
                 var projectOrPackageName = session
                     .Select(b => b.ProjectOrPackageName())
@@ -166,7 +166,7 @@ namespace MLS.Agent.CommandLine
                 }
             }
 
-            void ReportCodeLinkageResults(CodeLinkBlock codeLinkBlock)
+            void ReportCodeLinkageResults(AnnotatedCodeBlock codeLinkBlock)
             {
                 var diagnostics = codeLinkBlock.Diagnostics.ToArray();
 
@@ -183,7 +183,7 @@ namespace MLS.Agent.CommandLine
                     Console.ForegroundColor = ConsoleColor.Green;
                 }
 
-                var blockOptions = (LocalCodeLinkBlockOptions) codeLinkBlock.Options;
+                var blockOptions = (LocalCodeBlockAnnotations) codeLinkBlock.Annotations;
 
                 var sourceFile =
                     blockOptions?.SourceFile != null

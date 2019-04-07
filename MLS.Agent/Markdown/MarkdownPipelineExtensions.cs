@@ -15,7 +15,7 @@ namespace MLS.Agent.Markdown
                text,
                pipeline);
 
-            var initializeTasks = document.OfType<CodeLinkBlock>()
+            var initializeTasks = document.OfType<AnnotatedCodeBlock>()
                 .Select(c => c.InitializeAsync());
 
             await Task.WhenAll(initializeTasks);
