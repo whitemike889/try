@@ -27,5 +27,5 @@ dotnet pack $REPO_ROOT/Microsoft.DotNet.Try.Markdown/Microsoft.DotNet.Try.Markdo
 dotnet pack $REPO_ROOT/MLS.Agent/MLS.Agent.csproj -c Release -o $PACKAGE_ROOT /p:NoPackageAnalysis=true
 dotnet pack $REPO_ROOT/MLS.Agent.Tools/MLS.Agent.Tools.csproj -c Release -o $PACKAGE_ROOT /p:NoPackageAnalysis=true
 dotnet pack $REPO_ROOT/MLS.Protocol/MLS.Protocol.csproj -c Release -o $PACKAGE_ROOT /p:NoPackageAnalysis=true
-dotnet pack $REPO_ROOT/Microsoft.DotNetTry.Project./Microsoft.DotNetTry.Project.csproj -c Release -o $PACKAGE_ROOT /p:NoPackageAnalysis=true
+dotnet pack $REPO_ROOT/Microsoft.DotNetTry.Project/Microsoft.DotNetTry.Project.csproj -c Release -o $PACKAGE_ROOT /p:NoPackageAnalysis=true
 dotnet pack $REPO_ROOT/WasmCodeRunner/MLS.WasmCodeRunner.csproj -c Release -o $PACKAGE_ROOT /p:NoPackageAnalysis=true
