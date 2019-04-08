@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using Microsoft.DotNet.Try.Markdown;
-using MLS.Agent.Markdown;
 
 namespace MLS.Agent.CommandLine
 {

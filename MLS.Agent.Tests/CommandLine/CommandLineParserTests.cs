@@ -122,6 +122,28 @@ namespace MLS.Agent.Tests.CommandLine
         }
 
         [Fact]
+        public async Task It_parses_the_package_option()
+        {
+            await _parser.InvokeAsync("--package console");
+
+            _start_options
+                .Package
+                .Should()
+                .Be("console");
+        }
+
+        [Fact]
+        public async Task It_parses_the_package_version_option()
+        {
+            await _parser.InvokeAsync("--package-version 1.2.3-beta");
+
+            _start_options
+                .PackageVersion
+                .Should()
+                .Be("1.2.3-beta");
+        }
+
+        [Fact]
         public async Task Parse_empty_command_line_has_current_directory_as_root_directory()
         {
             await _parser.InvokeAsync("", _console);
