@@ -61,6 +61,10 @@ namespace MLS.Agent.Controllers
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
             public string scaffold { get; set; }
 
+
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+            public bool? enableBlazor { get; set; }
+
             public Uri referrer { get; set; }
         }
     }
