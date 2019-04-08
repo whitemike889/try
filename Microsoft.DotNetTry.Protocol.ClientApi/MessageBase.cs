@@ -1,7 +1,7 @@
 ﻿using System;
 using Newtonsoft.Json;
 
-namespace Microsoft.DotNetTry.Protocol.ClientApi
+namespace Microsoft.DotNet.Try.Protocol.ClientApi
 {
     public abstract class MessageBase
     {

@@ -28,7 +28,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MLS.Protocol", "MLS.Protoco
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MLS.Protocol.Tests", "MLS.Protocol.Tests\MLS.Protocol.Tests.csproj", "{0119749C-0DF0-4CC0-8FE3-FCDBDF2B8865}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNetTry.Project", "Microsoft.DotNetTry.Project\Microsoft.DotNetTry.Project.csproj", "{5D86DF93-2ACA-44D7-9D39-DAD6B129EAFD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Try.Project", "Microsoft.DotNetTry.Project\Microsoft.DotNet.Try.Project.csproj", "{5D86DF93-2ACA-44D7-9D39-DAD6B129EAFD}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MLS.Repositories", "MLS.Repositories\MLS.Repositories.csproj", "{1464572C-C78C-4E40-87B8-2130684749F3}"
 EndProject
@@ -56,7 +56,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Try.Markdo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Dotnet.Try.Markdown.Tests", "Microsoft.Dotnet.Try.Markdown.Tests\Microsoft.Dotnet.Try.Markdown.Tests.csproj", "{F2FEA069-3121-4AB3-8835-F4EF6FCBFA18}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNetTry.Protocol.ClientApi", "Microsoft.DotNetTry.Protocol.ClientApi\Microsoft.DotNetTry.Protocol.ClientApi.csproj", "{7EAD5482-90CC-4252-AF91-553A4B81D8E0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Try.Protocol.ClientApi", "Microsoft.DotNetTry.Protocol.ClientApi\Microsoft.DotNet.Try.Protocol.ClientApi.csproj", "{7EAD5482-90CC-4252-AF91-553A4B81D8E0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Microsoft.DotNetTry.Project.Extensions;
+using Microsoft.DotNet.Try.Project.Extensions;
 using MLS.Protocol.Execution;
 
-namespace Microsoft.DotNetTry.Project.Generators
+namespace Microsoft.DotNet.Try.Project.Generators
 {
     public static class BufferGenerator
     {

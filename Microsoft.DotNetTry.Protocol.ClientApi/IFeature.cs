@@ -1,4 +1,4 @@
-﻿namespace Microsoft.DotNetTry.Protocol.ClientApi
+﻿namespace Microsoft.DotNet.Try.Protocol.ClientApi
 {
     public interface IFeature
     {

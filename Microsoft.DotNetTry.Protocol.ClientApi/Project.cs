@@ -4,7 +4,7 @@ using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.DotNetTry.Protocol.ClientApi
+namespace Microsoft.DotNet.Try.Protocol.ClientApi
 {
     [JsonConverter(typeof(ProjectJsonConverter))]
     public class Project : FeatureContainer

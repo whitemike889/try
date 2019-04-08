@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 using FluentAssertions;
-using Microsoft.DotNetTry.Project.Extensions;
+using Microsoft.DotNet.Try.Project.Extensions;
 using MLS.Protocol.Execution;
 using MLS.TestSupport;
 using Xunit;

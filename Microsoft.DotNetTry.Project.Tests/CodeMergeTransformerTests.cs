@@ -2,8 +2,8 @@
 using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Microsoft.DotNetTry.Project.Generators;
-using Microsoft.DotNetTry.Project.Transformations;
+using Microsoft.DotNet.Try.Project.Generators;
+using Microsoft.DotNet.Try.Project.Transformations;
 using MLS.Protocol.Execution;
 using Xunit;
 

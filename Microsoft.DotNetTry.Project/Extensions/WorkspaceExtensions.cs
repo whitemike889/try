@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.DotNetTry.Project.Execution;
+using Microsoft.DotNet.Try.Project.Execution;
 using MLS.Protocol.Execution;
 
-namespace Microsoft.DotNetTry.Project.Extensions
+namespace Microsoft.DotNet.Try.Project.Extensions
 {
     public static class WorkspaceExtensions
     {

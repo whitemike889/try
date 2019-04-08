@@ -6,7 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.DotNet.Try.Markdown;
-using Microsoft.DotNetTry.Project.Extensions;
+using Microsoft.DotNet.Try.Project.Extensions;
 using MLS.Agent.Tools;
 using WorkspaceServer;
 

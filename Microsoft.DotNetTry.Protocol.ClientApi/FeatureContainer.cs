@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Pocket;
 
-namespace Microsoft.DotNetTry.Protocol.ClientApi
+namespace Microsoft.DotNet.Try.Protocol.ClientApi
 {
     public abstract class FeatureContainer : IDisposable
     {

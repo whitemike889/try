@@ -5,7 +5,7 @@ using MLS.Protocol.Execution;
 using DiagnosticSeverity = Microsoft.CodeAnalysis.DiagnosticSeverity;
 using MLSDiagnosticSeverity = MLS.Protocol.Diagnostics.DiagnosticSeverity;
 
-namespace Microsoft.DotNetTry.Project.Extensions
+namespace Microsoft.DotNet.Try.Project.Extensions
 {
     public static class DiagnosticExtensions
     {

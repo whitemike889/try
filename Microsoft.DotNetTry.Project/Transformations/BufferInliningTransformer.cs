@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
-using Microsoft.DotNetTry.Project.Execution;
-using Microsoft.DotNetTry.Project.Extensions;
+using Microsoft.DotNet.Try.Project.Execution;
+using Microsoft.DotNet.Try.Project.Extensions;
 using Workspace = MLS.Protocol.Execution.Workspace;
 
-namespace Microsoft.DotNetTry.Project.Transformations
+namespace Microsoft.DotNet.Try.Project.Transformations
 {
     public class BufferInliningTransformer : IWorkspaceTransformer
     {
