@@ -100,9 +100,19 @@ namespace MLS.Agent.CommandLine
                 };
 
                 command.AddOption(new Option(
-                                     "--add-source",
+                                     "--add-package-source",
                                      "Specify an additional NuGet package source",
                                      new Argument<DirectoryInfo>(new DirectoryInfo(Directory.GetCurrentDirectory())).ExistingOnly()));
+
+                command.AddOption(new Option(
+                     "--package",
+                     "Specify a Try .NET package or path to a .csproj to run code samples with",
+                     new Argument<string>()));
+
+                command.AddOption(new Option(
+                     "--package-version",
+                     "Specify a Try .NET package version to use with the --package option",
+                     new Argument<string>()));
 
                 command.AddOption(new Option(
                      "--uri",
@@ -128,7 +138,7 @@ namespace MLS.Agent.CommandLine
                 {
                     services.AddSingleton(_ => PackageRegistry.CreateForTryMode(
                                               options.RootDirectory,
-                                              options.AddSource));
+                                              options.AddPackageSource));
                  
                     startServer(options, context);
                 });
