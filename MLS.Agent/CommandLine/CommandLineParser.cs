@@ -100,7 +100,7 @@ namespace MLS.Agent.CommandLine
                 };
 
                 command.AddOption(new Option(
-                                     "--add-source",
+                                     "--add-package-source",
                                      "Specify an additional NuGet package source",
                                      new Argument<DirectoryInfo>(new DirectoryInfo(Directory.GetCurrentDirectory())).ExistingOnly()));
 
@@ -138,7 +138,7 @@ namespace MLS.Agent.CommandLine
                 {
                     services.AddSingleton(_ => PackageRegistry.CreateForTryMode(
                                               options.RootDirectory,
-                                              options.AddSource));
+                                              options.AddPackageSource));
                  
                     startServer(options, context);
                 });

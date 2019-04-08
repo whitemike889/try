@@ -89,7 +89,7 @@ namespace MLS.Agent
                         case StartupMode.Jupyter:
                             return PackageRegistry.CreateForTryMode(
                                 StartupOptions.RootDirectory, 
-                                StartupOptions.AddSource);
+                                StartupOptions.AddPackageSource);
 
                         default:
                             throw new NotSupportedException($"Unrecognized value for {nameof(StartupOptions)}: {StartupOptions.Mode}");
