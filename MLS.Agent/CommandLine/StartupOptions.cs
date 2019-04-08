@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using Microsoft.DotNet.Try.Markdown;
-using MLS.Agent.Markdown;
 
 namespace MLS.Agent.CommandLine
 {
@@ -15,7 +14,7 @@ namespace MLS.Agent.CommandLine
             string id = null,
             string regionId = null,
             DirectoryInfo rootDirectory = null,
-            DirectoryInfo addSource = null,
+            DirectoryInfo addPackageSource = null,
             Uri uri = null,
             DirectoryInfo logPath = null,
             bool verbose = false,
@@ -32,7 +31,7 @@ namespace MLS.Agent.CommandLine
             ApplicationInsightsKey = applicationInsightsKey;
             RegionId = regionId;
             RootDirectory = rootDirectory;
-            AddSource = addSource;
+            AddPackageSource = addPackageSource;
             Uri = uri;
             EnablePreviewFeatures = enablePreviewFeatures;
             Package = package;
@@ -43,7 +42,7 @@ namespace MLS.Agent.CommandLine
         public string Id { get; }
         public string RegionId { get; }
         public DirectoryInfo RootDirectory { get; }
-        public DirectoryInfo AddSource { get; }
+        public DirectoryInfo AddPackageSource { get; }
         public Uri Uri { get; }
         public bool Production { get; }
         public bool IsLanguageService { get; set; }
