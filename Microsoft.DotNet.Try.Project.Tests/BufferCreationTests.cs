@@ -4,7 +4,7 @@ using Microsoft.DotNet.Try.Project.Generators;
 using MLS.Protocol.Execution;
 using Xunit;
 
-namespace Microsoft.DotNetTry.Project.Tests
+namespace Microsoft.DotNet.Try.Project.Tests
 {
     public class BufferCreationTests
     {

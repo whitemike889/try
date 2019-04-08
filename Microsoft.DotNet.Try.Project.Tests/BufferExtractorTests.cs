@@ -5,7 +5,7 @@ using MLS.Protocol.Execution;
 using MLS.TestSupport;
 using Xunit;
 
-namespace Microsoft.DotNetTry.Project.Tests
+namespace Microsoft.DotNet.Try.Project.Tests
 {
     public class BufferExtractorTests
     {

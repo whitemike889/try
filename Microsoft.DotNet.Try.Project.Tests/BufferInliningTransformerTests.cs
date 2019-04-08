@@ -9,7 +9,7 @@ using MLS.Agent;
 using MLS.Protocol.Execution;
 using Xunit;
 
-namespace Microsoft.DotNetTry.Project.Tests
+namespace Microsoft.DotNet.Try.Project.Tests
 {
     public class BufferInliningTransformerTests
     {

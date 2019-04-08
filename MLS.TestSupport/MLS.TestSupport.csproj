@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.DotNetTry.Project\Microsoft.DotNet.Try.Project.csproj" />
+    <ProjectReference Include="..\Microsoft.DotNet.Try.Project\Microsoft.DotNet.Try.Project.csproj" />
   </ItemGroup>
 
 </Project>
