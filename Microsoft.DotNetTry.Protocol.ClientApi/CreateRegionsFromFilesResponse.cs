@@ -8,9 +8,9 @@ namespace Microsoft.DotNetTry.Protocol.ClientApi
         [JsonProperty("regions")]
         public SourceFileRegion[] Regions { get; }
 
-        public CreateRegionsFromFilesResponse(string requestId, SourceFileRegion[] projections) : base(requestId)
+        public CreateRegionsFromFilesResponse(string requestId, SourceFileRegion[] regions) : base(requestId)
         {
-            Regions = projections ?? Array.Empty<SourceFileRegion>();
+            Regions = regions ?? Array.Empty<SourceFileRegion>();
         }
     }
 }
