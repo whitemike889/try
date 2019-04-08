@@ -53,9 +53,9 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="ConfirmationLoggerExtensions" Version="0.1.5650001">
+    <PackageReference Include="ConfirmationLoggerExtensions" Version="0.1.5980001">
       <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
     <PackageReference Include="DictionaryExtensions" Version="0.1.5650001">
       <PrivateAssets>all</PrivateAssets>
