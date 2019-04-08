@@ -191,6 +191,7 @@ namespace MLS.Agent.CommandLine
 
                 run.Handler = CommandHandler.Create(async (IConsole console) =>
                 {
+                    await Task.Yield();
                     var packagesDirectory = new DirectoryInfo(Path.Combine(Package.DefaultPackagesDirectory.FullName, ".store"));
 
                     if (packagesDirectory.Exists)

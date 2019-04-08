@@ -11,7 +11,7 @@ namespace WorkspaceServer.Tests
     public class BlazorPackageInitializerTests
     {
         [Fact]
-        public async Task Requires_MLS_Blazor_directory()
+        public void Requires_MLS_Blazor_directory()
         {
             var empty = Create.EmptyWorkspace();
 

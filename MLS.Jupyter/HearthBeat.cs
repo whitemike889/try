@@ -29,6 +29,7 @@ namespace MLS.Jupyter
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
+            await Task.Yield();
             _server.Bind(_address);
 
             using (Log.OnEnterAndExit())
