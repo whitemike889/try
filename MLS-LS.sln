@@ -28,13 +28,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MLS.Protocol", "MLS.Protoco
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MLS.Protocol.Tests", "MLS.Protocol.Tests\MLS.Protocol.Tests.csproj", "{0119749C-0DF0-4CC0-8FE3-FCDBDF2B8865}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MLS.Project", "MLS.Project\MLS.Project.csproj", "{5D86DF93-2ACA-44D7-9D39-DAD6B129EAFD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNetTry.Project", "Microsoft.DotNetTry.Project\Microsoft.DotNetTry.Project.csproj", "{5D86DF93-2ACA-44D7-9D39-DAD6B129EAFD}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MLS.Repositories", "MLS.Repositories\MLS.Repositories.csproj", "{1464572C-C78C-4E40-87B8-2130684749F3}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MLS.Repositories.Tests", "MLS.Repositories.Tests\MLS.Repositories.Tests.csproj", "{3D4B1B5F-9350-48F7-ABBA-8ED38E8AB2EE}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MLS.Project.Tests", "MLS.Project.Tests\MLS.Project.Tests.csproj", "{241C98D2-9D4A-4EC6-B94E-687F0012B797}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNetTry.Project.Tests", "Microsoft.DotNetTry.Project.Tests\Microsoft.DotNetTry.Project.Tests.csproj", "{241C98D2-9D4A-4EC6-B94E-687F0012B797}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MLS.TestSupport", "MLS.TestSupport\MLS.TestSupport.csproj", "{2758F1F6-12F1-4FB1-841A-0B2292853654}"
 EndProject
@@ -54,7 +54,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MLS.Jupyter.Tests", "MLS.Ju
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Try.Markdown", "Microsoft.DotNet.Try.Markdown\Microsoft.DotNet.Try.Markdown.csproj", "{B70584C1-41A3-4DB3-9C49-799DFF57A3FC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Dotnet.Try.Markdown.Tests", "Microsoft.Dotnet.Try.Markdown.Tests\Microsoft.Dotnet.Try.Markdown.Tests.csproj", "{F2FEA069-3121-4AB3-8835-F4EF6FCBFA18}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Dotnet.Try.Markdown.Tests", "Microsoft.Dotnet.Try.Markdown.Tests\Microsoft.Dotnet.Try.Markdown.Tests.csproj", "{F2FEA069-3121-4AB3-8835-F4EF6FCBFA18}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNetTry.Protocol.ClientApi", "Microsoft.DotNetTry.Protocol.ClientApi\Microsoft.DotNetTry.Protocol.ClientApi.csproj", "{7EAD5482-90CC-4252-AF91-553A4B81D8E0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -142,6 +144,10 @@ Global
 		{F2FEA069-3121-4AB3-8835-F4EF6FCBFA18}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F2FEA069-3121-4AB3-8835-F4EF6FCBFA18}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F2FEA069-3121-4AB3-8835-F4EF6FCBFA18}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7EAD5482-90CC-4252-AF91-553A4B81D8E0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7EAD5482-90CC-4252-AF91-553A4B81D8E0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7EAD5482-90CC-4252-AF91-553A4B81D8E0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7EAD5482-90CC-4252-AF91-553A4B81D8E0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -168,6 +174,7 @@ Global
 		{614B2E7B-7B05-4023-9C6E-CE708EB1673F} = {8192FEAD-BCE6-4E62-97E5-2E9EA884BD71}
 		{B70584C1-41A3-4DB3-9C49-799DFF57A3FC} = {6EE8F484-DFA2-4F0F-939F-400CE78DFAC2}
 		{F2FEA069-3121-4AB3-8835-F4EF6FCBFA18} = {8192FEAD-BCE6-4E62-97E5-2E9EA884BD71}
+		{7EAD5482-90CC-4252-AF91-553A4B81D8E0} = {6EE8F484-DFA2-4F0F-939F-400CE78DFAC2}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D6CD99BA-B16B-4570-8910-225CBDFFA3AD}

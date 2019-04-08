@@ -6,8 +6,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.DotNet.Try.Markdown;
+using Microsoft.DotNetTry.Project.Extensions;
 using MLS.Agent.Tools;
-using MLS.Project.Extensions;
 using WorkspaceServer;
 
 namespace MLS.Agent.Markdown

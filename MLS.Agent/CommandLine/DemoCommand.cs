@@ -16,6 +16,7 @@ namespace MLS.Agent.CommandLine
             CommandLineParser.StartServer startServer = null,
             InvocationContext context = null)
         {
+            await Task.Yield();
             var extractDemoFiles = true;
 
             if (!options.Output.Exists)
