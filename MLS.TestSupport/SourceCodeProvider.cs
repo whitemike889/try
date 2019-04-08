@@ -1,4 +1,4 @@
-﻿using MLS.Project.Generators;
+﻿using Microsoft.DotNetTry.Project.Generators;
 
 namespace MLS.TestSupport
 {

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Clockwise;
 using MLS.Protocol.Execution;
 
-namespace MLS.Project.Transformations
+namespace Microsoft.DotNetTry.Project.Transformations
 {
     public class CodeMergeTransformer : IWorkspaceTransformer
     {

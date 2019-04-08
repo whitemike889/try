@@ -2,7 +2,7 @@
 using Microsoft.CodeAnalysis.Text;
 using MLS.Protocol.Execution;
 
-namespace MLS.Project.Execution
+namespace Microsoft.DotNetTry.Project.Execution
 {
     public class Viewport
     {

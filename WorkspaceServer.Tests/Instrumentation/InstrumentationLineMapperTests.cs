@@ -2,8 +2,8 @@
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.CodeAnalysis.Text;
-using MLS.Project.Execution;
-using MLS.Project.Extensions;
+using Microsoft.DotNetTry.Project.Execution;
+using Microsoft.DotNetTry.Project.Extensions;
 using MLS.Protocol.Execution;
 using WorkspaceServer.Servers.Roslyn.Instrumentation;
 using Xunit;

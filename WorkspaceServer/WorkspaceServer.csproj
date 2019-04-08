@@ -87,7 +87,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\MLS.Agent.Tools\MLS.Agent.Tools.csproj" />
-    <ProjectReference Include="..\MLS.Project\MLS.Project.csproj" />
+    <ProjectReference Include="..\MLS.Project\Microsoft.DotNetTry.Project.csproj" />
     <ProjectReference Include="..\MLS.Protocol\MLS.Protocol.csproj" />
   </ItemGroup>
   

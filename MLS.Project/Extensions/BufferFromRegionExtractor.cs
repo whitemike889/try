@@ -1,24 +1,23 @@
-﻿using Microsoft.CodeAnalysis.Text;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using static MLS.Protocol.Execution.Workspace;
+using Microsoft.CodeAnalysis.Text;
 using Buffer = MLS.Protocol.Execution.Workspace.Buffer;
 using Workspace = MLS.Protocol.Execution.Workspace;
 
-namespace MLS.Project.Extensions
+namespace Microsoft.DotNetTry.Project.Extensions
 {
     public class BufferFromRegionExtractor
     {
-        public Workspace Extract(IReadOnlyCollection<File> sourceFiles, string workspaceType = null, string[] usings = null)
+        public Workspace Extract(IReadOnlyCollection<Workspace.File> sourceFiles, string workspaceType = null, string[] usings = null)
         {
             var workSpaceType = workspaceType ?? "script";
             var (newFiles, newBuffers) = ProcessSourceFiles(sourceFiles);
             return new Workspace(files: newFiles, buffers: newBuffers, usings: usings, workspaceType: workSpaceType);
         }
 
-        private static (File[], Buffer[]) ProcessSourceFiles(IEnumerable<File> sourceFiles)
+        private static (Workspace.File[], Buffer[]) ProcessSourceFiles(IEnumerable<Workspace.File> sourceFiles)
         {
-            var files = new Dictionary<string, File>();
+            var files = new Dictionary<string, Workspace.File>();
             var newBuffers = new List<Buffer>();
             foreach (var sourceFile in sourceFiles)
             {

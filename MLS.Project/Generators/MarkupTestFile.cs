@@ -6,7 +6,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis.Text;
 
-namespace MLS.Project.Generators
+namespace Microsoft.DotNetTry.Project.Generators
 {
     /// <summary>
     /// To aid with testing, we define a special type of text file that can encode additional

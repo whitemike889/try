@@ -1,6 +1,6 @@
 using MLS.Protocol.Execution;
 
-namespace MLS.Project.Generators
+namespace Microsoft.DotNetTry.Project.Generators
 {
     public static class FileGenerator
     {

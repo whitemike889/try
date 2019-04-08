@@ -4,11 +4,11 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
-using MLS.Project.Execution;
+using Microsoft.DotNetTry.Project.Execution;
 using MLS.Protocol.Execution;
 using Workspace = MLS.Protocol.Execution.Workspace;
 
-namespace MLS.Project.Extensions
+namespace Microsoft.DotNetTry.Project.Extensions
 {
     public static class FileExtensions
     {

@@ -1,17 +1,17 @@
 ﻿using System.Linq;
 using FluentAssertions;
-using MLS.Project.Generators;
+using Microsoft.DotNetTry.Project.Generators;
 using MLS.Protocol.Execution;
 using Xunit;
 
-namespace MLS.Project.Tests
+namespace Microsoft.DotNetTry.Project.Tests
 {
     public class BufferCreationTests
     {
         [Fact]
         public void can_create_buffers_from_file_with_regions()
         {
-            var file = FileGenerator.Create("Program.cs", TestSupport.SourceCodeProvider.ConsoleProgramMultipleRegions);
+            var file = FileGenerator.Create("Program.cs", MLS.TestSupport.SourceCodeProvider.ConsoleProgramMultipleRegions);
 
             var buffers = BufferGenerator.CreateFromFile(file).ToList();
 
@@ -24,7 +24,7 @@ namespace MLS.Project.Tests
         [Fact]
         public void can_create_buffers_from_file_without_regions()
         {
-            var file = FileGenerator.Create("Program.cs", TestSupport.SourceCodeProvider.ConsoleProgramNoRegion);
+            var file = FileGenerator.Create("Program.cs", MLS.TestSupport.SourceCodeProvider.ConsoleProgramNoRegion);
 
             var buffers = BufferGenerator.CreateFromFile(file).ToList();
 

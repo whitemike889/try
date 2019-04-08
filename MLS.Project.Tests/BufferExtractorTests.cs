@@ -1,11 +1,11 @@
 ﻿using System.Linq;
 using FluentAssertions;
+using Microsoft.DotNetTry.Project.Extensions;
 using MLS.Protocol.Execution;
-using MLS.Project.Extensions;
 using MLS.TestSupport;
 using Xunit;
 
-namespace MLS.Project.Tests
+namespace Microsoft.DotNetTry.Project.Tests
 {
     public class BufferExtractorTests
     {

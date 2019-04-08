@@ -1,14 +1,13 @@
 ﻿using System;
-using System.Configuration;
 using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
-using MLS.Project.Generators;
-using MLS.Project.Transformations;
+using Microsoft.DotNetTry.Project.Generators;
+using Microsoft.DotNetTry.Project.Transformations;
 using MLS.Protocol.Execution;
 using Xunit;
 
-namespace MLS.Project.Tests
+namespace Microsoft.DotNetTry.Project.Tests
 {
     public class CodeMergeTransformerTests
     {

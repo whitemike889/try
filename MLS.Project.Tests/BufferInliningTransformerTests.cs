@@ -3,13 +3,13 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.DotNetTry.Project.Generators;
+using Microsoft.DotNetTry.Project.Transformations;
 using MLS.Agent;
-using MLS.Project.Generators;
-using MLS.Project.Transformations;
 using MLS.Protocol.Execution;
 using Xunit;
 
-namespace MLS.Project.Tests
+namespace Microsoft.DotNetTry.Project.Tests
 {
     public class BufferInliningTransformerTests
     {
@@ -28,7 +28,7 @@ namespace MLS.Project.Tests
             var original = new Workspace(
                 files: new[]
                 {
-                    new Workspace.File("Program.cs", TestSupport.SourceCodeProvider.ConsoleProgramSingleRegion)
+                    new Workspace.File("Program.cs", MLS.TestSupport.SourceCodeProvider.ConsoleProgramSingleRegion)
                 },
                 buffers: new[]
                 {
@@ -57,7 +57,7 @@ namespace MLS.Project.Tests
             var ws = new Workspace(
                 files: new[]
                 {
-                    new Workspace.File("Program.cs", TestSupport.SourceCodeProvider.ConsoleProgramSingleRegion)
+                    new Workspace.File("Program.cs", MLS.TestSupport.SourceCodeProvider.ConsoleProgramSingleRegion)
                 },
                 buffers: new[]
                 {
@@ -83,7 +83,7 @@ namespace MLS.Project.Tests
             var ws = new Workspace(
                 buffers: new[]
                 {
-                    new Workspace.Buffer("", TestSupport.SourceCodeProvider.ConsoleProgramSingleRegion, 0)
+                    new Workspace.Buffer("", MLS.TestSupport.SourceCodeProvider.ConsoleProgramSingleRegion, 0)
                 });
             var processor = new BufferInliningTransformer();
 
@@ -91,7 +91,7 @@ namespace MLS.Project.Tests
             processed.Should().NotBeNull();
             processed.Files.Should().NotBeEmpty();
             var newCode = processed.Files.ElementAt(0).Text;
-            newCode.Should().Contain(TestSupport.SourceCodeProvider.ConsoleProgramSingleRegion);
+            newCode.Should().Contain(MLS.TestSupport.SourceCodeProvider.ConsoleProgramSingleRegion);
 
         }
 
@@ -122,7 +122,7 @@ Console.Write(newValueA + newValueB);
             var ws = new Workspace(
                 files: new[]
                 {
-                    new Workspace.File("Program.cs", TestSupport.SourceCodeProvider.ConsoleProgramMultipleRegions)
+                    new Workspace.File("Program.cs", MLS.TestSupport.SourceCodeProvider.ConsoleProgramMultipleRegions)
                 },
                 buffers: new[]
                 {

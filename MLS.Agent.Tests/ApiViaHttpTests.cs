@@ -6,7 +6,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Clockwise;
 using FluentAssertions;
-using MLS.Project.Transformations;
 using MLS.Protocol;
 using MLS.Protocol.Completion;
 using MLS.Protocol.Diagnostics;
@@ -23,6 +22,8 @@ using static Pocket.Logger<MLS.Agent.Tests.ApiViaHttpTests>;
 using Workspace = MLS.Protocol.Execution.Workspace;
 using MLS.Agent.CommandLine;
 using FluentAssertions.Extensions;
+using Microsoft.DotNetTry.Project.Transformations;
+using Microsoft.DotNetTry.Protocol.ClientApi;
 
 namespace MLS.Agent.Tests
 {
@@ -730,6 +731,41 @@ namespace FibonacciTest
                 response.EnsureSuccess();
                 var result = await response.Content.ReadAsStringAsync();
                 result.Should().Contain("Loading...");
+            }
+        }
+
+        [Fact]
+        public async Task When_files_contains_region_markers_projection_are_generated()
+        {
+            using (var agent = new AgentService())
+            {
+
+                var json = new CreateRegionsFromFilesRequest(
+                    "testRun", 
+                    new[] { new SourceFile(
+                        "program.cs", 
+                        "#region one\n#endregion\n#region two\nvar a = 1;\n#endregion")
+                    }).ToJson();
+
+                var request = new HttpRequestMessage(
+                    HttpMethod.Post,
+                    @"/project/files/regions")
+                {
+                    Content = new StringContent(
+                        json,
+                        Encoding.UTF8,
+                        "application/json")
+                };
+
+                var response = await agent.SendAsync(request);
+
+                var result = await response
+                    .EnsureSuccess()
+                    .DeserializeAs<CreateRegionsFromFilesResponse>();
+
+                result.Should().NotBeNull();
+                result.Regions.Should().Contain(p => p.Content == string.Empty && p.Id.Contains("one") && p.Id.Contains("program.cs"));
+                result.Regions.Should().Contain(p => p.Content == "var a = 1;" && p.Id.Contains("two") && p.Id.Contains("program.cs"));
             }
         }
 
