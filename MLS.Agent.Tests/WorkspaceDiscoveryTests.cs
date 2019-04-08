@@ -27,12 +27,12 @@ namespace MLS.Agent.Tests
         public async Task Local_tool_workspace_can_be_discovered()
         {
             var console = new TestConsole();
-            var tool = await InstallLocalTool(console);
+            var (packageName, packageLocation) = await CreateLocalTool(console);
 
             var output = Guid.NewGuid().ToString();
-            var requestJson = Create.SimpleWorkspaceRequestAsJson(output, tool.Name);
+            var requestJson = Create.SimpleWorkspaceRequestAsJson(output, packageName);
 
-            var response = await CallRun(requestJson);
+            var response = await CallRun(requestJson, options: new StartupOptions(addSource: packageLocation, rootDirectory: new DirectoryInfo(Directory.GetCurrentDirectory())));
             var result = await response
                                 .EnsureSuccess()
                                 .DeserializeAs<RunResult>();
@@ -63,31 +63,29 @@ namespace MLS.Agent.Tests
             result.ShouldSucceedWithOutput(output);
         }
 
-        private async Task<Package> InstallLocalTool(IConsole console)
+        private async Task<(string packageName, DirectoryInfo addSource)> CreateLocalTool(IConsole console)
         {
-            var projectName = Guid.NewGuid().ToString("N");
+            // Keep project name short to work around max path issues
+            var projectName = Guid.NewGuid().ToString("N").Substring(0, 8);
 
             var copy = Create.EmptyWorkspace(
                 initializer: new PackageInitializer(
                     "console",
                     projectName));
+
             await copy.CreateRoslynWorkspaceForRunAsync(new Budget());
 
             var packageLocation = new DirectoryInfo(
                 Path.Combine(copy.Directory.FullName, "pack-output"));
 
-            await PackCommand.Do(
+            var packageName = await PackCommand.Do(
                 new PackOptions(
                     copy.Directory,
                     outputDirectory: packageLocation,
                     enableBlazor: false),
                 console);
 
-            await InstallCommand.Do(
-                new InstallOptions(packageLocation, "dotnettry." + projectName),
-                console);
-
-            return copy;
+            return (packageName, packageLocation);
         }
     }
 }
