@@ -112,7 +112,6 @@ namespace MLS.Agent.Controllers
 <head>
     <meta http-equiv=""Content-Type"" content=""text/html;charset=utf-8"">
     <script src=""/api/trydotnet.min.js?v={_cacheBuster}""></script>
-    <script src=""/api/trydotnet-layout.min.js?v={_cacheBuster}""></script>
     <link rel=""stylesheet"" href=""/css/trydotnet.css?v={_cacheBuster}"">  
     <link rel=""icon"" type=""image/png"" href=""favicon-32x32.png"">
     <title>dotnet try - {markdownFile.Path.Value.HtmlEncode()}</title>
@@ -127,8 +126,7 @@ namespace MLS.Agent.Controllers
     {Footer()}
 
     <script>
-        trydotnet.autoEnable(new URL(""{hostUrl}""));
-        trydotnetLayout.trackTopmostSession(document.getElementById(""documentation-container""), function (e){{ console.log(e); }});
+        trydotnet.autoEnable({{ apiBaseAddress: new URL(""{hostUrl}""), useBlazor:false }});
     </script>
 </body>
 
