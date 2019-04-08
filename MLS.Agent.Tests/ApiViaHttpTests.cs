@@ -735,7 +735,7 @@ namespace FibonacciTest
         }
 
         [Fact]
-        public async Task Can_etract_regions_from_files()
+        public async Task Can_extract_regions_from_files()
         {
             using (var agent = new AgentService())
             {
