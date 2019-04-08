@@ -5,7 +5,7 @@ namespace Microsoft.DotNetTry.Protocol.ClientApi
 {
     public class CreateRegionsFromFilesResponse : MessageBase
     {
-        [JsonProperty("projections")]
+        [JsonProperty("regions")]
         public SourceFileRegion[] Regions { get; }
 
         public CreateRegionsFromFilesResponse(string requestId, SourceFileRegion[] projections) : base(requestId)
