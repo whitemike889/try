@@ -735,7 +735,7 @@ namespace FibonacciTest
         }
 
         [Fact]
-        public async Task When_files_contains_region_markers_projection_are_generated()
+        public async Task Can_etract_regions_from_files()
         {
             using (var agent = new AgentService())
             {
