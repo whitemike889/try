@@ -15,15 +15,7 @@ namespace WorkspaceServer.Tests
     {
         AsyncLazy<(string, DirectoryInfo)> _tool = new AsyncLazy<(string, DirectoryInfo)>(async () =>
         {
-            var asset = await Create.NetstandardWorkspaceCopy();
-            var name = Path.GetFileNameWithoutExtension(asset.Directory.GetFiles("*.csproj").First().Name);
-            string packageName = $"dotnettry.{name}";
-            var console = new TestConsole();
-            await PackCommand.Do(new PackOptions(asset.Directory, enableBlazor: true), console);
-            var nupkg = asset.Directory
-                .GetFiles("*.nupkg").Single();
-
-            return (packageName, nupkg.Directory);
+            return await Create.NupkgWithBlazorEnabled();
         });
 
         [Fact]

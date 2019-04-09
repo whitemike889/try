@@ -1,8 +1,12 @@
+using System.CommandLine;
+using System.IO;
+using System.Linq;
 using System.Reactive.Concurrency;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.DotNet.Try.Protocol;
 using Microsoft.DotNet.Try.Protocol.Execution;
+using MLS.Agent.CommandLine;
 using Recipes;
 using WorkspaceServer.Packaging;
 
@@ -41,7 +45,27 @@ namespace WorkspaceServer.Tests
 
             return new RebuildablePackage(directory: Package.CreateDirectory(testName), initializer: initializer);
         }
-            
+
+        public static async Task<(string packageName, DirectoryInfo nupkgDirectory)> NupkgWithBlazorEnabled([CallerMemberName] string testName = null)
+        {
+            var asset = await NetstandardWorkspaceCopy(testName);
+            var name = Path.GetFileNameWithoutExtension(asset.Directory.GetFiles("*.csproj").First().Name);
+            string packageName = $"{asset.Directory.Name}";
+            string fullPackageName = $"dotnettry.{packageName}";
+            var console = new TestConsole();
+            await PackCommand.Do(new PackOptions(asset.Directory, enableBlazor: true, packageName: packageName), console);
+            var nupkg = asset.Directory
+                .GetFiles("*.nupkg").Single();
+
+            return (fullPackageName, nupkg.Directory);
+        }
+
+        public static async Task<Package> BlazorPackage([CallerMemberName] string testName = null)
+        {
+            var (packageName, addSource) = await NupkgWithBlazorEnabled(testName);
+            await InstallCommand.Do(new InstallOptions(addSource, packageName), new TestConsole());
+            return new BlazorPackage(packageName);
+        }
 
         public static string SimpleWorkspaceRequestAsJson(
             string consoleOutput = "Hello!",

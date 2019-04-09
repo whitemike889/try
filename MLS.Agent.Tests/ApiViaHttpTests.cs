@@ -77,7 +77,7 @@ namespace MLS.Agent.Tests
         public async Task The_workspace_endpoint_compiles_code_using_dotnet_when_a_non_script_workspace_type_is_specified()
         {
             var output = Guid.NewGuid().ToString();
-            var package = await Package.Copy(await Default.ConsoleWorkspace);
+            var package = await WorkspaceServer.Packaging.Package.Copy(await Default.ConsoleWorkspace);
             var requestJson = Create.SimpleWorkspaceRequestAsJson(output, package.Name);
 
             var response = await CallRun(requestJson);
@@ -95,7 +95,7 @@ namespace MLS.Agent.Tests
         public async Task The_workspace_endpoint_will_prevent_compiling_if_is_in_language_service_mode()
         {
             var output = Guid.NewGuid().ToString();
-            var package = await Package.Copy(await Default.ConsoleWorkspace);
+            var package = await WorkspaceServer.Packaging.Package.Copy(await Default.ConsoleWorkspace);
 
             var requestJson = Create.SimpleWorkspaceRequestAsJson(output, package.Name);
 
@@ -107,7 +107,7 @@ namespace MLS.Agent.Tests
         [Fact]
         public async Task When_a_non_script_workspace_type_is_specified_then_code_fragments_cannot_be_compiled_successfully()
         {
-            var package = await Package.Copy(await Default.ConsoleWorkspace);
+            var package = await WorkspaceServer.Packaging.Package.Copy(await Default.ConsoleWorkspace);
             var requestJson =
                 new WorkspaceRequest(
                     Workspace.FromSource(
@@ -341,7 +341,7 @@ namespace FibonacciTest
     }
 }".EnforceLF();
             #endregion
-            var package = await Package.Copy(await Default.ConsoleWorkspace);
+            var package = await WorkspaceServer.Packaging.Package.Copy(await Default.ConsoleWorkspace);
             var (processed, position) = CodeManipulation.ProcessMarkup(generator);
             var log = new LogEntryList();
             using (LogEvents.Subscribe(log.Add))
@@ -418,7 +418,7 @@ namespace FibonacciTest
 }".EnforceLF();
 
             #endregion
-            var package = await Package.Copy(await Default.ConsoleWorkspace);
+            var package = await WorkspaceServer.Packaging.Package.Copy(await Default.ConsoleWorkspace);
             var (processed, position) = CodeManipulation.ProcessMarkup(generator);
             var log = new LogEntryList();
             using (LogEvents.Subscribe(log.Add))
@@ -496,7 +496,7 @@ namespace FibonacciTest
 }".EnforceLF();
 
             #endregion
-            var package = await Package.Copy(await Default.ConsoleWorkspace);
+            var package = await WorkspaceServer.Packaging.Package.Copy(await Default.ConsoleWorkspace);
             var (processed, position) = CodeManipulation.ProcessMarkup(generator);
             var log = new LogEntryList();
             using (LogEvents.Subscribe(log.Add))
@@ -569,7 +569,7 @@ namespace FibonacciTest
         [Fact(Skip = "WIP")]
         public async Task When_aspnet_webapi_workspace_request_succeeds_then_standard_out_is_available_on_response()
         {
-            var package = await Package.Copy(await Default.WebApiWorkspace);
+            var package = await WorkspaceServer.Packaging.Package.Copy(await Default.WebApiWorkspace);
             await package.CreateRoslynWorkspaceForRunAsync(new TimeBudget(10.Minutes()));
             var workspace = WorkspaceFactory.CreateWorkspaceFromDirectory(package.Directory, package.Directory.Name);
 
@@ -590,7 +590,7 @@ namespace FibonacciTest
         [Fact]
         public async Task When_aspnet_webapi_workspace_request_fails_then_diagnostics_are_returned()
         {
-            var package = await Package.Copy(await Default.WebApiWorkspace);
+            var package = await WorkspaceServer.Packaging.Package.Copy(await Default.WebApiWorkspace);
             await package.CreateRoslynWorkspaceForRunAsync(new TimeBudget(10.Minutes()));
             var workspace = WorkspaceFactory.CreateWorkspaceFromDirectory(package.Directory, package.Directory.Name);
             var nonCompilingBuffer = new Workspace.Buffer("broken.cs", "this does not compile", 0);
@@ -614,7 +614,7 @@ namespace FibonacciTest
         public async Task When_Run_times_out_in_console_workspace_server_code_then_the_response_code_is_504()
         {
             var code = @"public class Program { public static void Main()\n  {\n  Console.WriteLine();  }  }";
-            var package = await Package.Copy(await Default.ConsoleWorkspace);
+            var package = await WorkspaceServer.Packaging.Package.Copy(await Default.ConsoleWorkspace);
            
             var workspace = Workspace.FromSource(code.EnforceLF(), package.Name);
 
@@ -769,6 +769,63 @@ namespace FibonacciTest
             }
         }
 
+        [Fact]
+        public async Task Returns_200_if_the_package_exists()
+        {
+            var package = await Create.ConsoleWorkspaceCopy();
+            var packageVersion = "1.0.0";
+
+            using(var agent = new AgentService())
+            {
+                var response = await agent.GetAsync($@"/packages/{package.Name}/{packageVersion}");
+                response.StatusCode.Should().Be(HttpStatusCode.OK);
+            }
+        }
+
+        [Fact]
+        public async Task Returns_404_if_the_package_doesnot_exist()
+        {
+            var packageName = Guid.NewGuid().ToString();
+            var packageVersion = "1.0.0";
+
+            using (var agent = new AgentService())
+            {
+                var response = await agent.GetAsync($@"/packages/{packageName}/{packageVersion}");
+                response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+            }
+        }
+
+        [Fact]
+        public async Task Returns_blazor_false_if_the_package_does_not_contain_blazor()
+        {
+            var packageName = await Create.ConsoleWorkspaceCopy();
+            var packageVersion = "1.0.0";
+
+            using (var agent = new AgentService())
+            {
+                var response = await agent.GetAsync($@"/packages/{packageName}/{packageVersion}");
+                response.Should().BeSuccessful();
+                var result = await response.Content.ReadAsStringAsync();
+                var package = result.FromJsonTo<MLS.Protocol.Packaging.Package>();
+                package.IsBlazorSupported.Should().BeFalse();
+            }
+        }
+
+        [Fact]
+        public async Task Returns_blazor_true_if_the_package_contains_blazor()
+        {
+            var packageName = await Create.BlazorPackage();
+            var packageVersion = "1.0.0";
+
+            using (var agent = new AgentService())
+            {
+                var response = await agent.GetAsync($@"/packages/{packageName}/{packageVersion}");
+                var result = await response.Content.ReadAsStringAsync();
+                var package = result.FromJsonTo<MLS.Protocol.Packaging.Package>();
+                package.IsBlazorSupported.Should().BeTrue();
+            }
+        }
+
         private class FailedRunResult : Exception
         {
             internal FailedRunResult(string message) : base(message)
@@ -783,5 +840,7 @@ namespace FibonacciTest
                 throw new FailedRunResult(runResult.ToString());
             }
         }
+
+
     }
 }

@@ -21,7 +21,7 @@ namespace MLS.Agent.CommandLine
                 var temp = disposableDirectory.Directory;
                 var temp_projects = temp.CreateSubdirectory("projects");
 
-                var name = GetProjectFileName(options);
+                string name = options.PackageName;
 
                 var temp_projects_packtarget = temp_projects.CreateSubdirectory("packTarget");
                 DirectoryCopy(options.PackTarget, temp_projects_packtarget.FullName, copySubDirs: true);
@@ -68,12 +68,7 @@ namespace MLS.Agent.CommandLine
             }
         }
 
-        private static string GetProjectFileName(PackOptions options)
-        {
-            var csproj = GetProjectFile(options.PackTarget);
-            var name = Path.GetFileNameWithoutExtension(csproj.Name);
-            return name;
-        }
+       
 
         private static async Task AddBlazorProject(DirectoryInfo blazorTargetDirectory, FileInfo projectToReference, string name)
         {

@@ -15,8 +15,13 @@ namespace WorkspaceServer.Packaging
         private const string runnerPrefix = "runner-";
         private FileInfo _blazorEntryPoint;
 
-        public BlazorPackage(string name = null, IPackageInitializer initializer = null, DirectoryInfo directory = null, IScheduler buildThrottleScheduler = null) : base(name, initializer, directory, buildThrottleScheduler)
+        public BlazorPackage(string name, IPackageInitializer initializer = null, DirectoryInfo directory = null, IScheduler buildThrottleScheduler = null) : base(name, initializer, directory, buildThrottleScheduler)
         {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                throw new ArgumentException(nameof(name));
+            }
+
             if (!name.StartsWith(runnerPrefix))
             {
                 throw new ArgumentException(nameof(name));
