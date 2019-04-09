@@ -10,13 +10,13 @@ namespace MLS.Agent.CommandLine
 {
     public static class DemoCommand
     {
-        public static async Task<int> Do(
+        public static Task<int> Do(
             DemoOptions options,
             IConsole console,
             CommandLineParser.StartServer startServer = null,
             InvocationContext context = null)
         {
-            await Task.Yield();
+            
             var extractDemoFiles = true;
 
             if (!options.Output.Exists)
@@ -27,18 +27,16 @@ namespace MLS.Agent.CommandLine
             {
                 if (options.Output.GetFiles().Any())
                 {
-                    if (!options.Output.GetFiles().Any(f => f.Name == "QuickStart.md"))
+                    if (options.Output.GetFiles().All(f => f.Name != "QuickStart.md"))
                     {
                         console.Out.WriteLine($"Directory {options.Output} must be empty. To specify a directory to create the demo sample in, use: dotnet try demo --output <dir>");
-                        return -1;
+                        return Task.FromResult(-1);
                     }
-                    else
-                    {
-                        extractDemoFiles = false;
-                    }
+
+                    extractDemoFiles = false;
                 }
             }
-
+          
             if (extractDemoFiles)
             {
                 using (var disposableDirectory = DisposableDirectory.Create())
@@ -59,13 +57,15 @@ namespace MLS.Agent.CommandLine
                 }
             }
 
+
+          
             startServer?.Invoke(new StartupOptions(
                                     uri: new Uri("QuickStart.md", UriKind.Relative),
                                     enablePreviewFeatures: options.EnablePreviewFeatures,
                                     rootDirectory: options.Output),
                                 context);
 
-            return 0;
+            return Task.FromResult(0);
         }
     }
 }
