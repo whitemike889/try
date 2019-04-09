@@ -2,8 +2,8 @@
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using FluentAssertions;
-using MLS.Protocol;
-using MLS.Protocol.Execution;
+using Microsoft.DotNet.Try.Protocol;
+using Microsoft.DotNet.Try.Protocol.Execution;
 using WorkspaceServer.Servers.Roslyn;
 using WorkspaceServer.Packaging;
 using Xunit;

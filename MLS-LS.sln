@@ -24,9 +24,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".cdpx", ".cdpx", "{376CF23C
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MLS.Agent.Tools", "MLS.Agent.Tools\MLS.Agent.Tools.csproj", "{BAA738F1-211C-4111-B159-3D43C857ECB2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MLS.Protocol", "MLS.Protocol\MLS.Protocol.csproj", "{02049503-05DA-4898-B45C-E314832734A3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Try.Protocol", "Microsoft.DotNet.Try.Protocol\Microsoft.DotNet.Try.Protocol.csproj", "{02049503-05DA-4898-B45C-E314832734A3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MLS.Protocol.Tests", "MLS.Protocol.Tests\MLS.Protocol.Tests.csproj", "{0119749C-0DF0-4CC0-8FE3-FCDBDF2B8865}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Try.Protocol.Tests", "Microsoft.DotNet.Try.Protocol.Tests\Microsoft.DotNet.Try.Protocol.Tests.csproj", "{0119749C-0DF0-4CC0-8FE3-FCDBDF2B8865}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Try.Project", "Microsoft.DotNet.Try.Project\Microsoft.DotNet.Try.Project.csproj", "{5D86DF93-2ACA-44D7-9D39-DAD6B129EAFD}"
 EndProject
@@ -36,7 +36,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MLS.Repositories.Tests", "M
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Try.Project.Tests", "Microsoft.DotNet.Try.Project.Tests\Microsoft.DotNet.Try.Project.Tests.csproj", "{241C98D2-9D4A-4EC6-B94E-687F0012B797}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MLS.TestSupport", "MLS.TestSupport\MLS.TestSupport.csproj", "{2758F1F6-12F1-4FB1-841A-0B2292853654}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Try.TestSupport", "Microsoft.DotNet.Try.TestSupport\Microsoft.DotNet.Try.TestSupport.csproj", "{2758F1F6-12F1-4FB1-841A-0B2292853654}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MLS.Blazor", "MLS.Blazor\MLS.Blazor.csproj", "{F228EC10-315A-41CF-A51E-FC8369552632}"
 EndProject
@@ -48,13 +48,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{E4DF1F27-3
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Snippets", "docs\GettingStarted\Snippets\Snippets.csproj", "{DCAA2918-F0CA-429E-86DA-C8315E23082F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MLS.Jupyter", "MLS.Jupyter\MLS.Jupyter.csproj", "{DDBAB171-7BA2-4B0F-8606-7CF21B969804}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Try.Jupyter", "Microsoft.DotNet.Try.Jupyter\Microsoft.DotNet.Try.Jupyter.csproj", "{DDBAB171-7BA2-4B0F-8606-7CF21B969804}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MLS.Jupyter.Tests", "MLS.Jupyter.Tests\MLS.Jupyter.Tests.csproj", "{614B2E7B-7B05-4023-9C6E-CE708EB1673F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Try.Jupyter.Tests", "Microsoft.DotNet.Try.Jupyter.Tests\Microsoft.DotNet.Try.Jupyter.Tests.csproj", "{614B2E7B-7B05-4023-9C6E-CE708EB1673F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Try.Markdown", "Microsoft.DotNet.Try.Markdown\Microsoft.DotNet.Try.Markdown.csproj", "{B70584C1-41A3-4DB3-9C49-799DFF57A3FC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Dotnet.Try.Markdown.Tests", "Microsoft.Dotnet.Try.Markdown.Tests\Microsoft.Dotnet.Try.Markdown.Tests.csproj", "{F2FEA069-3121-4AB3-8835-F4EF6FCBFA18}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Try.Markdown.Tests", "Microsoft.DotNet.Try.Markdown.Tests\Microsoft.DotNet.Try.Markdown.Tests.csproj", "{F2FEA069-3121-4AB3-8835-F4EF6FCBFA18}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Try.Protocol.ClientApi", "Microsoft.DotNet.Try.Protocol.ClientApi\Microsoft.DotNet.Try.Protocol.ClientApi.csproj", "{7EAD5482-90CC-4252-AF91-553A4B81D8E0}"
 EndProject

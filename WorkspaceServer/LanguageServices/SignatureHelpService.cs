@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using MLS.Protocol.SignatureHelp;
+using Microsoft.DotNet.Try.Protocol.SignatureHelp;
 using WorkspaceServer.Models;
 using WorkspaceServer.Models.SignatureHelp;
 

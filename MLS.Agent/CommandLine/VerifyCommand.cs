@@ -4,10 +4,10 @@ using System.CommandLine;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.DotNet.Try.Markdown;
+using Microsoft.DotNet.Try.Protocol;
+using Microsoft.DotNet.Try.Protocol.Diagnostics;
+using Microsoft.DotNet.Try.Protocol.Execution;
 using MLS.Agent.Markdown;
-using MLS.Protocol;
-using MLS.Protocol.Diagnostics;
-using MLS.Protocol.Execution;
 using WorkspaceServer;
 using WorkspaceServer.Servers.Roslyn;
 

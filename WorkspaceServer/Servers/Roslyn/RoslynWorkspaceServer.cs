@@ -10,22 +10,22 @@ using Microsoft.CodeAnalysis.Completion;
 using Microsoft.CodeAnalysis.Recommendations;
 using Microsoft.DotNet.Try.Project.Extensions;
 using Microsoft.DotNet.Try.Project.Transformations;
+using Microsoft.DotNet.Try.Protocol;
+using Microsoft.DotNet.Try.Protocol.Completion;
+using Microsoft.DotNet.Try.Protocol.Diagnostics;
+using Microsoft.DotNet.Try.Protocol.Execution;
+using Microsoft.DotNet.Try.Protocol.SignatureHelp;
 using MLS.Agent.Tools;
-using MLS.Protocol.Completion;
 using Pocket;
 using Recipes;
 using WorkspaceServer.Models.Execution;
-using MLS.Protocol.SignatureHelp;
 using WorkspaceServer.Servers.Roslyn.Instrumentation;
 using WorkspaceServer.Servers.Scripting;
 using WorkspaceServer.Transformations;
 using WorkspaceServer.Features;
 using WorkspaceServer.Packaging;
 using static Pocket.Logger<WorkspaceServer.Servers.Roslyn.RoslynWorkspaceServer>;
-using Workspace = MLS.Protocol.Execution.Workspace;
-using MLS.Protocol.Execution;
-using MLS.Protocol;
-using MLS.Protocol.Diagnostics;
+using Workspace = Microsoft.DotNet.Try.Protocol.Execution.Workspace;
 using WorkspaceServer.LanguageServices;
 
 namespace WorkspaceServer.Servers.Roslyn

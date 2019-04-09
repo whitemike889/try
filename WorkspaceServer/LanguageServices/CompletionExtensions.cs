@@ -3,7 +3,7 @@ using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Completion;
 using Microsoft.CodeAnalysis.Tags;
-using MLS.Protocol;
+using Microsoft.DotNet.Try.Protocol;
 using WorkspaceServer.Models;
 
 namespace WorkspaceServer.Servers.Scripting
@@ -54,12 +54,12 @@ namespace WorkspaceServer.Servers.Scripting
             return null;
         }
 
-        public static MLS.Protocol.Completion.CompletionItem ToModel(this CompletionItem item, Dictionary<(string, int), ISymbol> recommendedSymbols,
+        public static Microsoft.DotNet.Try.Protocol.Completion.CompletionItem ToModel(this CompletionItem item, Dictionary<(string, int), ISymbol> recommendedSymbols,
             Document document)
         {
             var documentation =  GetDocumentation(item, recommendedSymbols, document);
 
-            return new MLS.Protocol.Completion.CompletionItem(
+            return new Microsoft.DotNet.Try.Protocol.Completion.CompletionItem(
                 displayText: item.DisplayText,
                 kind: item.GetKind(),
                 filterText: item.FilterText,

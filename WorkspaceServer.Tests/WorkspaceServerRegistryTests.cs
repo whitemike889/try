@@ -3,8 +3,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Clockwise;
 using FluentAssertions;
-using MLS.Protocol;
-using MLS.Protocol.Execution;
 using Pocket;
 using WorkspaceServer.Models;
 using WorkspaceServer.Servers.Roslyn;
@@ -12,6 +10,8 @@ using WorkspaceServer.Packaging;
 using Xunit;
 using Xunit.Abstractions;
 using FluentAssertions.Extensions;
+using Microsoft.DotNet.Try.Protocol;
+using Microsoft.DotNet.Try.Protocol.Execution;
 
 namespace WorkspaceServer.Tests
 {

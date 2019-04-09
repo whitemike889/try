@@ -8,9 +8,9 @@ using Microsoft.CodeAnalysis.Text;
 using Microsoft.DotNet.Try.Project.Execution;
 using Microsoft.DotNet.Try.Project.Extensions;
 using Microsoft.DotNet.Try.Project.Transformations;
-using MLS.Protocol.Diagnostics;
-using MLS.Protocol.Execution;
-using Workspace = MLS.Protocol.Execution.Workspace;
+using Microsoft.DotNet.Try.Protocol.Diagnostics;
+using Microsoft.DotNet.Try.Protocol.Execution;
+using Workspace = Microsoft.DotNet.Try.Protocol.Execution.Workspace;
 
 namespace WorkspaceServer.Transformations
 {

@@ -1,9 +1,9 @@
 ﻿using System;
 using Microsoft.CodeAnalysis;
-using MLS.Protocol.Diagnostics;
-using MLS.Protocol.Execution;
+using Microsoft.DotNet.Try.Protocol.Diagnostics;
+using Microsoft.DotNet.Try.Protocol.Execution;
 using DiagnosticSeverity = Microsoft.CodeAnalysis.DiagnosticSeverity;
-using MLSDiagnosticSeverity = MLS.Protocol.Diagnostics.DiagnosticSeverity;
+using MLSDiagnosticSeverity = Microsoft.DotNet.Try.Protocol.Diagnostics.DiagnosticSeverity;
 
 namespace Microsoft.DotNet.Try.Project.Extensions
 {

@@ -11,15 +11,15 @@ using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
 using Microsoft.DotNet.Try.Project.Extensions;
 using Microsoft.DotNet.Try.Project.Transformations;
+using Microsoft.DotNet.Try.Protocol;
+using Microsoft.DotNet.Try.Protocol.Diagnostics;
+using Microsoft.DotNet.Try.Protocol.Execution;
 using Pocket;
 using WorkspaceServer.Transformations;
 using static Pocket.Logger<WorkspaceServer.Servers.Scripting.ScriptingWorkspaceServer>;
-using Workspace = MLS.Protocol.Execution.Workspace;
+using Workspace = Microsoft.DotNet.Try.Protocol.Execution.Workspace;
 using WorkspaceServer.Servers.Roslyn;
 using Recipes;
-using MLS.Protocol.Execution;
-using MLS.Protocol;
-using MLS.Protocol.Diagnostics;
 
 namespace WorkspaceServer.Servers.Scripting
 {

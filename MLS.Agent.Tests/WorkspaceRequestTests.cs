@@ -1,7 +1,7 @@
 ﻿using System;
 using FluentAssertions;
-using MLS.Protocol;
-using MLS.Protocol.Execution;
+using Microsoft.DotNet.Try.Protocol;
+using Microsoft.DotNet.Try.Protocol.Execution;
 using Recipes;
 using WorkspaceServer.Tests;
 using Xunit;

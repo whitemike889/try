@@ -3,10 +3,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.CodeAnalysis;
-using MLS.Protocol.Diagnostics;
-using MLS.Protocol.Execution;
+using Microsoft.DotNet.Try.Protocol.Diagnostics;
+using Microsoft.DotNet.Try.Protocol.Execution;
 using WorkspaceServer.Transformations;
-using Workspace = MLS.Protocol.Execution.Workspace;
+using Workspace = Microsoft.DotNet.Try.Protocol.Execution.Workspace;
 
 namespace WorkspaceServer
 {

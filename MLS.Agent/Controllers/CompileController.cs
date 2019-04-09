@@ -2,8 +2,8 @@
 using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.DotNet.Try.Protocol;
 using MLS.Agent.Middleware;
-using MLS.Protocol;
 using Pocket;
 using WorkspaceServer.Servers.Roslyn;
 using static Pocket.Logger<MLS.Agent.Controllers.CompileController>;

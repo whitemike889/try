@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using MLS.Protocol;
+using Microsoft.DotNet.Try.Protocol;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Servers.Roslyn;
 using WorkspaceServer.Servers.Roslyn.Instrumentation;

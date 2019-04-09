@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.DotNet.Try.Project.Execution;
-using MLS.Protocol.Execution;
+using Microsoft.DotNet.Try.Protocol.Execution;
 
 namespace Microsoft.DotNet.Try.Project.Extensions
 {

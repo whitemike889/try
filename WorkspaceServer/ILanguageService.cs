@@ -1,9 +1,9 @@
 ﻿using System.Threading.Tasks;
 using Clockwise;
-using MLS.Protocol.Completion;
-using MLS.Protocol.SignatureHelp;
-using MLS.Protocol;
-using MLS.Protocol.Diagnostics;
+using Microsoft.DotNet.Try.Protocol;
+using Microsoft.DotNet.Try.Protocol.Completion;
+using Microsoft.DotNet.Try.Protocol.Diagnostics;
+using Microsoft.DotNet.Try.Protocol.SignatureHelp;
 
 namespace WorkspaceServer
 {

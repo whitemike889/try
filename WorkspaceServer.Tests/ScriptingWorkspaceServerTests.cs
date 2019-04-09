@@ -2,6 +2,8 @@
 using FluentAssertions;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using Microsoft.DotNet.Try.Protocol;
+using Microsoft.DotNet.Try.Protocol.Execution;
 using Pocket;
 using Recipes;
 using WorkspaceServer.Servers.Scripting;
@@ -9,8 +11,6 @@ using WorkspaceServer.Packaging;
 using Xunit;
 using Xunit.Abstractions;
 using static Pocket.Logger<WorkspaceServer.Tests.WorkspaceServerTests>;
-using MLS.Protocol.Execution;
-using MLS.Protocol;
 
 namespace WorkspaceServer.Tests
 {
