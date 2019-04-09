@@ -1,13 +1,13 @@
 using System;
-using System.IO;
-using System.Threading.Tasks;
-using FluentAssertions;
-using MLS.Agent.Tools;
-using Xunit;
-using System.Linq;
-using MLS.Agent.CommandLine;
 using System.CommandLine;
-using MLS.Agent;
+using System.IO;
+using FluentAssertions;
+using System.Linq;
+using System.Threading.Tasks;
+using MLS.Agent.CommandLine;
+using MLS.Agent.Tools;
+using WorkspaceServer.Packaging;
+using Xunit;
 
 namespace WorkspaceServer.Tests
 {
@@ -18,21 +18,18 @@ namespace WorkspaceServer.Tests
         {
             var (packageName, addSource) = await Create.NupkgWithBlazorEnabled();
 
-            using (var directory = DisposableDirectory.Create())
+            await InstallCommand.Do(new InstallOptions(addSource, packageName), new TestConsole());
+
+            var exe = Path.Combine(addSource.FullName, packageName);
+            var result = await CommandLine.Execute(exe, "locate-projects");
+            foreach (var subdir in new DirectoryInfo(result.Output.First()).GetDirectories())
             {
-                await InstallCommand.Do(new InstallOptions(addSource, packageName, directory.Directory), new TestConsole());
-
-                var exe = Path.Combine(directory.Directory.FullName, packageName);
-                var result = await CommandLine.Execute(exe, "locate-projects", workingDir: directory.Directory);
-                foreach (var subdir in new DirectoryInfo(result.Output.First()).GetDirectories())
-                {
-                    await (new Dotnet(subdir).Build("-o runtime / bl"));
-                }
-
-                var locator = new PrebuiltBlazorPackageLocator(directory.Directory);
-                var things = await locator.Discover();
-                things.Should().NotBeEmpty();
+                await new Dotnet(subdir).Build("-o runtime / bl");
             }
+
+            var locator = new PrebuiltBlazorPackageLocator();
+            var package = await locator.Locate(packageName);
+            package.Name.Should().Be(packageName);
         }
 
         [Fact]
@@ -40,17 +37,12 @@ namespace WorkspaceServer.Tests
         {
             var (packageName, addSource) = await Create.NupkgWithBlazorEnabled();
 
-            using (var directory = DisposableDirectory.Create())
-            {
-                var dotnet = new Dotnet(directory.Directory);
-                await dotnet.ToolInstall(packageName, directory.Directory, addSource);
+            var dotnet = new Dotnet(addSource);
+            await dotnet.ToolInstall(packageName, Package.DefaultPackagesDirectory, addSource);
 
-                var locator = new PrebuiltBlazorPackageLocator(directory.Directory);
-                var things = await locator.Discover();
-                things.Should().BeEmpty();
-            }
+            var locator = new PrebuiltBlazorPackageLocator();
+            var package = await locator.Locate(packageName);
+            package.Should().BeNull();
         }
-
-      
     }
 }
