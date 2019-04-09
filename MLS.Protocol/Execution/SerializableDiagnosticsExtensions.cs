@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using MLS.Protocol.Diagnostics;
+using Microsoft.DotNet.Try.Protocol.Diagnostics;
 
-namespace MLS.Protocol.Execution
+namespace Microsoft.DotNet.Try.Protocol.Execution
 {
-    internal static class SerializableDiagnosticsExtensons
+    internal static class SerializableDiagnosticsExtensions
     {
         public static IOrderedEnumerable<SerializableDiagnostic> Sort(this IEnumerable<SerializableDiagnostic> source) =>
             source.OrderBy(d => d?.BufferId?.ToString())

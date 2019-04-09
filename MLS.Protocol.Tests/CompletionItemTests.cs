@@ -1,9 +1,9 @@
 ﻿using FluentAssertions;
-using MLS.Protocol.Completion;
+using Microsoft.DotNet.Try.Protocol.Completion;
 using Newtonsoft.Json;
 using Xunit;
 
-namespace MLS.Protocol.Tests
+namespace Microsoft.DotNet.Try.Protocol.Tests
 {
     public class CompletionItemTests
     {

@@ -3,7 +3,7 @@ using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace MLS.Protocol.Execution
+namespace Microsoft.DotNet.Try.Protocol.Execution
 {
     public abstract class FeatureContainerConverter<T> : JsonConverter where T : FeatureContainer
     {

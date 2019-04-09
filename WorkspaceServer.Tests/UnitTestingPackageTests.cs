@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Clockwise;
 using FluentAssertions;
-using MLS.Protocol;
+using Microsoft.DotNet.Try.Protocol;
 using Pocket;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Servers.Roslyn;

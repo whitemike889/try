@@ -6,11 +6,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Clockwise;
 using FluentAssertions;
-using MLS.Protocol;
-using MLS.Protocol.Completion;
-using MLS.Protocol.Diagnostics;
-using MLS.Protocol.Execution;
-using MLS.Protocol.SignatureHelp;
 using Pocket;
 using Recipes;
 using WorkspaceServer.Models.Execution;
@@ -19,11 +14,16 @@ using WorkspaceServer.Packaging;
 using Xunit;
 using Xunit.Abstractions;
 using static Pocket.Logger<MLS.Agent.Tests.ApiViaHttpTests>;
-using Workspace = MLS.Protocol.Execution.Workspace;
+using Workspace = Microsoft.DotNet.Try.Protocol.Execution.Workspace;
 using MLS.Agent.CommandLine;
 using FluentAssertions.Extensions;
 using Microsoft.DotNet.Try.Project.Transformations;
+using Microsoft.DotNet.Try.Protocol;
 using Microsoft.DotNet.Try.Protocol.ClientApi;
+using Microsoft.DotNet.Try.Protocol.Completion;
+using Microsoft.DotNet.Try.Protocol.Diagnostics;
+using Microsoft.DotNet.Try.Protocol.Execution;
+using Microsoft.DotNet.Try.Protocol.SignatureHelp;
 
 namespace MLS.Agent.Tests
 {

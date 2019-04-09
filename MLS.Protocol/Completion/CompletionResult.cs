@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using MLS.Protocol.Diagnostics;
+using Microsoft.DotNet.Try.Protocol.Diagnostics;
 using Newtonsoft.Json;
 
-namespace MLS.Protocol.Completion
+namespace Microsoft.DotNet.Try.Protocol.Completion
 {
 
     public class CompletionResult

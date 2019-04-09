@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis.Text;
-using Buffer = MLS.Protocol.Execution.Workspace.Buffer;
-using Workspace = MLS.Protocol.Execution.Workspace;
+using Buffer = Microsoft.DotNet.Try.Protocol.Execution.Workspace.Buffer;
+using Workspace = Microsoft.DotNet.Try.Protocol.Execution.Workspace;
 
 namespace Microsoft.DotNet.Try.Project.Extensions
 {

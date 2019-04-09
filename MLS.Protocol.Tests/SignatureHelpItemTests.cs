@@ -1,10 +1,10 @@
 ﻿using System.Linq;
 using FluentAssertions;
-using MLS.Protocol.SignatureHelp;
+using Microsoft.DotNet.Try.Protocol.SignatureHelp;
 using Newtonsoft.Json;
 using Xunit;
 
-namespace MLS.Protocol.Tests
+namespace Microsoft.DotNet.Try.Protocol.Tests
 {
     public class SignatureHelpItemTests
     {

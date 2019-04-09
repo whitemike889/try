@@ -1,9 +1,9 @@
-﻿namespace MLS.Protocol
+﻿namespace Microsoft.DotNet.Try.Protocol
 {
     public class MarkdownString
     {
-        public string Value { get; private set; }
-        public bool IsTrusted { get; private set; }
+        public string Value { get; }
+        public bool IsTrusted { get; }
 
         public MarkdownString(string value, bool isTrusted = false)
         {

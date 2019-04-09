@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Clockwise;
-using MLS.Protocol;
-using MLS.Protocol.Execution;
+using Microsoft.DotNet.Try.Protocol;
+using Microsoft.DotNet.Try.Protocol.Execution;
 
 namespace WorkspaceServer
 {

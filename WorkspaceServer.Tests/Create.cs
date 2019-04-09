@@ -1,8 +1,8 @@
 using System.Reactive.Concurrency;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using MLS.Protocol;
-using MLS.Protocol.Execution;
+using Microsoft.DotNet.Try.Protocol;
+using Microsoft.DotNet.Try.Protocol.Execution;
 using Recipes;
 using WorkspaceServer.Packaging;
 

@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using FluentAssertions;
 using Microsoft.DotNet.Try.Project.Generators;
-using MLS.Protocol.Execution;
+using Microsoft.DotNet.Try.Protocol.Execution;
 using Xunit;
 
 namespace Microsoft.DotNet.Try.Project.Tests

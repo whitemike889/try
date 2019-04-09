@@ -1,8 +1,8 @@
 ﻿using System;
-using MLS.Protocol.Execution;
+using Microsoft.DotNet.Try.Protocol.Execution;
 using Newtonsoft.Json;
 
-namespace MLS.Protocol
+namespace Microsoft.DotNet.Try.Protocol
 {
     public class WorkspaceRequest
     {

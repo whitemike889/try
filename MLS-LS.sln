@@ -24,9 +24,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".cdpx", ".cdpx", "{376CF23C
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MLS.Agent.Tools", "MLS.Agent.Tools\MLS.Agent.Tools.csproj", "{BAA738F1-211C-4111-B159-3D43C857ECB2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MLS.Protocol", "MLS.Protocol\MLS.Protocol.csproj", "{02049503-05DA-4898-B45C-E314832734A3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Try.Protocol", "MLS.Protocol\Microsoft.DotNet.Try.Protocol.csproj", "{02049503-05DA-4898-B45C-E314832734A3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MLS.Protocol.Tests", "MLS.Protocol.Tests\MLS.Protocol.Tests.csproj", "{0119749C-0DF0-4CC0-8FE3-FCDBDF2B8865}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Try.Protocol.Tests", "MLS.Protocol.Tests\Microsoft.DotNet.Try.Protocol.Tests.csproj", "{0119749C-0DF0-4CC0-8FE3-FCDBDF2B8865}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Try.Project", "Microsoft.DotNet.Try.Project\Microsoft.DotNet.Try.Project.csproj", "{5D86DF93-2ACA-44D7-9D39-DAD6B129EAFD}"
 EndProject

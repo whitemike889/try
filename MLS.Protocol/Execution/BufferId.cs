@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace MLS.Protocol.Execution
+namespace Microsoft.DotNet.Try.Protocol.Execution
 {
     [JsonConverter(typeof(BufferIdConverter))]
     public class BufferId

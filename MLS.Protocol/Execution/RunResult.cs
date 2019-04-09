@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using MLS.Protocol.Diagnostics;
+using Microsoft.DotNet.Try.Protocol.Diagnostics;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace MLS.Protocol.Execution
+namespace Microsoft.DotNet.Try.Protocol.Execution
 {
     [JsonConverter(typeof(RunResultJsonConverter))]
     public class RunResult : FeatureContainer

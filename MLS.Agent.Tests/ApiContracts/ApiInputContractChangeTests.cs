@@ -1,8 +1,8 @@
 using System.Threading.Tasks;
 using FluentAssertions;
-using MLS.Protocol.Completion;
-using MLS.Protocol.Execution;
-using MLS.Protocol.SignatureHelp;
+using Microsoft.DotNet.Try.Protocol.Completion;
+using Microsoft.DotNet.Try.Protocol.Execution;
+using Microsoft.DotNet.Try.Protocol.SignatureHelp;
 using Recipes;
 using Xunit;
 using Xunit.Abstractions;

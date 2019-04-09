@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.DotNet.Try.Project.Extensions;
-using MLS.Protocol.Execution;
+using Microsoft.DotNet.Try.Protocol.Execution;
 
 namespace Microsoft.DotNet.Try.Project.Generators
 {

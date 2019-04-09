@@ -2,7 +2,7 @@
 using System.Linq;
 using FluentAssertions;
 using FluentAssertions.Execution;
-using MLS.Protocol.Execution;
+using Microsoft.DotNet.Try.Protocol.Execution;
 
 namespace WorkspaceServer.Tests
 {

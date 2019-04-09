@@ -1,4 +1,4 @@
-﻿namespace MLS.Protocol.SignatureHelp
+﻿namespace Microsoft.DotNet.Try.Protocol.SignatureHelp
 {
     public class SignatureHelpParameter
     {

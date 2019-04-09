@@ -3,15 +3,15 @@ using System.Threading.Tasks;
 using Clockwise;
 using FluentAssertions;
 using FluentAssertions.Extensions;
-using MLS.Protocol;
-using MLS.Protocol.Execution;
+using Microsoft.DotNet.Try.Protocol;
+using Microsoft.DotNet.Try.Protocol.Execution;
 using Pocket;
 using WorkspaceServer.Packaging;
 using Xunit;
 using Xunit.Abstractions;
 using static Pocket.Logger<WorkspaceServer.Tests.WorkspaceServerTests>;
-using DiagnosticSeverity = MLS.Protocol.Diagnostics.DiagnosticSeverity;
-using Workspace = MLS.Protocol.Execution.Workspace;
+using DiagnosticSeverity = Microsoft.DotNet.Try.Protocol.Diagnostics.DiagnosticSeverity;
+using Workspace = Microsoft.DotNet.Try.Protocol.Execution.Workspace;
 
 namespace WorkspaceServer.Tests
 {

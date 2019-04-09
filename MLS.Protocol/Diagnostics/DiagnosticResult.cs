@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace MLS.Protocol.Diagnostics
+namespace Microsoft.DotNet.Try.Protocol.Diagnostics
 {
     public class DiagnosticResult
     {

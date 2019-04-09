@@ -1,7 +1,7 @@
-﻿using MLS.Protocol.Execution;
+﻿using Microsoft.DotNet.Try.Protocol.Execution;
 using Newtonsoft.Json;
 
-namespace MLS.Protocol.Diagnostics
+namespace Microsoft.DotNet.Try.Protocol.Diagnostics
 {
     public class SerializableDiagnostic
     {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MLS.Protocol.Completion
+namespace Microsoft.DotNet.Try.Protocol.Completion
 {
     public class CompletionItem
     {

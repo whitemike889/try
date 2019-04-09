@@ -2,11 +2,11 @@
 using System.Linq;
 using FluentAssertions;
 using Microsoft.DotNet.Try.Project.Extensions;
-using MLS.Protocol.Execution;
+using Microsoft.DotNet.Try.Protocol.Execution;
 using MLS.TestSupport;
 using Xunit;
 
-namespace MLS.Protocol.Tests
+namespace Microsoft.DotNet.Try.Protocol.Tests
 {
     public class WorkspaceTests
     {

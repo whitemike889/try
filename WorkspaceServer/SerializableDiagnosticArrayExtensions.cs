@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using MLS.Protocol.Diagnostics;
+using Microsoft.DotNet.Try.Protocol.Diagnostics;
 
 namespace WorkspaceServer
 {

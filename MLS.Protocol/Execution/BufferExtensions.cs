@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace MLS.Protocol.Execution
+namespace Microsoft.DotNet.Try.Protocol.Execution
 {
     public static class BufferExtensions
     {

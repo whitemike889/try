@@ -1,9 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using MLS.Protocol.Diagnostics;
+using Microsoft.DotNet.Try.Protocol.Diagnostics;
 
-namespace MLS.Protocol.Execution
+namespace Microsoft.DotNet.Try.Protocol.Execution
 {
     public class Diagnostics : ReadOnlyCollection<SerializableDiagnostic>, IRunResultFeature
     {

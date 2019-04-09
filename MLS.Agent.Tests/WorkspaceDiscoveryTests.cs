@@ -1,12 +1,12 @@
 using FluentAssertions;
-using MLS.Protocol;
-using MLS.Protocol.Execution;
 using Recipes;
 using System;
 using System.CommandLine;
 using System.IO;
 using System.Threading.Tasks;
 using Clockwise;
+using Microsoft.DotNet.Try.Protocol;
+using Microsoft.DotNet.Try.Protocol.Execution;
 using MLS.Agent.CommandLine;
 using MLS.Agent.Tests.TestUtility;
 using WorkspaceServer.Packaging;

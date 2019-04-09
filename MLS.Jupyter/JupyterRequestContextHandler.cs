@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Clockwise;
+using Microsoft.DotNet.Try.Protocol;
+using Microsoft.DotNet.Try.Protocol.Execution;
 using MLS.Jupyter.Protocol;
-using MLS.Protocol;
-using MLS.Protocol.Execution;
 using Newtonsoft.Json.Linq;
 using WorkspaceServer;
 using WorkspaceServer.Servers.Roslyn;
