@@ -32,7 +32,7 @@ namespace MLS.Agent.Tests
                 output.WriteLine(string.Join("\n", result.Error));
                 result.ExitCode.Should().Be(0);
 
-                var strategy = new LocalToolPackageDiscoveryStrategy(temp);
+                var strategy = new LocalToolInstallingPackageDiscoveryStrategy(temp);
                 var tool = await strategy.Locate(new PackageDescriptor("dotnettry.console"));
                 tool.Should().NotBeNull();
                 tool.PackageInitializer.Should().BeOfType<PackageToolInitializer>();
@@ -45,7 +45,7 @@ namespace MLS.Agent.Tests
             using (var directory = DisposableDirectory.Create())
             {
                 var temp = directory.Directory;
-                var strategy = new LocalToolPackageDiscoveryStrategy(temp);
+                var strategy = new LocalToolInstallingPackageDiscoveryStrategy(temp);
 
                 strategy.Invoking(s => s.Locate(new PackageDescriptor("not-a-workspace")).Wait()).Should().NotThrow();
             }
@@ -57,7 +57,7 @@ namespace MLS.Agent.Tests
             var console = new TestConsole();
             var asset = await LocalToolHelpers.CreateTool(console);
 
-            var strategy = new LocalToolPackageDiscoveryStrategy(asset, asset);
+            var strategy = new LocalToolInstallingPackageDiscoveryStrategy(asset, asset);
             var package = await strategy.Locate(new PackageDescriptor("dotnettry.blazor-console"));
             package.Should().NotBeNull();
         }

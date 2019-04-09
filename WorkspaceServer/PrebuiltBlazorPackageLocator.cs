@@ -12,19 +12,19 @@ namespace WorkspaceServer
 {
     public class PrebuiltBlazorPackageLocator
     {
-        private DirectoryInfo defaultPackagesDirectory;
+        private readonly DirectoryInfo _packagesDirectory;
 
-        public PrebuiltBlazorPackageLocator(DirectoryInfo defaultPackagesDirectory)
+        public PrebuiltBlazorPackageLocator(DirectoryInfo packagesDirectory)
         {
-            this.defaultPackagesDirectory = defaultPackagesDirectory;
+            _packagesDirectory = packagesDirectory ?? throw new ArgumentNullException(nameof(packagesDirectory));
         }
 
         public async Task<IEnumerable<BlazorPackage>> Discover()
         {
             using (var operation = Log.OnEnterAndConfirmOnExit())
             {
-                var dotnet = new Dotnet(this.defaultPackagesDirectory);
-                var tools = await dotnet.ToolList(defaultPackagesDirectory);
+                var dotnet = new Dotnet(_packagesDirectory);
+                var tools = await dotnet.ToolList(_packagesDirectory);
 
                 var packages = new List<BlazorPackage>();
                 foreach (var tool in tools)
@@ -32,7 +32,7 @@ namespace WorkspaceServer
                     if (tool.StartsWith("dotnettry."))
                     {
                         operation.Info($"Checking tool {tool}");
-                        var result = await CommandLine.Execute(Path.Combine(defaultPackagesDirectory.FullName, tool), "locate-projects");
+                        var result = await CommandLine.Execute(Path.Combine(_packagesDirectory.FullName, tool), "locate-projects");
                         var directory = new DirectoryInfo(result.Output.First());
                         if (directory.Exists)
                         {

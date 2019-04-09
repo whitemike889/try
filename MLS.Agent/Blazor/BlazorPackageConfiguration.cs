@@ -31,7 +31,7 @@ namespace MLS.Agent.Blazor
                     }
                     else if(prepareIfNeeded)
                     {
-                        prepareTasks.Add(Task.Run(package.Prepare).ContinueWith(t => {
+                        prepareTasks.Add(Task.Run(package.BuildAsync).ContinueWith(t => {
                             if (t.IsCompletedSuccessfully)
                             {
                                 SetupMappingsForBlazorContentsOfPackage(package, app);

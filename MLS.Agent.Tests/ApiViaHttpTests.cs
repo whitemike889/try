@@ -10,7 +10,6 @@ using Pocket;
 using Recipes;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Tests;
-using WorkspaceServer.Packaging;
 using Xunit;
 using Xunit.Abstractions;
 using static Pocket.Logger<MLS.Agent.Tests.ApiViaHttpTests>;
@@ -783,7 +782,7 @@ namespace FibonacciTest
         }
 
         [Fact]
-        public async Task Returns_404_if_the_package_doesnot_exist()
+        public async Task Returns_404_if_the_package_does_not_exist()
         {
             var packageName = Guid.NewGuid().ToString();
             var packageVersion = "1.0.0";
@@ -796,33 +795,38 @@ namespace FibonacciTest
         }
 
         [Fact]
-        public async Task Returns_blazor_false_if_the_package_does_not_contain_blazor()
+        public async Task Returns_blazor_false_if_the_package_does_not_contain_blazor_runner()
         {
-            var packageName = await Create.ConsoleWorkspaceCopy();
+            var package = await Create.ConsoleWorkspaceCopy();
             var packageVersion = "1.0.0";
 
             using (var agent = new AgentService())
             {
-                var response = await agent.GetAsync($@"/packages/{packageName}/{packageVersion}");
+                var response = await agent.GetAsync($@"/packages/{package.Name}/{packageVersion}");
                 response.Should().BeSuccessful();
                 var result = await response.Content.ReadAsStringAsync();
-                var package = result.FromJsonTo<MLS.Protocol.Packaging.Package>();
-                package.IsBlazorSupported.Should().BeFalse();
+                result.FromJsonTo<Package>()
+                      .IsBlazorSupported
+                      .Should()
+                      .BeFalse();
             }
         }
 
         [Fact]
         public async Task Returns_blazor_true_if_the_package_contains_blazor()
         {
-            var packageName = await Create.BlazorPackage();
+            var package = await Create.BlazorPackage();
             var packageVersion = "1.0.0";
 
             using (var agent = new AgentService())
             {
-                var response = await agent.GetAsync($@"/packages/{packageName}/{packageVersion}");
+                var response = await agent.GetAsync($"/packages/{package.Name}/{packageVersion}");
+                response.Should().BeSuccessful();
                 var result = await response.Content.ReadAsStringAsync();
-                var package = result.FromJsonTo<MLS.Protocol.Packaging.Package>();
-                package.IsBlazorSupported.Should().BeTrue();
+                result.FromJsonTo<Package>()
+                      .IsBlazorSupported
+                      .Should()
+                      .BeTrue();
             }
         }
 
@@ -840,7 +844,5 @@ namespace FibonacciTest
                 throw new FailedRunResult(runResult.ToString());
             }
         }
-
-
     }
 }

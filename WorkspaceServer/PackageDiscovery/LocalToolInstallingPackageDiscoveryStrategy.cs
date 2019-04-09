@@ -2,17 +2,19 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using Clockwise;
+using Pocket;
 using WorkspaceServer.Packaging;
+using static Pocket.Logger<WorkspaceServer.PackageDiscovery.LocalToolInstallingPackageDiscoveryStrategy>;
 
 namespace WorkspaceServer.PackageDiscovery
 {
-    public class LocalToolPackageDiscoveryStrategy : IPackageDiscoveryStrategy
+    public class LocalToolInstallingPackageDiscoveryStrategy : IPackageDiscoveryStrategy
     {
         private readonly DirectoryInfo _workingDirectory;
         private readonly ToolPackageLocator _locator;
         private readonly DirectoryInfo _addSource;
 
-        public LocalToolPackageDiscoveryStrategy(DirectoryInfo workingDirectory, DirectoryInfo addSource = null)
+        public LocalToolInstallingPackageDiscoveryStrategy(DirectoryInfo workingDirectory, DirectoryInfo addSource = null)
         { 
             _workingDirectory = workingDirectory;
             _locator = new ToolPackageLocator(workingDirectory.FullName);
@@ -42,7 +44,7 @@ namespace WorkspaceServer.PackageDiscovery
 
             if (installationResult.ExitCode != 0)
             {
-                Console.WriteLine($"Tool not installed: {packageDesciptor.Name}");
+                Log.Warning($"Tool not installed: {packageDesciptor.Name}");
                 return null;
             }
 
@@ -62,8 +64,7 @@ namespace WorkspaceServer.PackageDiscovery
                 packageDesciptor.Name,
                 new PackageToolInitializer(
                     Path.Combine(
-                        _workingDirectory.FullName, packageDesciptor.Name),
-                    _workingDirectory));
+                        _workingDirectory.FullName, packageDesciptor.Name)));
             pb.Directory = locatedPackage.Directory;
             return pb;
         }

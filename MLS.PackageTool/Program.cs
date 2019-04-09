@@ -16,9 +16,9 @@ namespace MLS.PackageTool
         static async Task Main(string[] args)
         {
             var parser = CommandLineParser.Create(
-                (console) => LocateAssemblyHandler(console),
-                (console) => ExtractPackageHandler(console),
-                (console) => Prepare(console));
+                LocateAssemblyHandler,
+                ExtractPackageHandler,
+                Prepare);
 
             await parser.InvokeAsync(args);
         }

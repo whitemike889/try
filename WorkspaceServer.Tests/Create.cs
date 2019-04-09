@@ -60,7 +60,7 @@ namespace WorkspaceServer.Tests
             return (fullPackageName, nupkg.Directory);
         }
 
-        public static async Task<Package> BlazorPackage([CallerMemberName] string testName = null)
+        public static async Task<BlazorPackage> BlazorPackage([CallerMemberName] string testName = null)
         {
             var (packageName, addSource) = await NupkgWithBlazorEnabled(testName);
             await InstallCommand.Do(new InstallOptions(addSource, packageName), new TestConsole());

@@ -122,7 +122,8 @@ namespace MLS.Agent
                     }
                     else
                     {
-                        return new FileSystemDirectoryAccessor(StartupOptions.RootDirectory);
+                        return new FileSystemDirectoryAccessor(StartupOptions.RootDirectory ??
+                                                               new DirectoryInfo(Directory.GetCurrentDirectory()));
                     }
                 });
 

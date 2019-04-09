@@ -88,17 +88,10 @@ namespace WorkspaceServer
             return package;
         }
 
-        public IEnumerable<Task<PackageInfo>> GetRegisteredPackageInfos()
-        {
-            var packageInfos = _packageBuilders?.Values.Select(async wb => (await wb).GetPackageInfo()).Where(info => info != null).ToArray() ?? Array.Empty<Task<PackageInfo>>();
-
-            return packageInfos;
-        }
-
         public static PackageRegistry CreateForTryMode(DirectoryInfo project, DirectoryInfo addSource = null)
         {
             var registry = new PackageRegistry(true,
-               new LocalToolPackageDiscoveryStrategy(Package.DefaultPackagesDirectory, addSource));
+               new LocalToolInstallingPackageDiscoveryStrategy(Package.DefaultPackagesDirectory, addSource));
 
             registry.Add(project.Name, builder =>
             {

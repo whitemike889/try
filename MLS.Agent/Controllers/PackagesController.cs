@@ -1,5 +1,4 @@
-﻿using Clockwise;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using WorkspaceServer;
 using WorkspaceServer.Packaging;
@@ -25,12 +24,10 @@ namespace MLS.Agent.Controllers
                 var isBlazorSupported = package is BlazorPackage;
                 return Ok(new MLS.Protocol.Packaging.Package(isBlazorSupported));
             }
-            catch (PackageNotFoundException)
+            catch (PackageNotFoundException ex)
             {
-                return NotFound();
+                return NotFound(ex.Message);
             }
         }
     }
-
-
 }

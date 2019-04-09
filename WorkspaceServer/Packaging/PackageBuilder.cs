@@ -145,24 +145,6 @@ namespace WorkspaceServer.Packaging
             return _package;
         }
 
-        public PackageInfo GetPackageInfo()
-        {
-            PackageInfo info = null;
-            if (_package != null)
-            {
-                info = new PackageInfo(
-                    _package.Name,
-                    _package.LastSuccessfulBuildTime,
-                    _package.ConstructionTime,
-                    _package.PublicationTime,
-                    _package.CreationTime,
-                    _package.ReadyTime
-                );
-            }
-
-            return info;
-        }
-
         private void PreparePackage(Budget budget = null)
         {
             budget = budget ?? new Budget();
