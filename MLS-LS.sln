@@ -36,7 +36,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MLS.Repositories.Tests", "M
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Try.Project.Tests", "Microsoft.DotNet.Try.Project.Tests\Microsoft.DotNet.Try.Project.Tests.csproj", "{241C98D2-9D4A-4EC6-B94E-687F0012B797}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MLS.TestSupport", "MLS.TestSupport\MLS.TestSupport.csproj", "{2758F1F6-12F1-4FB1-841A-0B2292853654}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Try.TestSupport", "MLS.TestSupport\Microsoft.DotNet.Try.TestSupport.csproj", "{2758F1F6-12F1-4FB1-841A-0B2292853654}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MLS.Blazor", "MLS.Blazor\MLS.Blazor.csproj", "{F228EC10-315A-41CF-A51E-FC8369552632}"
 EndProject

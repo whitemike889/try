@@ -52,7 +52,7 @@
     <ProjectReference Include="..\Microsoft.DotNet.Try.Project\Microsoft.DotNet.Try.Project.csproj" />
     <ProjectReference Include="..\MLS.Agent\MLS.Agent.csproj" />
     <ProjectReference Include="..\Microsoft.DotNet.Try.Protocol\Microsoft.DotNet.Try.Protocol.csproj" />
-    <ProjectReference Include="..\MLS.Testsupport\MLS.TestSupport.csproj" />
+    <ProjectReference Include="..\MLS.TestSupport\Microsoft.DotNet.Try.TestSupport.csproj" />
   </ItemGroup>
 
   <ItemGroup>
