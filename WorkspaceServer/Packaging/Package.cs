@@ -379,7 +379,7 @@ namespace WorkspaceServer.Packaging
         {
 
             _fullBuildThrottlerSubscription.Disposable = _fullBuildRequestChannel
-                .Throttle(TimeSpan.FromSeconds(2), _buildThrottleScheduler)
+                .Throttle(TimeSpan.FromSeconds(0.5), _buildThrottleScheduler)
                 .ObserveOn(TaskPoolScheduler.Default)
                 .Subscribe(
                       async (budget) =>
