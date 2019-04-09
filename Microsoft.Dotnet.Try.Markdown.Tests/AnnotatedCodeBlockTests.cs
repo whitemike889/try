@@ -3,7 +3,7 @@ using FluentAssertions;
 using Microsoft.DotNet.Try.Markdown;
 using Xunit;
 
-namespace Microsoft.Dotnet.Try.Markdown.Tests
+namespace Microsoft.DotNet.Try.Markdown.Tests
 {
     public class AnnotatedCodeBlockTests
     {

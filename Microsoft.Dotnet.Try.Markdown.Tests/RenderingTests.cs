@@ -7,7 +7,7 @@ using Microsoft.DotNet.Try.Markdown;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Microsoft.Dotnet.Try.Markdown.Tests
+namespace Microsoft.DotNet.Try.Markdown.Tests
 {
     public class RenderingTests
     {
