@@ -12,7 +12,7 @@ namespace MLS.Agent.CommandLine
 {
     public static class PackCommand
     {
-        public static async Task Do(PackOptions options, IConsole console)
+        public static async Task<string> Do(PackOptions options, IConsole console)
         {
             console.Out.WriteLine($"Creating package-tool from {options.PackTarget.FullName}");
 
@@ -63,6 +63,8 @@ namespace MLS.Agent.CommandLine
                 result = await dotnet.Pack($"/p:PackageId=dotnettry.{name} /p:ToolCommandName=dotnettry.{name} {versionArg} {projectFilePath} -o {options.OutputDirectory.FullName}");
 
                 result.ThrowOnFailure("Package build failed.");
+
+                return $"dotnettry.{name}";
             }
         }
 
