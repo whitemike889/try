@@ -379,7 +379,7 @@ namespace WorkspaceServer.Packaging
         {
 
             _fullBuildThrottlerSubscription.Disposable = _fullBuildRequestChannel
-                .Throttle(TimeSpan.FromSeconds(0.5), _buildThrottleScheduler)
+                .Throttle(TimeSpan.FromSeconds(2), _buildThrottleScheduler)
                 .ObserveOn(TaskPoolScheduler.Default)
                 .Subscribe(
                       async (budget) =>
@@ -403,7 +403,7 @@ namespace WorkspaceServer.Packaging
         private void SetupWorkspaceCreationFromDesignTimeBuildChannel()
         {
             _designTimeBuildThrottlerSubscription.Disposable = _designTimeBuildRequestChannel
-                .Throttle(TimeSpan.FromSeconds(0.5), _buildThrottleScheduler)
+                .Throttle(TimeSpan.FromSeconds(2), _buildThrottleScheduler)
                 .ObserveOn(TaskPoolScheduler.Default)
                 .Subscribe(
                     async (budget) =>
