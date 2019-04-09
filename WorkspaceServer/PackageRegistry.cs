@@ -14,8 +14,8 @@ namespace WorkspaceServer
     public class PackageRegistry : IEnumerable<Task<PackageBuilder>>
     {
         private readonly ConcurrentDictionary<string, Task<PackageBuilder>> _packageBuilders = new ConcurrentDictionary<string, Task<PackageBuilder>>();
-        private readonly ConcurrentDictionary<string, Task<Package>> _packages = new ConcurrentDictionary<string, Task<Package>>();
-        private readonly IEnumerable<IPackageDiscoveryStrategy> _strategies;
+        private readonly ConcurrentDictionary<string, Task<PackageBase>> _packages = new ConcurrentDictionary<string, Task<PackageBase>>();
+        private readonly List<IPackageDiscoveryStrategy> _strategies = new List<IPackageDiscoveryStrategy>();
         private readonly bool _createRebuildablePackage;
 
         public PackageRegistry(
@@ -33,7 +33,16 @@ namespace WorkspaceServer
         private PackageRegistry(bool createRebuildablePackage, IEnumerable<IPackageDiscoveryStrategy> strategies)
         {
             _createRebuildablePackage = createRebuildablePackage;
-            _strategies = strategies;
+
+            foreach (var strategy in strategies)
+            {
+                if (strategy == null)
+                {
+                    throw new ArgumentException($"Strategy cannot be null.");
+                }
+
+                _strategies.Add(strategy);
+            }
         }
 
         public void Add(string name, Action<PackageBuilder> configure)
@@ -53,7 +62,7 @@ namespace WorkspaceServer
             _packageBuilders.TryAdd(name, Task.FromResult(packageBuilder));
         }
       
-        public async Task<Package> Get(string packageName, Budget budget = null)
+        public async Task<PackageBase> Get(string packageName, Budget budget = null)
         {
             if (packageName == "script")
             {

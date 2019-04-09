@@ -3,7 +3,7 @@ using System.IO;
 
 namespace WorkspaceServer.Packaging
 {
-    public class BlazorPackage : BuildableArtifact
+    public class BlazorPackage : PackageBase
     {
         private const string runnerPrefix = "runner-";
         private FileInfo _blazorEntryPoint;

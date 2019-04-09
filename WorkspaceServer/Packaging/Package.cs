@@ -27,9 +27,10 @@ using Disposable = System.Reactive.Disposables.Disposable;
 
 namespace WorkspaceServer.Packaging
 {
-    public abstract class Package : BuildableArtifact
+    public abstract class Package : PackageBase
     {
         internal const string DesignTimeBuildBinlogFileName = "package_designTimeBuild.binlog";
+        private static readonly object _createDirectoryLock = new object();
 
         private static readonly ConcurrentDictionary<string, SemaphoreSlim> _packageBuildSemaphores = new ConcurrentDictionary<string, SemaphoreSlim>();
         private static readonly ConcurrentDictionary<string, SemaphoreSlim> _packagePublishSemaphores = new ConcurrentDictionary<string, SemaphoreSlim>();
@@ -607,6 +608,29 @@ namespace WorkspaceServer.Packaging
                 copy);
 
             return copy;
+        }
+
+        public static DirectoryInfo CreateDirectory(
+            string folderNameStartsWith,
+            DirectoryInfo parentDirectory = null)
+        {
+            if (string.IsNullOrWhiteSpace(folderNameStartsWith))
+            {
+                throw new ArgumentException("Value cannot be null or whitespace.", nameof(folderNameStartsWith));
+            }
+
+            parentDirectory = parentDirectory ?? Package.DefaultPackagesDirectory;
+
+            DirectoryInfo created;
+
+            lock (_createDirectoryLock)
+            {
+                var existingFolders = parentDirectory.GetDirectories($"{folderNameStartsWith}.*");
+
+                created = parentDirectory.CreateSubdirectory($"{folderNameStartsWith}.{existingFolders.Length + 1}");
+            }
+
+            return created;
         }
 
         public override string ToString()

@@ -9,8 +9,8 @@ namespace WorkspaceServer.Packaging
 {
     public class PackageBuilder
     {
-        private Package _package;
-        private readonly List<Func<Package, Budget, Task>> _afterCreateActions = new List<Func<Package, Budget, Task>>();
+        private PackageBase _packageBase;
+        private readonly List<Func<PackageBase, Budget, Task>> _afterCreateActions = new List<Func<PackageBase, Budget, Task>>();
         private readonly List<string> _addPackages = new List<string>();
         private string _languageVersion = "8.0";
 
@@ -31,12 +31,7 @@ namespace WorkspaceServer.Packaging
 
         public DirectoryInfo Directory { get; set; }
         public bool CreateRebuildablePackage { get; internal set; }
-        public bool BlazorSupported { get; private set; }
-
-        public void AfterCreate(Func<Package, Budget, Task> action)
-        {
-            _afterCreateActions.Add(action);
-        }
+        public bool BlazorSupported { get; private set; } 
 
         public void CreateUsingDotnet(string template, string projectName = null)
         {
@@ -79,8 +74,6 @@ namespace WorkspaceServer.Packaging
                 pb.Directory = new DirectoryInfo(Path.Combine(Package.DefaultPackagesDirectory.FullName, pb.PackageName, "MLS.Blazor"));
             });
         }
-
-     
         
         public void SetLanguageVersion(string version)
         {
@@ -134,15 +127,16 @@ namespace WorkspaceServer.Packaging
             });
         }
 
-        public Package GetPackage(Budget budget = null)
+        public PackageBase GetPackage(Budget budget = null)
         {
-            if (_package == null)
+            if (_packageBase == null)
             {
                 PreparePackage(budget);
             }
 
             budget?.RecordEntry();
-            return _package;
+
+            return _packageBase;
         }
 
         private void PreparePackage(Budget budget = null)
@@ -151,21 +145,21 @@ namespace WorkspaceServer.Packaging
 
             if (PackageInitializer is BlazorPackageInitializer)
             {
-                _package = new BlazorPackage(
+                _packageBase = new BlazorPackage(
                         PackageName,
                         PackageInitializer,
                         Directory);
             }
             else if (CreateRebuildablePackage)
             {
-                _package = new RebuildablePackage(
+                _packageBase = new RebuildablePackage(
                         PackageName,
                         PackageInitializer,
                         Directory);
             }
             else
             {
-                _package = new NonrebuildablePackage(
+                _packageBase = new NonrebuildablePackage(
                         PackageName,
                         PackageInitializer,
                         Directory);
@@ -178,7 +172,7 @@ namespace WorkspaceServer.Packaging
         {
             foreach (var action in _afterCreateActions)
             {
-                await action(_package, budget);
+                await action(_packageBase, budget);
             }
         }
     }

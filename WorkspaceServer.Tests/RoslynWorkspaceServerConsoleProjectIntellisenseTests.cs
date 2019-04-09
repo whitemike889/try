@@ -186,7 +186,7 @@ namespace FibonacciTest
 
             #endregion
 
-            var package = await Package.Copy(await Default.ConsoleWorkspace);
+            var package = await Package.Copy(await Default.ConsoleWorkspace());
             var (processed, position) = CodeManipulation.ProcessMarkup(generator);
 
             var workspace = new Workspace(workspaceType: package.Name, buffers: new[]
@@ -694,7 +694,7 @@ namespace FibonacciTest
             #endregion
 
             var (processed, position) = CodeManipulation.ProcessMarkup(generator);
-            var package = await Package.Copy(await Default.ConsoleWorkspace);
+            var package = await Package.Copy(await Default.ConsoleWorkspace());
             var workspace = new Workspace(workspaceType: package.Name, buffers: new[]
             {
                 new Workspace.Buffer("Program.cs", program),

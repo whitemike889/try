@@ -164,11 +164,10 @@ namespace WorkspaceServer.Tests
                     Task.Run(() => package.FullBuild()));
             }
 
-
             buildEventsMessages.Should()
-                .Contain(e => e.StartsWith("Building workspace using "))
+                .Contain(e => e.StartsWith($"Building package {package.Name}"))
                 .And
-                .Contain(e => e.StartsWith("Skipping build for package "));
+                .Contain(e => e.StartsWith($"Skipping build for package {package.Name}"));
         }
     }
 }

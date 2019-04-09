@@ -16,24 +16,24 @@ namespace WorkspaceServer.Tests
     {
         public static async Task<Package> ConsoleWorkspaceCopy([CallerMemberName] string testName = null, bool isRebuildable =false, IScheduler buildThrottleScheduler = null) =>
             await Package.Copy(
-                await Default.ConsoleWorkspace,
+                await Default.ConsoleWorkspace(),
                 testName,
                 isRebuildable,
                 buildThrottleScheduler);
 
         public static async Task<Package> WebApiWorkspaceCopy([CallerMemberName] string testName = null) =>
             await Package.Copy(
-                await Default.WebApiWorkspace,
+                await Default.WebApiWorkspace(),
                 testName);
 
         public static async Task<Package> XunitWorkspaceCopy([CallerMemberName] string testName = null) =>
             await Package.Copy(
-                await Default.XunitWorkspace,
+                await Default.XunitWorkspace(),
                 testName);
 
         public static async Task<Package> NetstandardWorkspaceCopy([CallerMemberName] string testName = null) =>
             await Package.Copy(
-                await Default.NetstandardWorkspace,
+                await Default.NetstandardWorkspace(),
                 testName);
 
         public static Package EmptyWorkspace([CallerMemberName] string testName = null, IPackageInitializer initializer = null, bool isRebuildablePackage = false)

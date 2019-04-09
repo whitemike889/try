@@ -7,6 +7,7 @@ using Microsoft.DotNet.Try.Protocol;
 using Microsoft.DotNet.Try.Protocol.Execution;
 using Newtonsoft.Json.Linq;
 using WorkspaceServer;
+using WorkspaceServer.Packaging;
 using WorkspaceServer.Servers.Roslyn;
 
 namespace Microsoft.DotNet.Try.Jupyter
@@ -34,7 +35,7 @@ namespace Microsoft.DotNet.Try.Jupyter
 
                     var code = executeRequest.Code;
 
-                    var package = await _packageRegistry.Get("console");
+                    var package = (Package) await  _packageRegistry.Get("console");
 
                     var workspace = new Workspace(
                         files: new[]

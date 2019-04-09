@@ -49,7 +49,7 @@ namespace MLS.Agent.CommandLine
 
                         using (var fileStream = new FileStream(zipPath, FileMode.Create, FileAccess.Write))
                         {
-                            resourceStream.CopyTo(fileStream);
+                            await resourceStream.CopyToAsync(fileStream);
                         }
 
                         ZipFile.ExtractToDirectory(zipPath, options.Output.FullName);

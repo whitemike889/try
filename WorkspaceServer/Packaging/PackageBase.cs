@@ -2,31 +2,29 @@
 using System.IO;
 using Clockwise;
 using System.Linq;
-using System.Reactive.Concurrency;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using MLS.Agent.Tools;
 using Pocket;
-using static Pocket.Logger<WorkspaceServer.Packaging.BuildableArtifact>;
+using static Pocket.Logger<WorkspaceServer.Packaging.PackageBase>;
 
 namespace WorkspaceServer.Packaging
 {
-    public abstract class BuildableArtifact
+    public abstract class PackageBase
     {
         internal const string FullBuildBinlogFileName = "package_fullBuild.binlog";
 
-        private static readonly object _lockObj = new object();
         private readonly AsyncLazy<bool> _lazyCreation;
 
-        protected BuildableArtifact(
+        protected PackageBase(
             string name = null,
             IPackageInitializer initializer = null,
             DirectoryInfo directory = null)
         {
             Initializer = initializer;
-            Directory = directory ?? new DirectoryInfo(Path.Combine(Package.DefaultPackagesDirectory.FullName, Name));
 
             Name = name ?? directory?.Name ?? throw new ArgumentException($"You must specify {nameof(name)}, {nameof(directory)}, or both.");
+            Directory = directory ?? new DirectoryInfo(Path.Combine(Package.DefaultPackagesDirectory.FullName, Name));
 
             _lazyCreation = new AsyncLazy<bool>(Create);
             LastBuildErrorLogFile = new FileInfo(Path.Combine(Directory.FullName, ".trydotnet-builderror"));
@@ -95,36 +93,38 @@ namespace WorkspaceServer.Packaging
 
         public virtual async Task FullBuild()
         {
-            using (var operation = Log.OnEnterAndConfirmOnExit())
-            {
-                await DotnetBuild();
-                operation.Succeed();
-            }
+            await DotnetBuild();
         }
 
         protected async Task DotnetBuild()
         {
-            var projectFile = GetProjectFile();
-            var args = $"/bl:{FullBuildBinlogFileName}";
-            if (projectFile?.Exists == true)
+            using (var operation = Log.OnEnterAndConfirmOnExit())
             {
-                args = $"{projectFile.FullName} {args}";
-            }
+                var projectFile = GetProjectFile();
+                var args = $"/bl:{FullBuildBinlogFileName}";
+                if (projectFile?.Exists == true)
+                {
+                    args = $"{projectFile.FullName} {args}";
+                }
 
-            var result = await new Dotnet(Directory)
-                             .Build(args: args);
-            if (result.ExitCode != 0)
-            {
-                File.WriteAllText(
-                    LastBuildErrorLogFile.FullName,
-                    string.Join(Environment.NewLine, result.Error));
-            }
-            else if (LastBuildErrorLogFile.Exists)
-            {
-                LastBuildErrorLogFile.Delete();
-            }
+                operation.Info("Building package {name} in {directory}", Name, Directory);
 
-            result.ThrowOnFailure();
+                var result = await new Dotnet(Directory).Build(args: args);
+
+                if (result.ExitCode != 0)
+                {
+                    File.WriteAllText(
+                        LastBuildErrorLogFile.FullName,
+                        string.Join(Environment.NewLine, result.Error));
+                }
+                else if (LastBuildErrorLogFile.Exists)
+                {
+                    LastBuildErrorLogFile.Delete();
+                }
+
+                result.ThrowOnFailure();
+                operation.Succeed();
+            }
         }
 
         protected FileInfo LastBuildErrorLogFile { get; }
@@ -132,29 +132,6 @@ namespace WorkspaceServer.Packaging
         protected FileInfo GetProjectFile()
         {
             return Directory.GetFiles("*.csproj").FirstOrDefault();
-        }
-
-        public static DirectoryInfo CreateDirectory(
-            string folderNameStartsWith,
-            DirectoryInfo parentDirectory = null)
-        {
-            if (string.IsNullOrWhiteSpace(folderNameStartsWith))
-            {
-                throw new ArgumentException("Value cannot be null or whitespace.", nameof(folderNameStartsWith));
-            }
-
-            parentDirectory = parentDirectory ?? Package.DefaultPackagesDirectory;
-
-            DirectoryInfo created;
-
-            lock (_lockObj)
-            {
-                var existingFolders = parentDirectory.GetDirectories($"{folderNameStartsWith}.*");
-
-                created = parentDirectory.CreateSubdirectory($"{folderNameStartsWith}.{existingFolders.Length + 1}");
-            }
-
-            return created;
         }
     }
 }
