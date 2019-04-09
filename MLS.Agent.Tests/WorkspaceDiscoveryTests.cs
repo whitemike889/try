@@ -32,7 +32,7 @@ namespace MLS.Agent.Tests
             var output = Guid.NewGuid().ToString();
             var requestJson = Create.SimpleWorkspaceRequestAsJson(output, packageName);
 
-            var response = await CallRun(requestJson, options: new StartupOptions(addSource: packageLocation, rootDirectory: new DirectoryInfo(Directory.GetCurrentDirectory())));
+            var response = await CallRun(requestJson, options: new StartupOptions(addPackageSource: packageLocation, rootDirectory: new DirectoryInfo(Directory.GetCurrentDirectory())));
             var result = await response
                                 .EnsureSuccess()
                                 .DeserializeAs<RunResult>();
