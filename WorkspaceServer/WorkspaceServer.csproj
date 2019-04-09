@@ -53,9 +53,9 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="ConfirmationLoggerExtensions" Version="0.1.5650001">
+    <PackageReference Include="ConfirmationLoggerExtensions" Version="0.1.5980001">
       <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
     <PackageReference Include="DictionaryExtensions" Version="0.1.5650001">
       <PrivateAssets>all</PrivateAssets>
@@ -86,7 +86,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.DotNetTry.Project\Microsoft.DotNetTry.Project.csproj" />
+    <ProjectReference Include="..\Microsoft.DotNet.Try.Project\Microsoft.DotNet.Try.Project.csproj" />
     <ProjectReference Include="..\MLS.Agent.Tools\MLS.Agent.Tools.csproj" />
     <ProjectReference Include="..\MLS.Protocol\MLS.Protocol.csproj" />
   </ItemGroup>

@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.DotNetTry.Protocol.ClientApi;
 using System.Linq;
 using Microsoft.CodeAnalysis.Text;
-using Microsoft.DotNetTry.Project.Extensions;
+using Microsoft.DotNet.Try.Project.Extensions;
+using Microsoft.DotNet.Try.Protocol.ClientApi;
 using Pocket;
 using static Pocket.Logger<MLS.Agent.Controllers.ProjectController>;
 

@@ -119,7 +119,7 @@ namespace MLS.Agent.Tests
                                      .Descendants("body")
                                      .Single()
                                      .Descendants("script")
-                                     .FirstOrDefault(s => s.InnerHtml.Contains(@"trydotnet.autoEnable(new URL(""http://localhost""));"));
+                                     .FirstOrDefault(s => s.InnerHtml.Contains(@"trydotnet.autoEnable({ apiBaseAddress: new URL(""http://localhost""), useBlazor:false });"));
 
                 script.Should().NotBeNull();
             }

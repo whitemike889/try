@@ -6,7 +6,7 @@ using FluentAssertions;
 using HtmlAgilityPack;
 using Markdig;
 using Microsoft.DotNet.Try.Markdown;
-using Microsoft.DotNetTry.Project.Generators;
+using Microsoft.DotNet.Try.Project.Generators;
 using MLS.Agent.Controllers;
 using MLS.Agent.Markdown;
 using MLS.Agent.Tests.TestUtility;
@@ -326,7 +326,7 @@ Console.WriteLine(""Hello World"");
 #endregion";
             var directoryAccessor = new InMemoryDirectoryAccessor(rootDirectory)
             {
-                (filename: sourceFile, codeContent),
+                (sourceFile, codeContent),
                 ("sample.csproj", "")
             };
 

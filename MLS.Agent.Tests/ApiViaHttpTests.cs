@@ -22,8 +22,8 @@ using static Pocket.Logger<MLS.Agent.Tests.ApiViaHttpTests>;
 using Workspace = MLS.Protocol.Execution.Workspace;
 using MLS.Agent.CommandLine;
 using FluentAssertions.Extensions;
-using Microsoft.DotNetTry.Project.Transformations;
-using Microsoft.DotNetTry.Protocol.ClientApi;
+using Microsoft.DotNet.Try.Project.Transformations;
+using Microsoft.DotNet.Try.Protocol.ClientApi;
 
 namespace MLS.Agent.Tests
 {
