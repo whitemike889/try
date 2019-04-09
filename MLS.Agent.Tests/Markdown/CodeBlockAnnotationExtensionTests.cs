@@ -326,7 +326,7 @@ Console.WriteLine(""Hello World"");
 #endregion";
             var directoryAccessor = new InMemoryDirectoryAccessor(rootDirectory)
             {
-                (filename: sourceFile, codeContent),
+                (sourceFile, codeContent),
                 ("sample.csproj", "")
             };
 
