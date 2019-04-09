@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Text;
 using Assent;
-using MLS.Jupyter.Protocol;
+using Microsoft.DotNet.Try.Jupyter.Protocol;
 using NetMQ;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
-namespace MLS.Jupyter.Tests
+namespace Microsoft.DotNet.Try.Jupyter.Tests
 {
     public class JupyterMessageContractTests
     {

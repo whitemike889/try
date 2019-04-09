@@ -5,9 +5,8 @@ using Microsoft.Extensions.Hosting;
 using NetMQ;
 using NetMQ.Sockets;
 using Pocket;
-using static Pocket.Logger<MLS.Jupyter.Heartbeat>;
 
-namespace MLS.Jupyter
+namespace Microsoft.DotNet.Try.Jupyter
 {
     public class Heartbeat : IHostedService
     {
@@ -23,7 +22,7 @@ namespace MLS.Jupyter
 
             _address = $"{connectionInformation.Transport}://{connectionInformation.IP}:{connectionInformation.HBPort}";
 
-            Log.Info($"using address {nameof(_address)}", _address);
+            Logger<Heartbeat>.Log.Info($"using address {nameof(_address)}", _address);
             _server = new ResponseSocket();
         }
 
@@ -32,7 +31,7 @@ namespace MLS.Jupyter
             await Task.Yield();
             _server.Bind(_address);
 
-            using (Log.OnEnterAndExit())
+            using (Logger<Heartbeat>.Log.OnEnterAndExit())
             {
                 while (!cancellationToken.IsCancellationRequested)
                 {

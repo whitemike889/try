@@ -1,7 +1,7 @@
-﻿using MLS.Jupyter.Protocol;
+﻿using Microsoft.DotNet.Try.Jupyter.Protocol;
 using Newtonsoft.Json.Linq;
 
-namespace MLS.Jupyter
+namespace Microsoft.DotNet.Try.Jupyter
 {
     internal class RequestHandlerStatus : IRequestHandlerStatus
     {

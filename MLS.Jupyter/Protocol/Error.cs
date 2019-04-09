@@ -3,20 +3,8 @@ using Newtonsoft.Json;
 
 namespace Microsoft.DotNet.Try.Jupyter.Protocol
 {
-    public class ExecuteReplyError : ExecuteReply
+    public class Error
     {
-        public ExecuteReplyError()
-        {
-            Status = StatusValues.Error;
-        }
-
-        public ExecuteReplyError(Error error) : this()
-        {
-            EName = error.EName;
-            EValue = error.EValue;
-            Traceback = new List<string>(error.Traceback);
-        }
-
         [JsonProperty("ename")]
         public string EName { get; set; }
 

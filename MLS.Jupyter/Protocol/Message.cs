@@ -1,8 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace MLS.Jupyter.Protocol
+namespace Microsoft.DotNet.Try.Jupyter.Protocol
 {
     public class Message
     {

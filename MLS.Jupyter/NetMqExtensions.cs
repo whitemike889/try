@@ -1,11 +1,11 @@
 ﻿using System.Linq;
 using System.Text;
-using MLS.Jupyter.Protocol;
+using Microsoft.DotNet.Try.Jupyter.Protocol;
 using NetMQ;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace MLS.Jupyter
+namespace Microsoft.DotNet.Try.Jupyter
 {
     public  static class NetMQExtensions
     {

@@ -1,7 +1,7 @@
 ﻿using System;
-using MLS.Jupyter.Protocol;
+using Microsoft.DotNet.Try.Jupyter.Protocol;
 
-namespace MLS.Jupyter
+namespace Microsoft.DotNet.Try.Jupyter
 {
     public class MessageBuilder : IMessageBuilder
     {

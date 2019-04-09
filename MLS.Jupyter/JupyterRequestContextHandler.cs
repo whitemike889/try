@@ -2,14 +2,14 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Clockwise;
+using Microsoft.DotNet.Try.Jupyter.Protocol;
 using Microsoft.DotNet.Try.Protocol;
 using Microsoft.DotNet.Try.Protocol.Execution;
-using MLS.Jupyter.Protocol;
 using Newtonsoft.Json.Linq;
 using WorkspaceServer;
 using WorkspaceServer.Servers.Roslyn;
 
-namespace MLS.Jupyter
+namespace Microsoft.DotNet.Try.Jupyter
 {
     public class JupyterRequestContextHandler : ICommandHandler<JupyterRequestContext>
     {

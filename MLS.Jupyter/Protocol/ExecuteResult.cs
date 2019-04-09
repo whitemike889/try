@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace MLS.Jupyter.Protocol
+namespace Microsoft.DotNet.Try.Jupyter.Protocol
 {
     public class ExecuteResult : DisplayData
     {

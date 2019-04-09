@@ -48,9 +48,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{E4DF1F27-3
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Snippets", "docs\GettingStarted\Snippets\Snippets.csproj", "{DCAA2918-F0CA-429E-86DA-C8315E23082F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MLS.Jupyter", "MLS.Jupyter\MLS.Jupyter.csproj", "{DDBAB171-7BA2-4B0F-8606-7CF21B969804}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Try.Jupyter", "MLS.Jupyter\Microsoft.DotNet.Try.Jupyter.csproj", "{DDBAB171-7BA2-4B0F-8606-7CF21B969804}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MLS.Jupyter.Tests", "MLS.Jupyter.Tests\MLS.Jupyter.Tests.csproj", "{614B2E7B-7B05-4023-9C6E-CE708EB1673F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Try.Jupyter.Tests", "MLS.Jupyter.Tests\Microsoft.DotNet.Try.Jupyter.Tests.csproj", "{614B2E7B-7B05-4023-9C6E-CE708EB1673F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Try.Markdown", "Microsoft.DotNet.Try.Markdown\Microsoft.DotNet.Try.Markdown.csproj", "{B70584C1-41A3-4DB3-9C49-799DFF57A3FC}"
 EndProject

@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
-using MLS.Jupyter.Protocol;
+using Microsoft.DotNet.Try.Jupyter.Protocol;
 using Recipes;
 
-namespace MLS.Jupyter
+namespace Microsoft.DotNet.Try.Jupyter
 {
     public class SignatureValidator
     {

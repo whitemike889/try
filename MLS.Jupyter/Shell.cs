@@ -3,14 +3,13 @@ using System.Reactive.Disposables;
 using System.Threading;
 using System.Threading.Tasks;
 using Clockwise;
+using Microsoft.DotNet.Try.Jupyter.Protocol;
 using Microsoft.Extensions.Hosting;
-using MLS.Jupyter.Protocol;
 using NetMQ.Sockets;
 using Pocket;
 using Recipes;
-using static Pocket.Logger<MLS.Jupyter.Shell>;
 
-namespace MLS.Jupyter
+namespace Microsoft.DotNet.Try.Jupyter
 {
     public class Shell : IHostedService
     {
@@ -72,7 +71,7 @@ namespace MLS.Jupyter
             _stdIn.Bind(_stdInAddress);
             _control.Bind(_controlAddress);
 
-            using (var activity = Log.OnEnterAndExit())
+            using (var activity = Logger<Shell>.Log.OnEnterAndExit())
             {
                 while (!cancellationToken.IsCancellationRequested)
                 {

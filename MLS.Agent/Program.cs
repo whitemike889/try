@@ -14,13 +14,13 @@ using System.IO;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
+using Microsoft.DotNet.Try.Jupyter;
 using MLS.Agent.Markdown;
 using WorkspaceServer.Servers.Roslyn;
 using static Pocket.Logger<MLS.Agent.Program>;
 using SerilogLoggerConfiguration = Serilog.LoggerConfiguration;
 using WorkspaceServer;
 using MLS.Agent.CommandLine;
-using MLS.Jupyter;
 
 namespace MLS.Agent
 {

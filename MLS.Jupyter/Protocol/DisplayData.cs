@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace MLS.Jupyter.Protocol
+namespace Microsoft.DotNet.Try.Jupyter.Protocol
 {
     public class DisplayData
     {

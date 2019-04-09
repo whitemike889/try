@@ -1,4 +1,4 @@
-﻿namespace MLS.Jupyter
+﻿namespace Microsoft.DotNet.Try.Jupyter
 {
     public static class Constants
     {

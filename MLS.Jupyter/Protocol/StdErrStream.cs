@@ -1,4 +1,4 @@
-﻿namespace MLS.Jupyter.Protocol
+﻿namespace Microsoft.DotNet.Try.Jupyter.Protocol
 {
     public class StdErrStream : Stream
     {
