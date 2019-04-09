@@ -1,6 +1,6 @@
 ﻿using Microsoft.DotNet.Try.Project.Generators;
 
-namespace MLS.TestSupport
+namespace Microsoft.DotNet.Try.TestSupport
 {
     public static class SourceCodeProvider
     {

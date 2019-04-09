@@ -2,7 +2,7 @@
 using FluentAssertions;
 using Microsoft.DotNet.Try.Project.Extensions;
 using Microsoft.DotNet.Try.Protocol.Execution;
-using MLS.TestSupport;
+using Microsoft.DotNet.Try.TestSupport;
 using Xunit;
 
 namespace Microsoft.DotNet.Try.Project.Tests
