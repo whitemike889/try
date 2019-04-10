@@ -164,7 +164,15 @@ namespace WorkspaceServer
                              workspace.AddPackageReference("NodaTime.Testing", "2.4.4");
                              workspace.AddPackageReference("Newtonsoft.Json");
                              workspace.EnableBlazor(registry);
-                            
+                         });
+                         
+            registry.Add("blazor-ms.logging",
+                         workspace =>
+                         {
+                             workspace.CreateUsingDotnet("classlib");
+                             workspace.DeleteFile("Class1.cs");
+                             workspace.AddPackageReference("Microsoft.Extensions.Logging", "2.2.0");
+                             workspace.EnableBlazor(registry);
                          });
 
             return registry;
