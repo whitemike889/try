@@ -52,7 +52,7 @@ namespace WorkspaceServer.Packaging
             }
         }
 
-        protected internal virtual async Task EnsureReady(Budget budget)
+        public virtual async Task EnsureReady(Budget budget)
         {
             await EnsureCreated().CancelIfExceeds(budget);
 
