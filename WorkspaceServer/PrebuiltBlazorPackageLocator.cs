@@ -26,11 +26,10 @@ namespace WorkspaceServer
                 var dotnet = new Dotnet(_packagesDirectory);
                 var toolNames = await dotnet.ToolList(_packagesDirectory);
 
-                var requiredTool = toolNames.FirstOrDefault(toolName => toolName == name);
-                if (!string.IsNullOrEmpty(requiredTool))
+                if (toolNames.Contains(name))
                 {
-                    operation.Info($"Checking tool {requiredTool}");
-                    var result = await CommandLine.Execute(Path.Combine(_packagesDirectory.FullName, requiredTool), "locate-projects");
+                    operation.Info($"Checking tool {name}");
+                    var result = await CommandLine.Execute(Path.Combine(_packagesDirectory.FullName, name), "locate-projects");
                     var directory = new DirectoryInfo(result.Output.First());
                     if (directory.Exists)
                     {
