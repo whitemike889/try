@@ -51,7 +51,7 @@ namespace WorkspaceServer.Tests
             return new RebuildablePackage(directory: Package.CreateDirectory(testName), initializer: initializer);
         }
 
-        public static async Task<(string packageName, DirectoryInfo nupkgDirectory)> NupkgWithBlazorEnabled([CallerMemberName] string testName = null)
+        public static async Task<(string packageName, DirectoryInfo addSource)> NupkgWithBlazorEnabled([CallerMemberName] string testName = null)
         {
             DirectoryInfo destination = new DirectoryInfo(
                 Path.Combine(Package.DefaultPackagesDirectory.FullName, "nupkgs"));

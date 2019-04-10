@@ -168,12 +168,12 @@ namespace WorkspaceServer
                          });
                          
             registry.Add("blazor-ms.logging",
-                         workspace =>
+                         packageBuilder =>
                          {
-                             workspace.CreateUsingDotnet("classlib");
-                             workspace.DeleteFile("Class1.cs");
-                             workspace.AddPackageReference("Microsoft.Extensions.Logging", "2.2.0");
-                             workspace.EnableBlazor(registry);
+                             packageBuilder.CreateUsingDotnet("classlib");
+                             packageBuilder.DeleteFile("Class1.cs");
+                             packageBuilder.AddPackageReference("Microsoft.Extensions.Logging", "2.2.0");
+                             packageBuilder.EnableBlazor(registry);
                          });
 
             return registry;

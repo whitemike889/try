@@ -33,7 +33,7 @@ namespace WorkspaceServer.Packaging
         public bool CreateRebuildablePackage { get; internal set; }
         public bool BlazorSupported { get; private set; }
 
-        public void CreateUsingDotnet(string template, string projectName = null)
+        public void CreatePackageInitializer(string template, string projectName = null)
         {
             PackageInitializer = new PackageInitializer(
                template,
