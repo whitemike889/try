@@ -18,11 +18,8 @@ namespace MLS.Agent.CommandLine
 
             var commandPath = Path.Combine(options.Location.FullName, options.PackageName);
 
-            var result = await Tools.CommandLine.Execute(commandPath, "extract-package");
-            result.ThrowOnFailure();
-
+            (await Tools.CommandLine.Execute(commandPath, "extract-package")).ThrowOnFailure();
             (await Tools.CommandLine.Execute(commandPath, "prepare-package")).ThrowOnFailure();
-
         }
     }
 }

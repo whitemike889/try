@@ -816,7 +816,7 @@ namespace FibonacciTest
         [Fact]
         public async Task Returns_blazor_true_if_the_package_contains_blazor()
         {
-            var package = await Create.BlazorPackage();
+            var package = await Create.InstalledPackageWithBlazorEnabled();
             var packageVersion = "1.0.0";
 
             using (var agent = new AgentService())

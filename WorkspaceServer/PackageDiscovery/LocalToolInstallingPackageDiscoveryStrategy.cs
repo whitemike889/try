@@ -69,4 +69,20 @@ namespace WorkspaceServer.PackageDiscovery
             return pb;
         }
     }
+
+    public class PreBuiltBlazorPackageDiscoveryStrategy : IPackageDiscoveryStrategy
+    {
+        private PrebuiltBlazorPackageLocator _locator;
+
+        public PreBuiltBlazorPackageDiscoveryStrategy()
+        {
+            _locator = new PrebuiltBlazorPackageLocator();
+        }
+
+        public async Task<PackageBuilder> Locate(PackageDescriptor packageDescriptor, Budget budget = null)
+        {
+            throw new NotImplementedException();
+            //return await _locator.Locate(packageDescriptor.Name);
+        }
+    }
 }

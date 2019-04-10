@@ -112,59 +112,59 @@ namespace WorkspaceServer
 
         public static PackageRegistry CreateForHostedMode()
         {
-            var registry = new PackageRegistry();
+            var registry = new PackageRegistry(false, new LocalToolInstallingPackageDiscoveryStrategy(Package.DefaultPackagesDirectory));
 
             registry.Add("console",
-                         workspace =>
+                         packageBuilder =>
                          {
-                             workspace.CreateUsingDotnet("console");
-                             workspace.TrySetLanguageVersion("8.0");
-                             workspace.AddPackageReference("Newtonsoft.Json");
+                             packageBuilder.CreatePackageInitializer("console");
+                             packageBuilder.TrySetLanguageVersion("8.0");
+                             packageBuilder.AddPackageReference("Newtonsoft.Json");
                          });
 
             registry.Add("nodatime.api",
-                         workspace =>
+                         packageBuilder =>
                          {
-                             workspace.CreateUsingDotnet("console");
-                             workspace.TrySetLanguageVersion("8.0");
-                             workspace.AddPackageReference("NodaTime", "2.3.0");
-                             workspace.AddPackageReference("NodaTime.Testing", "2.3.0");
-                             workspace.AddPackageReference("Newtonsoft.Json");
+                             packageBuilder.CreatePackageInitializer("console");
+                             packageBuilder.TrySetLanguageVersion("8.0");
+                             packageBuilder.AddPackageReference("NodaTime", "2.3.0");
+                             packageBuilder.AddPackageReference("NodaTime.Testing", "2.3.0");
+                             packageBuilder.AddPackageReference("Newtonsoft.Json");
                          });
 
             registry.Add("aspnet.webapi",
-                         workspace =>
+                         packageBuilder =>
                          {
-                             workspace.CreateUsingDotnet("webapi");
-                             workspace.TrySetLanguageVersion("8.0");
+                             packageBuilder.CreatePackageInitializer("webapi");
+                             packageBuilder.TrySetLanguageVersion("8.0");
                          });
 
             registry.Add("xunit",
-                         workspace =>
+                         packageBuilder =>
                          {
-                             workspace.CreateUsingDotnet("xunit", "tests");
-                             workspace.TrySetLanguageVersion("8.0");
-                             workspace.AddPackageReference("Newtonsoft.Json");
-                             workspace.DeleteFile("UnitTest1.cs");
+                             packageBuilder.CreatePackageInitializer("xunit", "tests");
+                             packageBuilder.TrySetLanguageVersion("8.0");
+                             packageBuilder.AddPackageReference("Newtonsoft.Json");
+                             packageBuilder.DeleteFile("UnitTest1.cs");
                          });
 
             registry.Add("blazor-console",
-                         workspace =>
+                         packageBuilder =>
                          {
-                             workspace.CreateUsingDotnet("classlib");
-                             workspace.AddPackageReference("Newtonsoft.Json");
+                             packageBuilder.CreatePackageInitializer("classlib");
+                             packageBuilder.AddPackageReference("Newtonsoft.Json");
                          });
 
             // Todo: soemething about nodatime 2.3 makes blazor toolchain fail to build
             registry.Add("blazor-nodatime.api",
-                         workspace =>
+                         packageBuilder =>
                          {
-                             workspace.CreateUsingDotnet("classlib");
-                             workspace.DeleteFile("Class1.cs");
-                             workspace.AddPackageReference("NodaTime", "2.4.4");
-                             workspace.AddPackageReference("NodaTime.Testing", "2.4.4");
-                             workspace.AddPackageReference("Newtonsoft.Json");
-                             workspace.EnableBlazor(registry);
+                             packageBuilder.CreatePackageInitializer("classlib");
+                             packageBuilder.DeleteFile("Class1.cs");
+                             packageBuilder.AddPackageReference("NodaTime", "2.4.4");
+                             packageBuilder.AddPackageReference("NodaTime.Testing", "2.4.4");
+                             packageBuilder.AddPackageReference("Newtonsoft.Json");
+                             packageBuilder.EnableBlazor(registry);
                          });
                          
             registry.Add("blazor-ms.logging",

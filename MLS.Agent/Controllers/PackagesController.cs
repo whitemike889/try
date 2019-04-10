@@ -20,8 +20,8 @@ namespace MLS.Agent.Controllers
         {
             try
             {
-                var package = await _registry.Get(name);
-                var isBlazorSupported = package is BlazorPackage;
+                var package = (Package) await _registry.Get(name);
+                var isBlazorSupported = package.CanSupportBlazor();
                 return Ok(value: new Microsoft.DotNet.Try.Protocol.Packaging.Package(isBlazorSupported));
             }
             catch (PackageNotFoundException ex)

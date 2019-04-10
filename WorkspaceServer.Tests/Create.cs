@@ -9,13 +9,14 @@ using Microsoft.DotNet.Try.Protocol;
 using Microsoft.DotNet.Try.Protocol.Execution;
 using MLS.Agent.CommandLine;
 using Recipes;
+using WorkspaceServer.PackageDiscovery;
 using WorkspaceServer.Packaging;
 
 namespace WorkspaceServer.Tests
 {
     public static class Create
     {
-        public static async Task<Package> ConsoleWorkspaceCopy([CallerMemberName] string testName = null, bool isRebuildable =false, IScheduler buildThrottleScheduler = null) =>
+        public static async Task<Package> ConsoleWorkspaceCopy([CallerMemberName] string testName = null, bool isRebuildable = false, IScheduler buildThrottleScheduler = null) =>
             await Package.Copy(
                 await Default.ConsoleWorkspace(),
                 testName,
@@ -37,12 +38,12 @@ namespace WorkspaceServer.Tests
             DirectoryInfo parentDirectory = null) =>
             await Package.Copy(
                 await Default.NetstandardWorkspace(),
-                testName, 
+                testName,
                 parentDirectory: parentDirectory);
 
         public static Package EmptyWorkspace([CallerMemberName] string testName = null, IPackageInitializer initializer = null, bool isRebuildablePackage = false)
         {
-            if(!isRebuildablePackage)
+            if (!isRebuildablePackage)
             {
                 return new NonrebuildablePackage(directory: Package.CreateDirectory(testName), initializer: initializer);
             }
@@ -50,7 +51,7 @@ namespace WorkspaceServer.Tests
             return new RebuildablePackage(directory: Package.CreateDirectory(testName), initializer: initializer);
         }
 
-        public static async Task<(string packageName, DirectoryInfo nupkgDirectory)> NupkgWithBlazorEnabled([CallerMemberName] string testName = null)
+        public static async Task<(string packageName, DirectoryInfo addSource)> NupkgWithBlazorEnabled([CallerMemberName] string testName = null)
         {
             DirectoryInfo destination = new DirectoryInfo(
                 Path.Combine(Package.DefaultPackagesDirectory.FullName, "nupkgs"));
@@ -63,11 +64,15 @@ namespace WorkspaceServer.Tests
             return (packageName, nupkg.Directory);
         }
 
-        public static async Task<BlazorPackage> BlazorPackage([CallerMemberName] string testName = null)
+        public static async Task<Package> InstalledPackageWithBlazorEnabled([CallerMemberName] string testName = null)
         {
             var (packageName, addSource) = await NupkgWithBlazorEnabled(testName);
-            await InstallCommand.Do(new InstallOptions(addSource, packageName), new TestConsole());
-            return await new PrebuiltBlazorPackageLocator().Locate(packageName);
+            var destination = Package.DefaultPackagesDirectory;
+            await InstallCommand.Do(new InstallOptions(addSource, packageName, destination), new TestConsole());
+
+            var strategy = new LocalToolInstallingPackageDiscoveryStrategy(destination);
+            var builder = await strategy.Locate(new PackageDescriptor(packageName));
+            return (Package)builder.GetPackage();
         }
 
         public static string SimpleWorkspaceRequestAsJson(
