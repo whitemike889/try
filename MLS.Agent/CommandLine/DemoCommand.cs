@@ -16,7 +16,6 @@ namespace MLS.Agent.CommandLine
             CommandLineParser.StartServer startServer = null,
             InvocationContext context = null)
         {
-            
             var extractDemoFiles = true;
 
             if (!options.Output.Exists)
@@ -49,15 +48,13 @@ namespace MLS.Agent.CommandLine
 
                         using (var fileStream = new FileStream(zipPath, FileMode.Create, FileAccess.Write))
                         {
-                            await resourceStream.CopyToAsync(fileStream);
+                            resourceStream.CopyTo(fileStream);
                         }
 
                         ZipFile.ExtractToDirectory(zipPath, options.Output.FullName);
                     }
                 }
             }
-
-
           
             startServer?.Invoke(new StartupOptions(
                                     uri: new Uri("QuickStart.md", UriKind.Relative),

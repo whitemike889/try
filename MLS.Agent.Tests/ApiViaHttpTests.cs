@@ -728,7 +728,7 @@ namespace FibonacciTest
             {
                 var response = await agent.GetAsync(@"/LocalCodeRunner/blazor-nodatime.api");
 
-                response.EnsureSuccess();
+                response.Should().BeSuccessful();
                 var result = await response.Content.ReadAsStringAsync();
                 result.Should().Contain("Loading...");
             }

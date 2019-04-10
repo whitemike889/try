@@ -21,7 +21,7 @@ namespace MLS.Agent.CommandLine
                 var temp = disposableDirectory.Directory;
                 var temp_projects = temp.CreateSubdirectory("projects");
 
-                string name = options.PackageName;
+                var name = options.PackageName;
 
                 var temp_projects_packtarget = temp_projects.CreateSubdirectory("packTarget");
                 DirectoryCopy(options.PackTarget, temp_projects_packtarget.FullName, copySubDirs: true);

@@ -8,7 +8,11 @@ namespace MLS.Agent.CommandLine
     {
         private string _packageName;
 
-        public PackOptions(DirectoryInfo packTarget, string version = null, DirectoryInfo outputDirectory = null, bool enableBlazor = false,
+        public PackOptions(
+            DirectoryInfo packTarget, 
+            string version = null, 
+            DirectoryInfo outputDirectory = null, 
+            bool enableBlazor = false,
             string packageName = null)
         {
             PackTarget = packTarget ?? throw new ArgumentNullException(nameof(packTarget));

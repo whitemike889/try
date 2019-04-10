@@ -67,7 +67,6 @@ namespace WorkspaceServer.Packaging
             var name = $"runner-{PackageName}";
             registry.Add(name, pb =>
             {
-
                 var initializer = new BlazorPackageInitializer(PackageName, _addPackages);
                 pb.PackageInitializer = initializer;
                 pb.BlazorSupported = true;

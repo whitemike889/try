@@ -1,3 +1,4 @@
+using System;
 using System.CommandLine;
 using System.IO;
 using System.Linq;
@@ -31,10 +32,13 @@ namespace WorkspaceServer.Tests
                 await Default.XunitWorkspace(),
                 testName);
 
-        public static async Task<Package> NetstandardWorkspaceCopy([CallerMemberName] string testName = null) =>
+        public static async Task<Package> NetstandardWorkspaceCopy(
+            [CallerMemberName] string testName = null,
+            DirectoryInfo parentDirectory = null) =>
             await Package.Copy(
                 await Default.NetstandardWorkspace(),
-                testName);
+                testName, 
+                parentDirectory: parentDirectory);
 
         public static Package EmptyWorkspace([CallerMemberName] string testName = null, IPackageInitializer initializer = null, bool isRebuildablePackage = false)
         {
@@ -48,13 +52,13 @@ namespace WorkspaceServer.Tests
 
         public static async Task<(string packageName, DirectoryInfo nupkgDirectory)> NupkgWithBlazorEnabled([CallerMemberName] string testName = null)
         {
-            var asset = await NetstandardWorkspaceCopy(testName);
-            var name = Path.GetFileNameWithoutExtension(asset.Directory.GetFiles("*.csproj").First().Name);
-            string packageName = $"{asset.Directory.Name}";
+            DirectoryInfo destination = new DirectoryInfo(
+                Path.Combine(Package.DefaultPackagesDirectory.FullName, "nupkgs"));
+            var asset = await NetstandardWorkspaceCopy(testName, destination);
+            var packageName = asset.Directory.Name;
             var console = new TestConsole();
             await PackCommand.Do(new PackOptions(asset.Directory, enableBlazor: true, packageName: packageName), console);
-            var nupkg = asset.Directory
-                .GetFiles("*.nupkg").Single();
+            var nupkg = asset.Directory.GetFiles("*.nupkg").Single();
 
             return (packageName, nupkg.Directory);
         }
@@ -63,7 +67,7 @@ namespace WorkspaceServer.Tests
         {
             var (packageName, addSource) = await NupkgWithBlazorEnabled(testName);
             await InstallCommand.Do(new InstallOptions(addSource, packageName), new TestConsole());
-            return new BlazorPackage(packageName);
+            return await new PrebuiltBlazorPackageLocator().Locate(packageName);
         }
 
         public static string SimpleWorkspaceRequestAsJson(

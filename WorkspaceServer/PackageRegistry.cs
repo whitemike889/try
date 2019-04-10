@@ -24,8 +24,7 @@ namespace WorkspaceServer
             : this(createRebuildablePackage, new IPackageDiscoveryStrategy[]
             {
                 new ProjectFilePackageDiscoveryStrategy(),
-                new DirectoryPackageDiscoveryStrategy(),
-                new GlobalToolPackageDiscoveryStrategy(),
+                new DirectoryPackageDiscoveryStrategy()
             }.Concat(additionalStrategies))
         {
         }

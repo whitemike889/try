@@ -527,7 +527,6 @@ namespace WorkspaceServer.Packaging
                 LoadDesignTimeBuildFromBuildLogFile(binLog);
             }
         }
-
      
         protected async Task Publish()
         {
@@ -563,7 +562,8 @@ namespace WorkspaceServer.Packaging
             Package fromPackage,
             string folderNameStartsWith = null,
             bool isRebuildable = false,
-            IScheduler buildThrottleScheduler = null)
+            IScheduler buildThrottleScheduler = null,
+            DirectoryInfo parentDirectory = null)
         {
             if (fromPackage == null)
             {
@@ -571,21 +571,23 @@ namespace WorkspaceServer.Packaging
             }
 
             await fromPackage.EnsureReady(new Budget());
-          
-            folderNameStartsWith = folderNameStartsWith ?? fromPackage.Name;
-            var parentDirectory = fromPackage.Directory.Parent;
 
-            var destination = CreateDirectory(folderNameStartsWith, parentDirectory);
+            folderNameStartsWith = folderNameStartsWith ?? fromPackage.Name;
+            parentDirectory = parentDirectory ?? fromPackage.Directory.Parent;
+
+            var destination =
+                CreateDirectory(folderNameStartsWith,
+                                parentDirectory);
 
             fromPackage.Directory.CopyTo(destination);
-            
+
             var binLogs = destination.GetFiles("*.binlog");
 
             foreach (var fileInfo in binLogs)
             {
                 fileInfo.Delete();
             }
-            
+
             Package copy;
             if (isRebuildable)
             {
@@ -619,12 +621,17 @@ namespace WorkspaceServer.Packaging
                 throw new ArgumentException("Value cannot be null or whitespace.", nameof(folderNameStartsWith));
             }
 
-            parentDirectory = parentDirectory ?? Package.DefaultPackagesDirectory;
+            parentDirectory = parentDirectory ?? DefaultPackagesDirectory;
 
             DirectoryInfo created;
 
             lock (_createDirectoryLock)
             {
+                if (!parentDirectory.Exists)
+                {
+                    parentDirectory.Create();
+                }
+
                 var existingFolders = parentDirectory.GetDirectories($"{folderNameStartsWith}.*");
 
                 created = parentDirectory.CreateSubdirectory($"{folderNameStartsWith}.{existingFolders.Length + 1}");
