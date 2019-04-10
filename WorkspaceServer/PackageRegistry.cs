@@ -117,7 +117,7 @@ namespace WorkspaceServer
             registry.Add("console",
                          packageBuilder =>
                          {
-                             packageBuilder.CreatePackageInitializer("console");
+                             packageBuilder.CreateUsingDotnet("console");
                              packageBuilder.TrySetLanguageVersion("8.0");
                              packageBuilder.AddPackageReference("Newtonsoft.Json");
                          });
@@ -125,7 +125,7 @@ namespace WorkspaceServer
             registry.Add("nodatime.api",
                          packageBuilder =>
                          {
-                             packageBuilder.CreatePackageInitializer("console");
+                             packageBuilder.CreateUsingDotnet("console");
                              packageBuilder.TrySetLanguageVersion("8.0");
                              packageBuilder.AddPackageReference("NodaTime", "2.3.0");
                              packageBuilder.AddPackageReference("NodaTime.Testing", "2.3.0");
@@ -135,14 +135,14 @@ namespace WorkspaceServer
             registry.Add("aspnet.webapi",
                          packageBuilder =>
                          {
-                             packageBuilder.CreatePackageInitializer("webapi");
+                             packageBuilder.CreateUsingDotnet("webapi");
                              packageBuilder.TrySetLanguageVersion("8.0");
                          });
 
             registry.Add("xunit",
                          packageBuilder =>
                          {
-                             packageBuilder.CreatePackageInitializer("xunit", "tests");
+                             packageBuilder.CreateUsingDotnet("xunit", "tests");
                              packageBuilder.TrySetLanguageVersion("8.0");
                              packageBuilder.AddPackageReference("Newtonsoft.Json");
                              packageBuilder.DeleteFile("UnitTest1.cs");
@@ -151,7 +151,7 @@ namespace WorkspaceServer
             registry.Add("blazor-console",
                          packageBuilder =>
                          {
-                             packageBuilder.CreatePackageInitializer("classlib");
+                             packageBuilder.CreateUsingDotnet("classlib");
                              packageBuilder.AddPackageReference("Newtonsoft.Json");
                          });
 
@@ -159,7 +159,7 @@ namespace WorkspaceServer
             registry.Add("blazor-nodatime.api",
                          packageBuilder =>
                          {
-                             packageBuilder.CreatePackageInitializer("classlib");
+                             packageBuilder.CreateUsingDotnet("classlib");
                              packageBuilder.DeleteFile("Class1.cs");
                              packageBuilder.AddPackageReference("NodaTime", "2.4.4");
                              packageBuilder.AddPackageReference("NodaTime.Testing", "2.4.4");
