@@ -19,7 +19,8 @@ namespace MLS.Agent.CommandLine
                 options.AddSource)).ThrowOnFailure();
 
             var commandPath = Path.Combine(options.Location.FullName, options.PackageName);
-            (await MLS.Agent.Tools.CommandLine.Execute(commandPath, "extract-package")).ThrowOnFailure();
+            var result = (await MLS.Agent.Tools.CommandLine.Execute(commandPath, "extract-package"));
+            result.ThrowOnFailure();
             (await MLS.Agent.Tools.CommandLine.Execute(commandPath, "prepare-package")).ThrowOnFailure();
 
         }

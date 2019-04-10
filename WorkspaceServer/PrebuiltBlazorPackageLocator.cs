@@ -30,7 +30,7 @@ namespace WorkspaceServer
 
                 foreach (var toolName in toolNames)
                 {
-                    if (toolName.StartsWith("dotnettry."))
+                    if (toolName.StartsWith(name))
                     {
                         operation.Info($"Checking tool {toolName}");
                         var result = await CommandLine.Execute(Path.Combine(_packagesDirectory.FullName, toolName), "locate-projects");

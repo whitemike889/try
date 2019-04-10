@@ -51,13 +51,12 @@ namespace WorkspaceServer.Tests
             var asset = await NetstandardWorkspaceCopy(testName);
             var name = Path.GetFileNameWithoutExtension(asset.Directory.GetFiles("*.csproj").First().Name);
             string packageName = $"{asset.Directory.Name}";
-            string fullPackageName = $"dotnettry.{packageName}";
             var console = new TestConsole();
             await PackCommand.Do(new PackOptions(asset.Directory, enableBlazor: true, packageName: packageName), console);
             var nupkg = asset.Directory
                 .GetFiles("*.nupkg").Single();
 
-            return (fullPackageName, nupkg.Directory);
+            return (packageName, nupkg.Directory);
         }
 
         public static async Task<BlazorPackage> BlazorPackage([CallerMemberName] string testName = null)

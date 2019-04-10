@@ -28,12 +28,12 @@ namespace MLS.Agent.Tests
                 var temp = directory.Directory;
                 var asset = (await Create.ConsoleWorkspaceCopy()).Directory;
                 await PackCommand.Do(new PackOptions(asset, outputDirectory: temp, enableBlazor: false), console);
-                var result = await Tools.CommandLine.Execute("dotnet", $"tool install --add-source {temp.FullName} dotnettry.console --tool-path {temp.FullName}");
+                var result = await Tools.CommandLine.Execute("dotnet", $"tool install --add-source {temp.FullName} console --tool-path {temp.FullName}");
                 output.WriteLine(string.Join("\n", result.Error));
                 result.ExitCode.Should().Be(0);
 
                 var strategy = new LocalToolInstallingPackageDiscoveryStrategy(temp);
-                var tool = await strategy.Locate(new PackageDescriptor("dotnettry.console"));
+                var tool = await strategy.Locate(new PackageDescriptor("console"));
                 tool.Should().NotBeNull();
                 tool.PackageInitializer.Should().BeOfType<PackageToolInitializer>();
             }
@@ -58,7 +58,7 @@ namespace MLS.Agent.Tests
             var asset = await LocalToolHelpers.CreateTool(console);
 
             var strategy = new LocalToolInstallingPackageDiscoveryStrategy(asset, asset);
-            var package = await strategy.Locate(new PackageDescriptor("dotnettry.blazor-console"));
+            var package = await strategy.Locate(new PackageDescriptor("blazor-console"));
             package.Should().NotBeNull();
         }
     }

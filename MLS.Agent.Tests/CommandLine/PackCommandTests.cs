@@ -48,8 +48,7 @@ namespace MLS.Agent.Tests.CommandLine
         {
             var asset = await Create.NetstandardWorkspaceCopy();
 
-            var name = Path.GetFileNameWithoutExtension(asset.Directory.GetFiles("*.csproj").First().Name);
-            string packageName = $"dotnettry.{name}";
+            var packageName = Path.GetFileNameWithoutExtension(asset.Directory.GetFiles("*.csproj").First().Name);
 
             var console = new TestConsole();
 
@@ -72,7 +71,7 @@ namespace MLS.Agent.Tests.CommandLine
             var projectDirectory = new DirectoryInfo(string.Join("", result.Output));
             var subDirectories = projectDirectory.GetDirectories();
             subDirectories.Should().Contain(d => d.Name == "packTarget");
-            subDirectories.Should().Contain(d => d.Name == $"runner-{name}");
+            subDirectories.Should().Contain(d => d.Name == $"runner-{packageName}");
 
         }
 
