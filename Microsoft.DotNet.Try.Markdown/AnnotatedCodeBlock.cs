@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using Markdig.Helpers;
 using Markdig.Parsers;
@@ -80,6 +81,13 @@ namespace Microsoft.DotNet.Try.Markdown
             AddAttribute("data-trydotnet-order", Order.ToString("F0"));
 
             AddAttribute("data-trydotnet-mode", annotations.Editable ? "editor" : "include");
+
+            if (annotations.DestinationFile != null)
+            {
+                AddAttributeIfNotExist(
+                    "data-trydotnet-file-name",
+                    Path.GetFileName(annotations.DestinationFile.Value));
+            }
 
             if (annotations.Hidden)
             {
@@ -163,6 +171,11 @@ namespace Microsoft.DotNet.Try.Markdown
         public void AddAttribute(string key, string value)
         {
             this.GetAttributes().AddProperty(key, value);
+        }
+
+        public void AddAttributeIfNotExist(string key, string value)
+        {
+            this.GetAttributes().AddPropertyIfNotExist(key, value);
         }
 
         internal void EnsureInitialized()
