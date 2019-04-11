@@ -74,5 +74,47 @@ Console.WriteLine(""Hello world!"");
                     .Should()
                     .Be(packageVersion);
         }
+
+        [Fact]
+        public void Adds_file_name_attribute()
+        {
+            var fileName = "Program.cs";
+
+            var pipeline = new MarkdownPipelineBuilder()
+                           .UseCodeBlockAnnotations()
+                           .Build();
+
+            var markdown = $@"
+
+```cs --destination-file {fileName}
+Console.WriteLine(""Hello world!"");
+```
+";
+
+            var writer = new StringWriter();
+
+            var context = new MarkdownParserContext();
+
+            Markdig.Markdown.ToHtml(
+                 markdown,
+                 writer,
+                 pipeline,
+                 context);
+
+            var html = writer.ToString();
+
+            _output.WriteLine(html);
+
+            var htmlDocument = new HtmlDocument();
+            htmlDocument.LoadHtml(html);
+
+            var codeNode = htmlDocument.DocumentNode
+                                       .SelectSingleNode("//pre/code");
+
+            codeNode.Attributes["data-trydotnet-file-name"]
+                    .Value
+                    .Should()
+                    .Be(fileName);
+        }
     }
 }
