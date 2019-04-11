@@ -67,6 +67,15 @@ namespace Snippets
 using System.Text;
 ```
 
+the following code will run before the editable part
+```cs --editable false --destination-file .\Snippets\Program.cs --session "Run example 1" --region run1
+Console.WriteLine("before the region");
+```
 readonly code is part of the compialtion, try using the `VisibleObject` or the `HiddenObject`.
 ```csharp --source-file .\Snippets\Program.cs --project .\Snippets\Snippets.csproj --session "Run example 1" --region run1
+```
+
+the following code will run after the editable part
+```cs --editable false --destination-file .\Snippets\Program.cs --session "Run example 1" --region run1
+Console.WriteLine("after the region");
 ```
