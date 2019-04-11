@@ -83,6 +83,42 @@ namespace Microsoft.DotNet.Try.Project.Tests
         }
 
         [Fact]
+        public async Task Buffers_can_be_injected_according_to_injection_points()
+        {
+            var original = new Workspace(
+                files: new[]
+                {
+                    new Workspace.File("Program.cs", SourceCodeProvider.ConsoleProgramSingleRegion)
+                },
+                buffers: new[]
+                {
+                    new Workspace.Buffer("Program.cs@alpha[before]", "var before = 1000;".EnforceLF()),
+                    new Workspace.Buffer("Program.cs@alpha[after]", "var after = 1000;".EnforceLF()),
+                    new Workspace.Buffer("Program.cs@alpha", "var inlined = 1000;".EnforceLF())
+                });
+            var processor = new BufferInliningTransformer();
+
+            var processed = await processor.TransformAsync(original);
+            processed.Should().NotBeNull();
+            processed.Files.Should().NotBeEmpty();
+            var newCode = processed.Files.ElementAt(0).Text;
+
+            newCode.Should().NotBe(original.Files.ElementAt(0).Text);
+            newCode.Should().Contain("var before = 1000;");
+            newCode.Should().Contain("var inlined = 1000;");
+            newCode.Should().Contain("var after = 1000;");
+
+            var beforeBuffer = processed.Buffers.First(b => b.Id.RegionName.Contains("before"));
+            beforeBuffer.AbsolutePosition.Should().Be(155);
+
+            var inlinedBuffer = processed.Buffers.First(b => b.Id.RegionName == "alpha");
+            inlinedBuffer.AbsolutePosition.Should().Be(188);
+
+            var afterBuffer = processed.Buffers.First(b => b.Id.RegionName.Contains("after"));
+            afterBuffer.AbsolutePosition.Should().Be(235);
+        }
+
+        [Fact]
         public async Task Buffer_can_be_injected_after_region()
         {
             var original = new Workspace(
