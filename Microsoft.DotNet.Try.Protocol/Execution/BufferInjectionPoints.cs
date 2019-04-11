@@ -1,8 +1,8 @@
 ﻿namespace Microsoft.DotNet.Try.Protocol.Execution
 {
-    public enum BufferInjectionPoint
+    public enum BufferInjectionPoints
     {
-        InPlace,
+        Replace,
         Before,
         After
     }

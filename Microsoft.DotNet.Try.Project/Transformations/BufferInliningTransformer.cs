@@ -83,15 +83,15 @@ namespace Microsoft.DotNet.Try.Project.Transformations
             return (processedFiles, processedBuffers);
         }
         private static Task InjectBuffer(Viewport viewPort, Workspace.Buffer sourceBuffer, ICollection<Workspace.Buffer> buffers, IDictionary<string, SourceFile> files,
-            BufferInjectionPoint bufferIdInjectionPoint)
+            BufferInjectionPoints bufferIdInjectionPoints)
         {
             TextSpan targetSpan;
-            switch (bufferIdInjectionPoint)
+            switch (bufferIdInjectionPoints)
             {
-                case BufferInjectionPoint.Before:
+                case BufferInjectionPoints.Before:
                     targetSpan = CreateTextSpanBefore(viewPort.OuterRegion);
                     break;
-                case BufferInjectionPoint.After:
+                case BufferInjectionPoints.After:
                     targetSpan = CreateTextSpanAfter(viewPort.OuterRegion);
                     break;
                 default:

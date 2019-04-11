@@ -73,24 +73,24 @@ namespace Microsoft.DotNet.Try.Protocol.Execution
         }
 
      
-        public BufferInjectionPoint GetInjectionPoint()
+        public BufferInjectionPoints GetInjectionPoint()
         {
             if (string.IsNullOrWhiteSpace(RegionName))
             {
-                return BufferInjectionPoint.InPlace;
+                return BufferInjectionPoints.Replace;
             }
 
             if (RegionName.Contains(BeforeInjectionModifier))
             {
-                return BufferInjectionPoint.Before;
+                return BufferInjectionPoints.Before;
             }
 
             if (RegionName.Contains(AfterInjectionModifier))
             {
-                return BufferInjectionPoint.After;
+                return BufferInjectionPoints.After;
             }
 
-            return BufferInjectionPoint.InPlace;
+            return BufferInjectionPoints.Replace;
         }
         public static BufferId Empty { get; } = new BufferId("");
 
