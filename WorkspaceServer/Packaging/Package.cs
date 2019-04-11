@@ -762,7 +762,7 @@ namespace WorkspaceServer.Packaging
             //         |--> runner-abc 
             // The packTarget is the project that contains this packaga
             //Hence the parent directory must be looked for the blazor runner
-            return Directory.Parent.GetDirectories($"runner-{Name}").Count() == 1;
+            return Directory.Parent.GetDirectories($"runner-{Name}").Length == 1;
         }
     }
 }

@@ -91,6 +91,16 @@ namespace WorkspaceServer.Packaging
             }
         }
 
+        public bool CanSupportBlazor()
+        {
+            // The directory structure for the blazor packages is as follows
+            // project |--> packTarget
+            //         |--> runner-abc 
+            // The packTarget is the project that contains this packaga
+            //Hence the parent directory must be looked for the blazor runner
+            return _canSupportBlazor ?? (_canSupportBlazor = Directory.Parent.GetDirectories($"runner-{Name}").Length == 1);
+        }
+
         public virtual async Task FullBuild()
         {
             await DotnetBuild();
