@@ -7,7 +7,6 @@ using Newtonsoft.Json;
 
 namespace MLS.WasmCodeRunner
 {
-
     public class CodeRunner
     {
         public static InteropMessage<RunResponse> ProcessCompileResult(string message)
@@ -33,18 +32,15 @@ namespace MLS.WasmCodeRunner
             }
         }
 
-
         public static InteropMessage<RunResponse> ProcessCompileResult(CompileResult compileResult, int sequence)
         {
             List<string> output = new List<string>();
             string runnerException = null;
-            var bytes = System.Convert.FromBase64String(compileResult.base64assembly);
+            var bytes = Convert.FromBase64String(compileResult.base64assembly);
             var writer = new StringWriter();
             try
             {
                 var assembly = Assembly.Load(bytes);
-
-                var currentOut = Console.Out;
 
                 Console.SetOut(writer);
 
@@ -60,7 +56,9 @@ namespace MLS.WasmCodeRunner
 
                     if (main == null)
                     {
-                        var result = new RunResponse(succeeded: false, exception: null,
+                        var result = new RunResponse(
+                            succeeded: false, 
+                            exception: null,
                             output: new[] { "error CS5001: Program does not contain a static 'Main' method suitable for an entry point" },
                             diagnostics: Array.Empty<SerializableDiagnostic>(),
                             runnerException: null);

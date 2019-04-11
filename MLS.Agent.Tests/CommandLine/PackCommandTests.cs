@@ -9,7 +9,6 @@ using WorkspaceServer.Tests;
 using Xunit;
 
 namespace MLS.Agent.Tests.CommandLine
-
 {
     public class PackCommandTests
     {
