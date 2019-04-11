@@ -9,12 +9,10 @@ namespace WorkspaceServer.PackageDiscovery
     public class PackageToolInitializer : IPackageInitializer
     {
         private readonly string _toolName;
-        private readonly DirectoryInfo _workingDirectory;
 
-        public PackageToolInitializer(string toolName, DirectoryInfo workingDirectory)
+        public PackageToolInitializer(string toolName)
         {
             _toolName = toolName;
-            _workingDirectory = workingDirectory;
         }
 
         public Task Initialize(DirectoryInfo directory, Budget budget = null)

@@ -31,8 +31,8 @@ ENV NUGET_XMLDOC_MODE=none
 RUN dotnet tool install -g --version 1.0.87 t-rex
 RUN dotnet new -i Microsoft.AspNetCore.Blazor.Templates::0.7.0
 
-RUN dotnet MLS.Agent.dll pack /workspaces/blazor-ms.logging
-RUN ls /workspaces/blazor-ms.logging
-RUN dotnet MLS.Agent.dll install  dotnettry.blazor-ms.logging --add-source /workspaces/blazor-ms.logging
+# RUN dotnet MLS.Agent.dll pack /workspaces/blazor-ms.logging
+# RUN ls /workspaces/blazor-ms.logging
+# RUN dotnet MLS.Agent.dll install  blazor-ms.logging --add-source /workspaces/blazor-ms.logging
 
 ENTRYPOINT ["dotnet", "MLS.Agent.dll", "hosted"]

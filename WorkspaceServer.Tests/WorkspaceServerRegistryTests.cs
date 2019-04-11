@@ -36,7 +36,7 @@ namespace WorkspaceServer.Tests
             registry.Add(packageName,
                          options => options.CreateUsingDotnet("console"));
 
-            var package = await registry.Get(packageName);
+            var package = (Package) await registry.Get(packageName);
 
             var workspace = await package.CreateRoslynWorkspaceForRunAsync(new TimeBudget(30.Seconds()));
 
@@ -86,9 +86,9 @@ namespace Twilio_try.dot.net_sample
         [Fact]
         public async Task GetWorkspace_will_check_workspaces_directory_if_requested_workspace_was_not_registered()
         {
-            var unregisteredWorkspace = await Default.ConsoleWorkspace;
+            var unregisteredWorkspace = await Default.ConsoleWorkspace();
 
-            var package = await registry.Get(unregisteredWorkspace.Name);
+            var package = (Package) await registry.Get(unregisteredWorkspace.Name);
 
             package.Directory.FullName.Should().Be(unregisteredWorkspace.Directory.FullName);
             (await package.CreateRoslynWorkspaceForRunAsync(new TimeBudget(30.Seconds()))).CurrentSolution.Projects.Should().HaveCount(1);
@@ -97,7 +97,7 @@ namespace Twilio_try.dot.net_sample
         [Fact]
         public async Task When_workspace_was_not_registered_then_GetWorkspaceServer_will_return_a_working_server()
         {
-            var unregisteredWorkspace = await Default.ConsoleWorkspace;
+            var unregisteredWorkspace = await Default.ConsoleWorkspace();
             var server = new RoslynWorkspaceServer(registry);
 
             var workspaceRequest = WorkspaceRequestFactory.CreateRequestFromDirectory(unregisteredWorkspace.Directory, unregisteredWorkspace.Name);

@@ -16,7 +16,6 @@ namespace MLS.Agent.CommandLine
             CommandLineParser.StartServer startServer = null,
             InvocationContext context = null)
         {
-            
             var extractDemoFiles = true;
 
             if (!options.Output.Exists)
@@ -56,8 +55,6 @@ namespace MLS.Agent.CommandLine
                     }
                 }
             }
-
-
           
             startServer?.Invoke(new StartupOptions(
                                     uri: new Uri("QuickStart.md", UriKind.Relative),

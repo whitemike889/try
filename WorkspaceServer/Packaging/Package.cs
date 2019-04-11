@@ -27,13 +27,13 @@ using Disposable = System.Reactive.Disposables.Disposable;
 
 namespace WorkspaceServer.Packaging
 {
-    public abstract class Package
+    public abstract class Package : PackageBase
     {
-     
+        internal const string DesignTimeBuildBinlogFileName = "package_designTimeBuild.binlog";
+        private static readonly object _createDirectoryLock = new object();
 
-      
         private static readonly ConcurrentDictionary<string, SemaphoreSlim> _packageBuildSemaphores = new ConcurrentDictionary<string, SemaphoreSlim>();
-        private static ConcurrentDictionary<string, SemaphoreSlim> _packagePublishSemaphores = new ConcurrentDictionary<string, SemaphoreSlim>();
+        private static readonly ConcurrentDictionary<string, SemaphoreSlim> _packagePublishSemaphores = new ConcurrentDictionary<string, SemaphoreSlim>();
 
         static Package()
         {
@@ -58,8 +58,6 @@ namespace WorkspaceServer.Packaging
             Log.Info("Packages path is {DefaultWorkspacesDirectory}", DefaultPackagesDirectory);
         }
 
-        private readonly IPackageInitializer _initializer;
-        private static readonly object _lockObj = new object();
         private bool? _isWebProject;
         private bool? _isUnitTestProject;
         private FileInfo _entryPointAssemblyPath;
@@ -69,7 +67,6 @@ namespace WorkspaceServer.Packaging
 
         private readonly IScheduler _buildThrottleScheduler;
         private readonly SerialDisposable _fullBuildThrottlerSubscription;
-        private readonly AsyncLazy<bool> _lazyCreation;
 
         private readonly SemaphoreSlim _buildSemaphore;
         private readonly SemaphoreSlim _publishSemaphore;
@@ -87,18 +84,14 @@ namespace WorkspaceServer.Packaging
             string name = null,
             IPackageInitializer initializer = null,
             DirectoryInfo directory = null,
-            IScheduler buildThrottleScheduler = null)
+            IScheduler buildThrottleScheduler = null) : base(name, initializer, directory)
         {
-            Name = name ?? directory?.Name ?? throw new ArgumentException($"You must specify {nameof(name)}, {nameof(directory)}, or both.");
-            _initializer = initializer ?? new PackageInitializer("console", Name);
-            ConstructionTime = Clock.Current.Now();
-            Directory = directory ?? new DirectoryInfo(Path.Combine(DefaultPackagesDirectory.FullName, Name));
-            LastBuildErrorLogFile = new FileInfo(Path.Combine(Directory.FullName, ".trydotnet-builderror"));
+        
+            Initializer = initializer ?? new PackageInitializer("console", Name);
+        
             _log = new Logger($"{nameof(Package)}:{Name}");
             _buildThrottleScheduler = buildThrottleScheduler ?? TaskPoolScheduler.Default;
 
-            DesignTimeBuildBinlogFileName = "package_designTimeBuild.binlog";
-            FullBuildBinlogFileName = "package_fullBuild.binlog";
             _fullBuildRequestChannel = new Subject<Budget>();
             _fullBuildThrottlerSubscription = new SerialDisposable();
 
@@ -108,14 +101,12 @@ namespace WorkspaceServer.Packaging
             SetupWorkspaceCreationFromBuildChannel();
             SetupWorkspaceCreationFromDesignTimeBuildChannel();
             TryLoadDesignTimeBuildFromBuildLog();
-            _lazyCreation = new AsyncLazy<bool>(Create);
+            
             _buildSemaphore = _packageBuildSemaphores.GetOrAdd(Name, _ => new SemaphoreSlim(1, 1));
             _publishSemaphore = _packagePublishSemaphores.GetOrAdd(Name, _ => new SemaphoreSlim(1, 1));
             RoslynWorkspace = null;
         }
 
-        protected string DesignTimeBuildBinlogFileName { get; }
-        protected string FullBuildBinlogFileName { get; }
 
         private FileInfo FindLatestBinLog() => FindBinLogs().OrderByDescending(f => f.LastWriteTimeUtc).FirstOrDefault();
         private IEnumerable<FileInfo> FindBinLogs() => Directory.GetFiles("*.binlog").Where(f => f.FullName.EndsWith(FullBuildBinlogFileName) || f.FullName.EndsWith(DesignTimeBuildBinlogFileName));
@@ -148,7 +139,6 @@ namespace WorkspaceServer.Packaging
 
         private void LoadDesignTimeBuildFromBuildLogFile(FileSystemInfo binLog)
         {
-            
             var projectFile = GetProjectFile();
             if (projectFile != null && binLog.LastWriteTimeUtc >= projectFile.LastWriteTimeUtc)
             {
@@ -178,10 +168,7 @@ namespace WorkspaceServer.Packaging
             }
         }
 
-        private FileInfo GetProjectFile()
-        {
-            return Directory.GetFiles("*.csproj").FirstOrDefault();
-        }
+   
 
         private void TryLoadDesignTimeBuildFromBuildLog()
         {
@@ -195,18 +182,10 @@ namespace WorkspaceServer.Packaging
             }
         }
 
-        
-
         private DateTimeOffset? LastDesignTimeBuild { get; set; }
 
-        private bool IsDirectoryCreated { get; set; }
-        private FileInfo LastBuildErrorLogFile { get; }
 
-        public DateTimeOffset? ConstructionTime { get; }
-
-        public DateTimeOffset? CreationTime { get; private set; }
-
-        public DateTimeOffset? LastSuccessfulBuildTime { get; private set; }
+        private DateTimeOffset? LastSuccessfulBuildTime { get; set; }
 
         public DateTimeOffset? PublicationTime { get; private set; }
 
@@ -238,49 +217,12 @@ namespace WorkspaceServer.Packaging
             }
         }
 
-        public DirectoryInfo Directory { get; set; }
-
-        public string Name { get; }
-
         public static DirectoryInfo DefaultPackagesDirectory { get; }
 
         public FileInfo EntryPointAssemblyPath => _entryPointAssemblyPath ?? (_entryPointAssemblyPath = GetEntryPointAssemblyPath(Directory, IsWebProject));
 
         public string TargetFramework => _targetFramework ?? (_targetFramework = GetTargetFramework(Directory));
-
-        public DateTimeOffset? ReadyTime { get; set; }
-
-        protected async Task<bool> Create()
-        {
-            using (var operation = _log.OnEnterAndConfirmOnExit())
-            {
-                //to do: identify if this flag is needed
-                if (!IsDirectoryCreated)
-                {
-                    Directory.Refresh();
-
-                    if (!Directory.Exists)
-                    {
-                        operation.Info("Creating directory {directory}", Directory);
-                        Directory.Create();
-                        Directory.Refresh();
-                    }
-
-                    IsDirectoryCreated = true;
-                }
-
-                if (Directory.GetFiles("*", SearchOption.AllDirectories).Length == 0)
-                {
-                    operation.Info("Initializing package using {_initializer} in {directory}", _initializer, Directory);
-                    await _initializer.Initialize(Directory);
-                }
-
-                CreationTime = Clock.Current.Now();
-                operation.Succeed();
-                return true;
-            }
-        }
-
+        
         public Task<Workspace> CreateRoslynWorkspaceForRunAsync(Budget budget)
         {
             var shouldBuild = ShouldDoFullBuild();
@@ -298,7 +240,7 @@ namespace WorkspaceServer.Packaging
 
         public Task<Workspace> CreateRoslynWorkspaceForLanguageServicesAsync(Budget budget)
         {
-            var shouldBuild = ShouldDoDesignTimeFullBuild();
+            var shouldBuild = ShouldDoDesignTimeBuild();
             if (!shouldBuild)
             {
                 var ws = RoslynWorkspace ?? CreateRoslynWorkspace();
@@ -485,13 +427,9 @@ namespace WorkspaceServer.Packaging
 
         protected Workspace RoslynWorkspace { get; set; }
 
-        private async Task EnsureReady(Budget budget)
+        public override async Task EnsureReady(Budget budget)
         {
-            budget = budget ?? new Budget();
-
-            await EnsureCreated().CancelIfExceeds(budget);
-
-            await EnsureBuilt().CancelIfExceeds(budget);
+            await base.EnsureReady(budget);
 
             if (RequiresPublish)
             {
@@ -501,13 +439,12 @@ namespace WorkspaceServer.Packaging
             budget.RecordEntry();
         }
 
-        protected Task<bool> EnsureCreated() => _lazyCreation.ValueAsync();
-
-        protected async Task EnsureBuilt([CallerMemberName] string caller = null)
+        protected override async Task EnsureBuilt([CallerMemberName] string caller = null)
         {
-            await EnsureCreated();
             using (var operation = _log.OnEnterAndConfirmOnExit())
             {
+                await EnsureCreated();
+
                 if (ShouldDoFullBuild())
                 {
                     await FullBuild();
@@ -526,7 +463,7 @@ namespace WorkspaceServer.Packaging
             await EnsureCreated();
             using (var operation = _log.OnEnterAndConfirmOnExit())
             {
-                if (ShouldDoDesignTimeFullBuild())
+                if (ShouldDoDesignTimeBuild())
                 {
                     DesignTimeBuild();
                 }
@@ -554,9 +491,9 @@ namespace WorkspaceServer.Packaging
 
         public bool RequiresPublish => IsWebProject;
 
-        public async Task FullBuild()
+        public override async Task FullBuild()
         {
-            using (var operation = _log.OnEnterAndConfirmOnExit())
+            using (var operation = Log.OnEnterAndConfirmOnExit())
             {
                 try
                 {
@@ -564,7 +501,7 @@ namespace WorkspaceServer.Packaging
 
                     var buildInProgress = _buildSemaphore.CurrentCount == 0;
                     await _buildSemaphore.WaitAsync();
-                    CommandLineResult result;
+
                     using (Disposable.Create(() => _buildSemaphore.Release()))
                     {
                         if (buildInProgress)
@@ -572,30 +509,10 @@ namespace WorkspaceServer.Packaging
                             operation.Info("Skipping build for package {name}", Name);
                             return;
                         }
-                        var projectFile = GetProjectFile();
-                        var args = $"/bl:{FullBuildBinlogFileName}";
-                        if (projectFile?.Exists == true)
-                        {
-                            args = $"{projectFile.FullName} {args}";
-                        }
-                        operation.Info("Building workspace using {_initializer} in {directory}", _initializer, Directory);
-                        result = await new Dotnet(Directory)
-                            .Build(args: args);
+
+                        await DotnetBuild();
                     }
 
-                    if (result.ExitCode != 0)
-                    {
-                        File.WriteAllText(
-                            LastBuildErrorLogFile.FullName,
-                            string.Join(Environment.NewLine, result.Error));
-                    }
-                    else if (LastBuildErrorLogFile.Exists)
-                    {
-                        LastBuildErrorLogFile.Delete();
-                    }
-
-
-                    result.ThrowOnFailure();
                     operation.Info("Workspace built");
 
                     operation.Succeed();
@@ -610,7 +527,7 @@ namespace WorkspaceServer.Packaging
                 LoadDesignTimeBuildFromBuildLogFile(binLog);
             }
         }
-
+     
         protected async Task Publish()
         {
             using (var operation = _log.OnEnterAndConfirmOnExit())
@@ -645,7 +562,8 @@ namespace WorkspaceServer.Packaging
             Package fromPackage,
             string folderNameStartsWith = null,
             bool isRebuildable = false,
-            IScheduler buildThrottleScheduler = null)
+            IScheduler buildThrottleScheduler = null,
+            DirectoryInfo parentDirectory = null)
         {
             if (fromPackage == null)
             {
@@ -653,50 +571,37 @@ namespace WorkspaceServer.Packaging
             }
 
             await fromPackage.EnsureReady(new Budget());
-          
+
             folderNameStartsWith = folderNameStartsWith ?? fromPackage.Name;
-            var parentDirectory = fromPackage.Directory.Parent;
+            parentDirectory = parentDirectory ?? fromPackage.Directory.Parent;
 
-            var destination = CreateDirectory(folderNameStartsWith, parentDirectory);
-
-            return await Copy(fromPackage, destination, isRebuildable, buildThrottleScheduler);
-        }
-
-        private static async Task<Package> Copy(Package fromPackage,
-            DirectoryInfo destination,
-            bool isRebuildable,
-            IScheduler buildThrottleScheduler)
-        {
-            if (fromPackage == null)
-            {
-                throw new ArgumentNullException(nameof(fromPackage));
-            }
-
-            await fromPackage.EnsureReady(new Budget());
+            var destination =
+                CreateDirectory(folderNameStartsWith,
+                                parentDirectory);
 
             fromPackage.Directory.CopyTo(destination);
-            
+
             var binLogs = destination.GetFiles("*.binlog");
 
             foreach (var fileInfo in binLogs)
             {
                 fileInfo.Delete();
             }
-            
+
             Package copy;
             if (isRebuildable)
             {
                 copy = new RebuildablePackage(directory: destination, name: destination.Name, buildThrottleScheduler: buildThrottleScheduler)
-                {
-                    IsDirectoryCreated = true
-                };
+                       {
+                           IsDirectoryCreated = true
+                       };
             }
             else
             {
                 copy = new NonrebuildablePackage(directory: destination, name: destination.Name, buildThrottleScheduler: buildThrottleScheduler)
-                {
-                    IsDirectoryCreated = true
-                };
+                       {
+                           IsDirectoryCreated = true
+                       };
             }
 
             Log.Info(
@@ -720,8 +625,13 @@ namespace WorkspaceServer.Packaging
 
             DirectoryInfo created;
 
-            lock (_lockObj)
+            lock (_createDirectoryLock)
             {
+                if (!parentDirectory.Exists)
+                {
+                    parentDirectory.Create();
+                }
+
                 var existingFolders = parentDirectory.GetDirectories($"{folderNameStartsWith}.*");
 
                 created = parentDirectory.CreateSubdirectory($"{folderNameStartsWith}.{existingFolders.Length + 1}");
@@ -732,7 +642,7 @@ namespace WorkspaceServer.Packaging
 
         public override string ToString()
         {
-            return $"{Name} ({Directory.FullName}) ({new { CreationTime, LastSuccessfulBuildTime, PublicationTime }})";
+            return $"{Name} ({Directory.FullName})";
         }
 
         protected SyntaxTree CreateInstrumentationEmitterSyntaxTree()
@@ -758,14 +668,14 @@ namespace WorkspaceServer.Packaging
         protected virtual bool ShouldDoFullBuild()
         {
             return LastSuccessfulBuildTime == null
-                   || ShouldDoDesignTimeFullBuild()
+                   || ShouldDoDesignTimeBuild()
                    || (LastDesignTimeBuild > LastSuccessfulBuildTime);
         }
 
-        protected virtual bool ShouldDoDesignTimeFullBuild()
+        protected virtual bool ShouldDoDesignTimeBuild()
         {
             return DesignTimeBuildResult == null
-                   || (DesignTimeBuildResult.Succeeded == false);
+                   || DesignTimeBuildResult.Succeeded == false;
         }
 
         protected AnalyzerResult DesignTimeBuild()
@@ -843,6 +753,16 @@ namespace WorkspaceServer.Packaging
             }
 
             return new FileInfo(Path.Combine(path, entryPointAssemblyName));
+        }
+
+        public bool CanSupportBlazor()
+        {
+            // The directory structure for the blazor packages is as follows
+            // project |--> packTarget
+            //         |--> runner-abc 
+            // The packTarget is the project that contains this packaga
+            //Hence the parent directory must be looked for the blazor runner
+            return Directory.Parent.GetDirectories($"runner-{Name}").Count() == 1;
         }
     }
 }

@@ -24,14 +24,14 @@ namespace MLS.Agent.Blazor
                 var builder = builderFactory.Result;
                 if (builder.BlazorSupported)
                 {
-                    var package = builder.GetPackage() as BlazorPackage;
+                    var package = (BlazorPackage) builder.GetPackage();
                     if (PackageHasBeenBuiltAndHasBlazorStuff(package))
                     {
                         SetupMappingsForBlazorContentsOfPackage(package, app);
                     }
                     else if(prepareIfNeeded)
                     {
-                        prepareTasks.Add(Task.Run(package.Prepare).ContinueWith(t => {
+                        prepareTasks.Add(Task.Run(() => package.EnsureReady(budget)).ContinueWith(t => {
                             if (t.IsCompletedSuccessfully)
                             {
                                 SetupMappingsForBlazorContentsOfPackage(package, app);

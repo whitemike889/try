@@ -1,10 +1,8 @@
 ﻿using System.CommandLine;
 using System.IO;
 using System.Threading.Tasks;
-using MLS.Agent.CommandLine;
 using MLS.Agent.Tools;
 using WorkspaceServer;
-using WorkspaceServer.Packaging;
 
 namespace MLS.Agent.CommandLine
 {
@@ -19,9 +17,9 @@ namespace MLS.Agent.CommandLine
                 options.AddSource)).ThrowOnFailure();
 
             var commandPath = Path.Combine(options.Location.FullName, options.PackageName);
-            (await MLS.Agent.Tools.CommandLine.Execute(commandPath, "extract-package")).ThrowOnFailure();
-            (await MLS.Agent.Tools.CommandLine.Execute(commandPath, "prepare-package")).ThrowOnFailure();
 
+            (await Tools.CommandLine.Execute(commandPath, "extract-package")).ThrowOnFailure();
+            (await Tools.CommandLine.Execute(commandPath, "prepare-package")).ThrowOnFailure();
         }
     }
 }

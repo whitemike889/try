@@ -7,11 +7,12 @@ namespace WorkspaceServer.Tests
     {
         private static readonly PackageRegistry DefaultPackages = PackageRegistry.CreateForHostedMode();
 
-        public static Task<Package> ConsoleWorkspace => DefaultPackages.Get("console");
+        public static async Task<Package> ConsoleWorkspace() => (Package) await DefaultPackages.Get("console");
 
-        public static Task<Package> WebApiWorkspace => DefaultPackages.Get("aspnet.webapi");
+        public static async Task<Package> WebApiWorkspace() => (Package) await DefaultPackages.Get("aspnet.webapi");
 
-        public static Task<Package> XunitWorkspace => DefaultPackages.Get("xunit");
-        public static Task<Package> NetstandardWorkspace => DefaultPackages.Get("blazor-console");
+        public static async Task<Package> XunitWorkspace() => (Package) await DefaultPackages.Get("xunit");
+
+        public static async Task<Package> NetstandardWorkspace() => (Package) await DefaultPackages.Get("blazor-console");
     }
 }

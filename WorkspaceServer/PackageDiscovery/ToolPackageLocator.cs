@@ -4,17 +4,19 @@ using System.Linq;
 using System.Threading.Tasks;
 using Clockwise;
 using MLS.Agent.Tools;
+using Pocket;
 using WorkspaceServer.Packaging;
+using static Pocket.Logger<WorkspaceServer.PackageDiscovery.ToolPackageLocator>;
 
 namespace WorkspaceServer.PackageDiscovery
 {
     internal class ToolPackageLocator
     {
-        readonly string _basePath;
+        private readonly string _basePath;
 
-        public ToolPackageLocator(string basePath)
+        public ToolPackageLocator(string basePath = "")
         {
-            _basePath = basePath ?? throw new ArgumentNullException(nameof(basePath));
+            _basePath = basePath ?? "";
         }
 
         public async Task<Package> LocatePackageAsync(string name, Budget budget)
@@ -39,7 +41,7 @@ namespace WorkspaceServer.PackageDiscovery
 
             var directory = output;
             var projectDirectory = Path.Combine(directory, "packTarget");
-            Console.WriteLine($"Project: {projectDirectory}");
+            Log.Info($"Project: {projectDirectory}");
             var package = new NonrebuildablePackage(name, directory: new DirectoryInfo(projectDirectory));
             return package;
         }

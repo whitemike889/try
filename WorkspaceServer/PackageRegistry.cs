@@ -14,8 +14,8 @@ namespace WorkspaceServer
     public class PackageRegistry : IEnumerable<Task<PackageBuilder>>
     {
         private readonly ConcurrentDictionary<string, Task<PackageBuilder>> _packageBuilders = new ConcurrentDictionary<string, Task<PackageBuilder>>();
-        private readonly ConcurrentDictionary<string, Task<Package>> _packages = new ConcurrentDictionary<string, Task<Package>>();
-        private readonly IEnumerable<IPackageDiscoveryStrategy> _strategies;
+        private readonly ConcurrentDictionary<string, Task<PackageBase>> _packages = new ConcurrentDictionary<string, Task<PackageBase>>();
+        private readonly List<IPackageDiscoveryStrategy> _strategies = new List<IPackageDiscoveryStrategy>();
         private readonly bool _createRebuildablePackage;
 
         public PackageRegistry(
@@ -24,8 +24,7 @@ namespace WorkspaceServer
             : this(createRebuildablePackage, new IPackageDiscoveryStrategy[]
             {
                 new ProjectFilePackageDiscoveryStrategy(),
-                new DirectoryPackageDiscoveryStrategy(),
-                new GlobalToolPackageDiscoveryStrategy(),
+                new DirectoryPackageDiscoveryStrategy()
             }.Concat(additionalStrategies))
         {
         }
@@ -33,7 +32,16 @@ namespace WorkspaceServer
         private PackageRegistry(bool createRebuildablePackage, IEnumerable<IPackageDiscoveryStrategy> strategies)
         {
             _createRebuildablePackage = createRebuildablePackage;
-            _strategies = strategies;
+
+            foreach (var strategy in strategies)
+            {
+                if (strategy == null)
+                {
+                    throw new ArgumentException($"Strategy cannot be null.");
+                }
+
+                _strategies.Add(strategy);
+            }
         }
 
         public void Add(string name, Action<PackageBuilder> configure)
@@ -53,7 +61,7 @@ namespace WorkspaceServer
             _packageBuilders.TryAdd(name, Task.FromResult(packageBuilder));
         }
       
-        public async Task<Package> Get(string packageName, Budget budget = null)
+        public async Task<PackageBase> Get(string packageName, Budget budget = null)
         {
             if (packageName == "script")
             {
@@ -88,17 +96,10 @@ namespace WorkspaceServer
             return package;
         }
 
-        public IEnumerable<Task<PackageInfo>> GetRegisteredPackageInfos()
-        {
-            var packageInfos = _packageBuilders?.Values.Select(async wb => (await wb).GetPackageInfo()).Where(info => info != null).ToArray() ?? Array.Empty<Task<PackageInfo>>();
-
-            return packageInfos;
-        }
-
         public static PackageRegistry CreateForTryMode(DirectoryInfo project, DirectoryInfo addSource = null)
         {
             var registry = new PackageRegistry(true,
-               new LocalToolPackageDiscoveryStrategy(Package.DefaultPackagesDirectory, addSource));
+               new LocalToolInstallingPackageDiscoveryStrategy(Package.DefaultPackagesDirectory, addSource));
 
             registry.Add(project.Name, builder =>
             {
@@ -111,59 +112,59 @@ namespace WorkspaceServer
 
         public static PackageRegistry CreateForHostedMode()
         {
-            var registry = new PackageRegistry();
+            var registry = new PackageRegistry(false, new LocalToolInstallingPackageDiscoveryStrategy(Package.DefaultPackagesDirectory));
 
             registry.Add("console",
-                         workspace =>
+                         packageBuilder =>
                          {
-                             workspace.CreateUsingDotnet("console");
-                             workspace.TrySetLanguageVersion("8.0");
-                             workspace.AddPackageReference("Newtonsoft.Json");
+                             packageBuilder.CreateUsingDotnet("console");
+                             packageBuilder.TrySetLanguageVersion("8.0");
+                             packageBuilder.AddPackageReference("Newtonsoft.Json");
                          });
 
             registry.Add("nodatime.api",
-                         workspace =>
+                         packageBuilder =>
                          {
-                             workspace.CreateUsingDotnet("console");
-                             workspace.TrySetLanguageVersion("8.0");
-                             workspace.AddPackageReference("NodaTime", "2.3.0");
-                             workspace.AddPackageReference("NodaTime.Testing", "2.3.0");
-                             workspace.AddPackageReference("Newtonsoft.Json");
+                             packageBuilder.CreateUsingDotnet("console");
+                             packageBuilder.TrySetLanguageVersion("8.0");
+                             packageBuilder.AddPackageReference("NodaTime", "2.3.0");
+                             packageBuilder.AddPackageReference("NodaTime.Testing", "2.3.0");
+                             packageBuilder.AddPackageReference("Newtonsoft.Json");
                          });
 
             registry.Add("aspnet.webapi",
-                         workspace =>
+                         packageBuilder =>
                          {
-                             workspace.CreateUsingDotnet("webapi");
-                             workspace.TrySetLanguageVersion("8.0");
+                             packageBuilder.CreateUsingDotnet("webapi");
+                             packageBuilder.TrySetLanguageVersion("8.0");
                          });
 
             registry.Add("xunit",
-                         workspace =>
+                         packageBuilder =>
                          {
-                             workspace.CreateUsingDotnet("xunit", "tests");
-                             workspace.TrySetLanguageVersion("8.0");
-                             workspace.AddPackageReference("Newtonsoft.Json");
-                             workspace.DeleteFile("UnitTest1.cs");
+                             packageBuilder.CreateUsingDotnet("xunit", "tests");
+                             packageBuilder.TrySetLanguageVersion("8.0");
+                             packageBuilder.AddPackageReference("Newtonsoft.Json");
+                             packageBuilder.DeleteFile("UnitTest1.cs");
                          });
 
             registry.Add("blazor-console",
-                         workspace =>
+                         packageBuilder =>
                          {
-                             workspace.CreateUsingDotnet("classlib");
-                             workspace.AddPackageReference("Newtonsoft.Json");
+                             packageBuilder.CreateUsingDotnet("classlib");
+                             packageBuilder.AddPackageReference("Newtonsoft.Json");
                          });
 
             // Todo: soemething about nodatime 2.3 makes blazor toolchain fail to build
             registry.Add("blazor-nodatime.api",
-                         workspace =>
+                         packageBuilder =>
                          {
-                             workspace.CreateUsingDotnet("classlib");
-                             workspace.DeleteFile("Class1.cs");
-                             workspace.AddPackageReference("NodaTime", "2.4.4");
-                             workspace.AddPackageReference("NodaTime.Testing", "2.4.4");
-                             workspace.AddPackageReference("Newtonsoft.Json");
-                             workspace.EnableBlazor(registry);
+                             packageBuilder.CreateUsingDotnet("classlib");
+                             packageBuilder.DeleteFile("Class1.cs");
+                             packageBuilder.AddPackageReference("NodaTime", "2.4.4");
+                             packageBuilder.AddPackageReference("NodaTime.Testing", "2.4.4");
+                             packageBuilder.AddPackageReference("Newtonsoft.Json");
+                             packageBuilder.EnableBlazor(registry);
                          });
                          
             registry.Add("blazor-ms.logging",

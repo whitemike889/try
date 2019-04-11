@@ -9,8 +9,8 @@ namespace WorkspaceServer.Packaging
 {
     public class PackageBuilder
     {
-        private Package _package;
-        private readonly List<Func<Package, Budget, Task>> _afterCreateActions = new List<Func<Package, Budget, Task>>();
+        private PackageBase _packageBase;
+        private readonly List<Func<PackageBase, Budget, Task>> _afterCreateActions = new List<Func<PackageBase, Budget, Task>>();
         private readonly List<string> _addPackages = new List<string>();
         private string _languageVersion = "8.0";
 
@@ -33,11 +33,6 @@ namespace WorkspaceServer.Packaging
         public bool CreateRebuildablePackage { get; internal set; }
         public bool BlazorSupported { get; private set; }
 
-        public void AfterCreate(Func<Package, Budget, Task> action)
-        {
-            _afterCreateActions.Add(action);
-        }
-
         public void CreateUsingDotnet(string template, string projectName = null)
         {
             PackageInitializer = new PackageInitializer(
@@ -58,7 +53,7 @@ namespace WorkspaceServer.Packaging
                 };
 
                 await action();
-               
+
             });
         }
 
@@ -72,7 +67,6 @@ namespace WorkspaceServer.Packaging
             var name = $"runner-{PackageName}";
             registry.Add(name, pb =>
             {
-
                 var initializer = new BlazorPackageInitializer(PackageName, _addPackages);
                 pb.PackageInitializer = initializer;
                 pb.BlazorSupported = true;
@@ -80,12 +74,10 @@ namespace WorkspaceServer.Packaging
             });
         }
 
-     
-        
         public void SetLanguageVersion(string version)
         {
             _languageVersion = version;
-          
+
             _afterCreateActions.Add(async (package, budget) =>
             {
                 async Task Action()
@@ -134,69 +126,45 @@ namespace WorkspaceServer.Packaging
             });
         }
 
-        public Package GetPackage(Budget budget = null)
-        {
-            if (_package == null)
-            {
-                PreparePackage(budget);
-            }
-
-            budget?.RecordEntry();
-            return _package;
-        }
-
-        public PackageInfo GetPackageInfo()
-        {
-            PackageInfo info = null;
-            if (_package != null)
-            {
-                info = new PackageInfo(
-                    _package.Name,
-                    _package.LastSuccessfulBuildTime,
-                    _package.ConstructionTime,
-                    _package.PublicationTime,
-                    _package.CreationTime,
-                    _package.ReadyTime
-                );
-            }
-
-            return info;
-        }
-
-        private void PreparePackage(Budget budget = null)
+        public PackageBase GetPackage(Budget budget = null)
         {
             budget = budget ?? new Budget();
 
-            if (PackageInitializer is BlazorPackageInitializer)
+            if (_packageBase == null)
             {
-                _package = new BlazorPackage(
-                        PackageName,
-                        PackageInitializer,
-                        Directory);
-            }
-            else if (CreateRebuildablePackage)
-            {
-                _package = new RebuildablePackage(
-                        PackageName,
-                        PackageInitializer,
-                        Directory);
-            }
-            else
-            {
-                _package = new NonrebuildablePackage(
-                        PackageName,
-                        PackageInitializer,
-                        Directory);
+                if (PackageInitializer is BlazorPackageInitializer)
+                {
+                    _packageBase = new BlazorPackage(
+                            PackageName,
+                            PackageInitializer,
+                            Directory);
+                }
+                else if (CreateRebuildablePackage)
+                {
+                    _packageBase = new RebuildablePackage(
+                            PackageName,
+                            PackageInitializer,
+                            Directory);
+                }
+                else
+                {
+                    _packageBase = new NonrebuildablePackage(
+                            PackageName,
+                            PackageInitializer,
+                            Directory);
+                }
             }
 
-            budget.RecordEntry();
+            budget?.RecordEntry();
+
+            return _packageBase;
         }
 
         private async Task AfterCreate(DirectoryInfo directoryInfo, Budget budget)
         {
             foreach (var action in _afterCreateActions)
             {
-                await action(_package, budget);
+                await action(_packageBase, budget);
             }
         }
     }
