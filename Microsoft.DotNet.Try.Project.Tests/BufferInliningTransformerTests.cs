@@ -44,12 +44,71 @@ namespace Microsoft.DotNet.Try.Project.Tests
 
             newCode.Should().NotBe(original.Files.ElementAt(0).Text);
             newCode.Should().Contain("var newValue = 1000;");
+            newCode.Should().NotContain("var a = 10;");
 
             original.Buffers.ElementAt(0).Position.Should().Be(0);
             processed.Buffers.Length.Should().Be(original.Buffers.Length);
             processed.Buffers.ElementAt(0).Position.Should().Be(original.Buffers.ElementAt(0).Position);
             processed.Buffers.ElementAt(0).AbsolutePosition.Should().Be(168);
 
+        }
+
+        [Fact]
+        public async Task Buffer_can_be_injected_before_region()
+        {
+            var original = new Workspace(
+                files: new[]
+                {
+                    new Workspace.File("Program.cs", SourceCodeProvider.ConsoleProgramSingleRegion)
+                },
+                buffers: new[]
+                {
+                    new Workspace.Buffer("Program.cs@alpha[before]", "var newValue = 1000;".EnforceLF())
+                });
+            var processor = new BufferInliningTransformer();
+
+            var processed = await processor.TransformAsync(original);
+            processed.Should().NotBeNull();
+            processed.Files.Should().NotBeEmpty();
+            var newCode = processed.Files.ElementAt(0).Text;
+
+            newCode.Should().NotBe(original.Files.ElementAt(0).Text);
+            newCode.Should().Contain("var newValue = 1000;");
+            newCode.Should().Contain("var a = 10;");
+
+            original.Buffers.ElementAt(0).Position.Should().Be(0);
+            processed.Buffers.Length.Should().Be(original.Buffers.Length);
+            processed.Buffers.ElementAt(0).Position.Should().Be(original.Buffers.ElementAt(0).Position);
+            processed.Buffers.ElementAt(0).AbsolutePosition.Should().Be(155);
+        }
+
+        [Fact]
+        public async Task Buffer_can_be_injected_after_region()
+        {
+            var original = new Workspace(
+                files: new[]
+                {
+                    new Workspace.File("Program.cs", SourceCodeProvider.ConsoleProgramSingleRegion)
+                },
+                buffers: new[]
+                {
+                    new Workspace.Buffer("Program.cs@alpha[after]", "var newValue = 1000;".EnforceLF())
+                });
+            var processor = new BufferInliningTransformer();
+
+            var processed = await processor.TransformAsync(original);
+            processed.Should().NotBeNull();
+            processed.Files.Should().NotBeEmpty();
+            var newCode = processed.Files.ElementAt(0).Text;
+
+            newCode.Should().NotBe(original.Files.ElementAt(0).Text);
+            newCode.Should().Contain("var newValue = 1000;");
+            newCode.Should().Contain("var a = 10;");
+
+            original.Buffers.ElementAt(0).Position.Should().Be(0);
+            processed.Buffers.Length.Should().Be(original.Buffers.Length);
+            processed.Buffers.ElementAt(0).Position.Should().Be(original.Buffers.ElementAt(0).Position);
+            processed.Buffers.ElementAt(0).AbsolutePosition.Should().Be(215);
         }
 
         [Fact]
