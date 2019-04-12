@@ -754,15 +754,5 @@ namespace WorkspaceServer.Packaging
 
             return new FileInfo(Path.Combine(path, entryPointAssemblyName));
         }
-
-        public bool CanSupportBlazor()
-        {
-            // The directory structure for the blazor packages is as follows
-            // project |--> packTarget
-            //         |--> runner-abc 
-            // The packTarget is the project that contains this packaga
-            //Hence the parent directory must be looked for the blazor runner
-            return Directory.Parent.GetDirectories($"runner-{Name}").Count() == 1;
-        }
     }
 }

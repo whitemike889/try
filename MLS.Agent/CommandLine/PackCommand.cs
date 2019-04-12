@@ -24,7 +24,7 @@ namespace MLS.Agent.CommandLine
                 var name = options.PackageName;
 
                 var temp_projects_packtarget = temp_projects.CreateSubdirectory("packTarget");
-                DirectoryCopy(options.PackTarget, temp_projects_packtarget.FullName, copySubDirs: true);
+                options.PackTarget.CopyTo(temp_projects_packtarget);
 
                 if (options.EnableBlazor)
                 {
@@ -85,42 +85,6 @@ namespace MLS.Agent.CommandLine
         private static FileInfo GetProjectFile(DirectoryInfo directory)
         {
             return directory.GetFiles("*.csproj").Single();
-        }
-
-        private static void DirectoryCopy(DirectoryInfo source, string destination, bool copySubDirs)
-        {
-
-            if (!source.Exists)
-            {
-                throw new DirectoryNotFoundException(
-                    "Source directory does not exist or could not be found: "
-                    + source.FullName);
-            }
-
-            DirectoryInfo[] dirs = source.GetDirectories();
-            // If the destination directory doesn't exist, create it.
-            if (!Directory.Exists(destination))
-            {
-                Directory.CreateDirectory(destination);
-            }
-
-            // Get the files in the directory and copy them to the new location.
-            FileInfo[] files = source.GetFiles();
-            foreach (FileInfo file in files)
-            {
-                string temppath = Path.Combine(destination, file.Name);
-                file.CopyTo(temppath, false);
-            }
-
-            // If copying subdirectories, copy them and their contents to new location.
-            if (copySubDirs)
-            {
-                foreach (DirectoryInfo subdir in dirs)
-                {
-                    string temppath = Path.Combine(destination, subdir.Name);
-                    DirectoryCopy(subdir, temppath, copySubDirs);
-                }
-            }
         }
     }
 }

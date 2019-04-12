@@ -4,7 +4,6 @@ using System.Linq;
 using FluentAssertions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using MLS.WasmCodeRunner;
 using Xunit;
