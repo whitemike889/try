@@ -47,7 +47,7 @@ namespace MLS.Agent.Markdown
             return blocks;
         }
 
-        public async Task<IEnumerable<AnnotatedCodeBlock>> GetNonEditableAnnotaedCodeBlocks()
+        public async Task<IEnumerable<AnnotatedCodeBlock>> GetNonEditableAnnotatedCodeBlocks()
         {
             var blocks = (await GetAnnotatedCodeBlocks()).Where(b => !b.Annotations.Editable);
             return blocks;
@@ -73,12 +73,18 @@ namespace MLS.Agent.Markdown
 
             var contentBuildersByFileBySession = new Dictionary<string, Dictionary<string, StringBuilder>>(StringComparer.InvariantCultureIgnoreCase);
 
-            var blocks = await GetNonEditableAnnotaedCodeBlocks();
+            var blocks = await GetNonEditableAnnotatedCodeBlocks();
 
             foreach (var block in blocks)
             {
-                var sessionId = string.IsNullOrWhiteSpace(block.Annotations.Session) ? "global" : block.Annotations.Session;
-                var filePath = block.Annotations.DestinationFile ?? new RelativeFilePath($"./generated_include_file_{sessionId}.cs");
+                var sessionId = string.IsNullOrWhiteSpace(block.Annotations.Session) 
+                                    ? "global" 
+                                    : block.Annotations.Session;
+
+                var filePath = (block.Annotations as LocalCodeBlockAnnotations)?.SourceFile ??
+                               block.Annotations.DestinationFile ??
+                               new RelativeFilePath($"./generated_include_file_{sessionId}.cs");
+
                 var absolutePath = directoryAccessor.GetFullyQualifiedPath(filePath).FullName;
 
                 if (string.IsNullOrWhiteSpace(block.Annotations.Region))

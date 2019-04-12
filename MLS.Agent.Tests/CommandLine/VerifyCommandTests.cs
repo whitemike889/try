@@ -133,7 +133,7 @@ This is some sample code:
             }
 
             [Fact]
-            public async Task When_non_editable_code_fences_do_not_contain_errors_then_validation_succeeds()
+            public async Task When_non_editable_code_blocks_do_not_contain_errors_then_validation_succeeds()
             {
                 var root = Create.EmptyWorkspace(isRebuildablePackage: true).Directory;
 
@@ -229,7 +229,7 @@ public class EmptyClassTwo {}
             [InlineData("--source-file ./NONEXISTENT.CS")]
             [InlineData("--source-file ./Program.cs")]
             [InlineData("--source-file ./Program.cs --region NONEXISTENT")]
-            public async Task When_there_are_code_fence_option_errors_then_return_code_is_nonzero(string args)
+            public async Task When_there_are_code_fence_annotation_errors_then_return_code_is_nonzero(string args)
             {
                 var rootDirectory = new DirectoryInfo(".");
 
@@ -414,7 +414,7 @@ public class Program
             }
 
             [Fact]
-            public async Task When_there_are_compilation_errors_in_non_editable_fences_then_they_are_displayed()
+            public async Task When_there_are_compilation_errors_in_non_editable_blocks_then_they_are_displayed()
             {
                 var rootDirectory = Create.EmptyWorkspace(isRebuildablePackage: true).Directory;
 
