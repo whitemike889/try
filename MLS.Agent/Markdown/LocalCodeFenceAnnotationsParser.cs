@@ -130,7 +130,10 @@ namespace MLS.Agent.Markdown
             {
                 var rootDirectory = directoryAccessor.GetFullyQualifiedPath(new RelativeDirectoryPath("."));
                 var projectFiles = directoryAccessor.GetAllFilesRecursively()
-                                                    .Where(file => directoryAccessor.GetFullyQualifiedPath(file.Directory) == rootDirectory && file.Extension == ".csproj")
+                                                    .Where(file =>
+                                                    {
+                                                        return (directoryAccessor.GetFullyQualifiedPath(file.Directory).FullName == rootDirectory.FullName) && file.Extension == ".csproj";
+                                                    })
                                                     .ToArray();
 
                 if (projectFiles.Length == 1)

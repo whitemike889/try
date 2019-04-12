@@ -331,6 +331,7 @@ public class Program
 
                 var directoryAccessor = new InMemoryDirectoryAccessor(directory, directory)
                                     {
+
                                         ("Program.cs", $@"
     public class Program
     {{
