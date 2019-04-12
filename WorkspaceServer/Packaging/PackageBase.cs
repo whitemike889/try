@@ -15,6 +15,7 @@ namespace WorkspaceServer.Packaging
         internal const string FullBuildBinlogFileName = "package_fullBuild.binlog";
 
         private readonly AsyncLazy<bool> _lazyCreation;
+        private bool? _canSupportBlazor;
 
         protected PackageBase(
             string name = null,
@@ -98,7 +99,12 @@ namespace WorkspaceServer.Packaging
             //         |--> runner-abc 
             // The packTarget is the project that contains this packaga
             //Hence the parent directory must be looked for the blazor runner
-            return _canSupportBlazor ?? (_canSupportBlazor = Directory.Parent.GetDirectories($"runner-{Name}").Length == 1);
+            if (_canSupportBlazor == null)
+            {
+                _canSupportBlazor = Directory?.Parent?.GetDirectories($"runner-{Name}")?.Length == 1;
+            }
+
+            return _canSupportBlazor.Value;
         }
 
         public virtual async Task FullBuild()

@@ -16,7 +16,7 @@ namespace WorkspaceServer.Tests
             var packageName = Package.CreateDirectory(nameof(PackageRegistry_will_return_same_instance_of_a_package)).Name;
 
             registry.Add(packageName,
-                options => options.CreatePackageInitializer("console"));
+                options => options.CreateUsingDotnet("console"));
 
             var package1 = await registry.Get(packageName);
             var package2 = await registry.Get(packageName);

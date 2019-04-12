@@ -34,7 +34,7 @@ namespace WorkspaceServer.Tests
             var packageName = Package.CreateDirectory(nameof(Workspaces_can_be_registered_to_be_created_using_dotnet_new)).Name;
 
             registry.Add(packageName,
-                         options => options.CreatePackageInitializer("console"));
+                         options => options.CreateUsingDotnet("console"));
 
             var package = (Package) await registry.Get(packageName);
 
@@ -52,7 +52,7 @@ namespace WorkspaceServer.Tests
             registry.Add(workspaceId,
                          options =>
                          {
-                             options.CreatePackageInitializer("console");
+                             options.CreateUsingDotnet("console");
                              options.AddPackageReference("Twilio", "5.9.2");
                          });
 
