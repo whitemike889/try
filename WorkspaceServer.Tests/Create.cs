@@ -9,7 +9,6 @@ using Microsoft.DotNet.Try.Protocol;
 using Microsoft.DotNet.Try.Protocol.Execution;
 using MLS.Agent.CommandLine;
 using Recipes;
-using WorkspaceServer.PackageDiscovery;
 using WorkspaceServer.Packaging;
 
 namespace WorkspaceServer.Tests

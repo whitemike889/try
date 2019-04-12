@@ -3,7 +3,7 @@ using System.CommandLine;
 using System.Threading.Tasks;
 using MLS.Agent.CommandLine;
 using WorkspaceServer;
-using WorkspaceServer.PackageDiscovery;
+using WorkspaceServer.Packaging;
 using WorkspaceServer.Tests;
 using Xunit;
 using Xunit.Abstractions;

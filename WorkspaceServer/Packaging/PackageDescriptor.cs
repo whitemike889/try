@@ -1,4 +1,4 @@
-﻿namespace WorkspaceServer
+﻿namespace WorkspaceServer.Packaging
 {
     public class PackageDescriptor
     {

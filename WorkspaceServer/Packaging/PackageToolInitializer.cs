@@ -2,12 +2,12 @@
 using System.Threading.Tasks;
 using Clockwise;
 using MLS.Agent.Tools;
-using WorkspaceServer.Packaging;
 
-namespace WorkspaceServer.PackageDiscovery
+namespace WorkspaceServer.Packaging
 {
     public class PackageToolInitializer : IPackageInitializer
     {
+        // QUESTION-JOSEQU: (PackageToolInitializer) is this used?
         private readonly string _toolName;
 
         public PackageToolInitializer(string toolName)

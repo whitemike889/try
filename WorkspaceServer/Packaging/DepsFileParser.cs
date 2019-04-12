@@ -6,7 +6,7 @@ using Newtonsoft.Json.Linq;
 
 namespace WorkspaceServer.Packaging
 {
-    public static class DepsFileParser
+    internal static class DepsFileParser
     {
         public static string GetEntryPointAssemblyName(FileInfo depsFile)
         {

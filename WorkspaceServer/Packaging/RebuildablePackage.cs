@@ -7,7 +7,7 @@ namespace WorkspaceServer.Packaging
 {
     public class RebuildablePackage : Package
     {
-        private FileSystemWatcher _fileSystemWatcher;
+        private readonly FileSystemWatcher _fileSystemWatcher;
 
         public RebuildablePackage(string name = null, IPackageInitializer initializer = null, DirectoryInfo directory = null, IScheduler buildThrottleScheduler = null) 
             : base(name, initializer, directory, buildThrottleScheduler)

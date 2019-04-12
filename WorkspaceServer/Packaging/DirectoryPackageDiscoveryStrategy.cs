@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using System.Threading.Tasks;
 using Clockwise;
-using WorkspaceServer.Packaging;
 
-namespace WorkspaceServer.PackageDiscovery
+namespace WorkspaceServer.Packaging
 {
     internal class DirectoryPackageDiscoveryStrategy : IPackageDiscoveryStrategy
     {

@@ -5,10 +5,8 @@ using System.Threading.Tasks;
 using Clockwise;
 using MLS.Agent.Tools;
 using Pocket;
-using WorkspaceServer.Packaging;
-using static Pocket.Logger<WorkspaceServer.PackageDiscovery.ToolPackageLocator>;
 
-namespace WorkspaceServer.PackageDiscovery
+namespace WorkspaceServer.Packaging
 {
     internal class ToolPackageLocator
     {
@@ -41,7 +39,7 @@ namespace WorkspaceServer.PackageDiscovery
 
             var directory = output;
             var projectDirectory = Path.Combine(directory, "packTarget");
-            Log.Info($"Project: {projectDirectory}");
+            Logger<ToolPackageLocator>.Log.Info($"Project: {projectDirectory}");
             var package = new NonrebuildablePackage(name, directory: new DirectoryInfo(projectDirectory));
             return package;
         }

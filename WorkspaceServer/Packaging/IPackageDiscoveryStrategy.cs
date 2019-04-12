@@ -1,9 +1,7 @@
-﻿using Clockwise;
-using System.IO;
-using System.Threading.Tasks;
-using WorkspaceServer.Packaging;
+﻿using System.Threading.Tasks;
+using Clockwise;
 
-namespace WorkspaceServer
+namespace WorkspaceServer.Packaging
 {
     public interface IPackageDiscoveryStrategy
     {

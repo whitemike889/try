@@ -1,9 +1,8 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
 using Clockwise;
-using WorkspaceServer.Packaging;
 
-namespace WorkspaceServer.PackageDiscovery
+namespace WorkspaceServer.Packaging
 {
     public class ProjectFilePackageDiscoveryStrategy : IPackageDiscoveryStrategy
     {

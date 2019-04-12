@@ -1,9 +1,9 @@
 ﻿using Xunit;
-using WorkspaceServer.PackageDiscovery;
 using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using WorkspaceServer;
+using WorkspaceServer.Packaging;
 using WorkspaceServer.Tests;
 using Xunit.Abstractions;
 

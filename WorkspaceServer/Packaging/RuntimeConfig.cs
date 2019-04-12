@@ -4,7 +4,7 @@ using Newtonsoft.Json.Linq;
 
 namespace WorkspaceServer.Packaging
 {
-    public static class RuntimeConfig
+    internal static class RuntimeConfig
     {
         public static string GetTargetFramework(FileInfo runtimeConfigFile)
         {

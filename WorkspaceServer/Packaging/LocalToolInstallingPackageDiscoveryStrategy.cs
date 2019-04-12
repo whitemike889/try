@@ -3,10 +3,8 @@ using System.IO;
 using System.Threading.Tasks;
 using Clockwise;
 using Pocket;
-using WorkspaceServer.Packaging;
-using static Pocket.Logger<WorkspaceServer.PackageDiscovery.LocalToolInstallingPackageDiscoveryStrategy>;
 
-namespace WorkspaceServer.PackageDiscovery
+namespace WorkspaceServer.Packaging
 {
     public class LocalToolInstallingPackageDiscoveryStrategy : IPackageDiscoveryStrategy
     {
@@ -44,7 +42,7 @@ namespace WorkspaceServer.PackageDiscovery
 
             if (installationResult.ExitCode != 0)
             {
-                Log.Warning($"Tool not installed: {packageDesciptor.Name}");
+                Logger<LocalToolInstallingPackageDiscoveryStrategy>.Log.Warning($"Tool not installed: {packageDesciptor.Name}");
                 return null;
             }
 
@@ -67,22 +65,6 @@ namespace WorkspaceServer.PackageDiscovery
                         _workingDirectory.FullName, packageDesciptor.Name)));
             pb.Directory = locatedPackage.Directory;
             return pb;
-        }
-    }
-
-    public class PreBuiltBlazorPackageDiscoveryStrategy : IPackageDiscoveryStrategy
-    {
-        private PrebuiltBlazorPackageLocator _locator;
-
-        public PreBuiltBlazorPackageDiscoveryStrategy()
-        {
-            _locator = new PrebuiltBlazorPackageLocator();
-        }
-
-        public async Task<PackageBuilder> Locate(PackageDescriptor packageDescriptor, Budget budget = null)
-        {
-            throw new NotImplementedException();
-            //return await _locator.Locate(packageDescriptor.Name);
         }
     }
 }
