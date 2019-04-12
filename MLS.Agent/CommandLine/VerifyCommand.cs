@@ -4,6 +4,7 @@ using System.CommandLine;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.DotNet.Try.Markdown;
+using Microsoft.DotNet.Try.Project.Transformations;
 using Microsoft.DotNet.Try.Protocol;
 using Microsoft.DotNet.Try.Protocol.Diagnostics;
 using Microsoft.DotNet.Try.Protocol.Execution;
@@ -125,7 +126,14 @@ namespace MLS.Agent.CommandLine
                     files: files.ToArray(),
                     buffers: buffers.ToArray());
 
-                var result = await workspaceServer.Value.Compile(new WorkspaceRequest(workspace));
+                var mergeTransformer = new CodeMergeTransformer();
+                var inliningTransformer = new BufferInliningTransformer();
+
+                var processed = await mergeTransformer.TransformAsync(workspace);
+                processed = await inliningTransformer.TransformAsync(processed);
+                processed = new Workspace(usings:processed.Usings, workspaceType: processed.WorkspaceType, files:processed.Files);
+
+                var result = await workspaceServer.Value.Compile(new WorkspaceRequest(processed));
 
                 var projectDiagnostics = result.GetFeature<ProjectDiagnostics>()
                                                .Where(e => e.Severity == DiagnosticSeverity.Error)
@@ -185,9 +193,10 @@ namespace MLS.Agent.CommandLine
 
                 var blockOptions = (LocalCodeBlockAnnotations) codeLinkBlock.Annotations;
 
+                var file = blockOptions?.SourceFile ?? blockOptions?.DestinationFile;
                 var sourceFile =
-                    blockOptions?.SourceFile != null
-                        ? directoryAccessor.GetFullyQualifiedPath(blockOptions.SourceFile).FullName
+                    file != null
+                        ? directoryAccessor.GetFullyQualifiedPath(file).FullName
                         : "UNKNOWN";
 
                 var project = blockOptions?.Project?.FullName ?? "UNKNOWN";

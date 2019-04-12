@@ -26,6 +26,34 @@ public class Program
     }
 }";
 
+        private const string CompilingProgramWithRegionCs = @"
+using System;
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        #region targetRegion
+        #endregion
+
+        #region userCodeRegion
+        #endregion
+    }
+}";
+
+        private const string NonCompilingProgramWithRegionCs = @"
+using System;
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        #region targetRegion
+DOES NOT COMPILE
+        #endregion
+    }
+}";
+
         private const string CsprojContents = @"<Project Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
@@ -33,19 +61,22 @@ public class Program
 </Project>
 ";
 
-        private readonly ITestOutputHelper _output;
-
-        public VerifyCommandTests(ITestOutputHelper output)
+        public class WithBackingProject
         {
-            _output = output;
-        }
+            private readonly ITestOutputHelper _output;
 
-        [Fact]
-        public async Task Errors_are_written_to_std_out()
-        {
-            var root = new DirectoryInfo(Directory.GetDirectoryRoot(Directory.GetCurrentDirectory()));
+            public WithBackingProject(ITestOutputHelper output)
+            {
+                _output = output;
+            }
 
-            var directoryAccessor = new InMemoryDirectoryAccessor(root, root)
+
+            [Fact]
+            public async Task Errors_are_written_to_std_out()
+            {
+                var root = new DirectoryInfo(Directory.GetDirectoryRoot(Directory.GetCurrentDirectory()));
+
+                var directoryAccessor = new InMemoryDirectoryAccessor(root, root)
                                     {
                                         ("doc.md", @"
 This is some sample code:
@@ -54,26 +85,26 @@ This is some sample code:
 ")
                                     };
 
-            var console = new TestConsole();
+                var console = new TestConsole();
 
-            await VerifyCommand.Do(
-                new VerifyOptions(root),
-                console,
-                () => directoryAccessor,
-                PackageRegistry.CreateForTryMode(root));
+                await VerifyCommand.Do(
+                    new VerifyOptions(root),
+                    console,
+                    () => directoryAccessor,
+                    PackageRegistry.CreateForTryMode(root));
 
-            console.Out
-                .ToString()
-                .Should()
-                .Match($"*{root}doc.md*Line 3:*{root}Program.cs (in project UNKNOWN)*File not found: ./Program.cs*No project file or package specified*");
-        }
+                console.Out
+                    .ToString()
+                    .Should()
+                    .Match($"*{root}doc.md*Line 3:*{root}Program.cs (in project UNKNOWN)*File not found: ./Program.cs*No project file or package specified*");
+            }
 
-        [Fact]
-        public async Task Files_are_listed()
-        {
-            var root = Create.EmptyWorkspace(isRebuildablePackage: true).Directory;
+            [Fact]
+            public async Task Files_are_listed()
+            {
+                var root = Create.EmptyWorkspace(isRebuildablePackage: true).Directory;
 
-            var directoryAccessor = new InMemoryDirectoryAccessor(root, root)
+                var directoryAccessor = new InMemoryDirectoryAccessor(root, root)
                                     {
                                         ("some.csproj", CsprojContents),
                                         ("Program.cs", CompilingProgramCs),
@@ -83,30 +114,30 @@ This is some sample code:
 ")
                                     }.CreateFiles();
 
-            var console = new TestConsole();
+                var console = new TestConsole();
 
-            await VerifyCommand.Do(
-                new VerifyOptions(root),
-                console,
-                () => directoryAccessor,
-                PackageRegistry.CreateForTryMode(root));
+                await VerifyCommand.Do(
+                    new VerifyOptions(root),
+                    console,
+                    () => directoryAccessor,
+                    PackageRegistry.CreateForTryMode(root));
 
-            _output.WriteLine(console.Out.ToString());
+                _output.WriteLine(console.Out.ToString());
 
-            CodeManipulation.EnforceLF(console.Out
-                                     .ToString()
-                                     .Trim())
-                   .Should()
-                   .Match(
-                       CodeManipulation.EnforceLF($@"{root}{Path.DirectorySeparatorChar}doc.md*Line 2:*{root}{Path.DirectorySeparatorChar}Program.cs (in project {root}{Path.DirectorySeparatorChar}some.csproj)*"));
-        }
+                CodeManipulation.EnforceLF(console.Out
+                                         .ToString()
+                                         .Trim())
+                       .Should()
+                       .Match(
+                           CodeManipulation.EnforceLF($@"{root}{Path.DirectorySeparatorChar}doc.md*Line 2:*{root}{Path.DirectorySeparatorChar}Program.cs (in project {root}{Path.DirectorySeparatorChar}some.csproj)*"));
+            }
 
-        [Fact]
-        public async Task Non_editable_code_fences_do_not_affect_validation()
-        {
-            var root = Create.EmptyWorkspace(isRebuildablePackage: true).Directory;
+            [Fact]
+            public async Task When_non_editable_code_fences_do_not_contain_errors_then_validation_succeeds()
+            {
+                var root = Create.EmptyWorkspace(isRebuildablePackage: true).Directory;
 
-            var directoryAccessor = new InMemoryDirectoryAccessor(root, root)
+                var directoryAccessor = new InMemoryDirectoryAccessor(root, root)
             {
                 ("some.csproj", CsprojContents),
                 ("Program.cs", CompilingProgramCs),
@@ -117,33 +148,60 @@ This is some sample code:
 // global include
 public class EmptyClass {}
 ```
+```cs --editable false
+// global include
+public class EmptyClassTwo {}
+```
 ")
             }.CreateFiles();
 
-            var console = new TestConsole();
+                var console = new TestConsole();
 
-            await VerifyCommand.Do(
-                new VerifyOptions(root),
-                console,
-                () => directoryAccessor,
-                PackageRegistry.CreateForTryMode(root));
+                var resultCode = await VerifyCommand.Do(
+                    new VerifyOptions(root),
+                    console,
+                    () => directoryAccessor,
+                    PackageRegistry.CreateForTryMode(root));
 
-            _output.WriteLine(console.Out.ToString());
+                _output.WriteLine(console.Out.ToString());
 
-            CodeManipulation.EnforceLF(console.Out
-                    .ToString()
-                    .Trim())
-                .Should()
-                .Match(
-                    CodeManipulation.EnforceLF($@"{root}{Path.DirectorySeparatorChar}doc.md*Line 2:*{root}{Path.DirectorySeparatorChar}Program.cs (in project {root}{Path.DirectorySeparatorChar}some.csproj)*"));
-        }
+                resultCode.Should().Be(0);
+            }
 
-        [Fact]
-        public async Task When_there_are_no_markdown_errors_then_return_code_is_0()
-        {
-            var rootDirectory = Create.EmptyWorkspace(isRebuildablePackage: true).Directory;
+            [Fact]
+            public async Task With_non_editable_code_block_targeting_regions_with_non_compiling_code_then_validation_fails()
+            {
+                var root = Create.EmptyWorkspace(isRebuildablePackage: true).Directory;
 
-            var directoryAccessor = new InMemoryDirectoryAccessor(rootDirectory, rootDirectory)
+                var directoryAccessor = new InMemoryDirectoryAccessor(root, root)
+            {
+                ("some.csproj", CsprojContents),
+                ("Program.cs", NonCompilingProgramWithRegionCs),
+                ("doc.md", @"
+```cs --editable false --source-file Program.cs --region targetRegion
+```
+")
+            }.CreateFiles();
+
+                var console = new TestConsole();
+
+                var resultCode = await VerifyCommand.Do(
+                    new VerifyOptions(root),
+                    console,
+                    () => directoryAccessor,
+                    PackageRegistry.CreateForTryMode(root));
+
+                _output.WriteLine(console.Out.ToString());
+
+                resultCode.Should().NotBe(0);
+            }
+       
+            [Fact]
+            public async Task When_there_are_no_markdown_errors_then_return_code_is_0()
+            {
+                var rootDirectory = Create.EmptyWorkspace(isRebuildablePackage: true).Directory;
+
+                var directoryAccessor = new InMemoryDirectoryAccessor(rootDirectory, rootDirectory)
                                     {
                                         ("some.csproj", CsprojContents),
                                         ("Program.cs", CompilingProgramCs),
@@ -153,29 +211,29 @@ public class EmptyClass {}
 ")
                                     }.CreateFiles();
 
-            var console = new TestConsole();
+                var console = new TestConsole();
 
-            var resultCode = await VerifyCommand.Do(
-                                 new VerifyOptions(rootDirectory),
-                                 console,
-                                 () => directoryAccessor,
-                                 PackageRegistry.CreateForTryMode(rootDirectory));
+                var resultCode = await VerifyCommand.Do(
+                                     new VerifyOptions(rootDirectory),
+                                     console,
+                                     () => directoryAccessor,
+                                     PackageRegistry.CreateForTryMode(rootDirectory));
 
-            _output.WriteLine(console.Out.ToString());
+                _output.WriteLine(console.Out.ToString());
 
-            resultCode.Should().Be(0);
-        }
+                resultCode.Should().Be(0);
+            }
 
-        [Theory]
-        [InlineData("invalid")]
-        [InlineData("--source-file ./NONEXISTENT.CS")]
-        [InlineData("--source-file ./Program.cs")]
-        [InlineData("--source-file ./Program.cs --region NONEXISTENT")]
-        public async Task When_there_are_code_fence_option_errors_then_return_code_is_nonzero(string args)
-        {
-            var rootDirectory = new DirectoryInfo(".");
+            [Theory]
+            [InlineData("invalid")]
+            [InlineData("--source-file ./NONEXISTENT.CS")]
+            [InlineData("--source-file ./Program.cs")]
+            [InlineData("--source-file ./Program.cs --region NONEXISTENT")]
+            public async Task When_there_are_code_fence_option_errors_then_return_code_is_nonzero(string args)
+            {
+                var rootDirectory = new DirectoryInfo(".");
 
-            var directoryAccessor = new InMemoryDirectoryAccessor(rootDirectory)
+                var directoryAccessor = new InMemoryDirectoryAccessor(rootDirectory)
                                     {
                                         ("doc.md", $@"
 ```cs {args}
@@ -196,82 +254,82 @@ public class Program
                                         ("default.csproj", CsprojContents)
                                     }.CreateFiles();
 
-            var console = new TestConsole();
+                var console = new TestConsole();
 
-            var resultCode = await VerifyCommand.Do(
-                                 new VerifyOptions(rootDirectory),
-                                 console,
-                                 () => directoryAccessor,
-                                 PackageRegistry.CreateForTryMode(rootDirectory));
+                var resultCode = await VerifyCommand.Do(
+                                     new VerifyOptions(rootDirectory),
+                                     console,
+                                     () => directoryAccessor,
+                                     PackageRegistry.CreateForTryMode(rootDirectory));
 
-            _output.WriteLine(console.Out.ToString());
+                _output.WriteLine(console.Out.ToString());
 
-            resultCode.Should().NotBe(0);
-        }
+                resultCode.Should().NotBe(0);
+            }
 
-        
-        [Fact]
-        public async Task When_there_are_no_files_found_then_return_code_is_nonzero()
-        {
-            var rootDirectory = Create.EmptyWorkspace(isRebuildablePackage: true).Directory;
 
-            var directoryAccessor = new InMemoryDirectoryAccessor(rootDirectory);          
+            [Fact]
+            public async Task When_there_are_no_files_found_then_return_code_is_nonzero()
+            {
+                var rootDirectory = Create.EmptyWorkspace(isRebuildablePackage: true).Directory;
 
-            var console = new TestConsole();
+                var directoryAccessor = new InMemoryDirectoryAccessor(rootDirectory);
 
-            var resultCode = await VerifyCommand.Do(
-                                 new VerifyOptions(rootDirectory),
-                                 console,
-                                 () => directoryAccessor,
-                                 PackageRegistry.CreateForTryMode(rootDirectory));
+                var console = new TestConsole();
 
-            console.Error.ToString().Should().Contain("No markdown files found");
-            resultCode.Should().NotBe(0);
-        }
+                var resultCode = await VerifyCommand.Do(
+                                     new VerifyOptions(rootDirectory),
+                                     console,
+                                     () => directoryAccessor,
+                                     PackageRegistry.CreateForTryMode(rootDirectory));
 
-        [Theory]
-        [InlineData(@"
+                console.Error.ToString().Should().Contain("No markdown files found");
+                resultCode.Should().NotBe(0);
+            }
+
+            [Theory]
+            [InlineData(@"
 ```cs --source-file Program.cs --session one --project a.csproj
 ```
 ```cs --source-file Program.cs --session one --project b.csproj
 ```")]
-        [InlineData(@"
+            [InlineData(@"
 ```cs --source-file Program.cs --session one --package console
 ```
 ```cs --source-file Program.cs --session one --project b.csproj
 ```")]
-        public async Task Returns_an_error_when_a_session_has_more_than_one_package_or_project(string mdFileContents)
-        {
-            var rootDirectory = new DirectoryInfo(".");
+            public async Task Returns_an_error_when_a_session_has_more_than_one_package_or_project(string mdFileContents)
+            {
+                var rootDirectory = new DirectoryInfo(".");
 
-            var directoryAccessor = new InMemoryDirectoryAccessor(rootDirectory)
+                var directoryAccessor = new InMemoryDirectoryAccessor(rootDirectory)
                                     {
                                         ("doc.md", mdFileContents),
                                         ("a.csproj", ""),
                                         ("b.csproj", ""),
                                     };
 
-            var console = new TestConsole();
+                var console = new TestConsole();
 
-            var resultCode = await VerifyCommand.Do(
-                                 new VerifyOptions(rootDirectory),
-                                 console,
-                                 () => directoryAccessor,
-                                 PackageRegistry.CreateForTryMode(rootDirectory));
+                var resultCode = await VerifyCommand.Do(
+                                     new VerifyOptions(rootDirectory),
+                                     console,
+                                     () => directoryAccessor,
+                                     PackageRegistry.CreateForTryMode(rootDirectory));
 
-            console.Out.ToString().Should().Contain("Session cannot span projects or packages: --session one");
+                console.Out.ToString().Should().Contain("Session cannot span projects or packages: --session one");
 
-            resultCode.Should().NotBe(0);
-        }
+                resultCode.Should().NotBe(0);
+            }
 
-        [Theory]
-        [InlineData("")]
-        [InlineData("--region mask")]
-        public async Task Verify_shows_diagnostics_for_compilation_failures(string args)
-        {
-            var directory = Create.EmptyWorkspace(isRebuildablePackage: true).Directory;
+            [Theory]
+            [InlineData("")]
+            [InlineData("--region mask")]
+            public async Task Verify_shows_diagnostics_for_compilation_failures(string args)
+            {
+                var directory = Create.EmptyWorkspace(isRebuildablePackage: true).Directory;
 
-            var directoryAccessor = new InMemoryDirectoryAccessor(directory, directory)
+                var directoryAccessor = new InMemoryDirectoryAccessor(directory, directory)
                                     {
                                         ("Program.cs", $@"
     public class Program
@@ -296,27 +354,27 @@ public class Program
 ")
                                     }.CreateFiles();
 
-            var console = new TestConsole();
+                var console = new TestConsole();
 
-            var resultCode = await VerifyCommand.Do(
-                                 new VerifyOptions(directory),
-                                 console,
-                                 () => directoryAccessor,
-                                 PackageRegistry.CreateForTryMode(directory));
+                var resultCode = await VerifyCommand.Do(
+                                     new VerifyOptions(directory),
+                                     console,
+                                     () => directoryAccessor,
+                                     PackageRegistry.CreateForTryMode(directory));
 
-            _output.WriteLine(console.Out.ToString());
+                _output.WriteLine(console.Out.ToString());
 
-            console.Out.ToString().Should().Contain($"Build failed for project {directoryAccessor.GetFullyQualifiedPath(new RelativeFilePath("sample.csproj"))}");
+                console.Out.ToString().Should().Contain($"Build failed for project {directoryAccessor.GetFullyQualifiedPath(new RelativeFilePath("sample.csproj"))}");
 
-            resultCode.Should().NotBe(0);
-        }
+                resultCode.Should().NotBe(0);
+            }
 
-        [Fact]
-        public async Task When_there_are_compilation_errors_outside_the_mask_then_they_are_displayed()
-        {
-            var rootDirectory = Create.EmptyWorkspace(isRebuildablePackage: true).Directory;
+            [Fact]
+            public async Task When_there_are_compilation_errors_outside_the_mask_then_they_are_displayed()
+            {
+                var rootDirectory = Create.EmptyWorkspace(isRebuildablePackage: true).Directory;
 
-            var directoryAccessor = new InMemoryDirectoryAccessor(rootDirectory, rootDirectory)
+                var directoryAccessor = new InMemoryDirectoryAccessor(rootDirectory, rootDirectory)
                                     {
                                         ("Program.cs", $@"
     using System;
@@ -337,29 +395,29 @@ public class Program
                                          CsprojContents)
                                     }.CreateFiles();
 
-            var console = new TestConsole();
+                var console = new TestConsole();
 
-            var resultCode = await VerifyCommand.Do(
-                                 new VerifyOptions(rootDirectory),
-                                 console,
-                                 () => directoryAccessor,
-                                 PackageRegistry.CreateForTryMode(rootDirectory));
+                var resultCode = await VerifyCommand.Do(
+                                     new VerifyOptions(rootDirectory),
+                                     console,
+                                     () => directoryAccessor,
+                                     PackageRegistry.CreateForTryMode(rootDirectory));
 
-            _output.WriteLine(console.Out.ToString());
+                _output.WriteLine(console.Out.ToString());
 
-            console.Out.ToString()
-                   .Should().Contain("Build failed")
-                   .And.Contain("Program.cs(6,72): error CS1002: ; expected");
+                console.Out.ToString()
+                       .Should().Contain("Build failed")
+                       .And.Contain("Program.cs(6,72): error CS1002: ; expected");
 
-            resultCode.Should().NotBe(0);
-        }
+                resultCode.Should().NotBe(0);
+            }
 
-        [Fact]
-        public async Task When_there_are_compilation_errors_in_non_editable_fences_then_they_are_displayed()
-        {
-            var rootDirectory = Create.EmptyWorkspace(isRebuildablePackage: true).Directory;
+            [Fact]
+            public async Task When_there_are_compilation_errors_in_non_editable_fences_then_they_are_displayed()
+            {
+                var rootDirectory = Create.EmptyWorkspace(isRebuildablePackage: true).Directory;
 
-            var directoryAccessor = new InMemoryDirectoryAccessor(rootDirectory, rootDirectory)
+                var directoryAccessor = new InMemoryDirectoryAccessor(rootDirectory, rootDirectory)
             {
                 ("Program.cs", @"
     using System;
@@ -386,29 +444,29 @@ public class Program
                     CsprojContents)
             }.CreateFiles();
 
-            var console = new TestConsole();
+                var console = new TestConsole();
 
-            var resultCode = await VerifyCommand.Do(
-                new VerifyOptions(rootDirectory),
-                console,
-                () => directoryAccessor,
-                PackageRegistry.CreateForTryMode(rootDirectory));
+                var resultCode = await VerifyCommand.Do(
+                    new VerifyOptions(rootDirectory),
+                    console,
+                    () => directoryAccessor,
+                    PackageRegistry.CreateForTryMode(rootDirectory));
 
-            _output.WriteLine(console.Out.ToString());
+                _output.WriteLine(console.Out.ToString());
 
-            console.Out.ToString()
-                .Should().Contain("Build failed")
-                .And.Contain("generated_include_file_global.cs(1,46): error CS1002: ; expected");
+                console.Out.ToString()
+                    .Should().Contain("Build failed")
+                    .And.Contain("generated_include_file_global.cs(1,46): error CS1002: ; expected");
 
-            resultCode.Should().NotBe(0);
-        }
+                resultCode.Should().NotBe(0);
+            }
 
-        [Fact]
-        public async Task When_there_are_code_fence_options_errors_then_compilation_is_not_attempted()
-        {
-            var root = new DirectoryInfo(Directory.GetDirectoryRoot(Directory.GetCurrentDirectory()));
+            [Fact]
+            public async Task When_there_are_code_fence_options_errors_then_compilation_is_not_attempted()
+            {
+                var root = new DirectoryInfo(Directory.GetDirectoryRoot(Directory.GetCurrentDirectory()));
 
-            var directoryAccessor = new InMemoryDirectoryAccessor(root, root)
+                var directoryAccessor = new InMemoryDirectoryAccessor(root, root)
                                     {
                                         ("doc.md", @"
 This is some sample code:
@@ -417,28 +475,28 @@ This is some sample code:
 ")
                                     };
 
-            var console = new TestConsole();
+                var console = new TestConsole();
 
-            await VerifyCommand.Do(
-                new VerifyOptions(root),
-                console,
-                () => directoryAccessor,
-                PackageRegistry.CreateForTryMode(root));
-            
-            _output.WriteLine(console.Out.ToString());
+                await VerifyCommand.Do(
+                    new VerifyOptions(root),
+                    console,
+                    () => directoryAccessor,
+                    PackageRegistry.CreateForTryMode(root));
 
-            console.Out
-                   .ToString()
-                   .Should()
-                   .NotContain("Compiling samples for session");
-        }
+                _output.WriteLine(console.Out.ToString());
 
-        [Fact]
-        public async Task If_a_new_file_is_added_and_verify_is_called_the_compile_errors_in_it_are_emitted()
-        {
-            var rootDirectory = Create.EmptyWorkspace(isRebuildablePackage:true).Directory;
+                console.Out
+                       .ToString()
+                       .Should()
+                       .NotContain("Compiling samples for session");
+            }
 
-            var directoryAccessor = new InMemoryDirectoryAccessor(rootDirectory, rootDirectory)
+            [Fact]
+            public async Task If_a_new_file_is_added_and_verify_is_called_the_compile_errors_in_it_are_emitted()
+            {
+                var rootDirectory = Create.EmptyWorkspace(isRebuildablePackage: true).Directory;
+
+                var directoryAccessor = new InMemoryDirectoryAccessor(rootDirectory, rootDirectory)
                                     {
                                         ("Program.cs", $@"
     using System;
@@ -459,41 +517,41 @@ This is some sample code:
                                          CsprojContents)
                                     }.CreateFiles();
 
-            var console = new TestConsole();
+                var console = new TestConsole();
 
-            var packageRegistry = PackageRegistry.CreateForTryMode(rootDirectory);
-            var resultCode = await VerifyCommand.Do(
-                                 new VerifyOptions(rootDirectory),
-                                 console,
-                                 () => directoryAccessor,
-                                 packageRegistry);
+                var packageRegistry = PackageRegistry.CreateForTryMode(rootDirectory);
+                var resultCode = await VerifyCommand.Do(
+                                     new VerifyOptions(rootDirectory),
+                                     console,
+                                     () => directoryAccessor,
+                                     packageRegistry);
 
-            _output.WriteLine(console.Out.ToString());
-            resultCode.Should().Be(0);
+                _output.WriteLine(console.Out.ToString());
+                resultCode.Should().Be(0);
 
-            File.WriteAllText(directoryAccessor.GetFullyQualifiedPath(new RelativeFilePath("Sample.cs")).FullName, "DOES NOT COMPILE");
-            
-            resultCode = await VerifyCommand.Do(
-                                 new VerifyOptions(rootDirectory),
-                                 console,
-                                 () => directoryAccessor,
-                                 packageRegistry);
+                File.WriteAllText(directoryAccessor.GetFullyQualifiedPath(new RelativeFilePath("Sample.cs")).FullName, "DOES NOT COMPILE");
 
-            _output.WriteLine(console.Out.ToString());
+                resultCode = await VerifyCommand.Do(
+                                     new VerifyOptions(rootDirectory),
+                                     console,
+                                     () => directoryAccessor,
+                                     packageRegistry);
 
-            console.Out.ToString()
-                   .Should().Contain("Build failed")
-                   .And.Contain("Sample.cs(1,10): error CS1002: ; expected");
+                _output.WriteLine(console.Out.ToString());
 
-            resultCode.Should().NotBe(0);
-        }
+                console.Out.ToString()
+                       .Should().Contain("Build failed")
+                       .And.Contain("Sample.cs(1,10): error CS1002: ; expected");
 
-        [Fact]
-        public async Task When_the_file_is_modified_and_errors_are_added_verify_command_shows_the_errors()
-        {
-            var rootDirectory = Create.EmptyWorkspace(isRebuildablePackage: true).Directory;
+                resultCode.Should().NotBe(0);
+            }
 
-            var validCode = $@"
+            [Fact]
+            public async Task When_the_file_is_modified_and_errors_are_added_verify_command_shows_the_errors()
+            {
+                var rootDirectory = Create.EmptyWorkspace(isRebuildablePackage: true).Directory;
+
+                var validCode = $@"
     using System;
 
     public class Program
@@ -506,7 +564,7 @@ This is some sample code:
         }}
     }}";
 
-            var invalidCode = $@"
+                var invalidCode = $@"
     using System;
 
     public class Program
@@ -519,7 +577,7 @@ This is some sample code:
         }}
     }}";
 
-            var directoryAccessor = new InMemoryDirectoryAccessor(rootDirectory, rootDirectory)
+                var directoryAccessor = new InMemoryDirectoryAccessor(rootDirectory, rootDirectory)
                                     {
                                         ("Program.cs", validCode),
                                         ("sample.md", $@"
@@ -529,32 +587,155 @@ This is some sample code:
                                          CsprojContents)
                                     }.CreateFiles();
 
-            var console = new TestConsole();
+                var console = new TestConsole();
 
-            var packageRegistry = PackageRegistry.CreateForTryMode(rootDirectory);
-            var resultCode = await VerifyCommand.Do(
-                                 new VerifyOptions(rootDirectory),
-                                 console,
-                                 () => directoryAccessor,
-                                 packageRegistry);
+                var packageRegistry = PackageRegistry.CreateForTryMode(rootDirectory);
+                var resultCode = await VerifyCommand.Do(
+                                     new VerifyOptions(rootDirectory),
+                                     console,
+                                     () => directoryAccessor,
+                                     packageRegistry);
 
-            resultCode.Should().Be(0);
+                resultCode.Should().Be(0);
 
-            File.WriteAllText(directoryAccessor.GetFullyQualifiedPath(new RelativeFilePath("Program.cs")).FullName, invalidCode);
+                File.WriteAllText(directoryAccessor.GetFullyQualifiedPath(new RelativeFilePath("Program.cs")).FullName, invalidCode);
 
-            resultCode = await VerifyCommand.Do(
-                                 new VerifyOptions(rootDirectory),
-                                 console,
-                                 () => directoryAccessor,
-                                 packageRegistry);
+                resultCode = await VerifyCommand.Do(
+                                     new VerifyOptions(rootDirectory),
+                                     console,
+                                     () => directoryAccessor,
+                                     packageRegistry);
 
-            _output.WriteLine(console.Out.ToString());
+                _output.WriteLine(console.Out.ToString());
 
-            console.Out.ToString()
-                   .Should().Contain("Build failed")
-                   .And.Contain("Program.cs(6,72): error CS1002: ; expected");
+                console.Out.ToString()
+                       .Should().Contain("Build failed")
+                       .And.Contain("Program.cs(6,72): error CS1002: ; expected");
 
-            resultCode.Should().NotBe(0);
+                resultCode.Should().NotBe(0);
+            }
         }
+
+        public class WithStandaloneMarkdown
+        {
+            private readonly ITestOutputHelper _output;
+
+            public WithStandaloneMarkdown(ITestOutputHelper output)
+            {
+                _output = output;
+            }
+            [Fact]
+            public async Task When_standalone_markdown_with_non_editable_code_block_targeting_regions_has_compiling_code_then_validation_succeeds()
+            {
+                var root = Create.EmptyWorkspace(isRebuildablePackage: true).Directory;
+
+                var directoryAccessor = new InMemoryDirectoryAccessor(root, root)
+            {
+                ("./subFolder/some.csproj", CsprojContents),
+                ("doc.md", $@"
+```cs --editable false --destination-file Program.cs
+{CompilingProgramWithRegionCs}
+```
+```cs --editable false --destination-file Program.cs --region targetRegion
+Console.WriteLine(""code"");
+```
+")
+            }.CreateFiles();
+
+                var console = new TestConsole();
+                var project = directoryAccessor.GetFullyQualifiedPath(new RelativeFilePath("./subFolder/some.csproj"));
+
+                var resultCode = await VerifyCommand.Do(
+                    new VerifyOptions(root),
+                    console,
+                    () => directoryAccessor,
+                    PackageRegistry.CreateForTryMode(root),
+                    new StartupOptions(package: project.FullName));
+
+                _output.WriteLine(console.Out.ToString());
+
+                resultCode.Should().Be(0);
+            }
+
+            [Fact]
+            public async Task When_standalone_markdown_has_compiling_code_then_validation_succeeds()
+            {
+                var root = Create.EmptyWorkspace(isRebuildablePackage: true).Directory;
+
+                var directoryAccessor = new InMemoryDirectoryAccessor(root, root)
+            {
+                ("./subFolder/some.csproj", CsprojContents),
+                ("doc.md", $@"
+```cs --editable false --destination-file Program.cs
+{CompilingProgramWithRegionCs}
+```
+```cs --editable false
+// global include
+public class EmptyClass {{}}
+```
+```cs --editable false
+// global include
+public class EmptyClassTwo {{}}
+```
+")
+            }.CreateFiles();
+
+                var console = new TestConsole();
+                var project = directoryAccessor.GetFullyQualifiedPath(new RelativeFilePath("./subFolder/some.csproj"));
+
+                var resultCode = await VerifyCommand.Do(
+                    new VerifyOptions(root),
+                    console,
+                    () => directoryAccessor,
+                    PackageRegistry.CreateForTryMode(root),
+                    new StartupOptions(package: project.FullName)
+                    );
+
+                _output.WriteLine(console.Out.ToString());
+
+                resultCode.Should().Be(0);
+            }
+
+
+            [Fact]
+            public async Task When_standalone_markdown_contains_non_compiling_code_then_validation_fails()
+            {
+                var root = Create.EmptyWorkspace(isRebuildablePackage: true).Directory;
+
+                var directoryAccessor = new InMemoryDirectoryAccessor(root, root)
+                {
+                    ("./subFolder/some.csproj", CsprojContents),
+                    ("doc.md", $@"
+```cs --editable false --destination-file Program.cs
+{CompilingProgramWithRegionCs}
+```
+```cs --editable false
+// global include
+public class EmptyClassTwo {{
+    DOES NOT COMPILE
+}}
+```
+")
+                }.CreateFiles();
+
+                var console = new TestConsole();
+                var project = directoryAccessor.GetFullyQualifiedPath(new RelativeFilePath("./subFolder/some.csproj"));
+
+                var resultCode = await VerifyCommand.Do(
+                    new VerifyOptions(root),
+                    console,
+                    () => directoryAccessor,
+                    PackageRegistry.CreateForTryMode(root),
+                    new StartupOptions(package: project.FullName));
+
+                _output.WriteLine(console.Out.ToString());
+                console.Out.ToString()
+                    .Should().Contain("Build failed");
+
+                resultCode.Should().NotBe(0);
+            }
+
+        }
+
     }
 }

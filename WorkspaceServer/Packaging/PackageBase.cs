@@ -131,7 +131,7 @@ namespace WorkspaceServer.Packaging
 
         protected FileInfo GetProjectFile()
         {
-            return Directory.GetFiles("*.csproj").FirstOrDefault();
+            return Directory.GetFiles("*.csproj",SearchOption.TopDirectoryOnly).FirstOrDefault();
         }
     }
 }
