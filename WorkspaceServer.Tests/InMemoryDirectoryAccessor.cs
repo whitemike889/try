@@ -5,18 +5,17 @@ using System.IO;
 using System.Linq;
 using Microsoft.DotNet.Try.Markdown;
 using MLS.Agent.Markdown;
-using MLS.Agent.Tests.TestUtility;
 
-namespace MLS.Agent.Tests.Markdown
+namespace WorkspaceServer.Tests
 {
-    internal class InMemoryDirectoryAccessor : IDirectoryAccessor, IEnumerable
+    public class InMemoryDirectoryAccessor : IDirectoryAccessor, IEnumerable
     {
         private readonly DirectoryInfo _rootDirToAddFiles;
         private Dictionary<string, string> _files;
 
         public InMemoryDirectoryAccessor(DirectoryInfo workingDirectory, DirectoryInfo rootDirectoryToAddFiles = null)
         {
-            _rootDirToAddFiles = rootDirectoryToAddFiles ?? TestAssets.SampleConsole;
+            _rootDirToAddFiles = rootDirectoryToAddFiles ?? workingDirectory;
             WorkingDirectory = workingDirectory;
             _files = new Dictionary<string, string>();
         }

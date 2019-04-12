@@ -2,7 +2,7 @@
 using System.IO;
 using Microsoft.DotNet.Try.Markdown;
 
-namespace MLS.Agent.Markdown
+namespace WorkspaceServer
 {
     public interface IDirectoryAccessor
     {

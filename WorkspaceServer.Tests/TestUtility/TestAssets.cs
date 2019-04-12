@@ -1,7 +1,7 @@
 ﻿using System.IO;
 
-namespace MLS.Agent.Tests.TestUtility
-{
+namespace WorkspaceServer.Tests
+{ 
     public static class TestAssets
     {
         public static DirectoryInfo SampleConsole
