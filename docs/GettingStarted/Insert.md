@@ -1,6 +1,6 @@
 # Read-only code 
 
-Add these usings
+These usings will be required in `program.cs`
 ```cs  --editable false --region usings --destination-file .\Snippets\Program.cs
 using System;
 using System.Collections.Generic;
@@ -8,7 +8,7 @@ using System.IO;
 using System.Linq;
 
 ```
-
+<!-- some hidden code-->
 ```cs --hidden --editable false
 using System;
 using System.Collections.Generic;
@@ -22,14 +22,14 @@ public class DataObject{
 }
 ```
 
-Declare a method
+Declare a method that can be used from any instance of `DataObject` class, which implementation details are omitted.
 ```cs --editable false  --region custom_code
 public IEnumerable<string> PrintMe(){
     yield return "What an adventure";
 }
 ```
 
-Declare Utilities that are not on rendered in the page
+<!-- Declare Utilities that are not on rendered in the page -->
 ```cs --editable false --hidden
 public class HiddenObject{
 
@@ -46,7 +46,12 @@ namespace Snippets
     {
         static void Main()
         {
+            var counter = 0;
             #region run1
+            Console.WriteLine(DateTime.Now);
+            #endregion
+
+            #region run2
             Console.WriteLine(DateTime.Now);
             #endregion
 
@@ -63,10 +68,18 @@ namespace Snippets
 }
 ```
 
-```cs 
-using System.Text;
+the following code will run before the editable part
+```cs --editable false --destination-file .\Snippets\Program.cs --region run1
+Console.WriteLine($"printed before the region execution: counter value is {counter}");
 ```
 
-readonly code is part of the compialtion, try using the `VisibleObject` or the `HiddenObject`.
-```csharp --source-file .\Snippets\Program.cs --project .\Snippets\Snippets.csproj --session "Run example 1" --region run1
+edit the code here, try manipulating the value on the variable `counter`
+```csharp --source-file ./Snippets/Program.cs --region run1
 ```
+
+and the following code will run after the editable part
+```cs --editable false --destination-file .\Snippets\Program.cs --region run1 
+Console.WriteLine($"printed after the region execution: counter value is {counter}");
+```
+
+

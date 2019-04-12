@@ -16,7 +16,7 @@ Congratulations! You just ran `dotnet try demo`. This is an interactive guide to
 
 #### Example 1
 
-```csharp --source-file .\Snippets\Program.cs --project .\Snippets\Snippets.csproj --session "Run example 1" --region run1
+```csharp --source-file .\Snippets\Program.cs --session "Run example 1" --region run1
 ```
 
 ### What's happening behind the scenes?
@@ -39,7 +39,7 @@ The `dotnet try` tool extends Markdown using a set of options that can be added 
 
 #### Example 2
 
-```cs --source-file .\Snippets\Program.cs --project .\Snippets\Snippets.csproj --region run2 --session "Run example 2" 
+```cs --source-file .\Snippets\Program.cs --region run2 --session "Run example 2" 
 ```
 
 For example, the code snippet above was extended using `dotnet try`. The code fence that wires it up looks like this: 

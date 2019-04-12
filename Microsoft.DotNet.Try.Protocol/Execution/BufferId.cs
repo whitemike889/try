@@ -7,6 +7,9 @@ namespace Microsoft.DotNet.Try.Protocol.Execution
     [JsonConverter(typeof(BufferIdConverter))]
     public class BufferId
     {
+        private const string BeforeInjectionModifier = "[before]";
+        private const string AfterInjectionModifier = "[after]";
+
         public BufferId(string fileName, string regionName = null)
         {
             FileName = fileName ?? "";
@@ -58,6 +61,37 @@ namespace Microsoft.DotNet.Try.Protocol.Execution
             return Parse(value);
         }
 
+        private static string RemoveInjectionModifiers(string regionName)
+        {
+            return string.IsNullOrWhiteSpace(regionName)
+                ? regionName
+                : regionName.Replace(BeforeInjectionModifier, string.Empty).Replace(AfterInjectionModifier, string.Empty);
+        }
+        public BufferId GetNormalized()
+        {
+            return new BufferId(FileName, RemoveInjectionModifiers(RegionName));
+        }
+
+     
+        public BufferInjectionPoints GetInjectionPoint()
+        {
+            if (string.IsNullOrWhiteSpace(RegionName))
+            {
+                return BufferInjectionPoints.Replace;
+            }
+
+            if (RegionName.Contains(BeforeInjectionModifier))
+            {
+                return BufferInjectionPoints.Before;
+            }
+
+            if (RegionName.Contains(AfterInjectionModifier))
+            {
+                return BufferInjectionPoints.After;
+            }
+
+            return BufferInjectionPoints.Replace;
+        }
         public static BufferId Empty { get; } = new BufferId("");
 
         internal class BufferIdConverter : JsonConverter

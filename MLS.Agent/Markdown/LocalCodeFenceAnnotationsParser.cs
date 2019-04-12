@@ -8,6 +8,7 @@ using Markdig;
 using Microsoft.DotNet.Try.Markdown;
 using MLS.Agent.Tools;
 using WorkspaceServer;
+using WorkspaceServer.Packaging;
 
 namespace MLS.Agent.Markdown
 {
@@ -58,9 +59,13 @@ namespace MLS.Agent.Markdown
             CodeBlockAnnotations annotations,
             PackageRegistry packageRegistry)
         {
-            if (annotations.Package != null)
+            if (annotations.Package != null && 
+                await packageRegistry.Get(annotations.Package) is Package installedPackage)
             {
-                var installedPackage = await packageRegistry.Get(annotations.Package);
+                if (File.Exists(installedPackage.Name))
+                {
+                    return null;
+                }
 
                 if (installedPackage?.Directory != null)
                 {
@@ -128,8 +133,12 @@ namespace MLS.Agent.Markdown
 
             projectOptionArgument.SetDefaultValue(() =>
             {
+                var rootDirectory = directoryAccessor.GetFullyQualifiedPath(new RelativeDirectoryPath("."));
                 var projectFiles = directoryAccessor.GetAllFilesRecursively()
-                                                    .Where(file => file.Extension == ".csproj")
+                                                    .Where(file =>
+                                                    {
+                                                        return directoryAccessor.GetFullyQualifiedPath(file.Directory).FullName == rootDirectory.FullName && file.Extension == ".csproj";
+                                                    })
                                                     .ToArray();
 
                 if (projectFiles.Length == 1)

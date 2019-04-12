@@ -12,6 +12,10 @@ namespace MLS.Agent.Tests.CommandLine
             {
                 var absolutePath = inMemoryDirectoryAccessor.GetFullyQualifiedPath(filePath);
                 var text = inMemoryDirectoryAccessor.ReadAllText(filePath);
+                if (absolutePath is FileInfo file && !file.Directory.Exists)
+                {
+                    file.Directory.Create();
+                }
                 File.WriteAllText(absolutePath.FullName, text);
             }
 

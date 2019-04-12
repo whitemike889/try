@@ -16,7 +16,7 @@ Console.WriteLine(DateTime.Now);
 
 The `dotnet try` tool provides a way to do this while also making the code sample interactive:
 
-```cs --source-file ./Snippets/Program.cs --region run1 --project ./Snippets/Snippets.csproj
+```cs --source-file ./Snippets/Program.cs --region run1
 Console.WriteLine("Hello World!");
 ```
 

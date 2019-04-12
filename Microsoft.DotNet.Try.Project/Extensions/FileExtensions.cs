@@ -31,7 +31,7 @@ namespace Microsoft.DotNet.Try.Project.Extensions
 
             foreach (var region in regions)
             {
-                yield return new Viewport(sourceFile, region.span, region.bufferId);
+                yield return new Viewport(sourceFile, region.span, region.outerSpan, region.bufferId);
             }
         }
 
@@ -45,7 +45,7 @@ namespace Microsoft.DotNet.Try.Project.Extensions
             return sourceFiles.SelectMany(f => f.ExtractViewPorts());
         }
 
-        private static IEnumerable<(BufferId bufferId, TextSpan span)> ExtractRegions(SourceText code, string fileName)
+        private static IEnumerable<(BufferId bufferId, TextSpan span, TextSpan outerSpan)> ExtractRegions(SourceText code, string fileName)
         {
             var ids = new HashSet<string>();
             IEnumerable<(SyntaxTrivia startRegion, SyntaxTrivia endRegion, BufferId bufferId)> FindRegions(SyntaxNode syntaxNode)
@@ -89,15 +89,23 @@ namespace Microsoft.DotNet.Try.Project.Extensions
 
             foreach (var (startRegion, endRegion, label) in FindRegions(root))
             {
-                var start = startRegion.GetLocation().SourceSpan.End;
-                var length = endRegion.GetLocation().SourceSpan.Start -
+                var innerStart = startRegion.GetLocation().SourceSpan.End;
+                
+                var innerLength = endRegion.GetLocation().SourceSpan.Start -
                              startRegion.GetLocation().SourceSpan.End;
-                var loc = new TextSpan(start, length);
+                
+                var innerLoc = new TextSpan(innerStart, innerLength);
+
+                var outerStart = startRegion.GetLocation().SourceSpan.Start;
+                var outerLength = endRegion.GetLocation().SourceSpan.End -
+                                  startRegion.GetLocation().SourceSpan.Start;
+                var outerLoc = new TextSpan(outerStart, outerLength);
+
                 if (!ids.Add(label.RegionName))
                 {
                     throw new InvalidOperationException("viewports identifiers must be unique");
                 }
-                yield return (label, loc);
+                yield return (label, innerLoc, outerLoc);
             }
         }
     }
