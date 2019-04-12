@@ -1,4 +1,6 @@
-﻿namespace WorkspaceServer.Tests.CodeSamples
+﻿using Microsoft.DotNet.Try.Project.Generators;
+
+namespace WorkspaceServer.Tests.CodeSamples
 {
     internal static class SourceCodeProvider
     {

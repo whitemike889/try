@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
  using Microsoft.DotNet.Try.Markdown;
- using WorkspaceServer.Servers.Roslyn;
+using WorkspaceServer;
+using WorkspaceServer.Servers.Roslyn;
 
 namespace MLS.Agent.Markdown
 {

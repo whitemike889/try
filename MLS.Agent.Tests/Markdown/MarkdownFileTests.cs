@@ -7,7 +7,7 @@ using Microsoft.DotNet.Try.Markdown;
 using Microsoft.DotNet.Try.Project;
 using MLS.Agent.CommandLine;
 using MLS.Agent.Markdown;
-using MLS.Agent.Tests.TestUtility;
+using WorkspaceServer.Tests;
 using WorkspaceServer;
 using Xunit;
 using Xunit.Abstractions;

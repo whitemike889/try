@@ -169,5 +169,19 @@ namespace WorkspaceServer.Tests
                 .And
                 .Contain(e => e.StartsWith($"Skipping build for package {package.Name}"));
         }
+
+        [Theory]
+
+        [InlineData("console", false)]
+        [InlineData("nodatime.api", false)]
+        [InlineData("blazor-console", true)]
+        [InlineData("blazor-nodatime.api", true)]
+        public async Task CanSupportBlazor_indicates_whether_the_package_supports_Blazor(string packageName, bool expected)
+        {
+            var registry = PackageRegistry.CreateForHostedMode();
+            var package = await registry.Get(packageName);
+            await package.EnsureReady(new Budget());
+            package.CanSupportBlazor().Should().Be(expected);
+        }
     }
 }

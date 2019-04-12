@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis.Text;
 using WorkspaceServer.Servers.Roslyn.Instrumentation;
 using Xunit;
+using Microsoft.DotNet.Try.Project.Generators;
 
 namespace WorkspaceServer.Tests
 {
@@ -11,7 +12,7 @@ namespace WorkspaceServer.Tests
         public void It_Should_Convert_Text_Spans()
         {
             var sourceText = SourceText.From(
-                CodeManipulation.EnforceLF("hello\nworld")
+                ("hello\nworld").EnforceLF()
             );
 
             var span = new TextSpan(0, 11);

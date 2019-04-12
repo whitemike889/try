@@ -175,7 +175,7 @@ namespace MLS.Agent
 
                 var budget = new Budget();
                 _disposables.Add(() => budget.Cancel());
-                BlazorPackageConfiguration.Configure(app, app.ApplicationServices, packageRegistry, budget, !Environment.IsProduction());
+                BlazorPackageConfiguration.Configure(app, app.ApplicationServices, packageRegistry, budget, !StartupOptions.IsLanguageService);
 
                 app.UseDefaultFiles()
                    .UseStaticFilesFromToolLocation()

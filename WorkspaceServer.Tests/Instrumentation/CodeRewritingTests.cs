@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using WorkspaceServer.Servers.Roslyn.Instrumentation;
 using Xunit;
+using Microsoft.DotNet.Try.Project.Generators;
 
 namespace WorkspaceServer.Tests.Instrumentation
 {

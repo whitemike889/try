@@ -8,7 +8,6 @@ using Clockwise;
 using Microsoft.DotNet.Try.Protocol;
 using Microsoft.DotNet.Try.TestSupport;
 using MLS.Agent.CommandLine;
-using MLS.Agent.Tests.TestUtility;
 using WorkspaceServer.Packaging;
 using WorkspaceServer.Tests;
 using Xunit;

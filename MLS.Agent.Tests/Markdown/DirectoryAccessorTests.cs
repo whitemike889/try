@@ -3,7 +3,8 @@ using System.IO;
 using FluentAssertions;
 using Microsoft.DotNet.Try.Markdown;
 using MLS.Agent.Markdown;
-using MLS.Agent.Tests.TestUtility;
+using WorkspaceServer;
+using WorkspaceServer.Tests;
 using Xunit;
 
 namespace MLS.Agent.Tests.Markdown

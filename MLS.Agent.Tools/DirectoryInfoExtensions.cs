@@ -39,5 +39,20 @@ namespace MLS.Agent.Tools
                             destination.FullName, subdirectory.Name)));
             }
         }
+
+        public static DirectoryInfo Subdirectory(this DirectoryInfo directoryInfo, string path)
+        {
+            return new DirectoryInfo(Path.Combine(directoryInfo.FullName, path));
+        }
+
+        public static DirectoryInfo NormalizeEnding(this DirectoryInfo directoryInfo)
+        {
+            if (!directoryInfo.FullName.EndsWith(Path.DirectorySeparatorChar.ToString()))
+            {
+                return new DirectoryInfo(Path.Combine(directoryInfo.FullName, Path.DirectorySeparatorChar.ToString()));
+            }
+
+            return directoryInfo;
+        }
     }
 }

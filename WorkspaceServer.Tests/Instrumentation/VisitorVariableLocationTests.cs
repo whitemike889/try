@@ -9,6 +9,7 @@ using TextSpans = System.Collections.Generic.IDictionary<string, System.Collecti
 using LinePositionSpans = System.Collections.Generic.IDictionary<string, System.Collections.Immutable.ImmutableArray<Microsoft.CodeAnalysis.Text.LinePositionSpan>>;
 using WorkspaceServer.Servers.Roslyn.Instrumentation;
 using WorkspaceServer.Tests.Instrumentation;
+using Microsoft.DotNet.Try.Project.Generators;
 
 namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
 {

@@ -6,6 +6,7 @@ using Microsoft.DotNet.Try.Project;
 using Microsoft.DotNet.Try.Protocol;
 using WorkspaceServer.Servers.Roslyn.Instrumentation;
 using Xunit;
+using Microsoft.DotNet.Try.Project.Generators;
 using SpanDictionary = System.Collections.Generic.IDictionary<string, System.Collections.Generic.IEnumerable<Microsoft.CodeAnalysis.Text.LinePositionSpan>>;
 
 namespace WorkspaceServer.Tests.Instrumentation

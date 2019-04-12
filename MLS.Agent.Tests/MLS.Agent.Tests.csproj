@@ -6,15 +6,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="TestResults\**" />
-    <Compile Remove="TestProjects\**" />
     <EmbeddedResource Remove="TestResults\**" />
     <None Remove="TestResults\**" />
-  </ItemGroup>
- 
-  <ItemGroup>
-    <None Include="TestProjects\**">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 
   <ItemGroup>

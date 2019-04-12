@@ -3,6 +3,7 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
+using Microsoft.DotNet.Try.Project.Generators;
 using WorkspaceServer.Servers.Roslyn.Instrumentation;
 using WorkspaceServer.Tests.Servers.Roslyn.Instrumentation;
 using Xunit;

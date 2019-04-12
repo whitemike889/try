@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using FluentAssertions;
 using System.Linq;
+using Microsoft.DotNet.Try.Project.Generators;
 
 namespace WorkspaceServer.Tests
 {

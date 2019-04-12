@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.DotNet.Try.Project.Generators;
 
 namespace WorkspaceServer.Tests.Instrumentation
 {

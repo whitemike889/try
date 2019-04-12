@@ -6,7 +6,7 @@ using FluentAssertions;
 using FluentAssertions.Extensions;
 using HtmlAgilityPack;
 using MLS.Agent.CommandLine;
-using MLS.Agent.Tests.TestUtility;
+using WorkspaceServer.Tests;
 using Recipes;
 using Xunit;
 

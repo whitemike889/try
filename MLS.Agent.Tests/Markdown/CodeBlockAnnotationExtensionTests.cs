@@ -9,7 +9,6 @@ using Microsoft.DotNet.Try.Markdown;
 using Microsoft.DotNet.Try.Project;
 using MLS.Agent.Controllers;
 using MLS.Agent.Markdown;
-using MLS.Agent.Tests.TestUtility;
 using MLS.Agent.Tools;
 using WorkspaceServer;
 using WorkspaceServer.Packaging;

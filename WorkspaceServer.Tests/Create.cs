@@ -99,7 +99,7 @@ public static class Hello
         Console.WriteLine(""{consoleOutput}"");
     }}
 }}";
-            return CodeManipulation.EnforceLF(code);
+            return code.EnforceLF();
         }
     }
 }
