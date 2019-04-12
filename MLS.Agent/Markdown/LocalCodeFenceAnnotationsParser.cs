@@ -8,6 +8,7 @@ using Markdig;
 using Microsoft.DotNet.Try.Markdown;
 using MLS.Agent.Tools;
 using WorkspaceServer;
+using WorkspaceServer.Packaging;
 
 namespace MLS.Agent.Markdown
 {
@@ -60,7 +61,17 @@ namespace MLS.Agent.Markdown
         {
             if (annotations.Package != null)
             {
-                var installedPackage = await packageRegistry.Get(annotations.Package);
+                var installedPackage = (await packageRegistry.Get(annotations.Package)) as Package;
+
+                if (installedPackage == null)
+                {
+                    return null;
+                }
+
+                if (File.Exists(installedPackage.Name))
+                {
+                    return null;
+                }
 
                 if (installedPackage?.Directory != null)
                 {

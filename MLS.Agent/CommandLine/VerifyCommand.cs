@@ -198,8 +198,8 @@ namespace MLS.Agent.CommandLine
                     file != null
                         ? directoryAccessor.GetFullyQualifiedPath(file).FullName
                         : "UNKNOWN";
-
-                var project = blockOptions?.Project?.FullName ?? "UNKNOWN";
+                
+                var project = codeLinkBlock.ProjectOrPackageName() ?? "UNKNOWN";
 
                 var symbol = diagnostics.Any()
                                  ? "X"

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.CommandLine;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using MLS.Agent.CommandLine;
@@ -27,14 +28,15 @@ namespace MLS.Agent.Tests.CommandLine
             var console = new TestConsole();
 
             var outputDirectory = Create.EmptyWorkspace().Directory;
-
+            var packageFile = Path.Combine(outputDirectory.FullName,"Snippets" ,"Snippets.csproj");
             await DemoCommand.Do(new DemoOptions(outputDirectory), console);
 
             var resultCode = await VerifyCommand.Do(
                                  new VerifyOptions(outputDirectory),
                                  console,
                                  () => new FileSystemDirectoryAccessor(outputDirectory),
-                                 new PackageRegistry());
+                                 new PackageRegistry(),
+                                 new StartupOptions(package:packageFile));
 
             _output.WriteLine(console.Out.ToString());
             _output.WriteLine(console.Error.ToString());

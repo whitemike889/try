@@ -51,6 +51,10 @@ namespace Snippets
             Console.WriteLine(DateTime.Now);
             #endregion
 
+            #region run2
+            Console.WriteLine(DateTime.Now);
+            #endregion
+
             Console.WriteLine("this is from hidden include");
         }        
     }
@@ -65,14 +69,17 @@ namespace Snippets
 ```
 
 the following code will run before the editable part
-```cs --editable false --destination-file .\Snippets\Program.cs --session "Run example 1" --region run1
+```cs --editable false --destination-file .\Snippets\Program.cs --region run1
 Console.WriteLine($"printed before the region execution: counter value is {counter}");
 ```
+
 edit the code here, try manipulating the value on the variable `counter`
-```csharp --source-file .\Snippets\Program.cs --project .\Snippets\Snippets.csproj --session "Run example 1" --region run1
+```csharp --source-file ./Snippets/Program.cs --region run1
 ```
 
 and the following code will run after the editable part
-```cs --editable false --destination-file .\Snippets\Program.cs --session "Run example 1" --region run1
+```cs --editable false --destination-file .\Snippets\Program.cs --region run1 
 Console.WriteLine($"printed after the region execution: counter value is {counter}");
 ```
+
+
