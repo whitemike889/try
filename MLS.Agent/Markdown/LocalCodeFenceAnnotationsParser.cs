@@ -59,15 +59,9 @@ namespace MLS.Agent.Markdown
             CodeBlockAnnotations annotations,
             PackageRegistry packageRegistry)
         {
-            if (annotations.Package != null)
+            if (annotations.Package != null && 
+                await packageRegistry.Get(annotations.Package) is Package installedPackage)
             {
-                var installedPackage = (await packageRegistry.Get(annotations.Package)) as Package;
-
-                if (installedPackage == null)
-                {
-                    return null;
-                }
-
                 if (File.Exists(installedPackage.Name))
                 {
                     return null;
@@ -143,7 +137,7 @@ namespace MLS.Agent.Markdown
                 var projectFiles = directoryAccessor.GetAllFilesRecursively()
                                                     .Where(file =>
                                                     {
-                                                        return (directoryAccessor.GetFullyQualifiedPath(file.Directory).FullName == rootDirectory.FullName) && file.Extension == ".csproj";
+                                                        return directoryAccessor.GetFullyQualifiedPath(file.Directory).FullName == rootDirectory.FullName && file.Extension == ".csproj";
                                                     })
                                                     .ToArray();
 
