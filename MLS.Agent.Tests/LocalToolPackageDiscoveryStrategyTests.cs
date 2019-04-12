@@ -35,7 +35,6 @@ namespace MLS.Agent.Tests
                 var strategy = new LocalToolInstallingPackageDiscoveryStrategy(temp);
                 var tool = await strategy.Locate(new PackageDescriptor("console"));
                 tool.Should().NotBeNull();
-                tool.PackageInitializer.Should().BeOfType<PackageToolInitializer>();
             }
         }
 

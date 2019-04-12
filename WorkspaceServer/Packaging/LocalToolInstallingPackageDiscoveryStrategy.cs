@@ -58,11 +58,7 @@ namespace WorkspaceServer.Packaging
 
         private PackageBuilder CreatePackageBuilder(PackageDescriptor packageDesciptor, Package locatedPackage)
         {
-            var pb = new PackageBuilder(
-                packageDesciptor.Name,
-                new PackageToolInitializer(
-                    Path.Combine(
-                        _workingDirectory.FullName, packageDesciptor.Name)));
+            var pb = new PackageBuilder(packageDesciptor.Name);
             pb.Directory = locatedPackage.Directory;
             return pb;
         }
