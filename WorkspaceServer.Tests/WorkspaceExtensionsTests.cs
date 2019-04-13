@@ -1,5 +1,5 @@
 using FluentAssertions;
-using Microsoft.DotNet.Try.Protocol.Execution;
+using Microsoft.DotNet.Try.Protocol;
 using WorkspaceServer.Models.Execution;
 using Xunit;
 

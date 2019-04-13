@@ -3,9 +3,9 @@ using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.DotNet.Try.Protocol.Execution
+namespace Microsoft.DotNet.Try.Protocol
 {
-    public abstract class FeatureContainerConverter<T> : JsonConverter where T : FeatureContainer
+    internal abstract class FeatureContainerConverter<T> : JsonConverter where T : FeatureContainer
     {
         protected abstract void AddProperties(T result, JObject o);
 

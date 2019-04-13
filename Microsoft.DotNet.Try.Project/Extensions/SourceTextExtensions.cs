@@ -4,7 +4,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Formatting;
 using Microsoft.CodeAnalysis.Text;
-using Workspace = Microsoft.DotNet.Try.Protocol.Execution.Workspace;
+using Workspace = Microsoft.DotNet.Try.Protocol.Workspace;
 
 namespace Microsoft.DotNet.Try.Project.Extensions
 {

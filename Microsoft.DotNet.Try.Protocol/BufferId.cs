@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace Microsoft.DotNet.Try.Protocol.Execution
+namespace Microsoft.DotNet.Try.Protocol
 {
     [JsonConverter(typeof(BufferIdConverter))]
     public class BufferId

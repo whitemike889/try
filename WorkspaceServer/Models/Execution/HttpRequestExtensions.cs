@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Net.Http;
 using System.Text;
-using Microsoft.DotNet.Try.Protocol.Execution;
+using Microsoft.DotNet.Try.Protocol;
 
 namespace WorkspaceServer.Models.Execution
 {

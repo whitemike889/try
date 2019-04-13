@@ -2,7 +2,7 @@
 using System.Collections.ObjectModel;
 using System.Linq;
 
-namespace Microsoft.DotNet.Try.Protocol.Execution
+namespace Microsoft.DotNet.Try.Protocol
 {
     public class ProjectDiagnostics : ReadOnlyCollection<SerializableDiagnostic>, IRunResultFeature
     {

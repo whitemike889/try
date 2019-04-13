@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Microsoft.DotNet.Try.Protocol.Execution;
+using Microsoft.DotNet.Try.Protocol;
 
 namespace WorkspaceServer.Features
 {

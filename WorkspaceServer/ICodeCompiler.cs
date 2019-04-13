@@ -1,7 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.DotNet.Try.Protocol;
-using Microsoft.DotNet.Try.Protocol.Execution;
 
 namespace WorkspaceServer
 {

@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.DotNet.Try.Protocol;
-using Microsoft.DotNet.Try.Protocol.Execution;
 using Pocket;
 using WorkspaceServer.Models.Instrumentation;
 using WorkspaceServer.Servers.Roslyn;

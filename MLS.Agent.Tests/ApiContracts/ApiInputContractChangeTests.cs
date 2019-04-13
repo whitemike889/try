@@ -1,7 +1,6 @@
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.DotNet.Try.Protocol;
-using Microsoft.DotNet.Try.Protocol.Execution;
 using Recipes;
 using Xunit;
 using Xunit.Abstractions;

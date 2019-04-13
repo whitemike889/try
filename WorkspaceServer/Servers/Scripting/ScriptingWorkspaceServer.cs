@@ -12,11 +12,10 @@ using Microsoft.CodeAnalysis.Scripting;
 using Microsoft.DotNet.Try.Project.Extensions;
 using Microsoft.DotNet.Try.Project.Transformations;
 using Microsoft.DotNet.Try.Protocol;
-using Microsoft.DotNet.Try.Protocol.Execution;
 using Pocket;
 using WorkspaceServer.Transformations;
 using static Pocket.Logger<WorkspaceServer.Servers.Scripting.ScriptingWorkspaceServer>;
-using Workspace = Microsoft.DotNet.Try.Protocol.Execution.Workspace;
+using Workspace = Microsoft.DotNet.Try.Protocol.Workspace;
 using WorkspaceServer.Servers.Roslyn;
 using Recipes;
 

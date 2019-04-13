@@ -13,12 +13,10 @@ using WorkspaceServer.Tests;
 using Xunit;
 using Xunit.Abstractions;
 using static Pocket.Logger<MLS.Agent.Tests.ApiViaHttpTests>;
-using Workspace = Microsoft.DotNet.Try.Protocol.Execution.Workspace;
 using MLS.Agent.CommandLine;
 using FluentAssertions.Extensions;
 using Microsoft.DotNet.Try.Protocol;
 using Microsoft.DotNet.Try.Protocol.ClientApi;
-using Microsoft.DotNet.Try.Protocol.Execution;
 
 namespace MLS.Agent.Tests
 {

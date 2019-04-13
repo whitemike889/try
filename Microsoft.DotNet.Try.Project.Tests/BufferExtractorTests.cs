@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using FluentAssertions;
 using Microsoft.DotNet.Try.Project.Extensions;
-using Microsoft.DotNet.Try.Protocol.Execution;
+using Microsoft.DotNet.Try.Protocol;
 using Microsoft.DotNet.Try.TestSupport;
 using Xunit;
 

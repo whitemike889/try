@@ -4,7 +4,7 @@ using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.DotNet.Try.Protocol.Execution
+namespace Microsoft.DotNet.Try.Protocol
 {
     [JsonConverter(typeof(RunResultJsonConverter))]
     public class RunResult : FeatureContainer

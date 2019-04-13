@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
-namespace Microsoft.DotNet.Try.Protocol.Execution
+namespace Microsoft.DotNet.Try.Protocol
 {
     public class Diagnostics : ReadOnlyCollection<SerializableDiagnostic>, IRunResultFeature
     {

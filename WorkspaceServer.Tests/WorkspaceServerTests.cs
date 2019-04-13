@@ -4,15 +4,13 @@ using Clockwise;
 using FluentAssertions;
 using FluentAssertions.Extensions;
 using Microsoft.DotNet.Try.Protocol;
-using Microsoft.DotNet.Try.Protocol.Execution;
 using Pocket;
-using WorkspaceServer.Packaging;
 using Xunit;
 using Xunit.Abstractions;
 using static Pocket.Logger<WorkspaceServer.Tests.WorkspaceServerTests>;
 using DiagnosticSeverity = Microsoft.DotNet.Try.Protocol.DiagnosticSeverity;
 using Package = WorkspaceServer.Packaging.Package;
-using Workspace = Microsoft.DotNet.Try.Protocol.Execution.Workspace;
+using Workspace = Microsoft.DotNet.Try.Protocol.Workspace;
 
 namespace WorkspaceServer.Tests
 {

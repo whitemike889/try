@@ -1,6 +1,6 @@
 ﻿using System;
 using Microsoft.CodeAnalysis.Text;
-using Microsoft.DotNet.Try.Protocol.Execution;
+using Microsoft.DotNet.Try.Protocol;
 
 namespace Microsoft.DotNet.Try.Project.Execution
 {

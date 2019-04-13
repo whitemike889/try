@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using Assent;
 using FluentAssertions;
 using Microsoft.DotNet.Try.Protocol;
-using Microsoft.DotNet.Try.Protocol.Execution;
 using Recipes;
 using WorkspaceServer.Tests;
 using Xunit;

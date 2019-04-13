@@ -3,13 +3,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Clockwise;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.DotNet.Try.Project.Execution;
 using Microsoft.DotNet.Try.Project.Extensions;
-using Microsoft.DotNet.Try.Protocol.Execution;
-using Workspace = Microsoft.DotNet.Try.Protocol.Execution.Workspace;
+using Microsoft.DotNet.Try.Protocol;
 
 namespace Microsoft.DotNet.Try.Project.Transformations
 {

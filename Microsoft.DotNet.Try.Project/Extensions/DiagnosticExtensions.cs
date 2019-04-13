@@ -1,7 +1,6 @@
 ﻿using System;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.Try.Protocol;
-using Microsoft.DotNet.Try.Protocol.Execution;
 using RoslynDiagnosticSeverity = Microsoft.CodeAnalysis.DiagnosticSeverity;
 using TdnDiagnosticSeverity = Microsoft.DotNet.Try.Protocol.DiagnosticSeverity;
 

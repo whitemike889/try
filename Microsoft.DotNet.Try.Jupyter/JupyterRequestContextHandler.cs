@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.DotNet.Try.Jupyter.Protocol;
 using Microsoft.DotNet.Try.Protocol;
-using Microsoft.DotNet.Try.Protocol.Execution;
 using Newtonsoft.Json.Linq;
 using WorkspaceServer;
 using WorkspaceServer.Packaging;

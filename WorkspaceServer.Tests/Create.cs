@@ -6,7 +6,6 @@ using System.Reactive.Concurrency;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.DotNet.Try.Protocol;
-using Microsoft.DotNet.Try.Protocol.Execution;
 using MLS.Agent.CommandLine;
 using Recipes;
 using WorkspaceServer.Packaging;

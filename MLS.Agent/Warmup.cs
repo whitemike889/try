@@ -4,7 +4,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.DotNet.Try.Protocol;
-using Microsoft.DotNet.Try.Protocol.Execution;
 using Newtonsoft.Json;
 using Pocket;
 using static Pocket.Logger<MLS.Agent.Warmup>;

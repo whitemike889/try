@@ -6,7 +6,6 @@ using System.IO;
 using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.DotNet.Try.Protocol;
-using Microsoft.DotNet.Try.Protocol.Execution;
 using Microsoft.DotNet.Try.TestSupport;
 using MLS.Agent.CommandLine;
 using MLS.Agent.Tests.TestUtility;

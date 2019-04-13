@@ -2,11 +2,11 @@
 using System.Net.Http;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
-using Microsoft.DotNet.Try.Protocol.Execution;
+using Microsoft.DotNet.Try.Protocol;
 using MLS.Agent.Tools;
 using Pocket;
-using WorkspaceServer.Packaging;
 using static Pocket.Logger;
+using Package = WorkspaceServer.Packaging.Package;
 
 namespace WorkspaceServer.Features
 {

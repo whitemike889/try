@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Microsoft.DotNet.Try.Protocol.Execution
+namespace Microsoft.DotNet.Try.Protocol
 {
     public class HttpRequest
     {

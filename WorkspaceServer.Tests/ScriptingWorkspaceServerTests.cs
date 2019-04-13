@@ -3,7 +3,6 @@ using FluentAssertions;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.DotNet.Try.Protocol;
-using Microsoft.DotNet.Try.Protocol.Execution;
 using Pocket;
 using Recipes;
 using WorkspaceServer.Servers.Scripting;

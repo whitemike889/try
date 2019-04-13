@@ -7,11 +7,11 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.DotNet.Try.Project.Execution;
 using Microsoft.DotNet.Try.Project.Extensions;
-using Microsoft.DotNet.Try.Protocol.Execution;
+using Microsoft.DotNet.Try.Protocol;
 using WorkspaceServer.Servers.Roslyn.Instrumentation;
-using WorkspaceServer.Packaging;
 using static System.Environment;
-using Workspace = Microsoft.DotNet.Try.Protocol.Execution.Workspace;
+using Package = WorkspaceServer.Packaging.Package;
+using Workspace = Microsoft.DotNet.Try.Protocol.Workspace;
 
 namespace WorkspaceServer.Servers.Roslyn
 {

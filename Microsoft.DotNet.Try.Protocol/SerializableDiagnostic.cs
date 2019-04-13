@@ -1,5 +1,4 @@
-﻿using Microsoft.DotNet.Try.Protocol.Execution;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 
 namespace Microsoft.DotNet.Try.Protocol
 {

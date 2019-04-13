@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Pocket;
 
-namespace Microsoft.DotNet.Try.Protocol.Execution
+namespace Microsoft.DotNet.Try.Protocol
 {
     public abstract class FeatureContainer : IDisposable
     {
@@ -26,7 +26,7 @@ namespace Microsoft.DotNet.Try.Protocol.Execution
             _features.Add(feature.Name, feature);
         }
 
-        public List<(string Name, object Value)> FeatureProperties => _featureProperties ?? (_featureProperties = new List<(string, object)>());
+        public List<(string Name, object Value)> FeatureProperties => _featureProperties ?? (_featureProperties = new List<(string, object)>()); // TODO: (FeatureProperties) replace tuple with a class
 
         public void AddProperty(string name, object value) => FeatureProperties.Add((name, value));
     }
