@@ -9,7 +9,7 @@ using Microsoft.DotNet.Try.Project.Execution;
 using Microsoft.DotNet.Try.Project.Extensions;
 using Microsoft.DotNet.Try.Protocol;
 
-namespace Microsoft.DotNet.Try.Project.Transformations
+namespace Microsoft.DotNet.Try.Project
 {
     public class BufferInliningTransformer : IWorkspaceTransformer
     {
