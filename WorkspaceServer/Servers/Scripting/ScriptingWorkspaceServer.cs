@@ -10,7 +10,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
 using Microsoft.DotNet.Try.Project;
-using Microsoft.DotNet.Try.Project.Extensions;
 using Microsoft.DotNet.Try.Protocol;
 using Pocket;
 using WorkspaceServer.Transformations;

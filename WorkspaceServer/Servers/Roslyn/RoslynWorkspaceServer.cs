@@ -9,7 +9,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Completion;
 using Microsoft.CodeAnalysis.Recommendations;
 using Microsoft.DotNet.Try.Project;
-using Microsoft.DotNet.Try.Project.Extensions;
 using Microsoft.DotNet.Try.Protocol;
 using MLS.Agent.Tools;
 using Pocket;

@@ -8,7 +8,7 @@ using Microsoft.DotNet.Try.Project.Execution;
 using Microsoft.DotNet.Try.Protocol;
 using Workspace = Microsoft.DotNet.Try.Protocol.Workspace;
 
-namespace Microsoft.DotNet.Try.Project.Extensions
+namespace Microsoft.DotNet.Try.Project
 {
     public static class FileExtensions
     {

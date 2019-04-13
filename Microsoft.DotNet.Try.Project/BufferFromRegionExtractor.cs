@@ -4,7 +4,7 @@ using Microsoft.CodeAnalysis.Text;
 using Buffer = Microsoft.DotNet.Try.Protocol.Workspace.Buffer;
 using Workspace = Microsoft.DotNet.Try.Protocol.Workspace;
 
-namespace Microsoft.DotNet.Try.Project.Extensions
+namespace Microsoft.DotNet.Try.Project
 {
     public class BufferFromRegionExtractor
     {

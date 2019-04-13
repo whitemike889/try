@@ -7,7 +7,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.DotNet.Try.Project;
 using Microsoft.DotNet.Try.Project.Execution;
-using Microsoft.DotNet.Try.Project.Extensions;
 using Microsoft.DotNet.Try.Protocol;
 using Workspace = Microsoft.DotNet.Try.Protocol.Workspace;
 

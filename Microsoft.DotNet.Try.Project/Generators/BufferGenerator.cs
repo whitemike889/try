@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Microsoft.DotNet.Try.Project.Extensions;
 using Microsoft.DotNet.Try.Protocol;
 
 namespace Microsoft.DotNet.Try.Project.Generators

@@ -6,7 +6,7 @@ using Microsoft.CodeAnalysis.Formatting;
 using Microsoft.CodeAnalysis.Text;
 using Workspace = Microsoft.DotNet.Try.Protocol.Workspace;
 
-namespace Microsoft.DotNet.Try.Project.Extensions
+namespace Microsoft.DotNet.Try.Project
 {
 
     public static class SourceTextExtensions

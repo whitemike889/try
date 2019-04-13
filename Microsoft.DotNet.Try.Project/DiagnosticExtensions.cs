@@ -4,7 +4,7 @@ using Microsoft.DotNet.Try.Protocol;
 using RoslynDiagnosticSeverity = Microsoft.CodeAnalysis.DiagnosticSeverity;
 using TdnDiagnosticSeverity = Microsoft.DotNet.Try.Protocol.DiagnosticSeverity;
 
-namespace Microsoft.DotNet.Try.Project.Extensions
+namespace Microsoft.DotNet.Try.Project
 {
     public static class DiagnosticExtensions
     {

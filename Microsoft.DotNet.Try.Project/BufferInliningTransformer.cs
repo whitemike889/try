@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.DotNet.Try.Project.Execution;
-using Microsoft.DotNet.Try.Project.Extensions;
 using Microsoft.DotNet.Try.Protocol;
 
 namespace Microsoft.DotNet.Try.Project

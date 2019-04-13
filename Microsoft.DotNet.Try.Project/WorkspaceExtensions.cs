@@ -4,7 +4,7 @@ using System.Linq;
 using Microsoft.DotNet.Try.Project.Execution;
 using Microsoft.DotNet.Try.Protocol;
 
-namespace Microsoft.DotNet.Try.Project.Extensions
+namespace Microsoft.DotNet.Try.Project
 {
     public static class WorkspaceExtensions
     {
