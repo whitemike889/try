@@ -14,7 +14,7 @@ namespace Microsoft.DotNet.Try.Project.Tests
         {
             var file = FileGenerator.Create("Program.cs", SourceCodeProvider.ConsoleProgramMultipleRegions);
 
-            var buffers = BufferGenerator.CreateFromFile(file).ToList();
+            var buffers = BufferGenerator.CreateBuffers(file).ToList();
 
             buffers.Should().NotBeNullOrEmpty();
             buffers.Count.Should().Be(2);
@@ -27,7 +27,7 @@ namespace Microsoft.DotNet.Try.Project.Tests
         {
             var file = FileGenerator.Create("Program.cs", SourceCodeProvider.ConsoleProgramNoRegion);
 
-            var buffers = BufferGenerator.CreateFromFile(file).ToList();
+            var buffers = BufferGenerator.CreateBuffers(file).ToList();
 
             buffers.Should().NotBeNullOrEmpty();
             buffers.Count.Should().Be(1);

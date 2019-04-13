@@ -613,7 +613,7 @@ namespace FibonacciTest
         [Fact]
         public async Task When_Run_times_out_in_console_workspace_server_code_then_the_response_code_is_504()
         {
-            var code = @"public class Program { public static void Main()\n  {\n  Console.WriteLine();  }  }";
+            var code = @"public class Program { public static void Main()  {  Console.WriteLine();  }  }";
             var package = await WorkspaceServer.Packaging.Package.Copy(await Default.ConsoleWorkspace());
            
             var workspace = Workspace.FromSource(code.EnforceLF(), package.Name);
@@ -624,7 +624,7 @@ namespace FibonacciTest
            {
                Log.Info("Budget entry created: {entry}", entry);
 
-               if (entry.Name == typeof(BufferInliningTransformer).Name)
+               if (entry.Name == "CompileWorker")
                {
                    budget.Cancel();
                }

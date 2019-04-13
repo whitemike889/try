@@ -20,11 +20,11 @@ namespace Microsoft.DotNet.Try.Project.Transformations
 
         public static int PaddingSize => Padding.Length;
 
-        public async Task<Workspace> TransformAsync(Workspace source, Budget timeBudget = null)
+        public async Task<Workspace> TransformAsync(Workspace source)
         {
             if (source == null) throw new ArgumentNullException(nameof(source));
 
-            var (files, buffers) = await InlineBuffersAsync(source, timeBudget);
+            var (files, buffers) = await InlineBuffersAsync(source);
 
             return new Workspace(
                 workspaceType: source.WorkspaceType,
@@ -34,7 +34,7 @@ namespace Microsoft.DotNet.Try.Project.Transformations
                 includeInstrumentation: source.IncludeInstrumentation);
         }
 
-        private static async Task<(Workspace.File[] files, Workspace.Buffer[] buffers)> InlineBuffersAsync(Workspace source, Budget timeBudget)
+        private static async Task<(Workspace.File[] files, Workspace.Buffer[] buffers)> InlineBuffersAsync(Workspace source)
         {
             var files = (source.Files ?? Array.Empty<Workspace.File>()).ToDictionary(f => f.Name, f =>
              {
@@ -79,7 +79,7 @@ namespace Microsoft.DotNet.Try.Project.Transformations
 
             var processedFiles = files.Values.Select(sf => new Workspace.File(sf.Name, sf.Text.ToString())).ToArray();
             var processedBuffers = buffers.ToArray();
-            timeBudget?.RecordEntry(ProcessorName);
+
             return (processedFiles, processedBuffers);
         }
         private static Task InjectBuffer(Viewport viewPort, Workspace.Buffer sourceBuffer, ICollection<Workspace.Buffer> buffers, IDictionary<string, SourceFile> files,

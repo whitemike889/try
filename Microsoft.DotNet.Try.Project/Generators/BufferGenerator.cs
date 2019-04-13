@@ -9,7 +9,7 @@ namespace Microsoft.DotNet.Try.Project.Generators
 {
     public static class BufferGenerator
     {
-        public static IEnumerable<Workspace.Buffer> CreateFromFile(Workspace.File file)
+        public static IEnumerable<Workspace.Buffer> CreateBuffers(Workspace.File file)
         {
             var viewPorts = file.ExtractViewPorts().ToList();
             if (viewPorts.Count > 0)

@@ -12,7 +12,7 @@ namespace Microsoft.DotNet.Try.Project.Transformations
         private static readonly string ProcessorName = typeof(CodeMergeTransformer).Name;
         private static readonly string Padding = "\n";
 
-        public Task<Workspace> TransformAsync(Workspace source, Budget timeBudget = null)
+        public Task<Workspace> TransformAsync(Workspace source)
         {
             if (source == null)
             {
@@ -33,8 +33,6 @@ namespace Microsoft.DotNet.Try.Project.Transformations
                 usings: source.Usings,
                 files: files.ToArray(),
                 buffers: buffers.ToArray());
-
-            timeBudget?.RecordEntry(ProcessorName);
 
             return Task.FromResult(workspace);
         }
