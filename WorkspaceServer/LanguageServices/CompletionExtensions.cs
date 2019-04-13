@@ -6,7 +6,7 @@ using Microsoft.CodeAnalysis.Tags;
 using Microsoft.DotNet.Try.Protocol;
 using WorkspaceServer.Models;
 
-namespace WorkspaceServer.Servers.Scripting
+namespace WorkspaceServer.LanguageServices
 {
     public static class CompletionExtensions
     {
