@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace Microsoft.DotNet.Try.Protocol.Diagnostics
+namespace Microsoft.DotNet.Try.Protocol
 {
     public class DiagnosticResult
     {

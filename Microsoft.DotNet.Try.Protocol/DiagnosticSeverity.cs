@@ -1,4 +1,4 @@
-﻿namespace Microsoft.DotNet.Try.Protocol.Diagnostics
+﻿namespace Microsoft.DotNet.Try.Protocol
 {
     public enum DiagnosticSeverity
     {

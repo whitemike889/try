@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Microsoft.DotNet.Try.Markdown;
 using Microsoft.DotNet.Try.Project.Transformations;
 using Microsoft.DotNet.Try.Protocol;
-using Microsoft.DotNet.Try.Protocol.Diagnostics;
 using Microsoft.DotNet.Try.Protocol.Execution;
 using MLS.Agent.Markdown;
 using WorkspaceServer;

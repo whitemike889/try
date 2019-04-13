@@ -20,7 +20,6 @@ using Microsoft.DotNet.Try.Project.Transformations;
 using Microsoft.DotNet.Try.Protocol;
 using Microsoft.DotNet.Try.Protocol.ClientApi;
 using Microsoft.DotNet.Try.Protocol.Completion;
-using Microsoft.DotNet.Try.Protocol.Diagnostics;
 using Microsoft.DotNet.Try.Protocol.Execution;
 using Microsoft.DotNet.Try.Protocol.Packaging;
 

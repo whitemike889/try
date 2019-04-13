@@ -1,29 +1,17 @@
 ﻿using System;
 using Microsoft.CodeAnalysis;
-using Microsoft.DotNet.Try.Protocol.Diagnostics;
+using Microsoft.DotNet.Try.Protocol;
 using Microsoft.DotNet.Try.Protocol.Execution;
-using DiagnosticSeverity = Microsoft.CodeAnalysis.DiagnosticSeverity;
-using MLSDiagnosticSeverity = Microsoft.DotNet.Try.Protocol.Diagnostics.DiagnosticSeverity;
+using RoslynDiagnosticSeverity = Microsoft.CodeAnalysis.DiagnosticSeverity;
+using TdnDiagnosticSeverity = Microsoft.DotNet.Try.Protocol.DiagnosticSeverity;
 
 namespace Microsoft.DotNet.Try.Project.Extensions
 {
     public static class DiagnosticExtensions
     {
-        public static MLSDiagnosticSeverity ConvertSeverity(this Diagnostic diagnostic)
+        public static TdnDiagnosticSeverity ConvertSeverity(this Diagnostic diagnostic)
         {
-            switch (diagnostic.Severity)
-            {
-                case DiagnosticSeverity.Hidden:
-                    return MLSDiagnosticSeverity.Hidden;
-                case DiagnosticSeverity.Info:
-                    return MLSDiagnosticSeverity.Info;
-                case DiagnosticSeverity.Warning:
-                    return MLSDiagnosticSeverity.Warning;
-                case DiagnosticSeverity.Error:
-                    return MLSDiagnosticSeverity.Error;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+            return (TdnDiagnosticSeverity) diagnostic.Severity;
         }
 
         public static SerializableDiagnostic ToSerializableDiagnostic(
@@ -53,16 +41,16 @@ namespace Microsoft.DotNet.Try.Project.Extensions
                 string prefix;
                 switch (diagnostic.Severity)
                 {
-                    case DiagnosticSeverity.Hidden:
+                    case RoslynDiagnosticSeverity.Hidden:
                         prefix = "hidden";
                         break;
-                    case DiagnosticSeverity.Info:
+                    case RoslynDiagnosticSeverity.Info:
                         prefix = "info";
                         break;
-                    case DiagnosticSeverity.Warning:
+                    case RoslynDiagnosticSeverity.Warning:
                         prefix = "warning";
                         break;
-                    case DiagnosticSeverity.Error:
+                    case RoslynDiagnosticSeverity.Error:
                         prefix = "error";
                         break;
                     default:

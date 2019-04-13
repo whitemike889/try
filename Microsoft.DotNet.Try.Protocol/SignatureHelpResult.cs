@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Microsoft.DotNet.Try.Protocol.Diagnostics;
 using Newtonsoft.Json;
 
 namespace Microsoft.DotNet.Try.Protocol

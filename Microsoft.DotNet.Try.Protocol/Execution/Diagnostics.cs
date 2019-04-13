@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using Microsoft.DotNet.Try.Protocol.Diagnostics;
 
 namespace Microsoft.DotNet.Try.Protocol.Execution
 {

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.DotNet.Try.Protocol.Diagnostics;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 

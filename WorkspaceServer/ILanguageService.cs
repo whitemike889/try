@@ -2,7 +2,6 @@
 using Clockwise;
 using Microsoft.DotNet.Try.Protocol;
 using Microsoft.DotNet.Try.Protocol.Completion;
-using Microsoft.DotNet.Try.Protocol.Diagnostics;
 
 namespace WorkspaceServer
 {
