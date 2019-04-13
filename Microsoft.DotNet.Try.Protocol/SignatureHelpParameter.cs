@@ -1,4 +1,4 @@
-﻿namespace Microsoft.DotNet.Try.Protocol.SignatureHelp
+﻿namespace Microsoft.DotNet.Try.Protocol
 {
     public class SignatureHelpParameter
     {

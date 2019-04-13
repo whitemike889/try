@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Microsoft.DotNet.Try.Protocol.Diagnostics;
 using Newtonsoft.Json;
 
-namespace Microsoft.DotNet.Try.Protocol.SignatureHelp
+namespace Microsoft.DotNet.Try.Protocol
 {
     public class SignatureHelpResult
     {

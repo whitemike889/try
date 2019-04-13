@@ -14,7 +14,6 @@ using Microsoft.DotNet.Try.Protocol;
 using Microsoft.DotNet.Try.Protocol.Completion;
 using Microsoft.DotNet.Try.Protocol.Diagnostics;
 using Microsoft.DotNet.Try.Protocol.Execution;
-using Microsoft.DotNet.Try.Protocol.SignatureHelp;
 using MLS.Agent.Tools;
 using Pocket;
 using Recipes;

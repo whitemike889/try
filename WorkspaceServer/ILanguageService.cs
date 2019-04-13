@@ -3,7 +3,6 @@ using Clockwise;
 using Microsoft.DotNet.Try.Protocol;
 using Microsoft.DotNet.Try.Protocol.Completion;
 using Microsoft.DotNet.Try.Protocol.Diagnostics;
-using Microsoft.DotNet.Try.Protocol.SignatureHelp;
 
 namespace WorkspaceServer
 {

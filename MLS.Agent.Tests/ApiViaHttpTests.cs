@@ -23,7 +23,6 @@ using Microsoft.DotNet.Try.Protocol.Completion;
 using Microsoft.DotNet.Try.Protocol.Diagnostics;
 using Microsoft.DotNet.Try.Protocol.Execution;
 using Microsoft.DotNet.Try.Protocol.Packaging;
-using Microsoft.DotNet.Try.Protocol.SignatureHelp;
 
 namespace MLS.Agent.Tests
 {

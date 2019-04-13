@@ -1,6 +1,5 @@
 ﻿using System.Linq;
 using FluentAssertions;
-using Microsoft.DotNet.Try.Protocol.SignatureHelp;
 using Newtonsoft.Json;
 using Xunit;
 
