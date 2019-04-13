@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace Microsoft.DotNet.Try.Protocol.Completion
+namespace Microsoft.DotNet.Try.Protocol
 {
     public static class CompletionUtilities
     {

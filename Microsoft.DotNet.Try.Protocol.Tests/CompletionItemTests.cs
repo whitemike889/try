@@ -1,5 +1,4 @@
 ﻿using FluentAssertions;
-using Microsoft.DotNet.Try.Protocol.Completion;
 using Newtonsoft.Json;
 using Xunit;
 

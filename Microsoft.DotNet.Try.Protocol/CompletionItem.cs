@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Microsoft.DotNet.Try.Protocol.Completion
+namespace Microsoft.DotNet.Try.Protocol
 {
     public class CompletionItem
     {

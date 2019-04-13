@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace Microsoft.DotNet.Try.Protocol.Completion
+namespace Microsoft.DotNet.Try.Protocol
 {
-
     public class CompletionResult
     {
         public CompletionItem[] Items { get; }

@@ -11,7 +11,6 @@ using Microsoft.CodeAnalysis.Recommendations;
 using Microsoft.DotNet.Try.Project.Extensions;
 using Microsoft.DotNet.Try.Project.Transformations;
 using Microsoft.DotNet.Try.Protocol;
-using Microsoft.DotNet.Try.Protocol.Completion;
 using Microsoft.DotNet.Try.Protocol.Execution;
 using MLS.Agent.Tools;
 using Pocket;
