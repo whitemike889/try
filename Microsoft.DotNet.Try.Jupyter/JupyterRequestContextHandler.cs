@@ -9,6 +9,7 @@ using Newtonsoft.Json.Linq;
 using WorkspaceServer;
 using WorkspaceServer.Packaging;
 using WorkspaceServer.Servers.Roslyn;
+using Package = WorkspaceServer.Packaging.Package;
 
 namespace Microsoft.DotNet.Try.Jupyter
 {

@@ -9,6 +9,7 @@ using WorkspaceServer.Servers.Scripting;
 using WorkspaceServer.Packaging;
 using Xunit;
 using Xunit.Abstractions;
+using Package = WorkspaceServer.Packaging.Package;
 
 namespace WorkspaceServer.Tests
 {

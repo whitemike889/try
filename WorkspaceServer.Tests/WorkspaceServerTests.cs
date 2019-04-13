@@ -11,6 +11,7 @@ using Xunit;
 using Xunit.Abstractions;
 using static Pocket.Logger<WorkspaceServer.Tests.WorkspaceServerTests>;
 using DiagnosticSeverity = Microsoft.DotNet.Try.Protocol.DiagnosticSeverity;
+using Package = WorkspaceServer.Packaging.Package;
 using Workspace = Microsoft.DotNet.Try.Protocol.Execution.Workspace;
 
 namespace WorkspaceServer.Tests

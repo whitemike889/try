@@ -1,4 +1,4 @@
-﻿namespace Microsoft.DotNet.Try.Protocol.Packaging
+﻿namespace Microsoft.DotNet.Try.Protocol
 {
     public class Package
     {

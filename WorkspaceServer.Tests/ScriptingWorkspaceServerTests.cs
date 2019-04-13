@@ -11,6 +11,7 @@ using WorkspaceServer.Packaging;
 using Xunit;
 using Xunit.Abstractions;
 using static Pocket.Logger<WorkspaceServer.Tests.WorkspaceServerTests>;
+using Package = WorkspaceServer.Packaging.Package;
 
 namespace WorkspaceServer.Tests
 {

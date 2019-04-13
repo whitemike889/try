@@ -5,10 +5,10 @@ using FluentAssertions;
 using Microsoft.DotNet.Try.Protocol;
 using Microsoft.DotNet.Try.Protocol.Execution;
 using Recipes;
-using WorkspaceServer.Packaging;
 using WorkspaceServer.Tests;
 using Xunit;
 using Xunit.Abstractions;
+using Package = WorkspaceServer.Packaging.Package;
 
 namespace MLS.Agent.Tests.ApiContracts
 {

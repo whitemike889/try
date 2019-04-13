@@ -24,6 +24,7 @@ using WorkspaceServer.Packaging;
 using static Pocket.Logger<WorkspaceServer.Servers.Roslyn.RoslynWorkspaceServer>;
 using Workspace = Microsoft.DotNet.Try.Protocol.Execution.Workspace;
 using WorkspaceServer.LanguageServices;
+using Package = WorkspaceServer.Packaging.Package;
 
 namespace WorkspaceServer.Servers.Roslyn
 {

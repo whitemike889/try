@@ -13,10 +13,10 @@ using WorkspaceServer.Models.Instrumentation;
 using WorkspaceServer.Servers.Roslyn;
 using WorkspaceServer.Servers.Roslyn.Instrumentation;
 using WorkspaceServer.Tests.CodeSamples;
-using WorkspaceServer.Packaging;
 using Xunit;
 using Xunit.Abstractions;
 using static Pocket.Logger<WorkspaceServer.Tests.RoslynWorkspaceServerConsoleProjectTests>;
+using Package = WorkspaceServer.Packaging.Package;
 
 namespace WorkspaceServer.Tests
 {
