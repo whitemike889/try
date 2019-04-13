@@ -7,6 +7,8 @@ using Microsoft.DotNet.Try.Protocol;
 using Microsoft.DotNet.Try.TestSupport;
 using MLS.Agent;
 using Xunit;
+using Buffer = Microsoft.DotNet.Try.Protocol.Buffer;
+using File = System.IO.File;
 
 namespace Microsoft.DotNet.Try.Project.Tests
 {
@@ -27,11 +29,11 @@ namespace Microsoft.DotNet.Try.Project.Tests
             var original = new Workspace(
                 files: new[]
                 {
-                    new Workspace.File("Program.cs", SourceCodeProvider.ConsoleProgramSingleRegion)
+                    new Protocol.File("Program.cs", SourceCodeProvider.ConsoleProgramSingleRegion)
                 },
                 buffers: new[]
                 {
-                    new Workspace.Buffer("Program.cs@alpha", "var newValue = 1000;".EnforceLF())
+                    new Buffer("Program.cs@alpha", "var newValue = 1000;".EnforceLF())
                 });
             var processor = new BufferInliningTransformer();
 
@@ -57,11 +59,11 @@ namespace Microsoft.DotNet.Try.Project.Tests
             var original = new Workspace(
                 files: new[]
                 {
-                    new Workspace.File("Program.cs", SourceCodeProvider.ConsoleProgramSingleRegion)
+                    new Protocol.File("Program.cs", SourceCodeProvider.ConsoleProgramSingleRegion)
                 },
                 buffers: new[]
                 {
-                    new Workspace.Buffer("Program.cs@alpha[before]", "var newValue = 1000;".EnforceLF())
+                    new Buffer("Program.cs@alpha[before]", "var newValue = 1000;".EnforceLF())
                 });
             var processor = new BufferInliningTransformer();
 
@@ -86,13 +88,13 @@ namespace Microsoft.DotNet.Try.Project.Tests
             var original = new Workspace(
                 files: new[]
                 {
-                    new Workspace.File("Program.cs", SourceCodeProvider.ConsoleProgramSingleRegion)
+                    new Protocol.File("Program.cs", SourceCodeProvider.ConsoleProgramSingleRegion)
                 },
                 buffers: new[]
                 {
-                    new Workspace.Buffer("Program.cs@alpha[before]", "var before = 1000;".EnforceLF()),
-                    new Workspace.Buffer("Program.cs@alpha[after]", "var after = 1000;".EnforceLF()),
-                    new Workspace.Buffer("Program.cs@alpha", "var inlined = 1000;".EnforceLF())
+                    new Buffer("Program.cs@alpha[before]", "var before = 1000;".EnforceLF()),
+                    new Buffer("Program.cs@alpha[after]", "var after = 1000;".EnforceLF()),
+                    new Buffer("Program.cs@alpha", "var inlined = 1000;".EnforceLF())
                 });
             var processor = new BufferInliningTransformer();
 
@@ -122,11 +124,11 @@ namespace Microsoft.DotNet.Try.Project.Tests
             var original = new Workspace(
                 files: new[]
                 {
-                    new Workspace.File("Program.cs", SourceCodeProvider.ConsoleProgramSingleRegion)
+                    new Protocol.File("Program.cs", SourceCodeProvider.ConsoleProgramSingleRegion)
                 },
                 buffers: new[]
                 {
-                    new Workspace.Buffer("Program.cs@alpha[after]", "var newValue = 1000;".EnforceLF())
+                    new Buffer("Program.cs@alpha[after]", "var newValue = 1000;".EnforceLF())
                 });
             var processor = new BufferInliningTransformer();
 
@@ -151,11 +153,11 @@ namespace Microsoft.DotNet.Try.Project.Tests
             var ws = new Workspace(
                 files: new[]
                 {
-                    new Workspace.File("Program.cs", SourceCodeProvider.ConsoleProgramSingleRegion)
+                    new Protocol.File("Program.cs", SourceCodeProvider.ConsoleProgramSingleRegion)
                 },
                 buffers: new[]
                 {
-                    new Workspace.Buffer("Program.cs", "var newValue = 1000;", 0)
+                    new Buffer("Program.cs", "var newValue = 1000;", 0)
                 });
             var processor = new BufferInliningTransformer();
 
@@ -177,7 +179,7 @@ namespace Microsoft.DotNet.Try.Project.Tests
             var ws = new Workspace(
                 buffers: new[]
                 {
-                    new Workspace.Buffer("", SourceCodeProvider.ConsoleProgramSingleRegion, 0)
+                    new Buffer("", SourceCodeProvider.ConsoleProgramSingleRegion, 0)
                 });
             var processor = new BufferInliningTransformer();
 
@@ -216,12 +218,12 @@ Console.Write(newValueA + newValueB);
             var ws = new Workspace(
                 files: new[]
                 {
-                    new Workspace.File("Program.cs", SourceCodeProvider.ConsoleProgramMultipleRegions)
+                    new Protocol.File("Program.cs", SourceCodeProvider.ConsoleProgramMultipleRegions)
                 },
                 buffers: new[]
                 {
-                    new Workspace.Buffer(new BufferId("Program.cs", "alpha"), "var newValueA = \"as string\";\nConsole.Write(newValueA);", 0),
-                    new Workspace.Buffer(new BufferId("Program.cs", "beta"), "var newValueB = \"as different string\";\nConsole.Write(newValueA + newValueB);", 0)
+                    new Buffer(new BufferId("Program.cs", "alpha"), "var newValueA = \"as string\";\nConsole.Write(newValueA);", 0),
+                    new Buffer(new BufferId("Program.cs", "beta"), "var newValueB = \"as different string\";\nConsole.Write(newValueA + newValueB);", 0)
                 });
             var processor = new BufferInliningTransformer();
 
@@ -244,7 +246,7 @@ Console.Write(newValueA + newValueB);
                 var ws = new Workspace(
                    files: new[]
                    {
-                    new Workspace.File(filePath, null)
+                    new Protocol.File(filePath, null)
                    }
                    );
 
@@ -286,7 +288,7 @@ Console.Write(2);
                 var ws = new Workspace(
                     buffers: new[]
                     {
-                        new Workspace.Buffer(new BufferId(filePath,"region one"), "Console.Write(2);"), 
+                        new Buffer(new BufferId(filePath,"region one"), "Console.Write(2);"), 
                     }
                 );
 

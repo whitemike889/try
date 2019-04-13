@@ -15,6 +15,7 @@ using WorkspaceServer.Tests.CodeSamples;
 using Xunit;
 using Xunit.Abstractions;
 using static Pocket.Logger<WorkspaceServer.Tests.RoslynWorkspaceServerConsoleProjectTests>;
+using Buffer = Microsoft.DotNet.Try.Protocol.Buffer;
 using Package = WorkspaceServer.Packaging.Package;
 
 namespace WorkspaceServer.Tests
@@ -42,8 +43,8 @@ namespace WorkspaceServer.Tests
 
             var workspace = new Workspace(
                 workspaceType: build.Name,
-                files: new[] { new Workspace.File("Program.cs", SourceCodeProvider.ConsoleProgramSingleRegion) },
-                buffers: new[] { new Workspace.Buffer("Program.cs@alpha", @"Console.WriteLine(banana);", 0) });
+                files: new[] { new File("Program.cs", SourceCodeProvider.ConsoleProgramSingleRegion) },
+                buffers: new[] { new Buffer("Program.cs@alpha", @"Console.WriteLine(banana);", 0) });
 
 
             var result = await server.Run(new WorkspaceRequest(workspace));
@@ -63,8 +64,8 @@ namespace WorkspaceServer.Tests
 
             var workspace = new Workspace(
                 workspaceType: build.Name,
-                files: new[] { new Workspace.File("Program.cs", SourceCodeProvider.ConsoleProgramSingleRegion) },
-                buffers: new[] { new Workspace.Buffer("Program.cs@alpha", @"var a = 10;" + Environment.NewLine + "Console.WriteLine(banana);", 0) });
+                files: new[] { new File("Program.cs", SourceCodeProvider.ConsoleProgramSingleRegion) },
+                buffers: new[] { new Buffer("Program.cs@alpha", @"var a = 10;" + Environment.NewLine + "Console.WriteLine(banana);", 0) });
 
             var result = await server.Run(new WorkspaceRequest(workspace));
 
@@ -83,8 +84,8 @@ namespace WorkspaceServer.Tests
 
             var workspace = new Workspace(
                 workspaceType: build.Name,
-                files: new[] { new Workspace.File("Program.cs", SourceCodeProvider.ConsoleProgramSingleRegionExtraUsing) },
-                buffers: new[] { new Workspace.Buffer("Program.cs@alpha", @"var a = 10;" + Environment.NewLine + "Console.WriteLine(a);", 0) });
+                files: new[] { new File("Program.cs", SourceCodeProvider.ConsoleProgramSingleRegionExtraUsing) },
+                buffers: new[] { new Buffer("Program.cs@alpha", @"var a = 10;" + Environment.NewLine + "Console.WriteLine(a);", 0) });
 
             var result = await server.Run(new WorkspaceRequest(workspace));
 
@@ -98,8 +99,8 @@ namespace WorkspaceServer.Tests
 
             var workspace = new Workspace(
                 workspaceType: build.Name,
-                files: new[] { new Workspace.File("Program.cs", SourceCodeProvider.ConsoleProgramSingleRegion) },
-                buffers: new[] { new Workspace.Buffer("Program.cs@alpha", @"Console.WriteLine(banana);", 0) });
+                files: new[] { new File("Program.cs", SourceCodeProvider.ConsoleProgramSingleRegion) },
+                buffers: new[] { new Buffer("Program.cs@alpha", @"Console.WriteLine(banana);", 0) });
 
 
             var result = await server.Compile(new WorkspaceRequest(workspace));
@@ -119,8 +120,8 @@ namespace WorkspaceServer.Tests
 
             var workspace = new Workspace(
                 workspaceType: build.Name,
-                files: new[] { new Workspace.File("Program.cs", SourceCodeProvider.ConsoleProgramSingleRegion) },
-                buffers: new[] { new Workspace.Buffer("Program.cs@alpha", @"var a = 10;" + Environment.NewLine + "Console.WriteLine(banana);", 0) });
+                files: new[] { new File("Program.cs", SourceCodeProvider.ConsoleProgramSingleRegion) },
+                buffers: new[] { new Buffer("Program.cs@alpha", @"var a = 10;" + Environment.NewLine + "Console.WriteLine(banana);", 0) });
 
             var result = await server.Compile(new WorkspaceRequest(workspace));
 
@@ -139,8 +140,8 @@ namespace WorkspaceServer.Tests
 
             var workspace = new Workspace(
                 workspaceType: build.Name,
-                files: new[] { new Workspace.File("Program.cs", SourceCodeProvider.ConsoleProgramSingleRegionExtraUsing) },
-                buffers: new[] { new Workspace.Buffer("Program.cs@alpha", @"var a = 10;" + Environment.NewLine + "Console.WriteLine(a);", 0) });
+                files: new[] { new File("Program.cs", SourceCodeProvider.ConsoleProgramSingleRegionExtraUsing) },
+                buffers: new[] { new Buffer("Program.cs@alpha", @"var a = 10;" + Environment.NewLine + "Console.WriteLine(a);", 0) });
 
             var result = await server.Compile(new WorkspaceRequest(workspace));
 
@@ -197,8 +198,8 @@ namespace FibonacciTest
                     workspaceType: build.Name,
                     buffers: new[]
                     {
-                        new Workspace.Buffer("Program.cs", program, 0),
-                        new Workspace.Buffer("FibonacciGenerator.cs", generator, 0)
+                        new Buffer("Program.cs", program, 0),
+                        new Buffer("FibonacciGenerator.cs", generator, 0)
                     },
                     includeInstrumentation: true),
                 new BufferId("Program.cs"));
@@ -258,8 +259,8 @@ namespace FibonacciTest
                     workspaceType: build.Name,
                     buffers: new[]
                     {
-                        new Workspace.Buffer("Program.cs", program, 0),
-                        new Workspace.Buffer("FibonacciGenerator.cs", generator, 0)
+                        new Buffer("Program.cs", program, 0),
+                        new Buffer("FibonacciGenerator.cs", generator, 0)
                     },
                     includeInstrumentation: true),
                 new BufferId("Program.cs"));
@@ -315,8 +316,8 @@ namespace FibonacciTest
                     workspaceType: build.Name,
                     buffers: new[]
                              {
-                                 new Workspace.Buffer("Program.cs", programWithCompileError),
-                                 new Workspace.Buffer("FibonacciGenerator.cs", generatorWithCompileError)
+                                 new Buffer("Program.cs", programWithCompileError),
+                                 new Buffer("FibonacciGenerator.cs", generatorWithCompileError)
                              },
                     includeInstrumentation: true),
                 new BufferId("FibonacciGenerator.cs"));
@@ -389,13 +390,13 @@ namespace FibonacciTest
 
                     files: new[]
                              {
-                                 new Workspace.File("Program.cs", programWithCompileError),
-                                 new Workspace.File("FibonacciGenerator.cs", generatorWithCompileError),
+                                 new File("Program.cs", programWithCompileError),
+                                 new File("FibonacciGenerator.cs", generatorWithCompileError),
                              },
                     buffers: new[]
                              {
-                                 new Workspace.Buffer("Program.cs@mask", "WAT"),
-                                 new Workspace.Buffer("FibonacciGenerator.cs@mask", "HUH"),
+                                 new Buffer("Program.cs@mask", "WAT"),
+                                 new Buffer("FibonacciGenerator.cs@mask", "HUH"),
                              },
 
                     includeInstrumentation: true),
@@ -461,8 +462,8 @@ namespace FibonacciTest
                     workspaceType: build.Name,
                     buffers: new[]
                     {
-                        new Workspace.Buffer("Program.cs", program, 0),
-                        new Workspace.Buffer("FibonacciGenerator.cs", generator, 0)
+                        new Buffer("Program.cs", program, 0),
+                        new Buffer("FibonacciGenerator.cs", generator, 0)
                     },
                     includeInstrumentation: true),
                 new BufferId("Program.cs"));
@@ -499,7 +500,7 @@ namespace ConsoleProgram
 
             var workspace = new Workspace(
                 workspaceType: build.Name,
-                buffers: new[] { new Workspace.Buffer("Program.cs", code) },
+                buffers: new[] { new Buffer("Program.cs", code) },
                 includeInstrumentation: true);
 
             var result = await server.Run(new WorkspaceRequest(workspace));
@@ -538,7 +539,7 @@ namespace ConsoleProgram
 
             var workspace = new Workspace(
                 workspaceType: build.Name,
-                buffers: new[] { new Workspace.Buffer("Program.cs", code) },
+                buffers: new[] { new Buffer("Program.cs", code) },
                 includeInstrumentation: true
                 );
 
@@ -581,8 +582,8 @@ namespace ConsoleProgram
 
             var workspace = new Workspace(
                 workspaceType: build.Name,
-                buffers: new[] { new Workspace.Buffer("Program.cs@reg", regionCode) },
-                files: new[] { new Workspace.File("Program.cs", code) },
+                buffers: new[] { new Buffer("Program.cs@reg", regionCode) },
+                files: new[] { new File("Program.cs", code) },
                 includeInstrumentation: true
                 );
 
@@ -626,8 +627,8 @@ namespace ConsoleProgram
 
             var workspace = new Workspace(
                 workspaceType: build.Name,
-                buffers: new[] { new Workspace.Buffer("Program.cs@reg", regionCode) },
-                files: new[] { new Workspace.File("Program.cs", code) },
+                buffers: new[] { new Buffer("Program.cs@reg", regionCode) },
+                files: new[] { new File("Program.cs", code) },
                 includeInstrumentation: true
                 );
 
@@ -686,8 +687,8 @@ namespace FibonacciTest
 
             var workspace = new Workspace(workspaceType: build.Name, buffers: new[]
             {
-                new Workspace.Buffer("Program.cs", program, 0),
-                new Workspace.Buffer("FibonacciGenerator.cs", generator, 0)
+                new Buffer("Program.cs", program, 0),
+                new Buffer("FibonacciGenerator.cs", generator, 0)
             });
 
             var result = await server.Run(new WorkspaceRequest(workspace, BufferId.Parse("Program.cs")));
@@ -741,8 +742,8 @@ namespace FibonacciTest
 
             var workspace = new Workspace(workspaceType: build.Name, buffers: new[]
             {
-                new Workspace.Buffer("Program.cs", program, 0),
-                new Workspace.Buffer("generators/FibonacciGenerator.cs", generator, 0)
+                new Buffer("Program.cs", program, 0),
+                new Buffer("generators/FibonacciGenerator.cs", generator, 0)
             });
 
             var result = await server.Run(new WorkspaceRequest(workspace, BufferId.Parse("Program.cs")));
@@ -796,8 +797,8 @@ namespace FibonacciTest
 
             var workspace = new Workspace(workspaceType: build.Name, buffers: new[]
             {
-                new Workspace.Buffer("Program.cs", program, 0),
-                new Workspace.Buffer("generators/FibonacciGenerator.cs", generator, 0)
+                new Buffer("Program.cs", program, 0),
+                new Buffer("generators/FibonacciGenerator.cs", generator, 0)
             });
 
             var result = await server.Compile(new WorkspaceRequest(workspace, BufferId.Parse("Program.cs")));
@@ -811,8 +812,8 @@ namespace FibonacciTest
             var (server, build) = await GetCompilerAndWorkspaceBuild();
             var workspace = new Workspace(
                  workspaceType: build.Name,
-                 files: new[] { new Workspace.File("Program.cs", SourceCodeProvider.ConsoleProgramSingleRegion) },
-                 buffers: new[] { new Workspace.Buffer("Program.cs", @"Console.WriteLine(banana);", 0), },
+                 files: new[] { new File("Program.cs", SourceCodeProvider.ConsoleProgramSingleRegion) },
+                 buffers: new[] { new Buffer("Program.cs", @"Console.WriteLine(banana);", 0), },
                  includeInstrumentation: true);
 
             var result = await server.Compile(new WorkspaceRequest(workspace));

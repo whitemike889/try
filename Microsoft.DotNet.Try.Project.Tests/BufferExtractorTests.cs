@@ -13,8 +13,8 @@ namespace Microsoft.DotNet.Try.Project.Tests
         {
             var noRegionFiles = new[]
             {
-                new Workspace.File("buffer1.cs", SourceCodeProvider.CodeWithNoRegions),
-                new Workspace.File("buffer2.cs", SourceCodeProvider.CodeWithNoRegions),
+                new File("buffer1.cs", SourceCodeProvider.CodeWithNoRegions),
+                new File("buffer2.cs", SourceCodeProvider.CodeWithNoRegions),
             };
 
             var transformer = new BufferFromRegionExtractor();
@@ -30,8 +30,8 @@ namespace Microsoft.DotNet.Try.Project.Tests
         {
             var noRegionFiles = new[]
             {
-                new Workspace.File("buffer1.cs", SourceCodeProvider.CodeWithTwoRegions),
-                new Workspace.File("buffer2.cs", SourceCodeProvider.CodeWithNoRegions),
+                new File("buffer1.cs", SourceCodeProvider.CodeWithTwoRegions),
+                new File("buffer2.cs", SourceCodeProvider.CodeWithNoRegions),
             };
 
             var transformer = new BufferFromRegionExtractor();
@@ -55,7 +55,7 @@ namespace Microsoft.DotNet.Try.Project.Tests
 
             var files = new[]
             {
-                new Workspace.File("buffer1.cs", SourceCodeProvider.GistWithRegion),
+                new File("buffer1.cs", SourceCodeProvider.GistWithRegion),
             };
 
             var transformer = new BufferFromRegionExtractor();

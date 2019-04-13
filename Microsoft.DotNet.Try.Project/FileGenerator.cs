@@ -4,9 +4,9 @@ namespace Microsoft.DotNet.Try.Project
 {
     public static class FileGenerator
     {
-        public static Workspace.File Create(string name, string content)
+        public static File Create(string name, string content)
         {
-            return new Workspace.File(name, content.EnforceLF());
+            return new File(name, content.EnforceLF());
         }
     }
 }

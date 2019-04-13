@@ -3,6 +3,8 @@ using System.IO;
 using System.Linq;
 using Microsoft.DotNet.Try.Protocol;
 using MLS.Agent.Tools;
+using Buffer = Microsoft.DotNet.Try.Protocol.Buffer;
+using File = Microsoft.DotNet.Try.Protocol.File;
 
 namespace WorkspaceServer.Models.Execution
 {
@@ -17,11 +19,11 @@ namespace WorkspaceServer.Models.Execution
                                        .Where(f => !f.IsBuildOutput())
                                        .ToArray();
 
-            var files = filesOnDisk.Select(file => new Workspace.File(file.Name, file.Read())).ToList();
+            var files = filesOnDisk.Select(file => new File(file.Name, file.Read())).ToList();
 
             return new Workspace(
                 files: files.ToArray(),
-                buffers: files.Select(f => new Workspace.Buffer(
+                buffers: files.Select(f => new Buffer(
                                           f.Name,
                                           filesOnDisk.Single(fod => fod.Name == f.Name)
                                                      .Read()))

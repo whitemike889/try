@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.DotNet.Try.Protocol;
+using Buffer = Microsoft.DotNet.Try.Protocol.Buffer;
 
 namespace Microsoft.DotNet.Try.Project
 {
     public static class BufferGenerator
     {
-        public static IEnumerable<Workspace.Buffer> CreateBuffers(Workspace.File file)
+        public static IEnumerable<Buffer> CreateBuffers(File file)
         {
             var viewPorts = file.ExtractViewPorts().ToList();
             if (viewPorts.Count > 0)
@@ -25,11 +26,11 @@ namespace Microsoft.DotNet.Try.Project
             }
         }
 
-        public static Workspace.Buffer CreateBuffer(string content, BufferId id)
+        public static Buffer CreateBuffer(string content, BufferId id)
         {
             MarkupTestFile.GetPosition(content.EnforceLF(), out var output, out var position);
 
-            return new Workspace.Buffer(
+            return new Buffer(
                 id,
                 output,
                 position ?? 0);
@@ -37,7 +38,7 @@ namespace Microsoft.DotNet.Try.Project
 
         private static readonly Random RandomGenerator = new Random();
 
-        public static Workspace.Buffer ScriptCode(string mainContent = @"Console.WriteLine(Sample.Method());
+        public static Buffer ScriptCode(string mainContent = @"Console.WriteLine(Sample.Method());
 $$")
         {
             var input = $@"{ProcessCode(mainContent, string.Empty)}
@@ -45,7 +46,7 @@ $$")
 
             MarkupTestFile.GetPosition(input, out var output, out var position);
 
-            return new Workspace.Buffer(
+            return new Buffer(
                  string.Empty,
                  output,
 
@@ -53,7 +54,7 @@ $$")
 
         }
 
-        public static Workspace.Buffer EntryPointCode(string mainContent = @"Console.WriteLine(Sample.Method());
+        public static Buffer EntryPointCode(string mainContent = @"Console.WriteLine(Sample.Method());
 $$", string bufferId = "EntrypointCode.cs")
         {
             var input = $@"
@@ -77,7 +78,7 @@ namespace Example
         {
             return string.Join(Environment.NewLine, code.Split(new[] { Environment.NewLine }, StringSplitOptions.None).Select(line => $"{indent}{line}"));
         }
-        public static Workspace.Buffer ViewportCode(string methodContent, bool addPaddingCode = false, string bufferName = "ViewportCode.cs")
+        public static Buffer ViewportCode(string methodContent, bool addPaddingCode = false, string bufferName = "ViewportCode.cs")
         {
 
             var input = $@"

@@ -17,6 +17,7 @@ using MLS.Agent.CommandLine;
 using FluentAssertions.Extensions;
 using Microsoft.DotNet.Try.Protocol;
 using Microsoft.DotNet.Try.Protocol.ClientApi;
+using Buffer = Microsoft.DotNet.Try.Protocol.Buffer;
 
 namespace MLS.Agent.Tests
 {
@@ -586,7 +587,7 @@ namespace FibonacciTest
             var package = await WorkspaceServer.Packaging.Package.Copy(await Default.WebApiWorkspace());
             await package.CreateRoslynWorkspaceForRunAsync(new TimeBudget(10.Minutes()));
             var workspace = WorkspaceFactory.CreateWorkspaceFromDirectory(package.Directory, package.Directory.Name);
-            var nonCompilingBuffer = new Workspace.Buffer("broken.cs", "this does not compile", 0);
+            var nonCompilingBuffer = new Buffer("broken.cs", "this does not compile", 0);
             workspace = new Workspace(
                 buffers: workspace.Buffers.Concat(new[] { nonCompilingBuffer }).ToArray(),
                 files: workspace.Files.ToArray(),

@@ -7,6 +7,7 @@ using WorkspaceServer.Servers.Roslyn;
 using WorkspaceServer.Packaging;
 using Xunit;
 using Xunit.Abstractions;
+using Buffer = Microsoft.DotNet.Try.Protocol.Buffer;
 using Package = WorkspaceServer.Packaging.Package;
 
 namespace WorkspaceServer.Tests
@@ -65,8 +66,8 @@ namespace FibonacciTest
 
             var workspace = new Workspace(workspaceType: "console", buffers: new[]
             {
-                new Workspace.Buffer("Program.cs", program),
-                new Workspace.Buffer("generators/FibonacciGenerator.cs", processed, position)
+                new Buffer("Program.cs", program),
+                new Buffer("generators/FibonacciGenerator.cs", processed, position)
             });
 
             var request = new WorkspaceRequest(workspace, activeBufferId: "generators/FibonacciGenerator.cs");

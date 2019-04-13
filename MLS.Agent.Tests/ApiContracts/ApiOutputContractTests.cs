@@ -226,7 +226,7 @@ namespace MLS.Agent.Tests.ApiContracts
             this.Assent(RemoveMachineSpecificPaths(result).FormatJson(), configuration);
         }
 
-        private static Workspace.Buffer EntrypointCode(string mainContent = @"Console.WriteLine(Sample.Method());$$")
+        private static Buffer EntrypointCode(string mainContent = @"Console.WriteLine(Sample.Method());$$")
         {
             var input = $@"
 using System;
@@ -245,7 +245,7 @@ namespace Example
 
             MarkupTestFile.GetPosition(input, out string output, out var position);
 
-            return new Workspace.Buffer(
+            return new Buffer(
                 "Program.cs",
                 output,
                 position ?? 0);
@@ -258,7 +258,7 @@ namespace Example
             return regex.Replace(result, "$1$3");
         }
 
-        private static Workspace.Buffer ViewportCode(string methodContent = @"return ""Hello world!"";$$ ")
+        private static Buffer ViewportCode(string methodContent = @"return ""Hello world!"";$$ ")
         {
             var input = $@"
 using System.Collections.Generic;
@@ -279,7 +279,7 @@ namespace Example
 
             MarkupTestFile.GetPosition(input, out string output, out var position);
 
-            return new Workspace.Buffer(
+            return new Buffer(
                 "ViewportCode.cs",
                 output,
                 position ?? 0);

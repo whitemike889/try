@@ -11,12 +11,12 @@ namespace Microsoft.DotNet.Try.Project
 {
     public static class FileExtensions
     {
-        public static SourceFile ToSourceFile(this Workspace.File file)
+        public static SourceFile ToSourceFile(this File file)
         {
             return SourceFile.Create(file.Text, file.Name);
         }
 
-        public static IEnumerable<Viewport> ExtractViewPorts(this Workspace.File file)
+        public static IEnumerable<Viewport> ExtractViewPorts(this File file)
         {
             return file.ToSourceFile().ExtractViewPorts();
         }
@@ -34,7 +34,7 @@ namespace Microsoft.DotNet.Try.Project
             }
         }
 
-        public static IEnumerable<Viewport> ExtractViewports(this IEnumerable<Workspace.File> files)
+        public static IEnumerable<Viewport> ExtractViewports(this IEnumerable<File> files)
         {
             return files.Select(f => f.ToSourceFile()).ExtractViewports();
         }

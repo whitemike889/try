@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
 using Microsoft.DotNet.Try.Markdown;
 using Microsoft.DotNet.Try.Protocol;
+using Buffer = Microsoft.DotNet.Try.Protocol.Buffer;
 
 namespace MLS.Agent.Markdown
 {
@@ -63,13 +64,13 @@ namespace MLS.Agent.Markdown
         public string ReadAllText() =>
             Project.DirectoryAccessor.ReadAllText(Path);
 
-        internal async Task<(Dictionary<string, Workspace.Buffer[]> buffers,  Dictionary<string, Workspace.File[]> files)> GetIncludes(IDirectoryAccessor directoryAccessor)
+        internal async Task<(Dictionary<string, Buffer[]> buffers,  Dictionary<string, File[]> files)> GetIncludes(IDirectoryAccessor directoryAccessor)
         {
-            var buffersToIncludeBySession = new Dictionary<string, Workspace.Buffer[]>(StringComparer.InvariantCultureIgnoreCase);
+            var buffersToIncludeBySession = new Dictionary<string, Buffer[]>(StringComparer.InvariantCultureIgnoreCase);
 
             var contentBuildersByBufferBySession = new Dictionary<string, Dictionary<BufferId, StringBuilder>>(StringComparer.InvariantCultureIgnoreCase);
 
-            var filesToIncludeBySession = new Dictionary<string, Workspace.File[]>(StringComparer.InvariantCultureIgnoreCase);
+            var filesToIncludeBySession = new Dictionary<string, File[]>(StringComparer.InvariantCultureIgnoreCase);
 
             var contentBuildersByFileBySession = new Dictionary<string, Dictionary<string, StringBuilder>>(StringComparer.InvariantCultureIgnoreCase);
 
@@ -125,7 +126,7 @@ namespace MLS.Agent.Markdown
             foreach (var (sessionId, contentBuildersByBuffer) in contentBuildersByBufferBySession)
             {
                 buffersToIncludeBySession[sessionId] = contentBuildersByBuffer
-                    .Select(contentBuilder => new Workspace.Buffer(
+                    .Select(contentBuilder => new Buffer(
                         contentBuilder.Key,
                         contentBuilder.Value.ToString())
                     ).ToArray();
@@ -134,7 +135,7 @@ namespace MLS.Agent.Markdown
             foreach (var (sessionId, contentBuildersByFile) in contentBuildersByFileBySession)
             {
                 filesToIncludeBySession[sessionId] = contentBuildersByFile
-                    .Select(fileBuffer => new Workspace.File(
+                    .Select(fileBuffer => new File(
                             fileBuffer.Key,
                             fileBuffer.Value.ToString()
                         )

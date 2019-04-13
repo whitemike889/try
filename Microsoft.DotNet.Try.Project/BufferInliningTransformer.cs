@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.DotNet.Try.Protocol;
+using Buffer = Microsoft.DotNet.Try.Protocol.Buffer;
+using File = System.IO.File;
 
 namespace Microsoft.DotNet.Try.Project
 {
@@ -30,9 +32,9 @@ namespace Microsoft.DotNet.Try.Project
                 includeInstrumentation: source.IncludeInstrumentation);
         }
 
-        private static async Task<(Workspace.File[] files, Workspace.Buffer[] buffers)> InlineBuffersAsync(Workspace source)
+        private static async Task<(Protocol.File[] files, Buffer[] buffers)> InlineBuffersAsync(Workspace source)
         {
-            var files = (source.Files ?? Array.Empty<Workspace.File>()).ToDictionary(f => f.Name, f =>
+            var files = (source.Files ?? Array.Empty<Protocol.File>()).ToDictionary(f => f.Name, f =>
              {
                  if (string.IsNullOrEmpty(f.Text) && File.Exists(f.Name))
                  {
@@ -42,7 +44,7 @@ namespace Microsoft.DotNet.Try.Project
                  return f.ToSourceFile();
              });
 
-            var buffers = new List<Workspace.Buffer>();
+            var buffers = new List<Buffer>();
             foreach (var sourceBuffer in source.Buffers)
             {
                 var bufferFileName = sourceBuffer.Id.FileName;
@@ -73,12 +75,12 @@ namespace Microsoft.DotNet.Try.Project
                 }
             }
 
-            var processedFiles = files.Values.Select(sf => new Workspace.File(sf.Name, sf.Text.ToString())).ToArray();
+            var processedFiles = files.Values.Select(sf => new Protocol.File(sf.Name, sf.Text.ToString())).ToArray();
             var processedBuffers = buffers.ToArray();
 
             return (processedFiles, processedBuffers);
         }
-        private static Task InjectBuffer(Viewport viewPort, Workspace.Buffer sourceBuffer, ICollection<Workspace.Buffer> buffers, IDictionary<string, SourceFile> files,
+        private static Task InjectBuffer(Viewport viewPort, Buffer sourceBuffer, ICollection<Buffer> buffers, IDictionary<string, SourceFile> files,
             BufferInjectionPoints bufferIdInjectionPoints)
         {
             TextSpan targetSpan;
@@ -107,7 +109,7 @@ namespace Microsoft.DotNet.Try.Project
             return new TextSpan(viewPortRegion.Start, 0);
         }
 
-        private static async Task InjectBufferAtSpan(Viewport viewPort, Workspace.Buffer sourceBuffer, ICollection<Workspace.Buffer> buffers, IDictionary<string, SourceFile> files, TextSpan span)
+        private static async Task InjectBufferAtSpan(Viewport viewPort, Buffer sourceBuffer, ICollection<Buffer> buffers, IDictionary<string, SourceFile> files, TextSpan span)
         {
             var tree = CSharpSyntaxTree.ParseText(viewPort.Destination.Text.ToString());
             var textChange = new TextChange(
@@ -120,7 +122,7 @@ namespace Microsoft.DotNet.Try.Project
 
             var newCode = (await txt.GetTextAsync()).ToString();
 
-            buffers.Add(new Workspace.Buffer(
+            buffers.Add(new Buffer(
                 sourceBuffer.Id,
                 sourceBuffer.Content,
                 sourceBuffer.Position,
@@ -128,13 +130,13 @@ namespace Microsoft.DotNet.Try.Project
             files[viewPort.Destination.Name] = SourceFile.Create(newCode, viewPort.Destination.Name);
         }
 
-        private static Task InjectBufferBeforeViewport(Viewport viewPort, Workspace.Buffer sourceBuffer, ICollection<Workspace.Buffer> buffers, IDictionary<string, SourceFile> files)
+        private static Task InjectBufferBeforeViewport(Viewport viewPort, Buffer sourceBuffer, ICollection<Buffer> buffers, IDictionary<string, SourceFile> files)
         {
             var span = viewPort.Region;
             return InjectBufferAtSpan(viewPort, sourceBuffer, buffers, files, span);
         }
 
-        private static Task InjectBufferAfterViewport(Viewport viewPort, Workspace.Buffer sourceBuffer, ICollection<Workspace.Buffer> buffers, IDictionary<string, SourceFile> files)
+        private static Task InjectBufferAfterViewport(Viewport viewPort, Buffer sourceBuffer, ICollection<Buffer> buffers, IDictionary<string, SourceFile> files)
         {
             var span = viewPort.Region;
             return InjectBufferAtSpan(viewPort, sourceBuffer, buffers, files, span);

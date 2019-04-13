@@ -1,23 +1,24 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis.Text;
-using Buffer = Microsoft.DotNet.Try.Protocol.Workspace.Buffer;
+using Microsoft.DotNet.Try.Protocol;
+using Buffer = Microsoft.DotNet.Try.Protocol.Buffer;
 using Workspace = Microsoft.DotNet.Try.Protocol.Workspace;
 
 namespace Microsoft.DotNet.Try.Project
 {
     public class BufferFromRegionExtractor
     {
-        public Workspace Extract(IReadOnlyCollection<Workspace.File> sourceFiles, string workspaceType = null, string[] usings = null)
+        public Workspace Extract(IReadOnlyCollection<File> sourceFiles, string workspaceType = null, string[] usings = null)
         {
             var workSpaceType = workspaceType ?? "script";
             var (newFiles, newBuffers) = ProcessSourceFiles(sourceFiles);
             return new Workspace(files: newFiles, buffers: newBuffers, usings: usings, workspaceType: workSpaceType);
         }
 
-        private static (Workspace.File[], Buffer[]) ProcessSourceFiles(IEnumerable<Workspace.File> sourceFiles)
+        private static (File[], Buffer[]) ProcessSourceFiles(IEnumerable<File> sourceFiles)
         {
-            var files = new Dictionary<string, Workspace.File>();
+            var files = new Dictionary<string, File>();
             var newBuffers = new List<Buffer>();
             foreach (var sourceFile in sourceFiles)
             {

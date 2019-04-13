@@ -4,6 +4,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Formatting;
 using Microsoft.CodeAnalysis.Text;
+using Microsoft.DotNet.Try.Protocol;
 using Workspace = Microsoft.DotNet.Try.Protocol.Workspace;
 
 namespace Microsoft.DotNet.Try.Project
@@ -71,7 +72,7 @@ namespace Microsoft.DotNet.Try.Project
             return extractedRegions;
         }
 
-        public static IEnumerable<Workspace.Buffer> ExtractBuffers(this SourceText code, string fileName)
+        public static IEnumerable<Buffer> ExtractBuffers(this SourceText code, string fileName)
         {
             List<(SyntaxTrivia startRegion, SyntaxTrivia endRegion, string label)> FindRegions(SyntaxNode syntaxNode)
             {
@@ -114,7 +115,7 @@ namespace Microsoft.DotNet.Try.Project
 
             var sourceCodeText = code.ToString();
             var root = CSharpSyntaxTree.ParseText(sourceCodeText).GetRoot();
-            var extractedRegions = new List<Workspace.Buffer>();
+            var extractedRegions = new List<Buffer>();
             foreach (var (startRegion, endRegion, label) in FindRegions(root))
             {
                 var start = startRegion.GetLocation().SourceSpan.End;
@@ -125,7 +126,7 @@ namespace Microsoft.DotNet.Try.Project
                 var content = code.ToString(loc);
 
                 content = FormatSourceCode(content);
-                extractedRegions.Add(new Workspace.Buffer(label, content));
+                extractedRegions.Add(new Buffer(label, content));
             }
 
             return extractedRegions;

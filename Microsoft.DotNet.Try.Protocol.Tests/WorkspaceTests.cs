@@ -14,7 +14,7 @@ namespace Microsoft.DotNet.Try.Protocol.Tests
         {
             var ws = new Workspace(files: new[]
             {
-                new Workspace.File("Program.cs", SourceCodeProvider.ConsoleProgramSingleRegion)
+                new File("Program.cs", SourceCodeProvider.ConsoleProgramSingleRegion)
             });
 
             var viewPorts = ws.ExtractViewPorts();
@@ -27,7 +27,7 @@ namespace Microsoft.DotNet.Try.Protocol.Tests
         {
             var ws = new Workspace(files: new[]
             {
-                new Workspace.File("Program.cs", SourceCodeProvider.ConsoleProgramCollidingRegions)
+                new File("Program.cs", SourceCodeProvider.ConsoleProgramCollidingRegions)
             });
 
             Action extraction = () => ws.ExtractViewPorts().ToList();
@@ -39,8 +39,8 @@ namespace Microsoft.DotNet.Try.Protocol.Tests
         {
             var ws = new Workspace(files: new[]
             {
-                new Workspace.File("ProgramA.cs", SourceCodeProvider.ConsoleProgramSingleRegion),
-                new Workspace.File("ProgramB.cs", SourceCodeProvider.ConsoleProgramSingleRegion)
+                new File("ProgramA.cs", SourceCodeProvider.ConsoleProgramSingleRegion),
+                new File("ProgramB.cs", SourceCodeProvider.ConsoleProgramSingleRegion)
             });
 
             Action extraction = () => ws.ExtractViewPorts();

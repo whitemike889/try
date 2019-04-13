@@ -45,7 +45,7 @@ namespace RoslynRecorder
 
             var withLF = code.EnforceLF();
             var document = Sources.GetDocument(withLF);
-            var workspace = new Workspace(files: new[] { new Workspace.File("test.cs", withLF) });
+            var workspace = new Workspace(files: new[] { new File("test.cs", withLF) });
             var visitor = new InstrumentationSyntaxVisitor(document, await document.GetSemanticModelAsync());
             var viewport = workspace.ExtractViewPorts().DefaultIfEmpty(null).First();
 
@@ -156,7 +156,7 @@ namespace RoslynRecorder
 #endregion
 }".EnforceLF();
             MarkupTestFile.GetNamedSpans(text, out var code, out var spans);
-            var workspace = new Workspace(files: new[] { new Workspace.File("testFile.cs", code) });
+            var workspace = new Workspace(files: new[] { new File("testFile.cs", code) });
             var viewports = workspace.ExtractViewPorts();
             var activeViewport = InstrumentationLineMapper.FilterActiveViewport(viewports, BufferId.Parse("testFile.cs@test")).First();
             activeViewport.Region.Start.Should().Be(spans["regionStart"].First().End);
@@ -167,7 +167,7 @@ namespace RoslynRecorder
         public void FilterActiveViewport_Should_Return_Empty_Array_If_No_Regions()
         {
             var text = Sources.simple.EnforceLF();
-            var workspace = new Workspace(files: new[] { new Workspace.File("testFile.cs", text) });
+            var workspace = new Workspace(files: new[] { new File("testFile.cs", text) });
             var viewports = workspace.ExtractViewPorts();
             var activeViewport = InstrumentationLineMapper.FilterActiveViewport(viewports, BufferId.Parse("testFile.cs@test"));
             activeViewport.Should().BeEmpty();

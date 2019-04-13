@@ -8,6 +8,7 @@ using Newtonsoft.Json.Linq;
 using WorkspaceServer;
 using WorkspaceServer.Packaging;
 using WorkspaceServer.Servers.Roslyn;
+using Buffer = Microsoft.DotNet.Try.Protocol.Buffer;
 using Package = WorkspaceServer.Packaging.Package;
 
 namespace Microsoft.DotNet.Try.Jupyter
@@ -40,11 +41,11 @@ namespace Microsoft.DotNet.Try.Jupyter
                     var workspace = new Workspace(
                         files: new[]
                                {
-                                   new Workspace.File("Program.cs", Scaffold())
+                                   new File("Program.cs", Scaffold())
                                },
                         buffers:new[]
                                 {
-                                    new Workspace.Buffer(new BufferId("Program.cs", "main"), code), 
+                                    new Buffer(new BufferId("Program.cs", "main"), code), 
                                 },
                         workspaceType: package.Name);
 

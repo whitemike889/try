@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.DotNet.Try.Protocol;
 using Xunit;
+using Buffer = Microsoft.DotNet.Try.Protocol.Buffer;
 
 namespace Microsoft.DotNet.Try.Project.Tests
 {
@@ -25,13 +26,13 @@ namespace Microsoft.DotNet.Try.Project.Tests
                 workspaceType: "console",
                 files: new[]
                 {
-                    new Workspace.File("fileA.cs", "first line;", 0),
-                    new Workspace.File("fileA.cs", "third line;", 2),
-                    new Workspace.File("fileA.cs", "second line;", 1),
+                    new File("fileA.cs", "first line;", 0),
+                    new File("fileA.cs", "third line;", 2),
+                    new File("fileA.cs", "second line;", 1),
 
-                    new Workspace.File("fileB.cs", "first line;", 2),
-                    new Workspace.File("fileB.cs", "third line;", 0),
-                    new Workspace.File("fileB.cs", "second line;", 1)
+                    new File("fileB.cs", "first line;", 2),
+                    new File("fileB.cs", "third line;", 0),
+                    new File("fileB.cs", "second line;", 1)
                 }
             );
             var processed = await processor.TransformAsync(workspace);
@@ -59,17 +60,17 @@ first line;".EnforceLF());
                 workspaceType: "console",
                 buffers: new[]
                 {
-                    new Workspace.Buffer(new BufferId("fileA.cs", "regionA"), "first line;", order:0),
-                    new Workspace.Buffer(new BufferId("fileA.cs", "regionA"), "third line;", order:2),
-                    new Workspace.Buffer(new BufferId("fileA.cs", "regionA"), "second line;", order:1),
+                    new Buffer(new BufferId("fileA.cs", "regionA"), "first line;", order:0),
+                    new Buffer(new BufferId("fileA.cs", "regionA"), "third line;", order:2),
+                    new Buffer(new BufferId("fileA.cs", "regionA"), "second line;", order:1),
 
-                    new Workspace.Buffer(new BufferId("fileA.cs", "regionB"), "fourth line;", order:0),
-                    new Workspace.Buffer(new BufferId("fileA.cs", "regionB"), "sixth line;", order:2),
-                    new Workspace.Buffer(new BufferId("fileA.cs", "regionB"), "fifth line;", order:1),
+                    new Buffer(new BufferId("fileA.cs", "regionB"), "fourth line;", order:0),
+                    new Buffer(new BufferId("fileA.cs", "regionB"), "sixth line;", order:2),
+                    new Buffer(new BufferId("fileA.cs", "regionB"), "fifth line;", order:1),
 
-                    new Workspace.Buffer("fileB.cs", "first line;", order:2),
-                    new Workspace.Buffer("fileB.cs", "third line;", order:0),
-                    new Workspace.Buffer("fileB.cs", "second line;", order:1)
+                    new Buffer("fileB.cs", "first line;", order:2),
+                    new Buffer("fileB.cs", "third line;", order:0),
+                    new Buffer("fileB.cs", "second line;", order:1)
                 }
             );
             var processed = await processor.TransformAsync(workspace);

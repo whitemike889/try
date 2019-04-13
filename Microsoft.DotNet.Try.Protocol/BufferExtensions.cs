@@ -5,7 +5,7 @@ namespace Microsoft.DotNet.Try.Protocol
 {
     public static class BufferExtensions
     {
-        public static Workspace.Buffer GetBufferWithSpecifiedIdOrSingleBufferIfThereIsOnlyOne(
+        public static Buffer GetBufferWithSpecifiedIdOrSingleBufferIfThereIsOnlyOne(
             this Workspace workspace,
             BufferId bufferId = null)
         {

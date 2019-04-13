@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.DotNet.Try.Protocol;
+using Buffer = Microsoft.DotNet.Try.Protocol.Buffer;
 
 namespace Microsoft.DotNet.Try.Project
 {
@@ -18,11 +19,11 @@ namespace Microsoft.DotNet.Try.Project
                 throw new ArgumentNullException(nameof(source));
             }
 
-            var files = (source.Files ?? Array.Empty<Workspace.File>())
+            var files = (source.Files ?? Array.Empty<File>())
                 .GroupBy(file => file.Name)
                 .Select(fileGroup => MergeFiles(fileGroup.Key, fileGroup));
 
-            var buffers = (source.Buffers ?? Array.Empty<Workspace.Buffer>())
+            var buffers = (source.Buffers ?? Array.Empty<Buffer>())
                 .GroupBy(buffer => buffer.Id)
                 .SelectMany(bufferGroup => MergeBuffers(bufferGroup.Key, bufferGroup));
 
@@ -36,7 +37,7 @@ namespace Microsoft.DotNet.Try.Project
             return Task.FromResult(workspace);
         }
 
-        private Workspace.File MergeFiles(string fileName, IEnumerable<Workspace.File> files)
+        private File MergeFiles(string fileName, IEnumerable<File> files)
         {
             var content = string.Empty;
             var order = 0;
@@ -48,18 +49,18 @@ namespace Microsoft.DotNet.Try.Project
             }
             content = content.Substring(0, content.Length - Padding.Length);
 
-            return new Workspace.File(fileName, content, order: order);
+            return new File(fileName, content, order: order);
         }
 
-        private IEnumerable<Workspace.Buffer> MergeBuffers(BufferId id, IEnumerable<Workspace.Buffer> buffers)
+        private IEnumerable<Buffer> MergeBuffers(BufferId id, IEnumerable<Buffer> buffers)
         {
             var position = 0;
             var content = string.Empty;
             var order = 0;
 
-            Workspace.Buffer preRegion = null;
-            Workspace.Buffer region = null;
-            Workspace.Buffer postRegion = null;
+            Buffer preRegion = null;
+            Buffer region = null;
+            Buffer postRegion = null;
 
             foreach (var buffer in buffers.OrderBy(buffer => buffer.Order))
             {
@@ -74,7 +75,7 @@ namespace Microsoft.DotNet.Try.Project
 
             content = content.Substring(0, content.Length - Padding.Length);
 
-            region = new Workspace.Buffer(id, content, position: position, order: order);
+            region = new Buffer(id, content, position: position, order: order);
 
             if (preRegion != null)
             {
