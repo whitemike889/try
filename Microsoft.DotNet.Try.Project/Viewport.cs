@@ -2,7 +2,7 @@
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.DotNet.Try.Protocol;
 
-namespace Microsoft.DotNet.Try.Project.Execution
+namespace Microsoft.DotNet.Try.Project
 {
     public class Viewport
     {

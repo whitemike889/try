@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.DotNet.Try.Project;
-using Microsoft.DotNet.Try.Project.Execution;
 using Microsoft.DotNet.Try.Protocol;
 using WorkspaceServer.Servers.Roslyn.Instrumentation;
 using Xunit;

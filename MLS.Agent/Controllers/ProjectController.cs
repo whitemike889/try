@@ -6,7 +6,7 @@ using Microsoft.DotNet.Try.Project;
 using Microsoft.DotNet.Try.Protocol.ClientApi;
 using Pocket;
 using static Pocket.Logger<MLS.Agent.Controllers.ProjectController>;
-
+using SourceFile = Microsoft.DotNet.Try.Protocol.ClientApi.SourceFile;
 
 namespace MLS.Agent.Controllers
 {

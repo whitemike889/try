@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.CodeAnalysis.Text;
 
-namespace Microsoft.DotNet.Try.Project.Execution
+namespace Microsoft.DotNet.Try.Project
 {
     public class SourceFile
     {

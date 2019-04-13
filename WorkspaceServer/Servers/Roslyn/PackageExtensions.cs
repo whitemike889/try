@@ -6,7 +6,6 @@ using Clockwise;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.DotNet.Try.Project;
-using Microsoft.DotNet.Try.Project.Execution;
 using Microsoft.DotNet.Try.Protocol;
 using WorkspaceServer.Servers.Roslyn.Instrumentation;
 using static System.Environment;
