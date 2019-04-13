@@ -1,6 +1,5 @@
 ﻿using System.Linq;
 using FluentAssertions;
-using Microsoft.DotNet.Try.Project.Generators;
 using Microsoft.DotNet.Try.Protocol;
 using Microsoft.DotNet.Try.TestSupport;
 using Xunit;

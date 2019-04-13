@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.DotNet.Try.Protocol;
 
-namespace Microsoft.DotNet.Try.Project.Generators
+namespace Microsoft.DotNet.Try.Project
 {
     public static class BufferGenerator
     {

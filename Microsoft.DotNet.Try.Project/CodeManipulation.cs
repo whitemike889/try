@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.DotNet.Try.Project.Generators
+namespace Microsoft.DotNet.Try.Project
 {
     public static class CodeManipulation
     {

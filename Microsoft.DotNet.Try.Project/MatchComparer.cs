@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Microsoft.DotNet.Try.Project.Generators
+namespace Microsoft.DotNet.Try.Project
 {
     internal class MatchComparer : IComparer<Tuple<int, string>>
     {

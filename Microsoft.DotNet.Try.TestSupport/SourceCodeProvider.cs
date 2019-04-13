@@ -1,4 +1,4 @@
-﻿using Microsoft.DotNet.Try.Project.Generators;
+﻿using Microsoft.DotNet.Try.Project;
 
 namespace Microsoft.DotNet.Try.TestSupport
 {

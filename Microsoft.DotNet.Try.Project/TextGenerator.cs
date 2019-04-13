@@ -1,6 +1,6 @@
 using System;
 
-namespace Microsoft.DotNet.Try.Project.Generators
+namespace Microsoft.DotNet.Try.Project
 {
     public static  class TextGenerator
     {
