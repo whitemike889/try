@@ -6,7 +6,6 @@ using Clockwise;
 using FluentAssertions;
 using FluentAssertions.Extensions;
 using Microsoft.DotNet.Try.Protocol;
-using Microsoft.DotNet.Try.Protocol.Execution;
 using Pocket;
 using Recipes;
 using WorkspaceServer.Models.Execution;
@@ -15,6 +14,7 @@ using WorkspaceServer.Features;
 using WorkspaceServer.Packaging;
 using Xunit;
 using Xunit.Abstractions;
+using Package = WorkspaceServer.Packaging.Package;
 
 namespace WorkspaceServer.Tests
 {

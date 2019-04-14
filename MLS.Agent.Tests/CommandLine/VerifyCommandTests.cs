@@ -9,7 +9,7 @@ using WorkspaceServer;
 using WorkspaceServer.Tests;
 using Xunit;
 using Xunit.Abstractions;
-using CodeManipulation = Microsoft.DotNet.Try.Project.Generators.CodeManipulation;
+using CodeManipulation = Microsoft.DotNet.Try.Project.CodeManipulation;
 
 namespace MLS.Agent.Tests.CommandLine
 {

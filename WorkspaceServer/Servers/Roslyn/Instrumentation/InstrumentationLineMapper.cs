@@ -3,8 +3,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
-using Microsoft.DotNet.Try.Project.Execution;
-using Microsoft.DotNet.Try.Protocol.Execution;
+using Microsoft.DotNet.Try.Project;
+using Microsoft.DotNet.Try.Protocol;
 using static InstrumentationEmitter;
 
 namespace WorkspaceServer.Servers.Roslyn.Instrumentation

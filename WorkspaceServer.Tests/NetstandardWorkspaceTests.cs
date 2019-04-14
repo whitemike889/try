@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Clockwise;
 using FluentAssertions;
 using Microsoft.DotNet.Try.Protocol;
-using Microsoft.DotNet.Try.Protocol.Execution;
 using Pocket;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Servers.Roslyn;
@@ -16,6 +15,8 @@ using WorkspaceServer.Packaging;
 using Xunit;
 using Xunit.Abstractions;
 using static Pocket.Logger;
+using Buffer = Microsoft.DotNet.Try.Protocol.Buffer;
+using Package = WorkspaceServer.Packaging.Package;
 
 namespace WorkspaceServer.Tests
 {
@@ -38,8 +39,8 @@ namespace WorkspaceServer.Tests
 
             var workspace = new Workspace(
                 workspaceType: build.Name,
-                files: new[] { new Workspace.File("Program.cs", SourceCodeProvider.ConsoleProgramSingleRegion) },
-                buffers: new[] { new Workspace.Buffer("Program.cs@alpha", @"Console.WriteLine(banana);", 0) });
+                files: new[] { new File("Program.cs", SourceCodeProvider.ConsoleProgramSingleRegion) },
+                buffers: new[] { new Buffer("Program.cs@alpha", @"Console.WriteLine(banana);", 0) });
 
 
             var result = await server.Compile(new WorkspaceRequest(workspace));
@@ -59,8 +60,8 @@ namespace WorkspaceServer.Tests
 
             var workspace = new Workspace(
                 workspaceType: build.Name,
-                files: new[] { new Workspace.File("Program.cs", SourceCodeProvider.ConsoleProgramSingleRegion) },
-                buffers: new[] { new Workspace.Buffer("Program.cs@alpha", @"Console.WriteLine(2);", 0) });
+                files: new[] { new File("Program.cs", SourceCodeProvider.ConsoleProgramSingleRegion) },
+                buffers: new[] { new Buffer("Program.cs@alpha", @"Console.WriteLine(2);", 0) });
 
 
             var result = await server.Compile(new WorkspaceRequest(workspace));

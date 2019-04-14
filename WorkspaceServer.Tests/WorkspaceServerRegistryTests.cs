@@ -6,12 +6,11 @@ using FluentAssertions;
 using Pocket;
 using WorkspaceServer.Models;
 using WorkspaceServer.Servers.Roslyn;
-using WorkspaceServer.Packaging;
 using Xunit;
 using Xunit.Abstractions;
 using FluentAssertions.Extensions;
 using Microsoft.DotNet.Try.Protocol;
-using Microsoft.DotNet.Try.Protocol.Execution;
+using Package = WorkspaceServer.Packaging.Package;
 
 namespace WorkspaceServer.Tests
 {

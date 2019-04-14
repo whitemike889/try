@@ -1,12 +1,13 @@
 using Microsoft.CodeAnalysis;
-using Microsoft.DotNet.Try.Project.Execution;
-using Workspace = Microsoft.DotNet.Try.Protocol.Execution.Workspace;
+using Microsoft.DotNet.Try.Project;
+using Microsoft.DotNet.Try.Protocol;
+using Workspace = Microsoft.DotNet.Try.Protocol.Workspace;
 
 namespace WorkspaceServer.Servers.Roslyn
 {
     public static class DocumentExtensions
     {
-        public static bool IsMatch(this Document doc, Workspace.File file) => 
+        public static bool IsMatch(this Document doc, File file) => 
             doc.IsMatch(file.Name);
 
         public static bool IsMatch(this Document d, SourceFile source) => 

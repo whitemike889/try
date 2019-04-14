@@ -1,12 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Completion;
 using Microsoft.CodeAnalysis.Tags;
 using Microsoft.DotNet.Try.Protocol;
 using WorkspaceServer.Models;
+using RoslynCompletionItem = Microsoft.CodeAnalysis.Completion.CompletionItem;
+using TdnCompletionItem = Microsoft.DotNet.Try.Protocol.CompletionItem;
 
-namespace WorkspaceServer.Servers.Scripting
+namespace WorkspaceServer.LanguageServices
 {
     public static class CompletionExtensions
     {
@@ -41,7 +42,7 @@ namespace WorkspaceServer.Servers.Scripting
             WellKnownTags.Structure,
             WellKnownTags.TypeParameter);
 
-        public static string GetKind(this CompletionItem completionItem)
+        public static string GetKind(this RoslynCompletionItem completionItem)
         {
             foreach (var tag in KindTags)
             {
@@ -54,12 +55,12 @@ namespace WorkspaceServer.Servers.Scripting
             return null;
         }
 
-        public static Microsoft.DotNet.Try.Protocol.Completion.CompletionItem ToModel(this CompletionItem item, Dictionary<(string, int), ISymbol> recommendedSymbols,
+        public static CompletionItem ToModel(this RoslynCompletionItem item, Dictionary<(string, int), ISymbol> recommendedSymbols,
             Document document)
         {
             var documentation =  GetDocumentation(item, recommendedSymbols, document);
 
-            return new Microsoft.DotNet.Try.Protocol.Completion.CompletionItem(
+            return new CompletionItem(
                 displayText: item.DisplayText,
                 kind: item.GetKind(),
                 filterText: item.FilterText,
@@ -68,13 +69,12 @@ namespace WorkspaceServer.Servers.Scripting
                 documentation: documentation);
         }
 
-        public static MarkdownString GetDocumentation(this CompletionItem item, Dictionary<(string, int), ISymbol> recommendedSymbols,
+        public static MarkdownString GetDocumentation(this RoslynCompletionItem item, Dictionary<(string, int), ISymbol> recommendedSymbols,
         Document document)
         {
             var symbol = GetCompletionSymbolAsync(item, recommendedSymbols, document);
             if (symbol != null)
             {
-                var xmlDocumentation = symbol.GetDocumentationCommentXml();
                 return DocumentationConverter.GetDocumentation(symbol, "\n");
             }
 
@@ -82,7 +82,8 @@ namespace WorkspaceServer.Servers.Scripting
         }
 
         public static  ISymbol GetCompletionSymbolAsync(
-            CompletionItem completionItem, Dictionary<(string, int), ISymbol> recommendedSymbols,
+            RoslynCompletionItem completionItem, 
+            Dictionary<(string, int), ISymbol> recommendedSymbols,
             Document document)
         {
             var properties = completionItem.Properties;

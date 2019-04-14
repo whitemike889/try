@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 using FluentAssertions;
-using Microsoft.DotNet.Try.Protocol.Execution;
+using Microsoft.DotNet.Try.Protocol;
 using Newtonsoft.Json;
 using Xunit;
 

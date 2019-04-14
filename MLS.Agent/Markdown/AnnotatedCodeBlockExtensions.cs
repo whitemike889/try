@@ -1,11 +1,11 @@
 ﻿using Microsoft.DotNet.Try.Markdown;
-using Microsoft.DotNet.Try.Protocol.Execution;
+using Microsoft.DotNet.Try.Protocol;
 
 namespace MLS.Agent.Markdown
 {
     public static class AnnotatedCodeBlockExtensions
     {
-        public static Workspace.Buffer GetBufferAsync(
+        public static Buffer GetBufferAsync(
             this AnnotatedCodeBlock block,
             IDirectoryAccessor directoryAccessor,
             MarkdownFile markdownFile)
@@ -14,7 +14,7 @@ namespace MLS.Agent.Markdown
             {
                 var absolutePath = directoryAccessor.GetFullyQualifiedPath(localOptions.SourceFile).FullName;
                 var bufferId = new BufferId(absolutePath, block.Annotations.Region);
-                return new Workspace.Buffer(bufferId, block.SourceCode);
+                return new Buffer(bufferId, block.SourceCode);
             }
             else
             {

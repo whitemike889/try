@@ -13,17 +13,11 @@ using WorkspaceServer.Tests;
 using Xunit;
 using Xunit.Abstractions;
 using static Pocket.Logger<MLS.Agent.Tests.ApiViaHttpTests>;
-using Workspace = Microsoft.DotNet.Try.Protocol.Execution.Workspace;
 using MLS.Agent.CommandLine;
 using FluentAssertions.Extensions;
-using Microsoft.DotNet.Try.Project.Transformations;
 using Microsoft.DotNet.Try.Protocol;
 using Microsoft.DotNet.Try.Protocol.ClientApi;
-using Microsoft.DotNet.Try.Protocol.Completion;
-using Microsoft.DotNet.Try.Protocol.Diagnostics;
-using Microsoft.DotNet.Try.Protocol.Execution;
-using Microsoft.DotNet.Try.Protocol.Packaging;
-using Microsoft.DotNet.Try.Protocol.SignatureHelp;
+using Buffer = Microsoft.DotNet.Try.Protocol.Buffer;
 
 namespace MLS.Agent.Tests
 {
@@ -593,7 +587,7 @@ namespace FibonacciTest
             var package = await WorkspaceServer.Packaging.Package.Copy(await Default.WebApiWorkspace());
             await package.CreateRoslynWorkspaceForRunAsync(new TimeBudget(10.Minutes()));
             var workspace = WorkspaceFactory.CreateWorkspaceFromDirectory(package.Directory, package.Directory.Name);
-            var nonCompilingBuffer = new Workspace.Buffer("broken.cs", "this does not compile", 0);
+            var nonCompilingBuffer = new Buffer("broken.cs", "this does not compile", 0);
             workspace = new Workspace(
                 buffers: workspace.Buffers.Concat(new[] { nonCompilingBuffer }).ToArray(),
                 files: workspace.Files.ToArray(),
@@ -613,7 +607,7 @@ namespace FibonacciTest
         [Fact]
         public async Task When_Run_times_out_in_console_workspace_server_code_then_the_response_code_is_504()
         {
-            var code = @"public class Program { public static void Main()\n  {\n  Console.WriteLine();  }  }";
+            var code = @"public class Program { public static void Main()  {  Console.WriteLine();  }  }";
             var package = await WorkspaceServer.Packaging.Package.Copy(await Default.ConsoleWorkspace());
            
             var workspace = Workspace.FromSource(code.EnforceLF(), package.Name);
@@ -624,7 +618,7 @@ namespace FibonacciTest
            {
                Log.Info("Budget entry created: {entry}", entry);
 
-               if (entry.Name == typeof(BufferInliningTransformer).Name)
+               if (entry.Name == "CompileWorker")
                {
                    budget.Cancel();
                }

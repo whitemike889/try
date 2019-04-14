@@ -8,25 +8,19 @@ using Clockwise;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Completion;
 using Microsoft.CodeAnalysis.Recommendations;
-using Microsoft.DotNet.Try.Project.Extensions;
-using Microsoft.DotNet.Try.Project.Transformations;
+using Microsoft.DotNet.Try.Project;
 using Microsoft.DotNet.Try.Protocol;
-using Microsoft.DotNet.Try.Protocol.Completion;
-using Microsoft.DotNet.Try.Protocol.Diagnostics;
-using Microsoft.DotNet.Try.Protocol.Execution;
-using Microsoft.DotNet.Try.Protocol.SignatureHelp;
 using MLS.Agent.Tools;
 using Pocket;
 using Recipes;
 using WorkspaceServer.Models.Execution;
 using WorkspaceServer.Servers.Roslyn.Instrumentation;
-using WorkspaceServer.Servers.Scripting;
 using WorkspaceServer.Transformations;
 using WorkspaceServer.Features;
-using WorkspaceServer.Packaging;
 using static Pocket.Logger<WorkspaceServer.Servers.Roslyn.RoslynWorkspaceServer>;
-using Workspace = Microsoft.DotNet.Try.Protocol.Execution.Workspace;
+using Workspace = Microsoft.DotNet.Try.Protocol.Workspace;
 using WorkspaceServer.LanguageServices;
+using Package = WorkspaceServer.Packaging.Package;
 
 namespace WorkspaceServer.Servers.Roslyn
 {
@@ -35,7 +29,7 @@ namespace WorkspaceServer.Servers.Roslyn
         private readonly GetPackageByName getPackageByName;
         private const int defaultBudgetInSeconds = 30;
         private readonly ConcurrentDictionary<string, AsyncLock> locks = new ConcurrentDictionary<string, AsyncLock>();
-        private readonly BufferInliningTransformer _transformer = new BufferInliningTransformer();
+        private readonly IWorkspaceTransformer _transformer = new BufferInliningTransformer();
         private static readonly string UserCodeCompleted = nameof(UserCodeCompleted);
 
         private delegate Task<Package> GetPackageByName(string name);
@@ -65,7 +59,7 @@ namespace WorkspaceServer.Servers.Roslyn
             budget = budget ?? new TimeBudget(TimeSpan.FromSeconds(defaultBudgetInSeconds));
             var package = await getPackageByName(request.Workspace.WorkspaceType);
 
-            var processed = await _transformer.TransformAsync(request.Workspace, budget);
+            var processed = await _transformer.TransformAsync(request.Workspace);
             var sourceFiles = processed.GetSourceFiles();
             var (_, documents) = await package.GetCompilationForLanguageServices(sourceFiles, GetSourceCodeKind(request), GetUsings(request.Workspace), budget);
 
@@ -130,7 +124,7 @@ namespace WorkspaceServer.Servers.Roslyn
 
             var package = await getPackageByName(request.Workspace.WorkspaceType);
 
-            var processed = await _transformer.TransformAsync(request.Workspace, budget);
+            var processed = await _transformer.TransformAsync(request.Workspace);
 
             var sourceFiles = processed.GetSourceFiles();
             var (compilation, documents) = await package.GetCompilationForLanguageServices(sourceFiles, GetSourceCodeKind(request), GetUsings(request.Workspace), budget);
@@ -171,9 +165,9 @@ namespace WorkspaceServer.Servers.Roslyn
 
             var package = await getPackageByName(request.Workspace.WorkspaceType);
 
-            var processed = await _transformer.TransformAsync(request.Workspace, budget);
+            var workspace = await _transformer.TransformAsync(request.Workspace);
 
-            var sourceFiles = processed.GetSourceFiles();
+            var sourceFiles = workspace.GetSourceFiles();
             var (_, documents) = await package.GetCompilationForLanguageServices(sourceFiles, GetSourceCodeKind(request), GetUsings(request.Workspace), budget);
 
             var selectedDocument = documents.FirstOrDefault(doc => doc.IsMatch( request.ActiveBufferId.FileName))
@@ -185,7 +179,7 @@ namespace WorkspaceServer.Servers.Roslyn
                 return new DiagnosticResult(requestId: request.RequestId);
             }
 
-            var diagnostics = await DiagnosticsExtractor.ExtractSerializableDiagnosticsFromDocument(request.ActiveBufferId, budget, selectedDocument, processed);
+            var diagnostics = await DiagnosticsExtractor.ExtractSerializableDiagnosticsFromDocument(request.ActiveBufferId, budget, selectedDocument, workspace);
 
             var result = new DiagnosticResult(diagnostics, request.RequestId);
             return result;
@@ -421,7 +415,7 @@ namespace WorkspaceServer.Servers.Roslyn
             Budget budget)
         {
             var package = await getPackageByName(workspace.WorkspaceType);
-            workspace = await _transformer.TransformAsync(workspace, budget);
+            workspace = await _transformer.TransformAsync(workspace);
             var compilation = await package.Compile(workspace, budget, activeBufferId);
             var (diagnosticsInActiveBuffer, allDiagnostics) = workspace.MapDiagnostics(activeBufferId, compilation.GetDiagnostics());
 

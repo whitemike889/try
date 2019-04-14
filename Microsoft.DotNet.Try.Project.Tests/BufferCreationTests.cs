@@ -1,7 +1,6 @@
 ﻿using System.Linq;
 using FluentAssertions;
-using Microsoft.DotNet.Try.Project.Generators;
-using Microsoft.DotNet.Try.Protocol.Execution;
+using Microsoft.DotNet.Try.Protocol;
 using Microsoft.DotNet.Try.TestSupport;
 using Xunit;
 
@@ -14,7 +13,7 @@ namespace Microsoft.DotNet.Try.Project.Tests
         {
             var file = FileGenerator.Create("Program.cs", SourceCodeProvider.ConsoleProgramMultipleRegions);
 
-            var buffers = BufferGenerator.CreateFromFile(file).ToList();
+            var buffers = BufferGenerator.CreateBuffers(file).ToList();
 
             buffers.Should().NotBeNullOrEmpty();
             buffers.Count.Should().Be(2);
@@ -27,7 +26,7 @@ namespace Microsoft.DotNet.Try.Project.Tests
         {
             var file = FileGenerator.Create("Program.cs", SourceCodeProvider.ConsoleProgramNoRegion);
 
-            var buffers = BufferGenerator.CreateFromFile(file).ToList();
+            var buffers = BufferGenerator.CreateBuffers(file).ToList();
 
             buffers.Should().NotBeNullOrEmpty();
             buffers.Count.Should().Be(1);

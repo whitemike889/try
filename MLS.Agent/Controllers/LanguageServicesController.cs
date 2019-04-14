@@ -9,7 +9,6 @@ using Pocket;
 using WorkspaceServer;
 using WorkspaceServer.Servers.Roslyn;
 using static Pocket.Logger<MLS.Agent.Controllers.LanguageServicesController>;
-using Workspace = Microsoft.DotNet.Try.Protocol.Execution.Workspace;
 
 namespace MLS.Agent.Controllers
 {

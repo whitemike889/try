@@ -4,10 +4,10 @@ using System.Text;
 using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.DotNet.Try.Protocol;
-using Microsoft.DotNet.Try.Protocol.Execution;
 using Newtonsoft.Json;
 using Pocket;
 using static Pocket.Logger<MLS.Agent.Warmup>;
+using Buffer = Microsoft.DotNet.Try.Protocol.Buffer;
 
 namespace MLS.Agent
 {
@@ -42,7 +42,7 @@ namespace MLS.Agent
                             workspaceType: "console",
                             buffers: new[]
                             {
-                                new Workspace.Buffer("Program.cs", code, 0)
+                                new Buffer("Program.cs", code, 0)
                             }));
 
                     var response = await Post(relativeUri,

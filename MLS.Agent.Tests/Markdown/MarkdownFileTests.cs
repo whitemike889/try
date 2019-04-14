@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
 using Microsoft.DotNet.Try.Markdown;
-using Microsoft.DotNet.Try.Project.Generators;
+using Microsoft.DotNet.Try.Project;
 using MLS.Agent.CommandLine;
 using MLS.Agent.Markdown;
 using MLS.Agent.Tests.TestUtility;

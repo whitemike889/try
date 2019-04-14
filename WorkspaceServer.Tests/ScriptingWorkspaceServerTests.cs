@@ -3,7 +3,6 @@ using FluentAssertions;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.DotNet.Try.Protocol;
-using Microsoft.DotNet.Try.Protocol.Execution;
 using Pocket;
 using Recipes;
 using WorkspaceServer.Servers.Scripting;
@@ -11,6 +10,8 @@ using WorkspaceServer.Packaging;
 using Xunit;
 using Xunit.Abstractions;
 using static Pocket.Logger<WorkspaceServer.Tests.WorkspaceServerTests>;
+using Buffer = Microsoft.DotNet.Try.Protocol.Buffer;
+using Package = WorkspaceServer.Packaging.Package;
 
 namespace WorkspaceServer.Tests
 {
@@ -158,8 +159,8 @@ public static class Hello
 }";
             var workspace = new Workspace(
                 workspaceType: "script",
-                files: new[] { new Workspace.File("Main.cs", fileCode) },
-                buffers: new[] { new Workspace.Buffer(@"Main.cs@toReplace", @"Console.WriteLine(""Hello there!"");", 0) });
+                files: new[] { new File("Main.cs", fileCode) },
+                buffers: new[] { new Buffer(@"Main.cs@toReplace", @"Console.WriteLine(""Hello there!"");", 0) });
             var (server, build) = await GetRunnerAndWorkspaceBuild();
 
             var result = await server.Run(new WorkspaceRequest(workspace));
@@ -183,8 +184,8 @@ public static class Hello
 }";
             var workspace = new Workspace(
                 workspaceType: "script",
-                files: new[] { new Workspace.File("Main.cs", fileCode) },
-                buffers: new[] { new Workspace.Buffer(@"Main.cs@toReplace", @"Console.WriteLine(banana);", 0) });
+                files: new[] { new File("Main.cs", fileCode) },
+                buffers: new[] { new Buffer(@"Main.cs@toReplace", @"Console.WriteLine(banana);", 0) });
 
             var (server, build) = await GetRunnerAndWorkspaceBuild();
             var result = await server.Run(new WorkspaceRequest(workspace));

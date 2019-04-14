@@ -6,7 +6,6 @@ using System.IO;
 using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.DotNet.Try.Protocol;
-using Microsoft.DotNet.Try.Protocol.Execution;
 using Microsoft.DotNet.Try.TestSupport;
 using MLS.Agent.CommandLine;
 using MLS.Agent.Tests.TestUtility;
@@ -14,6 +13,8 @@ using WorkspaceServer.Packaging;
 using WorkspaceServer.Tests;
 using Xunit;
 using Xunit.Abstractions;
+using Buffer = Microsoft.DotNet.Try.Protocol.Buffer;
+using File = Microsoft.DotNet.Try.Protocol.File;
 
 namespace MLS.Agent.Tests
 {
@@ -49,8 +50,8 @@ namespace MLS.Agent.Tests
 
             var output = Guid.NewGuid().ToString();
             var ws = new Workspace(
-                files: new[] {  new Workspace.File(programCs.FullName, SourceCodeProvider.ConsoleProgramSingleRegion) },
-                buffers: new[] { new Workspace.Buffer(new BufferId(programCs.FullName, "alpha"), $"Console.WriteLine(\"{output}\");") },
+                files: new[] {  new File(programCs.FullName, SourceCodeProvider.ConsoleProgramSingleRegion) },
+                buffers: new[] { new Buffer(new BufferId(programCs.FullName, "alpha"), $"Console.WriteLine(\"{output}\");") },
                 workspaceType: csproj.FullName);
 
             var requestJson = new WorkspaceRequest(ws, requestId: "TestRun").ToJson();

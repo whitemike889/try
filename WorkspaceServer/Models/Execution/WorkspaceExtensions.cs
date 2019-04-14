@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis.Text;
-using Microsoft.DotNet.Try.Protocol.Execution;
+using Microsoft.DotNet.Try.Protocol;
+using Buffer = Microsoft.DotNet.Try.Protocol.Buffer;
 
 namespace WorkspaceServer.Models.Execution
 {
     public static class WorkspaceExtensions
     {
-        public static Workspace.File GetFileFromBufferId(this Workspace workspace, BufferId bufferId)
+        public static File GetFileFromBufferId(this Workspace workspace, BufferId bufferId)
         {
             if (bufferId == null)
             {
@@ -51,7 +52,7 @@ namespace WorkspaceServer.Models.Execution
             new Workspace(
                 workspace.Usings,
                 workspace.Files,
-                workspace.Buffers.Concat(new[] { new Workspace.Buffer(BufferId.Parse(id), text) }).ToArray(),
+                workspace.Buffers.Concat(new[] { new Buffer(BufferId.Parse(id), text) }).ToArray(),
                 workspace.WorkspaceType,
                 workspace.IncludeInstrumentation);
 
@@ -78,7 +79,7 @@ namespace WorkspaceServer.Models.Execution
             new Workspace(
                 workspace.Usings,
                 workspace.Files
-                         .Concat(new[] { new Workspace.File(name, text) })
+                         .Concat(new[] { new File(name, text) })
                          .ToArray(),
                 workspace.Buffers,
                 workspace.WorkspaceType,
@@ -92,7 +93,7 @@ namespace WorkspaceServer.Models.Execution
                 workspace.Usings,
                 workspace.Files
                          .Where(f => f.Name != name)
-                         .Concat(new[] { new Workspace.File(name, text) })
+                         .Concat(new[] { new File(name, text) })
                          .ToArray(),
                 workspace.Buffers,
                 workspace.WorkspaceType,

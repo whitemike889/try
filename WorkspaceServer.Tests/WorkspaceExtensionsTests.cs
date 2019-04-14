@@ -1,5 +1,5 @@
 using FluentAssertions;
-using Microsoft.DotNet.Try.Protocol.Execution;
+using Microsoft.DotNet.Try.Protocol;
 using WorkspaceServer.Models.Execution;
 using Xunit;
 
@@ -15,7 +15,7 @@ namespace WorkspaceServer.Tests
                 buffers:
                 new[]
                 {
-                    new Workspace.Buffer(BufferId.Parse(""), "content", 123)
+                    new Buffer(BufferId.Parse(""), "content", 123)
                 });
 
             workspace.GetAbsolutePositionForGetBufferWithSpecifiedIdOrSingleBufferIfThereIsOnlyOne().Should().Be(123);
@@ -29,7 +29,7 @@ namespace WorkspaceServer.Tests
                 buffers:
                 new[]
                 {
-                    new Workspace.Buffer(BufferId.Parse("nonexistent.cs"), "content", 123)
+                    new Buffer(BufferId.Parse("nonexistent.cs"), "content", 123)
                 });
 
             workspace.GetAbsolutePositionForGetBufferWithSpecifiedIdOrSingleBufferIfThereIsOnlyOne().Should().Be(123);
@@ -42,11 +42,11 @@ namespace WorkspaceServer.Tests
                 buffers:
                 new[]
                 {
-                    new Workspace.Buffer(BufferId.Parse(""), "content", 123)
+                    new Buffer(BufferId.Parse(""), "content", 123)
                 },
                 files: new[]
                 {
-                    new Workspace.File("", "content")
+                    new File("", "content")
                 });
 
             workspace.GetFileFromBufferId(BufferId.Empty).Should().NotBeNull();

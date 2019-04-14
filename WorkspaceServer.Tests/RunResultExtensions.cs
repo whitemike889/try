@@ -2,7 +2,7 @@
 using System.Linq;
 using FluentAssertions;
 using FluentAssertions.Execution;
-using Microsoft.DotNet.Try.Protocol.Execution;
+using Microsoft.DotNet.Try.Protocol;
 
 namespace WorkspaceServer.Tests
 {

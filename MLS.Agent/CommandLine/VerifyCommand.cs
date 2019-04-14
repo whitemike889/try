@@ -4,13 +4,12 @@ using System.CommandLine;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.DotNet.Try.Markdown;
-using Microsoft.DotNet.Try.Project.Transformations;
+using Microsoft.DotNet.Try.Project;
 using Microsoft.DotNet.Try.Protocol;
-using Microsoft.DotNet.Try.Protocol.Diagnostics;
-using Microsoft.DotNet.Try.Protocol.Execution;
 using MLS.Agent.Markdown;
 using WorkspaceServer;
 using WorkspaceServer.Servers.Roslyn;
+using Buffer = Microsoft.DotNet.Try.Protocol.Buffer;
 
 namespace MLS.Agent.CommandLine
 {
@@ -85,7 +84,7 @@ namespace MLS.Agent.CommandLine
                 returnCode = 1;
             }
 
-            async Task ReportCompileResults(IGrouping<string, AnnotatedCodeBlock> session, MarkdownFile markdownFile, Dictionary<string, Workspace.File[]> filesToInclude, Dictionary<string, Workspace.Buffer[]> buffersToInclude)
+            async Task ReportCompileResults(IGrouping<string, AnnotatedCodeBlock> session, MarkdownFile markdownFile, Dictionary<string, File[]> filesToInclude, Dictionary<string, Buffer[]> buffersToInclude)
             {
                 console.Out.WriteLine($"\n  Compiling samples for session \"{session.Key}\"\n");
 
@@ -99,7 +98,7 @@ namespace MLS.Agent.CommandLine
                               .Select(block => block.GetBufferAsync(directoryAccessor, markdownFile))
                               .ToList();
 
-                var files = new List<Workspace.File>();
+                var files = new List<File>();
 
                 if (filesToInclude.TryGetValue("global", out var globalIncludes))
                 {

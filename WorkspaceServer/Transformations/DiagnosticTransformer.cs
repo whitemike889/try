@@ -5,12 +5,9 @@ using System.Linq;
 using Clockwise;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
-using Microsoft.DotNet.Try.Project.Execution;
-using Microsoft.DotNet.Try.Project.Extensions;
-using Microsoft.DotNet.Try.Project.Transformations;
-using Microsoft.DotNet.Try.Protocol.Diagnostics;
-using Microsoft.DotNet.Try.Protocol.Execution;
-using Workspace = Microsoft.DotNet.Try.Protocol.Execution.Workspace;
+using Microsoft.DotNet.Try.Project;
+using Microsoft.DotNet.Try.Protocol;
+using Workspace = Microsoft.DotNet.Try.Protocol.Workspace;
 
 namespace WorkspaceServer.Transformations
 {

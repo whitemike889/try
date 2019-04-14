@@ -1,10 +1,10 @@
 ﻿using System;
 using FluentAssertions;
 using Microsoft.DotNet.Try.Protocol;
-using Microsoft.DotNet.Try.Protocol.Execution;
 using Recipes;
 using WorkspaceServer.Tests;
 using Xunit;
+using Buffer = Microsoft.DotNet.Try.Protocol.Buffer;
 
 namespace MLS.Agent.Tests
 {
@@ -37,7 +37,7 @@ namespace MLS.Agent.Tests
                 new Workspace(
                     buffers: new[]
                     {
-                        new Workspace.Buffer("the.only.buffer.cs", "its content", 123)
+                        new Buffer("the.only.buffer.cs", "its content", 123)
                     }),
                 requestId: "TestRun");
 

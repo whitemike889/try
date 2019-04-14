@@ -4,12 +4,12 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.DotNet.Try.Protocol;
-using Microsoft.DotNet.Try.Protocol.Completion;
-using Microsoft.DotNet.Try.Protocol.Execution;
 using WorkspaceServer.Servers.Roslyn;
 using WorkspaceServer.Packaging;
 using Xunit;
 using Xunit.Abstractions;
+using Buffer = Microsoft.DotNet.Try.Protocol.Buffer;
+using Package = WorkspaceServer.Packaging.Package;
 
 namespace WorkspaceServer.Tests
 {
@@ -66,8 +66,8 @@ namespace FibonacciTest
 
             var workspace = new Workspace(workspaceType: "console", buffers: new[]
             {
-                new Workspace.Buffer("Program.cs", program),
-                new Workspace.Buffer("generators/FibonacciGenerator.cs", processed, position)
+                new Buffer("Program.cs", program),
+                new Buffer("generators/FibonacciGenerator.cs", processed, position)
             });
 
             var request = new WorkspaceRequest(workspace, activeBufferId: "generators/FibonacciGenerator.cs");
@@ -127,8 +127,8 @@ namespace FibonacciTest
 
             var workspace = new Workspace(workspaceType: "console", buffers: new[]
             {
-                new Workspace.Buffer("Program.cs", program.EnforceLF()),
-                new Workspace.Buffer("generators/FibonacciGenerator.cs", processed, position)
+                new Buffer("Program.cs", program.EnforceLF()),
+                new Buffer("generators/FibonacciGenerator.cs", processed, position)
             });
 
             var request = new WorkspaceRequest(workspace, activeBufferId: "generators/FibonacciGenerator.cs");
@@ -191,8 +191,8 @@ namespace FibonacciTest
 
             var workspace = new Workspace(workspaceType: package.Name, buffers: new[]
             {
-                new Workspace.Buffer("Program.cs", program),
-                new Workspace.Buffer("generators/FibonacciGenerator.cs", processed, position)
+                new Buffer("Program.cs", program),
+                new Buffer("generators/FibonacciGenerator.cs", processed, position)
             });
 
             var request = new WorkspaceRequest(workspace, activeBufferId: "generators/FibonacciGenerator.cs");
@@ -261,11 +261,11 @@ namespace FibonacciTest
                 workspaceType: "console",
                 buffers: new[]
                 {
-                    new Workspace.Buffer("Program.cs", program.EnforceLF()),
-                    new Workspace.Buffer("generators/FibonacciGenerator.cs@codeRegion", processed, position)
+                    new Buffer("Program.cs", program.EnforceLF()),
+                    new Buffer("generators/FibonacciGenerator.cs@codeRegion", processed, position)
                 }, files: new[]
                 {
-                    new Workspace.File("generators/FibonacciGenerator.cs", generator.EnforceLF())
+                    new File("generators/FibonacciGenerator.cs", generator.EnforceLF())
                 });
 
             var request = new WorkspaceRequest(workspace, activeBufferId: "generators/FibonacciGenerator.cs@codeRegion");
@@ -331,11 +331,11 @@ namespace FibonacciTest
                 workspaceType: "console",
                 buffers: new[]
                 {
-                    new Workspace.Buffer("Program.cs", program),
-                    new Workspace.Buffer("generators/FibonacciGenerator.cs@codeRegion", processed, position)
+                    new Buffer("Program.cs", program),
+                    new Buffer("generators/FibonacciGenerator.cs@codeRegion", processed, position)
                 }, files: new[]
                 {
-                    new Workspace.File("generators/FibonacciGenerator.cs", generator)
+                    new File("generators/FibonacciGenerator.cs", generator)
                 });
 
             var request = new WorkspaceRequest(workspace, activeBufferId: "generators/FibonacciGenerator.cs@codeRegion");
@@ -382,10 +382,10 @@ namespace FibonacciTest
             var workspace = new Workspace(
                 workspaceType: "console",
                 buffers: new[] {
-                    new Workspace.Buffer("Program.cs", program),
-                    new Workspace.Buffer("generators/FibonacciGenerator.cs@codeRegion", processed, position)
+                    new Buffer("Program.cs", program),
+                    new Buffer("generators/FibonacciGenerator.cs@codeRegion", processed, position)
                 }, files: new[] {
-                    new Workspace.File("generators/FibonacciGenerator.cs", generator)
+                    new File("generators/FibonacciGenerator.cs", generator)
                 });
 
             var request = new WorkspaceRequest(workspace, activeBufferId: "generators/FibonacciGenerator.cs@codeRegion");
@@ -448,8 +448,8 @@ namespace FibonacciTest
 
             var workspace = new Workspace(workspaceType: "console", buffers: new[]
             {
-                new Workspace.Buffer("Program.cs", program),
-                new Workspace.Buffer("generators/FibonacciGenerator.cs", processed, position)
+                new Buffer("Program.cs", program),
+                new Buffer("generators/FibonacciGenerator.cs", processed, position)
             });
 
             var request = new WorkspaceRequest(workspace, activeBufferId: "generators/FibonacciGenerator.cs");
@@ -507,8 +507,8 @@ namespace FibonacciTest
 
             var workspace = new Workspace(workspaceType: "console", buffers: new[]
             {
-                new Workspace.Buffer("Program.cs", program),
-                new Workspace.Buffer("generators/FibonacciGenerator.cs", processed, position)
+                new Buffer("Program.cs", program),
+                new Buffer("generators/FibonacciGenerator.cs", processed, position)
             });
 
             var request = new WorkspaceRequest(workspace, activeBufferId: "generators/FibonacciGenerator.cs");
@@ -568,11 +568,11 @@ namespace FibonacciTest
                 workspaceType: "console",
                 buffers: new[]
                 {
-                    new Workspace.Buffer("Program.cs", program),
-                    new Workspace.Buffer("generators/FibonacciGenerator.cs@codeRegion", processed, position)
+                    new Buffer("Program.cs", program),
+                    new Buffer("generators/FibonacciGenerator.cs@codeRegion", processed, position)
                 }, files: new[]
                 {
-                    new Workspace.File("generators/FibonacciGenerator.cs", generator),
+                    new File("generators/FibonacciGenerator.cs", generator),
                 });
 
             var request = new WorkspaceRequest(workspace, activeBufferId: "generators/FibonacciGenerator.cs@codeRegion");
@@ -635,11 +635,11 @@ namespace FibonacciTest
                 workspaceType: "console",
                 buffers: new[]
                 {
-                    new Workspace.Buffer("Program.cs", program),
-                    new Workspace.Buffer("generators/FibonacciGenerator.cs@codeRegion", processed, position)
+                    new Buffer("Program.cs", program),
+                    new Buffer("generators/FibonacciGenerator.cs@codeRegion", processed, position)
                 }, files: new[]
                 {
-                    new Workspace.File("generators/FibonacciGenerator.cs", generator),
+                    new File("generators/FibonacciGenerator.cs", generator),
                 });
 
             var request = new WorkspaceRequest(workspace, activeBufferId: "generators/FibonacciGenerator.cs@codeRegion");
@@ -697,8 +697,8 @@ namespace FibonacciTest
             var package = await Package.Copy(await Default.ConsoleWorkspace());
             var workspace = new Workspace(workspaceType: package.Name, buffers: new[]
             {
-                new Workspace.Buffer("Program.cs", program),
-                new Workspace.Buffer("generators/FibonacciGenerator.cs", processed, position)
+                new Buffer("Program.cs", program),
+                new Buffer("generators/FibonacciGenerator.cs", processed, position)
             });
 
             var request = new WorkspaceRequest(workspace, activeBufferId: "generators/FibonacciGenerator.cs");

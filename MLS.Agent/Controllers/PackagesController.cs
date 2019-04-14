@@ -22,7 +22,7 @@ namespace MLS.Agent.Controllers
             {
                 var package = (Package) await _registry.Get(name);
                 var isBlazorSupported = package.CanSupportBlazor();
-                return Ok(value: new Microsoft.DotNet.Try.Protocol.Packaging.Package(isBlazorSupported));
+                return Ok(value: new Microsoft.DotNet.Try.Protocol.Package(isBlazorSupported));
             }
             catch (PackageNotFoundException ex)
             {

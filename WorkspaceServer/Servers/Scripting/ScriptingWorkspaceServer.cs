@@ -9,15 +9,12 @@ using Clockwise;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
-using Microsoft.DotNet.Try.Project.Extensions;
-using Microsoft.DotNet.Try.Project.Transformations;
+using Microsoft.DotNet.Try.Project;
 using Microsoft.DotNet.Try.Protocol;
-using Microsoft.DotNet.Try.Protocol.Diagnostics;
-using Microsoft.DotNet.Try.Protocol.Execution;
 using Pocket;
 using WorkspaceServer.Transformations;
 using static Pocket.Logger<WorkspaceServer.Servers.Scripting.ScriptingWorkspaceServer>;
-using Workspace = Microsoft.DotNet.Try.Protocol.Execution.Workspace;
+using Workspace = Microsoft.DotNet.Try.Protocol.Workspace;
 using WorkspaceServer.Servers.Roslyn;
 using Recipes;
 
@@ -33,13 +30,14 @@ namespace WorkspaceServer.Servers.Scripting
         }
 
         public async Task<RunResult> Run(WorkspaceRequest request, Budget budget = null)
-        {var workspace = request.Workspace;
+        {
+            var workspace = request.Workspace;
             budget = budget ?? new Budget();
 
             using (var operation = Log.OnEnterAndConfirmOnExit())
             using (var console = await ConsoleOutput.Capture(budget))
             {
-                workspace = await _transformer.TransformAsync(workspace, budget);
+                workspace = await _transformer.TransformAsync(workspace);
 
                 if (workspace.Files.Length != 1)
                 {
@@ -75,8 +73,7 @@ namespace WorkspaceServer.Servers.Scripting
                 var diagnostics = await ExtractDiagnostics(
                                       workspace,
                                       request.ActiveBufferId,
-                                      options,
-                                      budget);
+                                      options);
 
                 var output =
                     console.StandardOutput == ""
@@ -123,12 +120,9 @@ namespace WorkspaceServer.Servers.Scripting
         private async Task<(IReadOnlyCollection<SerializableDiagnostic> DiagnosticsInActiveBuffer, IReadOnlyCollection<SerializableDiagnostic> AllDiagnostics)> ExtractDiagnostics(
             Workspace workspace,
             BufferId activeBufferId,
-            ScriptOptions options,
-            Budget budget)
+            ScriptOptions options)
         {
-            budget = budget ?? new Budget();
-
-            workspace = await _transformer.TransformAsync(workspace, budget);
+            workspace = await _transformer.TransformAsync(workspace);
             var sourceFile = workspace.GetSourceFiles().Single();
             var code = sourceFile.Text.ToString();
             var compilation = CSharpScript.Create(code, options).GetCompilation();

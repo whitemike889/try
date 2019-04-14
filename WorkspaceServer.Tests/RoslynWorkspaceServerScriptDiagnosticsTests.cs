@@ -3,12 +3,13 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.DotNet.Try.Protocol;
-using Microsoft.DotNet.Try.Protocol.Execution;
 using WorkspaceServer.Servers.Roslyn;
 using WorkspaceServer.Servers.Scripting;
 using WorkspaceServer.Packaging;
 using Xunit;
 using Xunit.Abstractions;
+using Buffer = Microsoft.DotNet.Try.Protocol.Buffer;
+using Package = WorkspaceServer.Packaging.Package;
 
 namespace WorkspaceServer.Tests
 {
@@ -29,7 +30,7 @@ namespace WorkspaceServer.Tests
             var code = @"addd";
             var (processed, markLocation) = CodeManipulation.ProcessMarkup(code);
 
-            var ws = new Workspace(buffers: new[] { new Workspace.Buffer("", processed, markLocation) });
+            var ws = new Workspace(buffers: new[] { new Buffer("", processed, markLocation) });
             var request = new WorkspaceRequest(ws, activeBufferId: "");
             var server = GetLanguageService();
             var result = await server.GetDiagnostics(request);
