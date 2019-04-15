@@ -22,6 +22,9 @@ using Microsoft.Net.Http.Headers;
 using HtmlAgilityPack;
 using System.Web;
 using MLS.Agent.Controllers;
+using Microsoft.DotNet.Try.Project;
+using CodeManipulation = WorkspaceServer.Tests.CodeManipulation;
+using SourceFile = Microsoft.DotNet.Try.Protocol.ClientApi.SourceFile;
 
 namespace MLS.Agent.Tests
 {
@@ -194,7 +197,7 @@ namespace MLS.Agent.Tests
         [Fact]
         public async Task A_script_snippet_workspace_can_be_used_to_get_completions()
         {
-            var (processed, position) = CodeManipulation.ProcessMarkup("Console.$$");
+            var (processed, position) = WorkspaceServer.Tests.CodeManipulation.ProcessMarkup("Console.$$");
             using (var agent = new AgentService())
             {
                 var json = new WorkspaceRequest(

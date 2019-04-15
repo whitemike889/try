@@ -2,6 +2,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Assent;
 using FluentAssertions;
+using Microsoft.DotNet.Try.Project;
 using Microsoft.DotNet.Try.Protocol;
 using Recipes;
 using WorkspaceServer.Tests;

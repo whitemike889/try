@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis.Text;
-using Microsoft.DotNet.Try.Project.Generators;
+using Microsoft.DotNet.Try.Project;
 using Xunit;
 
 namespace WorkspaceServer.Tests

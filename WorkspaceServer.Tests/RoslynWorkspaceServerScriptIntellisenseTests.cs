@@ -11,6 +11,7 @@ using Xunit;
 using Xunit.Abstractions;
 using Buffer = Microsoft.DotNet.Try.Protocol.Buffer;
 using Package = WorkspaceServer.Packaging.Package;
+using Microsoft.DotNet.Try.Project;
 
 namespace WorkspaceServer.Tests
 {
@@ -151,7 +152,7 @@ public class Program
             var (processed, markLocation) = CodeManipulation.ProcessMarkup(markup);
 
             var ws = new Workspace(
-                files: new[] { new File("program.cs", CodeManipulation.EnforceLF(container)) },
+                files: new[] { new File("program.cs", container.EnforceLF()) },
                 buffers: new[] { new Buffer("program.cs@nesting", processed, markLocation) });
 
 

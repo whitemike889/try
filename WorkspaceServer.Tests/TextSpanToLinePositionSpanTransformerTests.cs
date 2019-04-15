@@ -2,7 +2,7 @@
 using Microsoft.CodeAnalysis.Text;
 using WorkspaceServer.Servers.Roslyn.Instrumentation;
 using Xunit;
-using Microsoft.DotNet.Try.Project.Generators;
+using Microsoft.DotNet.Try.Project;
 
 namespace WorkspaceServer.Tests
 {

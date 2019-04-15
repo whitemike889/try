@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.CodeAnalysis.Text;
+using Microsoft.DotNet.Try.Project;
 using Microsoft.DotNet.Try.Protocol;
 using Pocket;
 using WorkspaceServer.Models.Instrumentation;

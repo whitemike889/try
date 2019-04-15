@@ -1,5 +1,6 @@
 ﻿using Microsoft.DotNet.Try.Markdown;
 using Microsoft.DotNet.Try.Protocol;
+using WorkspaceServer;
 
 namespace MLS.Agent.Markdown
 {

@@ -12,6 +12,7 @@ using MLS.Agent.Markdown;
 using MLS.Agent.Tools;
 using WorkspaceServer;
 using WorkspaceServer.Packaging;
+using WorkspaceServer.Tests;
 using Xunit;
 
 namespace MLS.Agent.Tests.Markdown

@@ -4,7 +4,8 @@ using System.Linq;
 using FluentAssertions;
 using WorkspaceServer.Servers.Roslyn.Instrumentation;
 using Xunit;
-using Microsoft.DotNet.Try.Project.Generators;
+using Microsoft.DotNet.Try.Project;
+
 
 namespace WorkspaceServer.Tests.Instrumentation
 {

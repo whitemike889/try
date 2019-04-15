@@ -1,7 +1,6 @@
 ﻿using System;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Microsoft.DotNet.Try.Project.Generators;
+using Microsoft.DotNet.Try.Project;
+
 
 namespace WorkspaceServer.Tests
 {
