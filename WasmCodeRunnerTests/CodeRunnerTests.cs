@@ -60,7 +60,7 @@ namespace MLS.WasmCodeRunnerTests
         }
 
         [Fact]
-        public void It_can_run_a_Main_method_that_takes_string_array()
+        public void It_can_run_a_Main_method_that_takes_string_array_forwarding_the_arg_to_running_code()
         {
             /* Compiled from 
             using System;
