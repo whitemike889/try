@@ -1,9 +1,18 @@
-﻿namespace MLS.WasmCodeRunner
+﻿using Newtonsoft.Json;
+
+namespace MLS.WasmCodeRunner
 {
-    public class CompileResult
+    public class WasmCodeRunnerRequest
     {
-        public bool succeeded { get; set; }
-        public string base64assembly { get; set; }
-        public SerializableDiagnostic[] diagnostics { get; set; }
+        [JsonProperty("requestId")]
+        public string RequestId { get; set; }
+        [JsonProperty("succeeded")]
+        public bool Succeeded { get; set; }
+        [JsonProperty("base64assembly")]
+        public string Base64Assembly { get; set; }
+        [JsonProperty("diagnostics")]
+        public SerializableDiagnostic[] Diagnostics { get; set; }
+        [JsonProperty("runArgs", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public string RunArgs { get; set; }
     }
 }
