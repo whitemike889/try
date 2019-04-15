@@ -18,7 +18,14 @@ namespace WorkspaceServer.Packaging
             base("blazor", "MLS.Blazor")
         {
             _name = name;
-            _addPackages = addPackages;
+            _addPackages = addPackages ?? throw new ArgumentNullException(nameof(addPackages));
+
+            var requiredPackages = new List<string>
+            {
+                "Newtonsoft.Json"
+            };
+
+            _addPackages = addPackages.Concat(requiredPackages).Distinct().ToList();
         }
 
         public override async Task Initialize(DirectoryInfo directory, Budget budget = null)
@@ -42,16 +49,14 @@ namespace WorkspaceServer.Packaging
             AddEmbeddedResourceContentToProject(root);
             UpdateFileText(root, Path.Combine("wwwroot","index.html"), "/LocalCodeRunner/blazor-console", $"/LocalCodeRunner/{_name}");
 
-            var result = await dotnet.AddPackage("MLS.WasmCodeRunner", "1.0.7880001-alpha-c895bf25");
-
-            result.ThrowOnFailure();
+            
 
             foreach (var packageId in _addPackages)
             {
                 await dotnet.AddPackage(packageId);
             }
 
-            result = await dotnet.Build("-o runtime /bl", budget: budget);
+            var result = await dotnet.Build("-o runtime /bl", budget: budget);
             result.ThrowOnFailure();
 
             void AddRootNamespaceAndBlazorLinkerDirective()
@@ -71,7 +76,7 @@ namespace WorkspaceServer.Packaging
         {
             var wwwRootFiles = new[] { "index.html", "interop.js" };
             var pagesFiles = new[] { "Index.cshtml", "Index.cshtml.cs" };
-            var rootFiles = new[] { "Program.cs", "Startup.cs", "Linker.xml" };
+            var rootFiles = new[] { "Program.cs", "Startup.cs", "Linker.xml", "CodeRunner.cs", "InteropMessage.cs", "SerializableDiagnostic.cs", "WasmCodeRunnerRequest.cs", "WasmCodeRunnerResponse.cs" };
 
             WriteResourcesToLocation(wwwRootFiles, Path.Combine(root, "wwwroot"));
             WriteResourcesToLocation(pagesFiles, Path.Combine(root, "Pages"));

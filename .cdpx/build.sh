@@ -30,4 +30,3 @@ dotnet pack $REPO_ROOT/Microsoft.DotNet.Try.Project/Microsoft.DotNet.Try.Project
 
 dotnet pack $REPO_ROOT/MLS.Agent/MLS.Agent.csproj -c Release -o $PACKAGE_ROOT /p:NoPackageAnalysis=true
 dotnet pack $REPO_ROOT/MLS.Agent.Tools/MLS.Agent.Tools.csproj -c Release -o $PACKAGE_ROOT /p:NoPackageAnalysis=true
-dotnet pack $REPO_ROOT/WasmCodeRunner/MLS.WasmCodeRunner.csproj -c Release -o $PACKAGE_ROOT /p:NoPackageAnalysis=true

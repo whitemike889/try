@@ -1,5 +1,4 @@
 ﻿using Newtonsoft.Json;
-using Recipes;
 
 namespace MLS.WasmCodeRunner
 {
@@ -24,8 +23,9 @@ namespace MLS.WasmCodeRunner
         public SerializableDiagnostic[] Diagnostics { get; }
         [JsonProperty("runnerException")]
         public string RunnerException { get; }
+
         [JsonProperty("codeRunnerVersion")]
-        public string CodeRunnerVersion => VersionSensor.Version().AssemblyInformationalVersion;
+        public string CodeRunnerVersion => "VersionPlaceholder";
 
     }
 }
