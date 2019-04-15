@@ -110,10 +110,8 @@ namespace MLS.WasmCodeRunner
             {
                 return new string[] { };
             }
-            else
-            {
-                return SplitCommandLine(request.RunArgs);
-            }
+
+            return SplitCommandLine(request.RunArgs);
         }
         private static IEnumerable<string> SplitOnNewlines(string str)
         {
@@ -121,7 +119,7 @@ namespace MLS.WasmCodeRunner
             return str.Split('\n');
         }
 
-        private static string[] SplitCommandLine(string commandLine)
+        public static string[] SplitCommandLine(string commandLine)
         {
             var translatedArguments = new StringBuilder(commandLine);
             var escaped = false;
@@ -152,7 +150,7 @@ namespace MLS.WasmCodeRunner
             while (firstQuoteIndex != lastQuoteIndex)
             {
                 stringToTrim = stringToTrim.Remove(firstQuoteIndex, 1);
-                stringToTrim = stringToTrim.Remove(lastQuoteIndex - 1, 1); //-1 because we've shifted the indicies left by one
+                stringToTrim = stringToTrim.Remove(lastQuoteIndex - 1, 1);
                 firstQuoteIndex = stringToTrim.IndexOf('"');
                 lastQuoteIndex = stringToTrim.LastIndexOf('"');
             }
