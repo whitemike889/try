@@ -105,6 +105,8 @@
     <EmbeddedResource Include="..\WasmCodeRunner\SerializableDiagnostic.cs" />
     <EmbeddedResource Include="..\WasmCodeRunner\WasmCodeRunnerRequest.cs" />
     <EmbeddedResource Include="..\WasmCodeRunner\WasmCodeRunnerResponse.cs" />
+    <EmbeddedResource Include="..\WasmCodeRunner\CommandLineBuilderExtensions.cs" />
+    <EmbeddedResource Include="..\WasmCodeRunner\EntryPointDiscoverer.cs" />
   </ItemGroup>
 
 </Project>
