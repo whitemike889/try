@@ -4,7 +4,6 @@ using System.IO;
 using System.Threading.Tasks;
 using Clockwise;
 
-
 namespace WorkspaceServer.Packaging
 {
     public class PackageBuilder
@@ -30,7 +29,9 @@ namespace WorkspaceServer.Packaging
         public IPackageInitializer PackageInitializer { get; private set; }
 
         public DirectoryInfo Directory { get; set; }
+
         public bool CreateRebuildablePackage { get; internal set; }
+
         public bool BlazorSupported { get; private set; }
 
         public void CreateUsingDotnet(string template, string projectName = null)

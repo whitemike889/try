@@ -18,7 +18,7 @@ namespace Microsoft.DotNet.Try.Markdown
 
             FileName = fileName;
 
-            RelativePath.ThrowIfContainsDisallowedFilePathChars(FileName);
+            ThrowIfContainsDisallowedFilePathChars(FileName);
 
             Directory = new RelativeDirectoryPath(directoryPath);
 
@@ -38,7 +38,7 @@ namespace Microsoft.DotNet.Try.Markdown
 
             var directoryPath = filePath.Substring(0, lastDirectorySeparatorPos);
 
-            directoryPath = RelativePath.NormalizeDirectory(directoryPath);
+            directoryPath = NormalizeDirectory(directoryPath);
 
             return (directoryPath, fileName);
         }
@@ -76,7 +76,7 @@ namespace Microsoft.DotNet.Try.Markdown
                 return true;
             }
 
-            return string.Equals((string) FileName, (string) other.FileName) &&
+            return string.Equals(FileName, other.FileName) &&
                    Equals(Directory, other.Directory);
         }
 

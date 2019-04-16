@@ -1,28 +1,77 @@
-﻿using Microsoft.DotNet.Try.Markdown;
-using MLS.Agent;
-using System;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 
 namespace WorkspaceServer.Packaging
 {
-    public class PackageAsset
+    public class Package2 : IEnumerable<PackageAsset>
     {
-        private IDirectoryAccessor _directoryAccessor;
+        private readonly Dictionary<Type, PackageAsset> _assets = new Dictionary<Type, PackageAsset>();
 
-        public PackageAsset(IDirectoryAccessor directoryAccessor)
+        public Package2(IDirectoryAccessor directoryAccessor)
         {
-            _directoryAccessor = directoryAccessor ?? throw new System.ArgumentNullException(nameof(directoryAccessor));
-            Directory = (DirectoryInfo)_directoryAccessor.GetFullyQualifiedPath(new RelativeDirectoryPath("."));
+            DirectoryAccessor = directoryAccessor;
         }
 
-        public DirectoryInfo Directory { get; set; }
+        protected IDirectoryAccessor DirectoryAccessor { get; }
 
-        public IEnumerable<FileInfo> GetFiles()
+        public void Add(PackageAsset asset)
         {
-            return _directoryAccessor.GetAllFilesRecursively()
-                .Select(relativePath => (FileInfo) _directoryAccessor.GetFullyQualifiedPath(relativePath));
+            if (asset == null)
+            {
+                throw new ArgumentNullException(nameof(asset));
+            }
+
+            var packageRoot = DirectoryAccessor.GetFullyQualifiedRoot().FullName;
+            var assetRoot = asset.DirectoryAccessor.GetFullyQualifiedRoot().FullName;
+
+            if (!packageRoot.Contains(assetRoot))
+            {
+                throw new ArgumentException("Asset must be located under package path");
+            }
+
+            _assets.Add(asset.GetType(), asset);
+        }
+
+        public IEnumerator<PackageAsset> GetEnumerator()
+        {
+            return _assets.Values.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+    }
+
+    public abstract class PackageAsset
+    {
+        protected PackageAsset(IDirectoryAccessor directoryAccessor)
+        {
+            DirectoryAccessor = directoryAccessor ?? throw new ArgumentNullException(nameof(directoryAccessor));
+        }
+
+        protected internal IDirectoryAccessor DirectoryAccessor { get; }
+    }
+
+    public class ProjectAsset : PackageAsset
+    {
+        public ProjectAsset(IDirectoryAccessor directoryAccessor) : base(directoryAccessor)
+        {
+        }
+
+        public class WebAssemblyAsset : PackageAsset
+        {
+            public WebAssemblyAsset(IDirectoryAccessor directoryAccessor) : base(directoryAccessor)
+            {
+            }
+        }
+
+        public class ContentAsset : PackageAsset
+        {
+            public ContentAsset(IDirectoryAccessor directoryAccessor) : base(directoryAccessor)
+            {
+            }
         }
     }
 }

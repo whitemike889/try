@@ -11,8 +11,10 @@ namespace WorkspaceServer.Tests
     public class BlazorPackageInitializerTests
     {
         [Fact]
-        public void Requires_MLS_Blazor_directory()
+        public void WORKAROUND_Requires_MLS_Blazor_directory_because_of_aspnet_AspNetCore_issues_7902()
         {
+            // https://github.com/aspnet/AspNetCore/issues/7902
+
             var empty = Create.EmptyWorkspace();
 
             var initializer = new BlazorPackageInitializer(

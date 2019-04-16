@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.DotNet.Try.Markdown;
-using MLS.Agent.Markdown;
 
 namespace WorkspaceServer.Tests
 {
@@ -13,10 +12,14 @@ namespace WorkspaceServer.Tests
         private readonly DirectoryInfo _rootDirToAddFiles;
         private Dictionary<string, string> _files;
 
-        public InMemoryDirectoryAccessor(DirectoryInfo workingDirectory, DirectoryInfo rootDirectoryToAddFiles = null)
+        public InMemoryDirectoryAccessor(
+            DirectoryInfo workingDirectory = null,
+            DirectoryInfo rootDirectoryToAddFiles = null)
         {
-            _rootDirToAddFiles = rootDirectoryToAddFiles ?? workingDirectory;
-            WorkingDirectory = workingDirectory;
+            WorkingDirectory = workingDirectory ??
+                               new DirectoryInfo(Directory.GetCurrentDirectory());
+            _rootDirToAddFiles = rootDirectoryToAddFiles ??
+                                 WorkingDirectory;
             _files = new Dictionary<string, string>();
         }
 
@@ -29,7 +32,7 @@ namespace WorkspaceServer.Tests
         }
 
         public bool FileExists(RelativeFilePath filePath)
-        { 
+        {
             return _files.ContainsKey(GetFullyQualifiedPath(filePath).FullName);
         }
 
@@ -66,9 +69,9 @@ namespace WorkspaceServer.Tests
         {
             var newPath = WorkingDirectory.Combine(relativePath);
             return new InMemoryDirectoryAccessor(newPath)
-            {
-                _files = _files
-            };
+                   {
+                       _files = _files
+                   };
         }
 
         public IEnumerable<RelativeFilePath> GetAllFilesRecursively()
