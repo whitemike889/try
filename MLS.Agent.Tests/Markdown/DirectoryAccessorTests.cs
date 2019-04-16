@@ -11,7 +11,7 @@ namespace MLS.Agent.Tests.Markdown
 {
     public abstract class DirectoryAccessorTests
     {
-        public abstract IDirectoryAccessor GetDirectory(DirectoryInfo dirInfo);
+        public abstract IDirectoryAccessor GetDirectory(DirectoryInfo dirInfo, DirectoryInfo rootDirectoryToAddFiles = null);
 
         [Fact]
         public void When_the_file_exists_FileExists_returns_true()
@@ -41,8 +41,9 @@ namespace MLS.Agent.Tests.Markdown
         [InlineData(@"..\Program.cs")]
         public void When_the_filepath_contains_a_path_that_looks_upward_in_tree_then_FileExists_returns_the_text(string filePath)
         {
-            var testDir = new DirectoryInfo(Path.Combine(TestAssets.SampleConsole.FullName, "Subdirectory"));
-            GetDirectory(testDir).FileExists(new RelativeFilePath(filePath)).Should().BeTrue();
+            var rootDirectoryToAddFiles = TestAssets.SampleConsole;
+            var testDir = new DirectoryInfo(Path.Combine(rootDirectoryToAddFiles.FullName, "Subdirectory"));
+            GetDirectory(testDir, rootDirectoryToAddFiles).FileExists(new RelativeFilePath(filePath)).Should().BeTrue();
         }
 
         [Fact]
@@ -66,8 +67,10 @@ namespace MLS.Agent.Tests.Markdown
         [InlineData(@"..\Program.cs")]
         public void When_the_filepath_contains_a_path_that_looks_upward_in_tree_then_ReadAllText_returns_the_text(string filePath)
         {
-            var testDir = new DirectoryInfo(Path.Combine(TestAssets.SampleConsole.FullName, "Subdirectory"));
-            GetDirectory(testDir).ReadAllText(new RelativeFilePath(filePath)).Should().Contain("Hello World!");
+            var rootDirectoryToAddFiles = TestAssets.SampleConsole;
+            var testDir = new DirectoryInfo(Path.Combine(rootDirectoryToAddFiles.FullName, "Subdirectory"));
+            var value = GetDirectory(testDir, rootDirectoryToAddFiles).ReadAllText(new RelativeFilePath(filePath));
+            value.Should().Contain("Hello World!");
         }
 
         [Fact]
@@ -82,7 +85,7 @@ namespace MLS.Agent.Tests.Markdown
 
     public class FileSystemDirectoryAccessorTests : DirectoryAccessorTests
     {
-        public override IDirectoryAccessor GetDirectory(DirectoryInfo directoryInfo)
+        public override IDirectoryAccessor GetDirectory(DirectoryInfo directoryInfo, DirectoryInfo rootDirectoryToAddFiles = null)
         {
             return new FileSystemDirectoryAccessor(directoryInfo);
         }
@@ -90,9 +93,9 @@ namespace MLS.Agent.Tests.Markdown
 
     public class InMemoryDirectoryAccessorTests : DirectoryAccessorTests
     {
-        public override IDirectoryAccessor GetDirectory(DirectoryInfo rootDirectory)
+        public override IDirectoryAccessor GetDirectory(DirectoryInfo rootDirectory, DirectoryInfo rootDirectoryToAddFiles = null)
         {
-            return new InMemoryDirectoryAccessor(rootDirectory)
+            return new InMemoryDirectoryAccessor(rootDirectory, rootDirectoryToAddFiles)
             {
                ("BasicConsoleApp.csproj",
 @"<Project Sdk=""Microsoft.NET.Sdk"">
