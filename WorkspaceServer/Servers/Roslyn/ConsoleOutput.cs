@@ -24,15 +24,10 @@ namespace WorkspaceServer.Servers.Roslyn
         {
         }
 
-        public static async Task<ConsoleOutput> Capture(Budget budget = null)
+        public static async Task<ConsoleOutput> Capture()
         {
-            budget = budget ?? new TimeBudget(TimeSpan.FromSeconds(15));
-
             var redirector = new ConsoleOutput();
-
-            budget.CancellationToken.Register(redirector.Dispose);
-
-            await consoleLock.WaitAsync(budget.CancellationToken);
+            await consoleLock.WaitAsync();
 
             try
             {

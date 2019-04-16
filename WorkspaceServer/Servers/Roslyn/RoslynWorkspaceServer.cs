@@ -219,7 +219,7 @@ namespace WorkspaceServer.Servers.Roslyn
                         requestId: request.RequestId);
 
                     compileResult.AddFeature(new ProjectDiagnostics(result.ProjectDiagnostics));
-
+                  
                     return compileResult;
                 }
             }

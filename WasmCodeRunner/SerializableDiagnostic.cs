@@ -13,11 +13,15 @@ namespace MLS.WasmCodeRunner
             Severity = severity;
             Id = id;
         }
-
+        [JsonProperty("start")]
         public int Start { get; }
+        [JsonProperty("end")]
         public int End { get; }
+        [JsonProperty("message")]
         public string Message { get; }
+        [JsonProperty("severity")]
         public int Severity { get; }
+        [JsonProperty("id")]
         public string Id { get; }
     }
 }

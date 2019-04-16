@@ -1,14 +1,18 @@
-﻿namespace MLS.WasmCodeRunner
+﻿using Newtonsoft.Json;
+
+namespace MLS.WasmCodeRunner
 {
     public class InteropMessage<T>
     {
         public InteropMessage(int sequence, T data)
         {
-            this.sequence = sequence;
-            this.data = data;
+            Sequence = sequence;
+            Data = data;
         }
 
-        public int sequence { get; set; }
-        public T data { get; set; }
+        [JsonProperty("sequence")]
+        public int Sequence { get; set; }
+        [JsonProperty("data")]
+        public T Data { get; set; }
     }
 }

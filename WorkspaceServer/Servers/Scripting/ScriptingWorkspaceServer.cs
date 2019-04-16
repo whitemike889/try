@@ -35,7 +35,7 @@ namespace WorkspaceServer.Servers.Scripting
             budget = budget ?? new Budget();
 
             using (var operation = Log.OnEnterAndConfirmOnExit())
-            using (var console = await ConsoleOutput.Capture(budget))
+            using (var console = await ConsoleOutput.Capture())
             {
                 workspace = await _transformer.TransformAsync(workspace);
 

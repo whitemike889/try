@@ -99,6 +99,14 @@
     <EmbeddedResource Include="..\MLS.Blazor\wwwroot\interop.js" />
     <EmbeddedResource Include="..\MLS.Blazor\Pages\Index.cshtml" />
     <EmbeddedResource Include="..\MLS.Blazor\Pages\Index.cshtml.cs" />
+
+    <EmbeddedResource Include="..\WasmCodeRunner\CodeRunner.cs" />
+    <EmbeddedResource Include="..\WasmCodeRunner\InteropMessage.cs" />
+    <EmbeddedResource Include="..\WasmCodeRunner\SerializableDiagnostic.cs" />
+    <EmbeddedResource Include="..\WasmCodeRunner\WasmCodeRunnerRequest.cs" />
+    <EmbeddedResource Include="..\WasmCodeRunner\WasmCodeRunnerResponse.cs" />
+    <EmbeddedResource Include="..\WasmCodeRunner\CommandLineBuilderExtensions.cs" />
+    <EmbeddedResource Include="..\WasmCodeRunner\EntryPointDiscoverer.cs" />
   </ItemGroup>
 
 </Project>

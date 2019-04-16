@@ -1,7 +1,6 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.Try.Project;
 using Microsoft.DotNet.Try.Protocol;
-using Workspace = Microsoft.DotNet.Try.Protocol.Workspace;
 
 namespace WorkspaceServer.Servers.Roslyn
 {

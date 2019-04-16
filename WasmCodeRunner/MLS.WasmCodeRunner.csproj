@@ -8,15 +8,6 @@
   
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
-    <PackageReference Include="CdpxBuildProps" Version="0.1.6040001">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="VersionSensor" Version="0.1.5650001" />
+    <PackageReference Include="system.commandline.experimental" Version="0.2.0-alpha.19176.2" />
   </ItemGroup>
-
-  <ImportGroup>
-    <Import Project="AssemblyInfo.props" Condition="Exists('AssemblyInfo.props')" />
-  </ImportGroup>
-
 </Project>

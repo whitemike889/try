@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.CommandLine;
+using System.CommandLine.Builder;
+using System.CommandLine.Invocation;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -7,71 +10,68 @@ using Newtonsoft.Json;
 
 namespace MLS.WasmCodeRunner
 {
+
     public class CodeRunner
     {
-        public static InteropMessage<RunResponse> ProcessCompileResult(string message)
+        public static InteropMessage<WasmCodeRunnerResponse> ProcessRunRequest(string message)
         {
-            var messageObject = JsonConvert.DeserializeObject<InteropMessage<CompileResult>>(message);
-            if (messageObject.data.base64assembly == null && messageObject.data.diagnostics == null)
+            var messageObject = JsonConvert.DeserializeObject<InteropMessage<WasmCodeRunnerRequest>>(message);
+            if (messageObject.Data.Base64Assembly == null && messageObject.Data.Diagnostics == null)
             {
                 // Something was posted that wasn't meant for us
                 return null;
             }
 
-            int sequence = messageObject.sequence;
-            var compileResult = messageObject.data;
+            var sequence = messageObject.Sequence;
+            var runRequest = messageObject.Data;
 
-            if (compileResult.succeeded)
+            if (runRequest.Succeeded)
             {
-                return ProcessCompileResult(compileResult, sequence);
+                return ExecuteRunRequest(runRequest, sequence);
             }
-            else
-            {
-                var diagnostics = compileResult.diagnostics.Select(d => d.Message);
-                return new InteropMessage<RunResponse>(sequence, new RunResponse(false, null, diagnostics.ToArray(), null, null));
-            }
+
+            var diagnostics = runRequest.Diagnostics.Select(d => d.Message);
+            return new InteropMessage<WasmCodeRunnerResponse>(sequence, new WasmCodeRunnerResponse(false, null, diagnostics.ToArray(), null, null));
         }
 
-        public static InteropMessage<RunResponse> ProcessCompileResult(CompileResult compileResult, int sequence)
+
+        public static InteropMessage<WasmCodeRunnerResponse> ExecuteRunRequest(WasmCodeRunnerRequest runRequest, int sequence)
         {
-            List<string> output = new List<string>();
+            var output = new List<string>();
             string runnerException = null;
-            var bytes = Convert.FromBase64String(compileResult.base64assembly);
-            var writer = new StringWriter();
+            var bytes = Convert.FromBase64String(runRequest.Base64Assembly);
+            
+            var stdOut = new StringWriter();
+            var stdError = new StringWriter();
+            var originalStdOut = Console.Out;
+            var originalStdError = Console.Error;
             try
             {
                 var assembly = Assembly.Load(bytes);
 
-                Console.SetOut(writer);
+                Console.SetOut(stdOut);
+                Console.SetError(stdError);
 
-                if (assembly.EntryPoint != null)
-                {
-                    assembly.EntryPoint.Invoke(null, null);
-                }
-                else
-                {
-                    var main = assembly.GetTypes().
-                       SelectMany(t => t.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance))
-                       .FirstOrDefault(m => m.Name == "Main");
+                var main = EntryPointDiscoverer.FindStaticEntryMethod(assembly);
 
-                    if (main == null)
-                    {
-                        var result = new RunResponse(
-                            succeeded: false, 
-                            exception: null,
-                            output: new[] { "error CS5001: Program does not contain a static 'Main' method suitable for an entry point" },
-                            diagnostics: Array.Empty<SerializableDiagnostic>(),
-                            runnerException: null);
+                var args = runRequest.RunArgs;
 
-                        return new InteropMessage<RunResponse>(sequence, result);
-                    }
+                var builder = new CommandLineBuilder()
+                    .ConfigureRootCommandFromMethod(main)
+                    .UseDefaults();
 
-                    var args = main.GetParameters().Length > 0
-                        ? new[] { new string[] { } }
-                        : new object[] { };
+                var parser = builder.Build();
+                parser.InvokeAsync(args).GetAwaiter().GetResult();
 
-                    main.Invoke(null, args);
-                }
+            }
+            catch (InvalidProgramException)
+            {
+                var result = new WasmCodeRunnerResponse(succeeded: false, exception: null,
+                    output: new[] { "error CS5001: Program does not contain a static 'Main' method suitable for an entry point" },
+                    diagnostics: Array.Empty<SerializableDiagnostic>(),
+                    runnerException: null);
+
+                return new InteropMessage<WasmCodeRunnerResponse>(sequence, result);
             }
             catch (Exception e)
             {
@@ -91,19 +91,26 @@ namespace MLS.WasmCodeRunner
                 output.AddRange(SplitOnNewlines(e.ToString()));
             }
 
-            output.AddRange(SplitOnNewlines(writer.ToString()));
+            var errors = stdError.ToString();
+            if (!string.IsNullOrWhiteSpace(errors))
+            {
+                runnerException = errors;
+                output.AddRange(SplitOnNewlines(errors));
+            }
 
-            var rb = new RunResponse(
+            output.AddRange(SplitOnNewlines(stdOut.ToString()));
+
+            var rb = new WasmCodeRunnerResponse(
                 succeeded: true,
                 exception: null,
                 output: output.ToArray(),
                 diagnostics: null,
                 runnerException: runnerException);
 
-            return new InteropMessage<RunResponse>(sequence, rb);
+            return new InteropMessage<WasmCodeRunnerResponse>(sequence, rb);
         }
 
-        private static string[] SplitOnNewlines(string str)
+        private static IEnumerable<string> SplitOnNewlines(string str)
         {
             str = str.Replace("\r\n", "\n");
             return str.Split('\n');

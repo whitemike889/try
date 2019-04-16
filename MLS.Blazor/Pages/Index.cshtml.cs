@@ -37,7 +37,7 @@ namespace MLS.Blazor.Pages
         {
             try
             {
-                var result = CodeRunner.ProcessCompileResult(message);
+                var result = CodeRunner.ProcessRunRequest(message);
                 if (result != null)
                 {
                     await PostMessage(JObject.FromObject(result).ToString());
