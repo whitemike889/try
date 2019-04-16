@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.CommandLine;
+using System.CommandLine.Builder;
+using System.CommandLine.Invocation;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using Newtonsoft.Json;
 
 namespace MLS.WasmCodeRunner
@@ -38,41 +40,38 @@ namespace MLS.WasmCodeRunner
             var output = new List<string>();
             string runnerException = null;
             var bytes = Convert.FromBase64String(runRequest.Base64Assembly);
-            var writer = new StringWriter();
+            
+            var stdOut = new StringWriter();
+            var stdError = new StringWriter();
+            var originalStdOut = Console.Out;
+            var originalStdError = Console.Error;
             try
             {
                 var assembly = Assembly.Load(bytes);
 
-                var currentOut = Console.Out;
+                Console.SetOut(stdOut);
+                Console.SetError(stdError);
 
-                Console.SetOut(writer);
+                var main = EntryPointDiscoverer.FindStaticEntryMethod(assembly);
 
-                if (assembly.EntryPoint != null)
-                {
-                    assembly.EntryPoint.Invoke(null, null);
-                }
-                else
-                {
-                    var main = assembly.GetTypes().
-                       SelectMany(t => t.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance))
-                       .FirstOrDefault(m => m.Name == "Main");
+                var args = runRequest.RunArgs;
 
-                    if (main == null)
-                    {
-                        var result = new WasmCodeRunnerResponse(succeeded: false, exception: null,
-                            output: new[] { "error CS5001: Program does not contain a static 'Main' method suitable for an entry point" },
-                            diagnostics: Array.Empty<SerializableDiagnostic>(),
-                            runnerException: null);
+                var builder = new CommandLineBuilder()
+                    .ConfigureRootCommandFromMethod(main)
+                    .UseDefaults();
 
-                        return new InteropMessage<WasmCodeRunnerResponse>(sequence, result);
-                    }
+                var parser = builder.Build();
+                parser.InvokeAsync(args).GetAwaiter().GetResult();
 
-                    var args = main.GetParameters().Length > 0
-                        ? new[] { ExtractCommandLineArgs(runRequest) }
-                        : new object[] { };
+            }
+            catch (InvalidProgramException)
+            {
+                var result = new WasmCodeRunnerResponse(succeeded: false, exception: null,
+                    output: new[] { "error CS5001: Program does not contain a static 'Main' method suitable for an entry point" },
+                    diagnostics: Array.Empty<SerializableDiagnostic>(),
+                    runnerException: null);
 
-                    main.Invoke(null, args);
-                }
+                return new InteropMessage<WasmCodeRunnerResponse>(sequence, result);
             }
             catch (Exception e)
             {
@@ -92,7 +91,14 @@ namespace MLS.WasmCodeRunner
                 output.AddRange(SplitOnNewlines(e.ToString()));
             }
 
-            output.AddRange(SplitOnNewlines(writer.ToString()));
+            var errors = stdError.ToString();
+            if (!string.IsNullOrWhiteSpace(errors))
+            {
+                runnerException = errors;
+                output.AddRange(SplitOnNewlines(errors));
+            }
+
+            output.AddRange(SplitOnNewlines(stdOut.ToString()));
 
             var rb = new WasmCodeRunnerResponse(
                 succeeded: true,
@@ -104,60 +110,10 @@ namespace MLS.WasmCodeRunner
             return new InteropMessage<WasmCodeRunnerResponse>(sequence, rb);
         }
 
-        private static string[] ExtractCommandLineArgs(WasmCodeRunnerRequest request)
-        {
-            if (request.RunArgs == null)
-            {
-                return new string[] { };
-            }
-
-            return SplitCommandLine(request.RunArgs);
-        }
         private static IEnumerable<string> SplitOnNewlines(string str)
         {
             str = str.Replace("\r\n", "\n");
             return str.Split('\n');
         }
-
-        public static string[] SplitCommandLine(string commandLine)
-        {
-            var translatedArguments = new StringBuilder(commandLine);
-            var escaped = false;
-            for (var i = 0; i < translatedArguments.Length; i++)
-            {
-                if (translatedArguments[i] == '"')
-                {
-                    escaped = !escaped;
-                }
-                if (translatedArguments[i] == ' ' && !escaped)
-                {
-                    translatedArguments[i] = '\n';
-                }
-            }
-
-            var toReturn = translatedArguments.ToString().Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
-            for (var i = 0; i < toReturn.Length; i++)
-            {
-                toReturn[i] = RemoveMatchingQuotes(toReturn[i]);
-            }
-            return toReturn;
-        }
-
-        private static string RemoveMatchingQuotes(string stringToTrim)
-        {
-            var firstQuoteIndex = stringToTrim.IndexOf('"');
-            var lastQuoteIndex = stringToTrim.LastIndexOf('"');
-            while (firstQuoteIndex != lastQuoteIndex)
-            {
-                stringToTrim = stringToTrim.Remove(firstQuoteIndex, 1);
-                stringToTrim = stringToTrim.Remove(lastQuoteIndex - 1, 1);
-                firstQuoteIndex = stringToTrim.IndexOf('"');
-                lastQuoteIndex = stringToTrim.LastIndexOf('"');
-            }
-
-            return stringToTrim;
-        }
     }
-
-
 }

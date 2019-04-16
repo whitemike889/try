@@ -161,7 +161,9 @@ class D
                     Base64Assembly = encodedAssembly
                 };
 
-                CodeRunner.ExecuteRunRequest(runRequest, 1).Data.RunnerException.Should().Be("Missing type `C`");
+                var response = CodeRunner.ExecuteRunRequest(runRequest, 1);
+
+                response.Data.RunnerException.Should().Match("*Could not load type 'C' from assembly*");
             }
         }
 

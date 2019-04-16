@@ -97,7 +97,7 @@ namespace WorkspaceServer.Packaging
             // The directory structure for the blazor packages is as follows
             // project |--> packTarget
             //         |--> runner-abc 
-            // The packTarget is the project that contains this packaga
+            // The packTarget is the project that contains this package
             //Hence the parent directory must be looked for the blazor runner
             if (_canSupportBlazor == null)
             {

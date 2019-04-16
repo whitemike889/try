@@ -4,6 +4,8 @@ namespace MLS.WasmCodeRunner
 {
     public class WasmCodeRunnerRequest
     {
+        private string _runArgs;
+
         [JsonProperty("requestId")]
         public string RequestId { get; set; }
         [JsonProperty("succeeded")]
@@ -12,7 +14,12 @@ namespace MLS.WasmCodeRunner
         public string Base64Assembly { get; set; }
         [JsonProperty("diagnostics")]
         public SerializableDiagnostic[] Diagnostics { get; set; }
+
         [JsonProperty("runArgs", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public string RunArgs { get; set; }
+        public string RunArgs
+        {
+            get => _runArgs ?? string.Empty;
+            set => _runArgs = value;
+        }
     }
 }

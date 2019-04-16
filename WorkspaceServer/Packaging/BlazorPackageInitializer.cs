@@ -48,9 +48,7 @@ namespace WorkspaceServer.Packaging
             DeleteUnusedFilesFromTemplate(root);
             AddEmbeddedResourceContentToProject(root);
             UpdateFileText(root, Path.Combine("wwwroot","index.html"), "/LocalCodeRunner/blazor-console", $"/LocalCodeRunner/{_name}");
-
             
-
             foreach (var packageId in _addPackages)
             {
                 await dotnet.AddPackage(packageId);

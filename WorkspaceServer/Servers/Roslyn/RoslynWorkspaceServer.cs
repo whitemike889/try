@@ -219,9 +219,20 @@ namespace WorkspaceServer.Servers.Roslyn
                         requestId: request.RequestId);
 
                     compileResult.AddFeature(new ProjectDiagnostics(result.ProjectDiagnostics));
-
+                    FindEntryPoint(result.Compilation, compileResult);
                     return compileResult;
                 }
+            }
+        }
+
+        private void FindEntryPoint(Compilation resultCompilation, CompileResult compileResult)
+        {
+            var discovery = new EntryPointDiscovery(resultCompilation);
+            var entryPoint =  discovery.ResolveEntryPoint();
+            if (entryPoint != null)
+            {
+                var parameters = entryPoint.Parameters.Select(p => new SignatureParameter(p.Ordinal, p.MetadataName, p.Type.ToDisplayString()));
+                compileResult.AddFeature(new CompilationEntryPoint(entryPoint.FullyQualifiedName(), parameters, entryPoint.IsAsync));
             }
         }
 
