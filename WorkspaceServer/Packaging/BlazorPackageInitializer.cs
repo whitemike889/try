@@ -22,8 +22,7 @@ namespace WorkspaceServer.Packaging
 
             var requiredPackages = new List<string>
             {
-                "Newtonsoft.Json",
-                "system.commandline.experimental"
+                "Newtonsoft.Json"
             };
 
             _addPackages = addPackages.Concat(requiredPackages).Distinct().ToList();
@@ -54,6 +53,8 @@ namespace WorkspaceServer.Packaging
             {
                 await dotnet.AddPackage(packageId);
             }
+
+            await dotnet.AddPackage("System.CommandLine.Experimental", "0.2.0-alpha.19176.2");
 
             var result = await dotnet.Build("-o runtime /bl", budget: budget);
             result.ThrowOnFailure();
