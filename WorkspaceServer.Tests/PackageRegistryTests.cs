@@ -18,8 +18,8 @@ namespace WorkspaceServer.Tests
             registry.Add(packageName,
                 options => options.CreateUsingDotnet("console"));
 
-            var package1 = await registry.Get(packageName);
-            var package2 = await registry.Get(packageName);
+            var package1 = await registry.Get<IPackage>(packageName);
+            var package2 = await registry.Get<IPackage>(packageName);
 
             package1.Should().BeSameAs(package2);
         }

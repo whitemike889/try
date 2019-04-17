@@ -13,7 +13,7 @@ namespace WorkspaceServer
     public class PackageRegistry : IEnumerable<Task<PackageBuilder>>
     {
         private readonly ConcurrentDictionary<string, Task<PackageBuilder>> _packageBuilders = new ConcurrentDictionary<string, Task<PackageBuilder>>();
-        private readonly ConcurrentDictionary<string, Task<PackageBase>> _packages = new ConcurrentDictionary<string, Task<PackageBase>>();
+        private readonly ConcurrentDictionary<string, Task<IPackage>> _packages = new ConcurrentDictionary<string, Task<IPackage>>();
         private readonly List<IPackageDiscoveryStrategy> _strategies = new List<IPackageDiscoveryStrategy>();
         private readonly bool _createRebuildablePackage;
 
@@ -59,8 +59,9 @@ namespace WorkspaceServer
             configure(packageBuilder);
             _packageBuilders.TryAdd(name, Task.FromResult(packageBuilder));
         }
-      
-        public async Task<PackageBase> Get(string packageName, Budget budget = null)
+
+        public async Task<T> Get<T>(string packageName, Budget budget = null)
+            where T : IPackage
         {
             if (packageName == "script")
             {
@@ -69,6 +70,13 @@ namespace WorkspaceServer
 
             var package = await _packages.GetOrAdd(packageName, async name =>
             {
+
+
+
+
+
+
+
                 var packageBuilder = await _packageBuilders.GetOrAdd(
                     name,
                     async name2 =>
@@ -92,7 +100,7 @@ namespace WorkspaceServer
                 return p;
             });
 
-            return package;
+            return (T) package;
         }
 
         public static PackageRegistry CreateForTryMode(DirectoryInfo project, DirectoryInfo addSource = null)

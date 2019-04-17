@@ -59,17 +59,18 @@ namespace MLS.Agent.Markdown
             CodeBlockAnnotations annotations,
             PackageRegistry packageRegistry)
         {
-            if (annotations.Package != null && 
-                await packageRegistry.Get(annotations.Package) is Package installedPackage)
+            if (annotations.Package != null &&
+                await packageRegistry.Get<IHaveADirectory>(annotations.Package)
+                    is IHaveADirectory package)
             {
-                if (File.Exists(installedPackage.Name))
+                if (File.Exists(package.Name))
                 {
                     return null;
                 }
 
-                if (installedPackage?.Directory != null)
+                if (package.Directory != null)
                 {
-                    return new FileSystemDirectoryAccessor(installedPackage.Directory);
+                    return new FileSystemDirectoryAccessor(package.Directory);
                 }
             }
 

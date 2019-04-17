@@ -22,7 +22,7 @@ namespace WorkspaceServer.Tests
             addedBuilder.BlazorSupported.Should().BeTrue();
 
 
-            var package = await registry.Get("runner-test");
+            var package = await registry.Get<IHaveADirectory>("runner-test");
             package.Should().NotBeNull();
 
             package.Directory.Name.Should().Be("MLS.Blazor");

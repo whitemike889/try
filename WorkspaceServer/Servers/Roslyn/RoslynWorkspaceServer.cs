@@ -51,7 +51,7 @@ namespace WorkspaceServer.Servers.Roslyn
                 throw new ArgumentNullException(nameof(registry));
             }
             
-            getPackageByName = async s => await registry.Get(s) as Package;
+            getPackageByName = async s => await registry.Get<Package>(s);
         }
 
         public async Task<CompletionResult> GetCompletionList(WorkspaceRequest request, Budget budget)

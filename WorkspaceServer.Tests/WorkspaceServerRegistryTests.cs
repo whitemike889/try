@@ -10,6 +10,7 @@ using Xunit;
 using Xunit.Abstractions;
 using FluentAssertions.Extensions;
 using Microsoft.DotNet.Try.Protocol;
+using WorkspaceServer.Packaging;
 using Package = WorkspaceServer.Packaging.Package;
 
 namespace WorkspaceServer.Tests
@@ -35,7 +36,7 @@ namespace WorkspaceServer.Tests
             registry.Add(packageName,
                          options => options.CreateUsingDotnet("console"));
 
-            var package = (Package) await registry.Get(packageName);
+            var package = await registry.Get<ICreateAWorkspace>(packageName);
 
             var workspace = await package.CreateRoslynWorkspaceForRunAsync(new TimeBudget(30.Seconds()));
 
@@ -87,10 +88,11 @@ namespace Twilio_try.dot.net_sample
         {
             var unregisteredWorkspace = await Default.ConsoleWorkspace();
 
-            var package = (Package) await registry.Get(unregisteredWorkspace.Name);
+            var package = await registry.Get<ICreateAWorkspace>(unregisteredWorkspace.Name);
 
-            package.Directory.FullName.Should().Be(unregisteredWorkspace.Directory.FullName);
-            (await package.CreateRoslynWorkspaceForRunAsync(new TimeBudget(30.Seconds()))).CurrentSolution.Projects.Should().HaveCount(1);
+            var workspace = await package.CreateRoslynWorkspaceForRunAsync(new TimeBudget(30.Seconds()));
+
+            workspace.CurrentSolution.Projects.Should().HaveCount(1);
         }
 
         [Fact]
@@ -122,7 +124,7 @@ namespace Twilio_try.dot.net_sample
                     builder.Directory = childDirectory;
                 });
 
-            var workspace = await registry.Get(workspaceName);
+            var workspace = await registry.Get<IHaveADirectory>(workspaceName);
 
             workspace.Directory.Should().Be(childDirectory);
         }

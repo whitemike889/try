@@ -12,7 +12,7 @@ namespace WorkspaceServer.Tests
         {
             var directoryAccessor = new InMemoryDirectoryAccessor();
 
-            var package = new Package2(directoryAccessor);
+            var package = new Package2("the-package", directoryAccessor);
 
             var projectAsset = new ProjectAsset(directoryAccessor);
             package.Add(projectAsset);
@@ -25,7 +25,7 @@ namespace WorkspaceServer.Tests
         {
             var directoryAccessor = new InMemoryDirectoryAccessor();
 
-            var package = new Package2(directoryAccessor.GetDirectoryAccessorForRelativePath("1"));
+            var package = new Package2("1", directoryAccessor.GetDirectoryAccessorForRelativePath("1"));
 
             var projectAsset = new ProjectAsset(directoryAccessor.GetDirectoryAccessorForRelativePath("2"));
 

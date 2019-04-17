@@ -4,14 +4,23 @@ using System.Collections.Generic;
 
 namespace WorkspaceServer.Packaging
 {
-    public class Package2 : IEnumerable<PackageAsset>
+    public class Package2 : IEnumerable<PackageAsset>, IPackage
     {
         private readonly Dictionary<Type, PackageAsset> _assets = new Dictionary<Type, PackageAsset>();
 
-        public Package2(IDirectoryAccessor directoryAccessor)
+        public Package2(
+            string name,
+            IDirectoryAccessor directoryAccessor)
         {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                throw new ArgumentException("Value cannot be null or whitespace.", nameof(name));
+            }
+
             DirectoryAccessor = directoryAccessor;
         }
+
+        public string Name { get; }
 
         protected IDirectoryAccessor DirectoryAccessor { get; }
 

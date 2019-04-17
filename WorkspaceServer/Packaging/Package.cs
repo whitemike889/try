@@ -27,7 +27,9 @@ using Disposable = System.Reactive.Disposables.Disposable;
 
 namespace WorkspaceServer.Packaging
 {
-    public abstract class Package : PackageBase
+    public abstract class Package : 
+        PackageBase,
+        ICreateAWorkspace
     {
         internal const string DesignTimeBuildBinlogFileName = "package_designTimeBuild.binlog";
         private static readonly object _createDirectoryLock = new object();
@@ -167,8 +169,6 @@ namespace WorkspaceServer.Packaging
                 }
             }
         }
-
-   
 
         private void TryLoadDesignTimeBuildFromBuildLog()
         {

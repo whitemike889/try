@@ -36,7 +36,7 @@ namespace Microsoft.DotNet.Try.Jupyter
 
                     var code = executeRequest.Code;
 
-                    var package = (Package) await  _packageRegistry.Get("console");
+                    var package = await  _packageRegistry.Get<Package>("console");
 
                     var workspace = new Workspace(
                         files: new[]

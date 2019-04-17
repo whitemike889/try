@@ -10,7 +10,10 @@ using static Pocket.Logger<WorkspaceServer.Packaging.PackageBase>;
 
 namespace WorkspaceServer.Packaging
 {
-    public abstract class PackageBase
+    public abstract class PackageBase : 
+        IPackage, 
+        IHaveADirectory,
+        IMayOrMayNotSupportBlazor
     {
         internal const string FullBuildBinlogFileName = "package_fullBuild.binlog";
 
@@ -92,19 +95,22 @@ namespace WorkspaceServer.Packaging
             }
         }
 
-        public bool CanSupportBlazor()
+        public bool CanSupportBlazor
         {
-            // The directory structure for the blazor packages is as follows
-            // project |--> packTarget
-            //         |--> runner-abc 
-            // The packTarget is the project that contains this package
-            //Hence the parent directory must be looked for the blazor runner
-            if (_canSupportBlazor == null)
+            get
             {
-                _canSupportBlazor = Directory?.Parent?.GetDirectories($"runner-{Name}")?.Length == 1;
-            }
+                // The directory structure for the blazor packages is as follows
+                // project |--> packTarget
+                //         |--> runner-abc 
+                // The packTarget is the project that contains this packaga
+                //Hence the parent directory must be looked for the blazor runner
+                if (_canSupportBlazor == null)
+                {
+                    _canSupportBlazor = Directory?.Parent?.GetDirectories($"runner-{Name}")?.Length == 1;
+                }
 
-            return _canSupportBlazor.Value;
+                return _canSupportBlazor.Value;
+            }
         }
 
         public virtual async Task FullBuild()
