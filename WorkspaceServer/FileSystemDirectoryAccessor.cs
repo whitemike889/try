@@ -1,12 +1,11 @@
-﻿﻿using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
- using Microsoft.DotNet.Try.Markdown;
-using WorkspaceServer;
+using Microsoft.DotNet.Try.Markdown;
 using WorkspaceServer.Servers.Roslyn;
 
-namespace MLS.Agent.Markdown
+namespace WorkspaceServer
 {
     public class FileSystemDirectoryAccessor : IDirectoryAccessor
     {

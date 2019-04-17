@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using MLS.Agent.Markdown;
 using MLS.Agent.Tests.Markdown;
+using WorkspaceServer;
 using WorkspaceServer.Tests;
 
 namespace MLS.Agent.Tests.CommandLine

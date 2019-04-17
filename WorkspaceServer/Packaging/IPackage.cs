@@ -15,11 +15,6 @@ namespace WorkspaceServer.Packaging
         DirectoryInfo Directory { get; }
     }
 
-    public interface IHaveAName : IPackage
-    {
-        string Name { get; }
-    }
-
     public interface IMayOrMayNotSupportBlazor : IPackage
     {
         bool CanSupportBlazor { get; }
@@ -28,5 +23,10 @@ namespace WorkspaceServer.Packaging
     public interface ICreateAWorkspace : IPackage
     {
         Task<Workspace> CreateRoslynWorkspaceForRunAsync(Budget budget);
+    }
+
+    public interface IPackageFinder
+    {
+        Task<T> Find<T>(PackageDescriptor descriptor) where T : IPackage;
     }
 }
