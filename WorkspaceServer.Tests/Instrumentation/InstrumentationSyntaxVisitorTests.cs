@@ -3,7 +3,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Text;
 using WorkspaceServer.Servers.Roslyn.Instrumentation;
-using WorkspaceServer.Tests.Servers.Roslyn.Instrumentation;
 using Xunit;
 
 namespace WorkspaceServer.Tests.Instrumentation

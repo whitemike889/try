@@ -6,13 +6,14 @@ using FluentAssertions;
 using HtmlAgilityPack;
 using Markdig;
 using Microsoft.DotNet.Try.Markdown;
-using Microsoft.DotNet.Try.Project;
+using Microsoft.DotNet.Try.Protocol.Tests;
 using MLS.Agent.Controllers;
 using MLS.Agent.Markdown;
 using MLS.Agent.Tools;
 using WorkspaceServer;
 using WorkspaceServer.Packaging;
 using WorkspaceServer.Tests;
+using WorkspaceServer.Tests.TestUtility;
 using Xunit;
 
 namespace MLS.Agent.Tests.Markdown

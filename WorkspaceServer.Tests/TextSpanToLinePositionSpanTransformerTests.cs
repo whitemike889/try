@@ -1,8 +1,8 @@
 ﻿using FluentAssertions;
 using Microsoft.CodeAnalysis.Text;
+using Microsoft.DotNet.Try.Protocol.Tests;
 using WorkspaceServer.Servers.Roslyn.Instrumentation;
 using Xunit;
-using Microsoft.DotNet.Try.Project;
 
 namespace WorkspaceServer.Tests
 {

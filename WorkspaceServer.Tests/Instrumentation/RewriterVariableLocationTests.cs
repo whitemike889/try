@@ -5,9 +5,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.DotNet.Try.Project;
 using WorkspaceServer.Servers.Roslyn.Instrumentation;
-using WorkspaceServer.Tests.Servers.Roslyn.Instrumentation;
 using Xunit;
-using TestUtils = WorkspaceServer.Tests.Instrumentation.TestUtils;
 
 namespace WorkspaceServer.Tests.Instrumentation
 {

@@ -3,13 +3,12 @@ using System.IO;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.DotNet.Try.Markdown;
+using Microsoft.DotNet.Try.Protocol.Tests;
 using MLS.Agent.CommandLine;
-using MLS.Agent.Tests.Markdown;
 using WorkspaceServer;
 using WorkspaceServer.Tests;
 using Xunit;
 using Xunit.Abstractions;
-using CodeManipulation = Microsoft.DotNet.Try.Project.CodeManipulation;
 
 namespace MLS.Agent.Tests.CommandLine
 {
@@ -124,12 +123,13 @@ This is some sample code:
 
                 _output.WriteLine(console.Out.ToString());
 
-                CodeManipulation.EnforceLF(console.Out
-                                         .ToString()
-                                         .Trim())
+                console.Out
+                       .ToString()
+                       .EnforceLF()
+                       .Trim()
                        .Should()
                        .Match(
-                           CodeManipulation.EnforceLF($@"{root}{Path.DirectorySeparatorChar}doc.md*Line 2:*{root}{Path.DirectorySeparatorChar}Program.cs (in project {root}{Path.DirectorySeparatorChar}some.csproj)*"));
+                           $"{root}{Path.DirectorySeparatorChar}doc.md*Line 2:*{root}{Path.DirectorySeparatorChar}Program.cs (in project {root}{Path.DirectorySeparatorChar}some.csproj)*".EnforceLF());
             }
 
             [Fact]

@@ -2,16 +2,14 @@
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
+using Microsoft.DotNet.Try.Project;
+using WorkspaceServer.Servers.Roslyn.Instrumentation;
 using Xunit;
 using TextSpans = System.Collections.Generic.IDictionary<string, System.Collections.Immutable.ImmutableArray<Microsoft.CodeAnalysis.Text.TextSpan>>;
 using LinePositionSpans = System.Collections.Generic.IDictionary<string, System.Collections.Immutable.ImmutableArray<Microsoft.CodeAnalysis.Text.LinePositionSpan>>;
-using WorkspaceServer.Servers.Roslyn.Instrumentation;
-using WorkspaceServer.Tests.Instrumentation;
-using Microsoft.DotNet.Try.Project;
 
-namespace WorkspaceServer.Tests.Servers.Roslyn.Instrumentation
+namespace WorkspaceServer.Tests.Instrumentation
 {
     public class VisitorVariableLocationTests
     {

@@ -17,6 +17,7 @@ using MLS.Agent.CommandLine;
 using FluentAssertions.Extensions;
 using Microsoft.DotNet.Try.Protocol;
 using Microsoft.DotNet.Try.Protocol.ClientApi;
+using Microsoft.DotNet.Try.Protocol.Tests;
 using Buffer = Microsoft.DotNet.Try.Protocol.Buffer;
 using Microsoft.Net.Http.Headers;
 using HtmlAgilityPack;

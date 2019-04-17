@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.DotNet.Try.Protocol;
+using Microsoft.DotNet.Try.Protocol.Tests;
 using Xunit;
 using Buffer = Microsoft.DotNet.Try.Protocol.Buffer;
 

@@ -4,6 +4,7 @@ using FluentAssertions;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.DotNet.Try.Project;
 using Microsoft.DotNet.Try.Protocol;
+using Microsoft.DotNet.Try.Protocol.Tests;
 using WorkspaceServer.Servers.Roslyn.Instrumentation;
 using Xunit;
 using SpanDictionary = System.Collections.Generic.IDictionary<string, System.Collections.Generic.IEnumerable<Microsoft.CodeAnalysis.Text.LinePositionSpan>>;

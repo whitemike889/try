@@ -1,4 +1,3 @@
-using FluentAssertions;
 using Recipes;
 using System;
 using System.CommandLine;
@@ -6,7 +5,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.DotNet.Try.Protocol;
-using Microsoft.DotNet.Try.TestSupport;
+using Microsoft.DotNet.Try.Protocol.Tests;
 using MLS.Agent.CommandLine;
 using WorkspaceServer.Packaging;
 using WorkspaceServer.Tests;

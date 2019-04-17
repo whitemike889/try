@@ -4,11 +4,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
 using Microsoft.DotNet.Try.Markdown;
-using Microsoft.DotNet.Try.Project;
+using Microsoft.DotNet.Try.Protocol.Tests;
 using MLS.Agent.CommandLine;
 using MLS.Agent.Markdown;
 using WorkspaceServer.Tests;
 using WorkspaceServer;
+using WorkspaceServer.Tests.TestUtility;
 using Xunit;
 using Xunit.Abstractions;
 

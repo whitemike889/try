@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Microsoft.DotNet.Try.Protocol.Tests;
 using WorkspaceServer.Servers.Roslyn.Instrumentation;
 using Xunit;
-using Microsoft.DotNet.Try.Project;
-
 
 namespace WorkspaceServer.Tests.Instrumentation
 {

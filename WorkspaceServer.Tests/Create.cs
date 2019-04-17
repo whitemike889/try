@@ -6,11 +6,11 @@ using System.Reactive.Concurrency;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.DotNet.Try.Protocol;
+using Microsoft.DotNet.Try.Protocol.Tests;
 using MLS.Agent.CommandLine;
 using Recipes;
 using WorkspaceServer.Packaging;
 using Package = WorkspaceServer.Packaging.Package;
-using Microsoft.DotNet.Try.Project;
 
 namespace WorkspaceServer.Tests
 {

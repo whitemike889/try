@@ -4,8 +4,7 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.DotNet.Try.Protocol;
-using Microsoft.DotNet.Try.Project;
+using Microsoft.DotNet.Try.Protocol.Tests;
 using File = System.IO.File;
 
 namespace WorkspaceServer.Tests.Instrumentation

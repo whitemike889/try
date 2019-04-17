@@ -4,6 +4,7 @@ using Assent;
 using FluentAssertions;
 using Microsoft.DotNet.Try.Project;
 using Microsoft.DotNet.Try.Protocol;
+using Microsoft.DotNet.Try.Protocol.Tests;
 using Recipes;
 using WorkspaceServer.Tests;
 using Xunit;

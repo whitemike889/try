@@ -2,10 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
+using Microsoft.DotNet.Try.Protocol.Tests;
 using WorkspaceServer.Servers.Roslyn.Instrumentation;
 using Xunit;
-using Microsoft.DotNet.Try.Project;
-
 
 namespace WorkspaceServer.Tests.Instrumentation
 {

@@ -6,8 +6,8 @@ using FluentAssertions;
 using FluentAssertions.Extensions;
 using HtmlAgilityPack;
 using MLS.Agent.CommandLine;
-using WorkspaceServer.Tests;
 using Recipes;
+using WorkspaceServer.Tests.TestUtility;
 using Xunit;
 
 namespace MLS.Agent.Tests

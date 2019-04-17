@@ -1,7 +1,7 @@
 ﻿using System.IO;
 
-namespace WorkspaceServer.Tests
-{ 
+namespace WorkspaceServer.Tests.TestUtility
+{
     public static class TestAssets
     {
         public static DirectoryInfo SampleConsole

@@ -1,6 +1,5 @@
-﻿using Microsoft.DotNet.Try.Project;
-
-namespace Microsoft.DotNet.Try.TestSupport
+﻿
+namespace Microsoft.DotNet.Try.Protocol.Tests
 {
     public static class SourceCodeProvider
     {

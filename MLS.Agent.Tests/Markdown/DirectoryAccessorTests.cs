@@ -5,6 +5,7 @@ using Microsoft.DotNet.Try.Markdown;
 using MLS.Agent.Markdown;
 using WorkspaceServer;
 using WorkspaceServer.Tests;
+using WorkspaceServer.Tests.TestUtility;
 using Xunit;
 
 namespace MLS.Agent.Tests.Markdown

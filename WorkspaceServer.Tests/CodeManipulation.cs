@@ -1,6 +1,5 @@
 ﻿using System;
-using Microsoft.DotNet.Try.Project;
-
+using Microsoft.DotNet.Try.Protocol.Tests;
 
 namespace WorkspaceServer.Tests
 {

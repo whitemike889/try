@@ -5,7 +5,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.DotNet.Try.Project;
 using Microsoft.DotNet.Try.Protocol;
-using static InstrumentationEmitter;
 
 namespace WorkspaceServer.Servers.Roslyn.Instrumentation
 {

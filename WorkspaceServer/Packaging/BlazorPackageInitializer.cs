@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Clockwise;
 using MLS.Agent.Tools;
-using MLS.Agent.Tools.Extensions;
 
 namespace WorkspaceServer.Packaging
 {

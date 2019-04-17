@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace MLS.Agent.Tools.Extensions
+namespace MLS.Agent.Tools
 {
     public static class StringExtensions
     {

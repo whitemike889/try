@@ -6,6 +6,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="TestResults\**" />
+    <EmbeddedResource Remove="TestResults\**" />
+    <None Remove="TestResults\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="fluentassertions" Version="5.6.0" />
     <PackageReference Include="JsonSerializationExtensions" Version="0.1.5650001" />
     <PackageReference Include="Microsoft.CodeAnalysis" Version="3.0.0" />
@@ -21,9 +27,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.DotNet.Try.Project\Microsoft.DotNet.Try.Project.csproj" />
+    <ProjectReference Include="..\Microsoft.DotNet.Try.Protocol.Tests\Microsoft.DotNet.Try.Protocol.Tests.csproj" />
     <ProjectReference Include="..\MLS.Agent\MLS.Agent.csproj" />
     <ProjectReference Include="..\Microsoft.DotNet.Try.Protocol\Microsoft.DotNet.Try.Protocol.csproj" />
-    <ProjectReference Include="..\Microsoft.DotNet.Try.TestSupport\Microsoft.DotNet.Try.TestSupport.csproj" />
   </ItemGroup>
   
 </Project>

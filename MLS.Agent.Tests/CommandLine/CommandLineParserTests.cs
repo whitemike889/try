@@ -5,7 +5,7 @@ using System.IO;
 using System.Threading.Tasks;
 using FluentAssertions;
 using MLS.Agent.CommandLine;
-using WorkspaceServer.Tests;
+using WorkspaceServer.Tests.TestUtility;
 using Xunit;
 using Xunit.Abstractions;
 

@@ -6,8 +6,8 @@ using WorkspaceServer;
 using System.Threading.Tasks;
 using Microsoft.DotNet.Try.Markdown;
 using MLS.Agent.Markdown;
-using MLS.Agent.Tests.Markdown;
 using WorkspaceServer.Tests;
+using WorkspaceServer.Tests.TestUtility;
 
 namespace MLS.Agent.Tests
 {
