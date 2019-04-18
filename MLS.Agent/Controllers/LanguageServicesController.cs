@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.DotNet.Try.Client.Configuration;
 using Microsoft.DotNet.Try.Protocol;
 using MLS.Agent.Middleware;
 using Pocket;
@@ -14,6 +15,21 @@ namespace MLS.Agent.Controllers
 {
     public class LanguageServicesController : Controller
     {
+        private const string CompletionRoute = "/workspace/completion";
+        public static RequestDescriptor CompletionApi => new RequestDescriptor(
+            CompletionRoute,
+            timeoutMs: 60000,
+            properties: new[]
+            {
+                new RequestDescriptorProperty("completionProvider"),
+            });
+
+        private const string DiagnosticsRoute = "/workspace/diagnostics";
+        public static RequestDescriptor DiagnosticsApi => new RequestDescriptor(DiagnosticsRoute, timeoutMs: 60000);
+
+        private const string SignatureHelpRoute = "/workspace/signatureHelp";
+        public static RequestDescriptor SignatureHelpApi => new RequestDescriptor(SignatureHelpRoute, timeoutMs: 60000);
+
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
         private readonly RoslynWorkspaceServer _workspaceServer;
 
@@ -33,7 +49,7 @@ namespace MLS.Agent.Controllers
         }
 
         [HttpPost]
-        [Route("/workspace/completion")]
+        [Route(CompletionRoute)]
         [DebugEnableFilter]
         public async Task<IActionResult> Completion(
             [FromBody] WorkspaceRequest request,
@@ -89,7 +105,7 @@ namespace MLS.Agent.Controllers
         }
 
         [HttpPost]
-        [Route("/workspace/diagnostics")]
+        [Route(DiagnosticsRoute)]
         public async Task<IActionResult> Diagnostics(
             [FromBody] WorkspaceRequest request,
             [FromHeader(Name = "Timeout")] string timeoutInMilliseconds = "15000")

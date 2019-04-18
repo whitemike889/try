@@ -78,6 +78,7 @@
     <Import Project="AssemblyInfo.props" Condition="Exists('AssemblyInfo.props')" />
   </ImportGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Microsoft.DotNet.Try.Client.Configuration\Microsoft.DotNet.Try.Client.Configuration.csproj" />
     <ProjectReference Include="..\Microsoft.DotNet.Try.Markdown\Microsoft.DotNet.Try.Markdown.csproj" />
     <ProjectReference Include="..\Microsoft.DotNet.Try.Project\Microsoft.DotNet.Try.Project.csproj" />
     <ProjectReference Include="..\Microsoft.DotNet.Try.Protocol.ClientApi\Microsoft.DotNet.Try.Protocol.ClientApi.csproj" />

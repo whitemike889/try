@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.DotNet.Try.Client.Configuration;
 using Microsoft.DotNet.Try.Protocol;
 using MLS.Agent.Middleware;
 using Pocket;
@@ -12,6 +13,10 @@ namespace MLS.Agent.Controllers
 {
     public class CompileController : Controller
     {
+        private const string CompileRoute = "/workspace/compile";
+        public static RequestDescriptor CompileApi => new RequestDescriptor(CompileRoute, timeoutMs: 600000);
+
+
         private readonly RoslynWorkspaceServer _workspaceServer;
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
 
@@ -22,7 +27,7 @@ namespace MLS.Agent.Controllers
         }
 
         [HttpPost]
-        [Route("/workspace/compile")]
+        [Route(CompileRoute)]
         [DebugEnableFilter]
         public async Task<IActionResult> Compile(
             [FromBody] WorkspaceRequest request,

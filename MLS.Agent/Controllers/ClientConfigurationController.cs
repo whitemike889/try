@@ -1,126 +1,68 @@
-﻿using Microsoft.AspNetCore.Mvc;
-
+﻿using System.IO;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
+using Microsoft.DotNet.Try.Client.Configuration;
+using Pocket;
+using static Pocket.Logger<MLS.Agent.Controllers.ClientConfigurationController>;
 namespace MLS.Agent.Controllers
 {
     public class ClientConfigurationController : Controller
     {
+        private const string ClientConfiguration = "/clientConfiguration";
+        public static RequestDescriptor ClientConfigurationApi => new RequestDescriptor(ClientConfiguration);
+
         [HttpPost]
-        [Route("/clientConfiguration")]
-        public IActionResult Configuration() =>
-            Content(@"{
-    ""versionId"": ""0SVN7/Ds8dgNvTokmNLgz4A1WdDDE5UAnbeCnVish+U="",
-    ""enableBranding"": ""false"",
-    ""defaultTimeoutMs"": 15000,
-    ""_links"": {
-        ""_self"": {
-            ""timeoutMs"": 15000,
-            ""href"": ""/clientConfiguration"",
-            ""templated"": false,
-            ""properties"": [],
-            ""method"": ""POST"",
-            ""body"": ""{}""
-        },
-        ""configuration"": {
-            ""timeoutMs"": 15000,
-            ""href"": ""/clientConfiguration"",
-            ""templated"": false,
-            ""properties"": [],
-            ""method"": ""POST""
-        },
-        ""completion"": {
-            ""timeoutMs"": 600000,
-            ""href"": ""/workspace/completion"",
-            ""templated"": false,
-            ""properties"": [
+        [Route(ClientConfiguration)]
+        public async Task<IActionResult> ConfigurationAsync()
+        {
+            using (var operation = Log.ConfirmOnExit())
+            {
+                var requestBody = await ReadBody(Request);
+
+                var links = new RequestDescriptors(new RequestDescriptor(Request.Path, Request.Method, requestBody: requestBody))
                 {
-                    ""name"": ""completionProvider""
-                }
-            ],
-            ""method"": ""POST""
-        },
-        ""acceptCompletion"": {
-            ""timeoutMs"": 15000,
-            ""href"": ""{acceptanceUri}"",
-            ""templated"": true,
-            ""properties"": [],
-            ""method"": ""POST""
-        },
-        ""loadFromGist"": {
-            ""timeoutMs"": 15000,
-            ""href"": ""/workspace/fromgist/{gistId}/{commitHash?}"",
-            ""templated"": true,
-            ""properties"": [
-                {
-                    ""name"": ""workspaceType""
-                },
-                {
-                    ""name"": ""extractBuffers""
-                }
-            ],
-            ""method"": ""GET""
-        },
-        ""diagnostics"": {
-            ""timeoutMs"": 600000,
-            ""href"": ""/workspace/diagnostics"",
-            ""templated"": false,
-            ""properties"": [],
-            ""method"": ""POST""
-        },
-        ""signatureHelp"": {
-            ""timeoutMs"": 600000,
-            ""href"": ""/workspace/signatureHelp"",
-            ""templated"": false,
-            ""properties"": [],
-            ""method"": ""POST""
-        },
-        ""run"": {
-            ""timeoutMs"": 600000,
-            ""href"": ""/workspace/run"",
-            ""templated"": false,
-            ""properties"": [],
-            ""method"": ""POST""
-        },
-        ""snippet"": {
-            ""timeoutMs"": 15000,
-            ""href"": ""/snippet"",
-            ""templated"": false,
-            ""properties"": [
-                {
-                    ""name"": ""from""
-                }
-            ],
-            ""method"": ""GET""
-        },
-        ""version"": {
-            ""timeoutMs"": 15000,
-            ""href"": ""/sensors/version"",
-            ""templated"": false,
-            ""properties"": [],
-            ""method"": ""GET""
-        },
-        ""compile"": {
-            ""timeoutMs"": 600000,
-            ""href"": ""/workspace/compile"",
-            ""templated"": false,
-            ""properties"": [],
-            ""method"": ""POST""
-        },
-        ""projectFromGist"": {
-            ""timeoutMs"": 15000,
-            ""href"": ""/project/fromGist"",
-            ""templated"": false,
-            ""properties"": [],
-            ""method"": ""POST""
-        },
-        ""regionsFromFiles"": {
-            ""timeoutMs"": 15000,
-            ""href"": ""/project/files/regions"",
-            ""templated"": false,
-            ""properties"": [],
-            ""method"": ""POST""
+                    Configuration = ClientConfigurationController.ClientConfigurationApi,
+                    Completion = LanguageServicesController.CompletionApi,
+                    AcceptCompletion = new RequestDescriptor("{acceptanceUri}", templated: true),
+                    LoadFromGist = new RequestDescriptor("/workspace/fromgist/{gistId}/{commitHash?}", method: "GET",templated: true,
+                        properties: new[]
+                        {
+                            new RequestDescriptorProperty("workspaceType"),
+                            new RequestDescriptorProperty("extractBuffers")
+                        }),
+                    Diagnostics = LanguageServicesController.DiagnosticsApi,
+                    SignatureHelp = LanguageServicesController.SignatureHelpApi,
+                    Snippet = new RequestDescriptor("/snippet",method: "GET",
+                        properties: new[]
+                        {
+                            new RequestDescriptorProperty("from"),
+                        }),
+                    Run = RunController.RunApi,
+                    Compile = CompileController.CompileApi,
+                    Version = SensorsController.VersionApi,
+                    ProjectFromGist = new RequestDescriptor("/project/fromGist"),
+                    RegionsFromFiles = ProjectController.RegionsFromFilesApi,
+                };
+
+                var versionId = links.ComputeHash();
+                var clientConfig = new ClientConfiguration(versionId, links, 30000, string.Empty, false);
+                operation.Succeed();
+                return Ok(clientConfig);
+            }
         }
-    },
-    ""applicationInsightsKey"": """"
-}", "application/json");
+
+        private static async Task<string> ReadBody(HttpRequest request)
+        {
+            string body = null;
+            if (request.Body != null)
+            {
+                using (var reader = new StreamReader(request.Body))
+                {
+                    body = await reader.ReadToEndAsync();
+                }
+            }
+            return body;
+        }
     }
 }

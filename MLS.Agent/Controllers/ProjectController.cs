@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;
 using Microsoft.CodeAnalysis.Text;
+using Microsoft.DotNet.Try.Client.Configuration;
 using Microsoft.DotNet.Try.Project;
 using Microsoft.DotNet.Try.Protocol.ClientApi;
 using Pocket;
@@ -12,7 +13,9 @@ namespace MLS.Agent.Controllers
 {
     public class ProjectController : Controller
     {
+
         private const string RegionsFromFilesRoute = "/project/files/regions";
+        public static RequestDescriptor RegionsFromFilesApi => new RequestDescriptor(RegionsFromFilesRoute, method: "POST");
 
         [HttpPost(RegionsFromFilesRoute)]
         public IActionResult GenerateRegionsFromFiles([FromBody] CreateRegionsFromFilesRequest request)

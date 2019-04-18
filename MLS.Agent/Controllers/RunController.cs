@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.DotNet.Try.Client.Configuration;
 using Microsoft.DotNet.Try.Protocol;
 using MLS.Agent.Middleware;
 using Pocket;
@@ -17,6 +18,9 @@ namespace MLS.Agent.Controllers
 {
     public class RunController : Controller
     {
+        private const string RunRoute = "/workspace/run";
+        public static RequestDescriptor RunApi => new RequestDescriptor(RunRoute, timeoutMs:600000);
+
         private readonly StartupOptions _options;
         private readonly RoslynWorkspaceServer _workspaceServer;
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
@@ -30,7 +34,7 @@ namespace MLS.Agent.Controllers
         }
 
         [HttpPost]
-        [Route("/workspace/run")]
+        [Route(RunRoute)]
         [DebugEnableFilter]
         public async Task<IActionResult> Run(
             [FromBody] WorkspaceRequest request,
