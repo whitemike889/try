@@ -1,5 +1,4 @@
-﻿using System;
-using Markdig;
+﻿using Markdig;
 using Markdig.Renderers;
 
 namespace Microsoft.DotNet.Try.Markdown
@@ -13,7 +12,7 @@ namespace Microsoft.DotNet.Try.Markdown
             _annotationsParser = annotationsParser ?? new CodeFenceAnnotationsParser();
         }
 
-        public bool InlineControls { get; set; }
+        public bool InlineControls { get; set; } = true;
 
         public bool EnablePreviewFeatures { get; set; }
 
@@ -37,6 +36,8 @@ namespace Microsoft.DotNet.Try.Markdown
             if (renderers != null && !renderers.Contains<AnnotatedCodeBlockRenderer>())
             {
                 var codeLinkBlockRenderer = new AnnotatedCodeBlockRenderer();
+                codeLinkBlockRenderer.EnablePreviewFeatures = EnablePreviewFeatures;
+                codeLinkBlockRenderer.InlineControls = InlineControls;
                 renderers.Insert(0, codeLinkBlockRenderer);
             }
         }

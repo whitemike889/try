@@ -123,6 +123,9 @@ footer {
   border: 1px solid #ddd;
   padding: 2px;
   overflow: auto;
+  pre {
+    background: none;
+  }
 }
 
 .inline-code-container {
@@ -144,9 +147,17 @@ footer {
 }
 
 .output-panel-inline {
+  position: relative;
   background: rgb(245, 244, 247);
   color: #000;
   overflow-y: auto;
+  pre {
+    background: none;
+  }
+  div.trydotnet-run-result{
+    position: absolute;
+    top: 0px;
+  }
 }
 
 .output-panel-inline.expanded {
