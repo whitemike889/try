@@ -71,7 +71,10 @@ namespace MLS.Agent.Controllers
             {
                 extension.InlineControls = maxEditorPerSession <= 1;
                 extension.EnablePreviewFeatures = _startupOptions.EnablePreviewFeatures;
+
             }
+
+            
 
             var content = maxEditorPerSession <= 1
                               ? await OneColumnLayoutScaffold(
