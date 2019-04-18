@@ -73,7 +73,7 @@ namespace WorkspaceServer.Transformations
                     var lineSpan = diagnostic.Location.GetMappedLineSpan();
                     var lineSpanPath = lineSpan.Path;
 
-                    if (viewPorts.Count == 0)
+                    if (viewPorts.Count == 0 || string.IsNullOrWhiteSpace(activeBufferId?.RegionName))
                     {
                         var errorMessage = RelativizeDiagnosticMessage();
 

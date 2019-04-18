@@ -384,11 +384,20 @@
   "requestId": "TestRun",
   "diagnostics": [
     {
-      "start": 20,
-      "end": 25,
-      "message": "(1,21): error CS1501: No overload for method 'Write' takes 0 arguments",
+      "start": 192,
+      "end": 197,
+      "message": "ViewportCode.cs(12,21): error CS1501: No overload for method 'Write' takes 0 arguments",
       "severity": 3,
-      "id": "CS1501"
+      "id": "CS1501",
+      "location": "ViewportCode.cs(12,21): error CS1501"
+    },
+    {
+      "start": 136,
+      "end": 142,
+      "message": "ViewportCode.cs(9,30): error CS0161: 'Sample.Method()': not all code paths return a value",
+      "severity": 3,
+      "id": "CS0161",
+      "location": "ViewportCode.cs(9,30): error CS0161"
     }
   ]
 }
