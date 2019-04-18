@@ -543,11 +543,28 @@
   "requestId": "TestRun",
   "diagnostics": [
     {
-      "start": 20,
-      "end": 22,
-      "message": "(1,21): error CS0117: 'Console' does not contain a definition for 'Ou'",
+      "start": 194,
+      "end": 194,
+      "message": "ViewportCode.cs(12,23): error CS1002: ; expected",
       "severity": 3,
-      "id": "CS0117"
+      "id": "CS1002",
+      "location": "ViewportCode.cs(12,23): error CS1002"
+    },
+    {
+      "start": 192,
+      "end": 194,
+      "message": "ViewportCode.cs(12,21): error CS0117: 'Console' does not contain a definition for 'Ou'",
+      "severity": 3,
+      "id": "CS0117",
+      "location": "ViewportCode.cs(12,21): error CS0117"
+    },
+    {
+      "start": 136,
+      "end": 142,
+      "message": "ViewportCode.cs(9,30): error CS0161: 'Sample.Method()': not all code paths return a value",
+      "severity": 3,
+      "id": "CS0161",
+      "location": "ViewportCode.cs(9,30): error CS0161"
     }
   ]
 }

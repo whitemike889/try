@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.DotNet.Try.Protocol;
 using WorkspaceServer.Servers.Roslyn;
-using WorkspaceServer.Packaging;
 using Xunit;
 using Xunit.Abstractions;
 using Buffer = Microsoft.DotNet.Try.Protocol.Buffer;
@@ -16,6 +15,85 @@ namespace WorkspaceServer.Tests
     {
         public RoslynWorkspaceServerConsoleProjectDiagnosticsTests(ITestOutputHelper output) : base(output)
         {
+        }
+
+        [Fact]
+        public async Task Get_diagnostics_with_buffer_with_region()
+        {
+            #region bufferSources
+
+            var program = @"using System;
+using System.Linq;
+
+namespace FibonacciTest
+{
+    public class Program
+    {
+        public static void Main()
+        {
+            #region code
+            #endregion
+        }
+    }
+}".EnforceLF();
+
+            var region = @"adddd".EnforceLF();
+
+            #endregion
+
+            var (processed, position) = CodeManipulation.ProcessMarkup(region);
+
+            var workspace = new Workspace(workspaceType: "console", buffers: new[]
+            {
+                new Buffer("Program.cs", program),
+                new Buffer(new BufferId( "Program.cs","code"), processed, position)
+            });
+
+            var request = new WorkspaceRequest(workspace, activeBufferId: new BufferId("Program.cs", "code"));
+            var server = GetLanguageService();
+            var result = await server.GetDiagnostics(request);
+
+            result.Diagnostics.Should().NotBeNullOrEmpty();
+            result.Diagnostics.Should().Contain(diagnostics => diagnostics.Message == "(1,1): error CS0103: The name 'adddd' does not exist in the current context");
+        }
+
+        [Fact]
+        public async Task Get_diagnostics_with_buffer_with_region_in_code_but_not_in_buffer_id()
+        {
+            #region bufferSources
+
+            var program = @"using System;
+using System.Linq;
+
+namespace FibonacciTest
+{
+    public class Program
+    {
+        public static void Main()
+        {
+            #region code
+            error
+            #endregion
+            moreError
+        }
+    }
+}".EnforceLF();
+
+            #endregion
+
+            var (processed, position) = CodeManipulation.ProcessMarkup(program);
+
+            var workspace = new Workspace(workspaceType: "console", buffers: new[]
+            {
+                new Buffer("Program.cs", program),
+            });
+
+            var request = new WorkspaceRequest(workspace, activeBufferId: "Program.cs");
+            var server = GetLanguageService();
+            var result = await server.GetDiagnostics(request);
+
+            result.Diagnostics.Should().NotBeNullOrEmpty();
+            result.Diagnostics.Should().Contain(diagnostics => diagnostics.Message == "Program.cs(13,13): warning CS0168: The variable 'moreError' is declared but never used");
         }
 
         [Fact]
