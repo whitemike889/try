@@ -46,15 +46,15 @@ namespace FibonacciTest
             var workspace = new Workspace(workspaceType: "console", buffers: new[]
             {
                 new Buffer("Program.cs", program),
-                new Buffer("snippets/code.cs@code", processed, position)
+                new Buffer(new BufferId( "Program.cs","code"), processed, position)
             });
 
-            var request = new WorkspaceRequest(workspace, activeBufferId: "snippets/code.cs@code");
+            var request = new WorkspaceRequest(workspace, activeBufferId: new BufferId("Program.cs", "code"));
             var server = GetLanguageService();
             var result = await server.GetDiagnostics(request);
 
             result.Diagnostics.Should().NotBeNullOrEmpty();
-            result.Diagnostics.Should().Contain(diagnostics => diagnostics.Message == "generators/FibonacciGenerator.cs(14,17): error CS0246: The type or namespace name \'adddd\' could not be found (are you missing a using directive or an assembly reference?)");
+            result.Diagnostics.Should().Contain(diagnostics => diagnostics.Message == "(1,1): error CS0103: The name 'adddd' does not exist in the current context");
         }
 
         [Fact]
@@ -93,7 +93,7 @@ namespace FibonacciTest
             var result = await server.GetDiagnostics(request);
 
             result.Diagnostics.Should().NotBeNullOrEmpty();
-            result.Diagnostics.Should().Contain(diagnostics => diagnostics.Message == "generators/FibonacciGenerator.cs(14,17): error CS0246: The type or namespace name \'adddd\' could not be found (are you missing a using directive or an assembly reference?)");
+            result.Diagnostics.Should().Contain(diagnostics => diagnostics.Message == "Program.cs(13,13): warning CS0168: The variable 'moreError' is declared but never used");
         }
 
         [Fact]
