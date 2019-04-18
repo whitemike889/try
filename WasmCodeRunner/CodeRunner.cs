@@ -58,7 +58,7 @@ namespace MLS.WasmCodeRunner
 
                 var builder = new CommandLineBuilder()
                     .ConfigureRootCommandFromMethod(main)
-                    .UseDefaults();
+                    .UseExceptionHandler();
 
                 var parser = builder.Build();
                 parser.InvokeAsync(args).GetAwaiter().GetResult();
