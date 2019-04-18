@@ -30,6 +30,8 @@ namespace Microsoft.DotNet.Try.Client.Configuration
         public RequestDescriptor ProjectFromGist { get; set; }
         [JsonProperty("regionsFromFiles")]
         public RequestDescriptor RegionsFromFiles { get; set; }
+        [JsonProperty("getPackage")]
+        public RequestDescriptor GetPackage { get; set; }
 
 
         public RequestDescriptors(RequestDescriptor self)

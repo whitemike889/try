@@ -43,6 +43,7 @@ namespace MLS.Agent.Controllers
                     Version = SensorsController.VersionApi,
                     ProjectFromGist = new RequestDescriptor("/project/fromGist"),
                     RegionsFromFiles = ProjectController.RegionsFromFilesApi,
+                    GetPackage = PackagesController.GetPackageApi
                 };
 
                 var versionId = links.ComputeHash();

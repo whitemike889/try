@@ -28,6 +28,7 @@ dotnet pack $REPO_ROOT/Microsoft.DotNet.Try.Protocol.ClientApi/Microsoft.DotNet.
 dotnet pack $REPO_ROOT/Microsoft.DotNet.Try.Protocol/Microsoft.DotNet.Try.Protocol.csproj -c Release -o $PACKAGE_ROOT /p:NoPackageAnalysis=true
 dotnet pack $REPO_ROOT/Microsoft.DotNet.Try.Project/Microsoft.DotNet.Try.Project.csproj -c Release -o $PACKAGE_ROOT /p:NoPackageAnalysis=true
 dotnet pack $REPO_ROOT/Microsoft.DotNet.Try.Client.Configuration/Microsoft.DotNet.Try.Client.Configuration.csproj -c Release -o $PACKAGE_ROOT /p:NoPackageAnalysis=true
+dotnet pack $REPO_ROOT/Microsoft.DotNet.Try.Client.Configuration.Extensions/Microsoft.DotNet.Try.Client.Configuration.Extensions.csproj -c Release -o $PACKAGE_ROOT /p:NoPackageAnalysis=true
 
 dotnet pack $REPO_ROOT/MLS.Agent/MLS.Agent.csproj -c Release -o $PACKAGE_ROOT /p:NoPackageAnalysis=true
 dotnet pack $REPO_ROOT/MLS.Agent.Tools/MLS.Agent.Tools.csproj -c Release -o $PACKAGE_ROOT /p:NoPackageAnalysis=true

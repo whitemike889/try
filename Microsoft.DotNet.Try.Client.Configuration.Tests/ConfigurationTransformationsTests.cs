@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
+using Microsoft.DotNet.Try.Client.Configuration.Extensions;
 using Xunit;
 
 namespace Microsoft.DotNet.Try.Client.Configuration.Tests
@@ -57,7 +58,7 @@ namespace Microsoft.DotNet.Try.Client.Configuration.Tests
         }
 
         [Fact]
-        public void Generates_url_with_query_when_href_cotnains_query()
+        public void Generates_url_with_query_when_href_contains_query()
         {
             var apiLink = new RequestDescriptor("/url?alreadyHere=yes",
                 properties: new[]

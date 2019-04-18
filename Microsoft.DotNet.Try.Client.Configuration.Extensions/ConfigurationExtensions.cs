@@ -9,9 +9,10 @@ using Microsoft.DotNet.Try.Protocol.ClientApi;
 using Microsoft.DotNet.Try.Protocol.ClientApi.GitHub;
 using Recipes;
 
-namespace Microsoft.DotNet.Try.Client.Configuration.Tests
+namespace Microsoft.DotNet.Try.Client.Configuration.Extensions
 {
-    internal static class ConfigurationExtensions{
+    public static class ConfigurationExtensions
+    {
         private static readonly Regex OptionalRouteFilter = new Regex(@"/\{.+\?\}", RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
         public static string BuildUrl(this RequestDescriptor requestDescriptor, Dictionary<string, object> context = null)
         {
@@ -246,6 +247,21 @@ namespace Microsoft.DotNet.Try.Client.Configuration.Tests
             var api = configuration.Links.Version;
 
             return BuildRequestWithHeaders(configuration, api, hostOrigin);
+        }
+
+        public static HttpRequestMessage BuildGetPackagesRequest(this ClientConfiguration configuration, string packageName, string packageVersion, string hostOrigin)
+        {
+            var api = configuration.Links.GetPackage;
+            var context = new Dictionary<string, object>
+            {
+                { "name", packageName },
+                { "version", packageVersion }
+            };
+
+            var request = BuildRequestWithHeaders(configuration, api, hostOrigin, context);
+
+
+            return request;
         }
 
         private static string UrlEncode(string source)

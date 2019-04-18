@@ -1,5 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
+using Microsoft.DotNet.Try.Client.Configuration;
 using WorkspaceServer;
 using WorkspaceServer.Packaging;
 
@@ -7,6 +8,13 @@ namespace MLS.Agent.Controllers
 {
     public class PackagesController : Controller
     {
+        private const string GetPackageRoute = "/packages/{name}/{version}";
+        public static RequestDescriptor GetPackageApi => new RequestDescriptor(
+            GetPackageRoute,
+            timeoutMs: 60000,
+            method: "GET",
+            templated: true);
+
         private readonly PackageRegistry _registry;
 
         public PackagesController(PackageRegistry registry)
@@ -15,7 +23,7 @@ namespace MLS.Agent.Controllers
         }
 
         [HttpGet]
-        [Route("/packages/{name}/{version}")]
+        [Route(GetPackageRoute)]
         public async Task<IActionResult> GetPackage(string name, string version)
         {
             try
