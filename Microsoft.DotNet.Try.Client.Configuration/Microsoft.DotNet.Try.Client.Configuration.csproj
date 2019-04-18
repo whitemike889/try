@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="JsonContent" Version="0.1.5650001" />
+    <PackageReference Include="JsonSerializationExtensions" Version="0.1.5650001" />
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    <PackageReference Include="CdpxBuildProps" Version="0.1.6040001" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.DotNet.Try.Protocol.ClientApi\Microsoft.DotNet.Try.Protocol.ClientApi.csproj" />
+    <ProjectReference Include="..\Microsoft.DotNet.Try.Protocol\Microsoft.DotNet.Try.Protocol.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,12 +1,16 @@
 using System;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.DotNet.Try.Client.Configuration;
 using Recipes;
 
 namespace MLS.Agent.Controllers
 {
     public class SensorsController : Controller
     {
-        [Route("/sensors/version")]
+        private const string VersionRoute = "/sensors/version";
+        public static RequestDescriptor VersionApi => new RequestDescriptor(VersionRoute, method: "GET");
+
+        [Route(VersionRoute)]
         public IActionResult GetVersion() => Ok(VersionSensor.Version());
     }
 }
