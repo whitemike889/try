@@ -1,5 +1,4 @@
-﻿using System;
-using Markdig;
+﻿using Markdig;
 using Markdig.Renderers;
 
 namespace Microsoft.DotNet.Try.Markdown
