@@ -5,14 +5,19 @@ namespace Microsoft.DotNet.Try.Client.Configuration
 {
     public class ClientConfiguration
     {
+        [JsonProperty("versionId")]
         public string VersionId { get; }
 
+        [JsonProperty("defaultTimeoutMs")]
         public int DefaultTimeoutMs { get; }
 
         [JsonProperty("_links")]
         public RequestDescriptors Links { get; }
-      
+
+        [JsonProperty("applicationInsightsKey")]
         public string ApplicationInsightsKey { get; }
+
+        [JsonProperty("enableBranding")]
         public bool EnableBranding { get; }
 
         public ClientConfiguration(string versionId,
