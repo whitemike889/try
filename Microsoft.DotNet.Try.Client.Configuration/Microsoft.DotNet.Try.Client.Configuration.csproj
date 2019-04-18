@@ -11,9 +11,4 @@
     <PackageReference Include="CdpxBuildProps" Version="0.1.6040001" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Microsoft.DotNet.Try.Protocol.ClientApi\Microsoft.DotNet.Try.Protocol.ClientApi.csproj" />
-    <ProjectReference Include="..\Microsoft.DotNet.Try.Protocol\Microsoft.DotNet.Try.Protocol.csproj" />
-  </ItemGroup>
-
 </Project>
