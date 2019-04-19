@@ -274,7 +274,7 @@ class D
 
                 var response = CodeRunner.ExecuteRunRequest(runRequest, 1);
 
-                response.Data.RunnerException.Should().Match("*Could not load type 'C' from assembly*");
+                response.Data.RunnerException.Should().Match("*Missing type `C`*");
             }
         }
 

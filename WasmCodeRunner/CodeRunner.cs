@@ -40,11 +40,12 @@ namespace MLS.WasmCodeRunner
             var output = new List<string>();
             string runnerException = null;
             var bytes = Convert.FromBase64String(runRequest.Base64Assembly);
-            
+
             var stdOut = new StringWriter();
             var stdError = new StringWriter();
             var originalStdOut = Console.Out;
             var originalStdError = Console.Error;
+            MethodInfo main;
             try
             {
                 var assembly = Assembly.Load(bytes);
@@ -52,16 +53,7 @@ namespace MLS.WasmCodeRunner
                 Console.SetOut(stdOut);
                 Console.SetError(stdError);
 
-                var main = EntryPointDiscoverer.FindStaticEntryMethod(assembly);
-
-                var args = runRequest.RunArgs;
-
-                var builder = new CommandLineBuilder()
-                    .ConfigureRootCommandFromMethod(main)
-                    .UseExceptionHandler();
-
-                var parser = builder.Build();
-                parser.InvokeAsync(args).GetAwaiter().GetResult();
+                main = EntryPointDiscoverer.FindStaticEntryMethod(assembly);
 
             }
             catch (InvalidProgramException)
@@ -72,6 +64,17 @@ namespace MLS.WasmCodeRunner
                     runnerException: null);
 
                 return new InteropMessage<WasmCodeRunnerResponse>(sequence, result);
+            }
+
+            try
+            {
+                var args = runRequest.RunArgs;
+
+                var builder = new CommandLineBuilder()
+                    .ConfigureRootCommandFromMethod(main);
+
+                var parser = builder.Build();
+                parser.InvokeAsync(args).GetAwaiter().GetResult();
             }
             catch (Exception e)
             {
