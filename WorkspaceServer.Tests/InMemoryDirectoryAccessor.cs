@@ -10,36 +10,76 @@ namespace WorkspaceServer.Tests
     public class InMemoryDirectoryAccessor : IDirectoryAccessor, IEnumerable
     {
         private readonly DirectoryInfo _rootDirToAddFiles;
-        private Dictionary<string, string> _files;
+
+        private Dictionary<FileSystemInfo, string> _files = new Dictionary<FileSystemInfo, string>(
+            new Dictionary<FileSystemInfo, string>(),
+            new FileSystemInfoComparer());
 
         public InMemoryDirectoryAccessor(
             DirectoryInfo workingDirectory = null,
             DirectoryInfo rootDirectoryToAddFiles = null)
         {
             WorkingDirectory = workingDirectory ??
-                               new DirectoryInfo(Directory.GetCurrentDirectory());
+                               new DirectoryInfo(Path.Combine("some", "fake", "path"));
+
             _rootDirToAddFiles = rootDirectoryToAddFiles ??
                                  WorkingDirectory;
-            _files = new Dictionary<string, string>();
         }
 
         public DirectoryInfo WorkingDirectory { get; }
 
         public void Add((string path, string content) file)
         {
-            _files.Add(
-                new FileInfo(Path.Combine(_rootDirToAddFiles.FullName, file.path)).FullName, file.content);
+            var fileInfo = new FileInfo(Path.Combine(_rootDirToAddFiles.FullName, file.path));
+
+            _files.Add(fileInfo, file.content);
         }
 
-        public bool FileExists(RelativeFilePath filePath)
+        public bool DirectoryExists(RelativeDirectoryPath path)
         {
-            return _files.ContainsKey(GetFullyQualifiedPath(filePath).FullName);
+            var fullyQualifiedDirPath = GetFullyQualifiedPath(path);
+
+            return _files
+                   .Keys
+                   .Any(f =>
+                   {
+                       switch (f)
+                       {
+                           case FileInfo file:
+                               return FileSystemInfoComparer.Instance.Equals(
+                                   file.Directory,
+                                   fullyQualifiedDirPath);
+
+                           case DirectoryInfo dir:
+                               return FileSystemInfoComparer.Instance.Equals(
+                                   dir,
+                                   fullyQualifiedDirPath);
+
+                           default:
+                               throw new NotSupportedException();
+                       }
+                   });
         }
 
-        public string ReadAllText(RelativeFilePath filePath)
+        public void EnsureDirectoryExists(RelativeDirectoryPath path)
         {
-            _files.TryGetValue(GetFullyQualifiedPath(filePath).FullName, out var value);
+            _files[GetFullyQualifiedPath(path)] = null;
+        }
+
+        public bool FileExists(RelativeFilePath path)
+        {
+            return _files.ContainsKey(GetFullyQualifiedPath(path));
+        }
+
+        public string ReadAllText(RelativeFilePath path)
+        {
+            _files.TryGetValue(GetFullyQualifiedPath(path), out var value);
             return value;
+        }
+
+        public void WriteAllText(RelativeFilePath path, string text)
+        {
+            _files[GetFullyQualifiedPath(path)] = text;
         }
 
         public FileSystemInfo GetFullyQualifiedPath(RelativePath path)
@@ -77,7 +117,38 @@ namespace WorkspaceServer.Tests
         public IEnumerable<RelativeFilePath> GetAllFilesRecursively()
         {
             return _files.Keys.Select(key => new RelativeFilePath(
-                                          Path.GetRelativePath(WorkingDirectory.FullName, key)));
+                                          Path.GetRelativePath(WorkingDirectory.FullName, key.FullName)));
+        }
+
+        internal class FileSystemInfoComparer : IEqualityComparer<FileSystemInfo>
+        {
+            public static FileSystemInfoComparer Instance { get; } = new FileSystemInfoComparer();
+
+            public bool Equals(FileSystemInfo x, FileSystemInfo y)
+            {
+                if (x.GetType() == y.GetType())
+                {
+                    return x is DirectoryInfo
+                               ? RelativePath.NormalizeDirectory(x.FullName) == RelativePath.NormalizeDirectory(y.FullName)
+                               : x.FullName == y.FullName;
+                }
+
+                return false;
+            }
+
+            public int GetHashCode(FileSystemInfo obj)
+            {
+                var fullName = obj.FullName;
+
+                if (obj is DirectoryInfo)
+                {
+                    fullName = RelativePath.NormalizeDirectory(fullName);
+                }
+
+                var hashCode = $"{obj.GetType().GetHashCode()}:{fullName}".GetHashCode();
+
+                return hashCode;
+            }
         }
     }
 }

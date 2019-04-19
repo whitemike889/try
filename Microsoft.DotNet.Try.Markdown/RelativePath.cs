@@ -96,7 +96,7 @@ namespace Microsoft.DotNet.Try.Markdown
                 '\\'
             });
 
-        protected static string NormalizeDirectory(string directoryPath)
+        public static string NormalizeDirectory(string directoryPath)
         {
             directoryPath = directoryPath.Replace('\\', '/');
 

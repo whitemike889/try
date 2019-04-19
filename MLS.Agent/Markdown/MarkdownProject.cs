@@ -13,6 +13,15 @@ namespace MLS.Agent.Markdown
     {
         private class NullDirectoryAccessor : IDirectoryAccessor
         {
+            public bool DirectoryExists(RelativeDirectoryPath path)
+            {
+                return false;
+            }
+
+            public void EnsureDirectoryExists(RelativeDirectoryPath path)
+            {
+            }
+
             public bool FileExists(RelativeFilePath filePath)
             {
                 return false;
@@ -36,6 +45,10 @@ namespace MLS.Agent.Markdown
             public IDirectoryAccessor GetDirectoryAccessorForRelativePath(RelativeDirectoryPath relativePath)
             {
                 return this;
+            }
+
+            public void WriteAllText(RelativeFilePath path, string text)
+            {
             }
         }
       

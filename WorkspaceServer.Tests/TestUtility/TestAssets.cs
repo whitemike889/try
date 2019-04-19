@@ -4,10 +4,8 @@ namespace WorkspaceServer.Tests.TestUtility
 {
     public static class TestAssets
     {
-        public static DirectoryInfo SampleConsole
-        {
-            get => new DirectoryInfo(Path.Combine(GetTestProjectsFolder(), "SampleConsole"));
-        }
+        public static DirectoryInfo SampleConsole => 
+            new DirectoryInfo(Path.Combine(GetTestProjectsFolder(), "SampleConsole"));
 
         private static string GetTestProjectsFolder()
         {

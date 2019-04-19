@@ -27,7 +27,7 @@ namespace Microsoft.DotNet.Try.Markdown
         {
             return new DirectoryInfo(
                 Path.Combine(
-                    directory.FullName,
+                    RelativePath.NormalizeDirectory(directory.FullName),
                     directoryPath.Value.Replace('/', Path.DirectorySeparatorChar)));
         }
     }

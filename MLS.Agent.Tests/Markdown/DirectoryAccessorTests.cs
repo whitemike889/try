@@ -1,9 +1,10 @@
 ﻿using System;
 using System.IO;
+using System.Runtime.CompilerServices;
 using FluentAssertions;
 using Microsoft.DotNet.Try.Markdown;
-using MLS.Agent.Markdown;
 using WorkspaceServer;
+using WorkspaceServer.Packaging;
 using WorkspaceServer.Tests;
 using WorkspaceServer.Tests.TestUtility;
 using Xunit;
@@ -13,6 +14,68 @@ namespace MLS.Agent.Tests.Markdown
     public abstract class DirectoryAccessorTests
     {
         public abstract IDirectoryAccessor GetDirectory(DirectoryInfo dirInfo, DirectoryInfo rootDirectoryToAddFiles = null);
+
+        public abstract IDirectoryAccessor CreateDirectory([CallerMemberName]string testName = null);
+
+        [Theory]
+        [InlineData(".")]
+        [InlineData("./Subdirectory")]
+        public void When_the_directory_exists_DirectoryExists_returns_true(string path)
+        {
+            var directoryAccessor = GetDirectory(TestAssets.SampleConsole);
+
+            directoryAccessor.DirectoryExists(path).Should().BeTrue();
+        }
+
+        [Theory]
+        [InlineData(".")]
+        [InlineData("Subdirectory")]
+        public void It_can_ensure_a_directory_exists(string path)
+        {
+            var directoryAccessor = CreateDirectory();
+
+            directoryAccessor.EnsureDirectoryExists(path);
+
+            directoryAccessor.DirectoryExists(path).Should().BeTrue();
+        }
+
+        [Fact]
+        public void EnsureDirectoryExists_is_idempotent()
+        {
+              var directoryAccessor = CreateDirectory();
+
+              var subdirectory = "./a-subdirectory";
+
+              directoryAccessor.EnsureDirectoryExists(subdirectory);
+
+              directoryAccessor
+                  .Invoking(d => d.EnsureDirectoryExists(subdirectory))
+                  .Should()
+                  .NotThrow();
+        }
+
+        [Theory]
+        [InlineData("./some-file.txt", "hello!")]
+        public void It_can_write_text_to_a_file(string path, string text)
+        {
+            var directory = CreateDirectory();
+
+            directory.WriteAllText(path, text);
+
+            directory.ReadAllText(path).Should().Be(text);
+        }
+
+        [Fact]
+        public void It_can_overwrite_an_existing_file()
+        {
+            var directory = CreateDirectory();
+
+            directory.WriteAllText("./some-file.txt", "original text");
+            directory.WriteAllText("./some-file.txt", "updated text");
+
+            directory.ReadAllText("./some-file.txt").Should().Be("updated text");
+            
+        }
 
         [Fact]
         public void When_the_file_exists_FileExists_returns_true()
@@ -86,6 +149,13 @@ namespace MLS.Agent.Tests.Markdown
 
     public class FileSystemDirectoryAccessorTests : DirectoryAccessorTests
     {
+        public override IDirectoryAccessor CreateDirectory([CallerMemberName]string testName = null)
+        {
+            var directory = Package.CreateDirectory(testName);
+
+            return new FileSystemDirectoryAccessor(directory);
+        }
+
         public override IDirectoryAccessor GetDirectory(DirectoryInfo directoryInfo, DirectoryInfo rootDirectoryToAddFiles = null)
         {
             return new FileSystemDirectoryAccessor(directoryInfo);
@@ -94,6 +164,12 @@ namespace MLS.Agent.Tests.Markdown
 
     public class InMemoryDirectoryAccessorTests : DirectoryAccessorTests
     {
+        public override IDirectoryAccessor CreateDirectory([CallerMemberName]string testName = null)
+        {
+            return new InMemoryDirectoryAccessor();
+        }
+
+
         public override IDirectoryAccessor GetDirectory(DirectoryInfo rootDirectory, DirectoryInfo rootDirectoryToAddFiles = null)
         {
             return new InMemoryDirectoryAccessor(rootDirectory, rootDirectoryToAddFiles)

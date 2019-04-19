@@ -17,7 +17,7 @@ namespace WorkspaceServer.Tests
             var projectAsset = new ProjectAsset(directoryAccessor);
             package.Add(projectAsset);
 
-            package.Should().Contain(a => a == projectAsset);
+            package.Assets.Should().Contain(a => a == projectAsset);
         }
 
         [Fact]

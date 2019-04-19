@@ -16,14 +16,34 @@ namespace WorkspaceServer
             _rootDirectory = rootDir ?? throw new ArgumentNullException(nameof(rootDir));
         }
 
+        public bool DirectoryExists(RelativeDirectoryPath path)
+        {
+            return GetFullyQualifiedPath(path).Exists;
+        }
+
         public bool FileExists(RelativeFilePath filePath)
         {
             return GetFullyQualifiedPath(filePath).Exists;
-        }  
+        }
+
+        public void EnsureDirectoryExists(RelativeDirectoryPath path)
+        {
+            var fullyQualifiedPath = GetFullyQualifiedPath(path);
+
+            if (!Directory.Exists(fullyQualifiedPath.FullName))
+            {
+                Directory.CreateDirectory(fullyQualifiedPath.FullName);
+            }
+        }
 
         public string ReadAllText(RelativeFilePath filePath)
         {
             return File.ReadAllText(GetFullyQualifiedPath(filePath).FullName);
+        }
+
+        public void WriteAllText(RelativeFilePath path, string text)
+        {
+            File.WriteAllText(GetFullyQualifiedPath(path).FullName, text);
         }
 
         public FileSystemInfo GetFullyQualifiedPath(RelativePath path)

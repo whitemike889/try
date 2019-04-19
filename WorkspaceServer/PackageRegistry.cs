@@ -12,6 +12,8 @@ namespace WorkspaceServer
 {
     public class PackageRegistry : IEnumerable<Task<PackageBuilder>>
     {
+        private readonly List<IPackageFinder> _packageFinders;
+
         private readonly ConcurrentDictionary<string, Task<PackageBuilder>> _packageBuilders = new ConcurrentDictionary<string, Task<PackageBuilder>>();
         private readonly ConcurrentDictionary<string, Task<IPackage>> _packages = new ConcurrentDictionary<string, Task<IPackage>>();
         private readonly List<IPackageDiscoveryStrategy> _strategies = new List<IPackageDiscoveryStrategy>();
@@ -28,7 +30,10 @@ namespace WorkspaceServer
         {
         }
 
-        private PackageRegistry(bool createRebuildablePackage, IEnumerable<IPackageDiscoveryStrategy> strategies)
+        private PackageRegistry(
+            bool createRebuildablePackage, 
+            IEnumerable<IPackageDiscoveryStrategy> strategies,
+            IEnumerable<IPackageFinder> packageFinders = null)
         {
             _createRebuildablePackage = createRebuildablePackage;
 
@@ -41,6 +46,8 @@ namespace WorkspaceServer
 
                 _strategies.Add(strategy);
             }
+
+            _packageFinders = packageFinders?.ToList() ?? GetDefaultPackageFinders().ToList();
         }
 
         public void Add(string name, Action<PackageBuilder> configure)
@@ -70,12 +77,15 @@ namespace WorkspaceServer
 
             var package = await _packages.GetOrAdd(packageName, async name =>
             {
+                var descriptor = new PackageDescriptor(packageName);
 
-
-
-
-
-
+                foreach (var packgeFinder in _packageFinders)
+                {
+                    if (await packgeFinder.Find<T>(descriptor) is T pkg)
+                    {
+                        return pkg;
+                    }
+                }
 
                 var packageBuilder = await _packageBuilders.GetOrAdd(
                     name,
@@ -96,8 +106,7 @@ namespace WorkspaceServer
                         throw new PackageNotFoundException($"Package named \"{name2}\" not found.");
                     });
 
-                var p = packageBuilder.GetPackage(budget);
-                return p;
+                return packageBuilder.GetPackage(budget);
             });
 
             return (T) package;
@@ -199,5 +208,10 @@ namespace WorkspaceServer
 
         IEnumerator IEnumerable.GetEnumerator() =>
             GetEnumerator();
+
+        private static IEnumerable<IPackageFinder> GetDefaultPackageFinders()
+        {
+            yield return new FindPackageInDefaultLocation(new FileSystemDirectoryAccessor(Package.DefaultPackagesDirectory));
+        }
     }
 }

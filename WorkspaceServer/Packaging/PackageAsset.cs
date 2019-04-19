@@ -1,26 +1,37 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 
 namespace WorkspaceServer.Packaging
 {
-    public class Package2 : IEnumerable<PackageAsset>, IPackage
+    public class Package2 :
+        IPackage
     {
+        private readonly PackageDescriptor _descriptor;
         private readonly Dictionary<Type, PackageAsset> _assets = new Dictionary<Type, PackageAsset>();
 
         public Package2(
             string name,
             IDirectoryAccessor directoryAccessor)
         {
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                throw new ArgumentException("Value cannot be null or whitespace.", nameof(name));
-            }
+            _descriptor = new PackageDescriptor(name);
 
             DirectoryAccessor = directoryAccessor;
         }
 
-        public string Name { get; }
+        public Package2(
+            PackageDescriptor descriptor,
+            IDirectoryAccessor directoryAccessor)
+        {
+            _descriptor = descriptor ?? throw new ArgumentNullException(nameof(descriptor));
+
+            DirectoryAccessor = directoryAccessor ?? throw new ArgumentNullException(nameof(directoryAccessor));
+        }
+
+        public IEnumerable<PackageAsset> Assets => _assets.Values; 
+
+        public string Name => _descriptor.Name;
+
+        public string Version => _descriptor.Version;
 
         protected IDirectoryAccessor DirectoryAccessor { get; }
 
@@ -40,16 +51,6 @@ namespace WorkspaceServer.Packaging
             }
 
             _assets.Add(asset.GetType(), asset);
-        }
-
-        public IEnumerator<PackageAsset> GetEnumerator()
-        {
-            return _assets.Values.GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
         }
     }
 
