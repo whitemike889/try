@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CSharp;
@@ -13,7 +12,6 @@ namespace Microsoft.DotNet.Try.Project
 {
     public class BufferInliningTransformer : IWorkspaceTransformer
     {
-        private static readonly string ProcessorName = typeof(BufferInliningTransformer).Name;
         private static readonly string Padding = "\n";
 
         public static int PaddingSize => Padding.Length;
@@ -128,18 +126,6 @@ namespace Microsoft.DotNet.Try.Project
                 sourceBuffer.Position,
                 offset));
             files[viewPort.Destination.Name] = SourceFile.Create(newCode, viewPort.Destination.Name);
-        }
-
-        private static Task InjectBufferBeforeViewport(Viewport viewPort, Buffer sourceBuffer, ICollection<Buffer> buffers, IDictionary<string, SourceFile> files)
-        {
-            var span = viewPort.Region;
-            return InjectBufferAtSpan(viewPort, sourceBuffer, buffers, files, span);
-        }
-
-        private static Task InjectBufferAfterViewport(Viewport viewPort, Buffer sourceBuffer, ICollection<Buffer> buffers, IDictionary<string, SourceFile> files)
-        {
-            var span = viewPort.Region;
-            return InjectBufferAtSpan(viewPort, sourceBuffer, buffers, files, span);
         }
     }
 }
