@@ -17,31 +17,28 @@ namespace WorkspaceServer
         private readonly ConcurrentDictionary<string, Task<PackageBuilder>> _packageBuilders = new ConcurrentDictionary<string, Task<PackageBuilder>>();
         private readonly ConcurrentDictionary<string, Task<IPackage>> _packages = new ConcurrentDictionary<string, Task<IPackage>>();
         private readonly List<IPackageDiscoveryStrategy> _strategies = new List<IPackageDiscoveryStrategy>();
-        private readonly bool _createRebuildablePackage;
 
         public PackageRegistry(
-            bool createRebuildablePackage = false,
+            bool createRebuildablePackages = false,
             params IPackageDiscoveryStrategy[] additionalStrategies)
-            : this(createRebuildablePackage, new IPackageDiscoveryStrategy[]
-            {
-                new ProjectFilePackageDiscoveryStrategy(),
-                new DirectoryPackageDiscoveryStrategy()
-            }.Concat(additionalStrategies))
+            : this(new IPackageDiscoveryStrategy[]
+                   {
+                       new ProjectFilePackageDiscoveryStrategy(createRebuildablePackages),
+                       new DirectoryPackageDiscoveryStrategy(createRebuildablePackages)
+                   }.Concat(additionalStrategies))
         {
         }
 
         private PackageRegistry(
-            bool createRebuildablePackage, 
             IEnumerable<IPackageDiscoveryStrategy> strategies,
             IEnumerable<IPackageFinder> packageFinders = null)
         {
-            _createRebuildablePackage = createRebuildablePackage;
 
             foreach (var strategy in strategies)
             {
                 if (strategy == null)
                 {
-                    throw new ArgumentException($"Strategy cannot be null.");
+                    throw new ArgumentException("Strategy cannot be null.");
                 }
 
                 _strategies.Add(strategy);
@@ -79,19 +76,20 @@ namespace WorkspaceServer
             {
                 var descriptor = new PackageDescriptor(packageName);
 
+                // FIX: (Get) 
                 foreach (var packgeFinder in _packageFinders)
                 {
-                    if (await packgeFinder.Find<T>(descriptor) is T pkg)
-                    {
-                        return pkg;
-                    }
+                    // if (await packgeFinder.Find<T>(descriptor) is T pkg)
+                    // {
+                    //     return pkg;
+                    // }
                 }
 
                 var packageBuilder = await _packageBuilders.GetOrAdd(
                     name,
                     async name2 =>
                     {
-                        var packageDescriptor = new PackageDescriptor(name2, _createRebuildablePackage);
+                        var packageDescriptor = new PackageDescriptor(name2);
 
                         foreach (var strategy in _strategies)
                         {
@@ -114,8 +112,9 @@ namespace WorkspaceServer
 
         public static PackageRegistry CreateForTryMode(DirectoryInfo project, DirectoryInfo addSource = null)
         {
-            var registry = new PackageRegistry(true,
-               new LocalToolInstallingPackageDiscoveryStrategy(Package.DefaultPackagesDirectory, addSource));
+            var registry = new PackageRegistry(
+                true,
+                new LocalToolInstallingPackageDiscoveryStrategy(Package.DefaultPackagesDirectory, addSource));
 
             registry.Add(project.Name, builder =>
             {
@@ -128,7 +127,9 @@ namespace WorkspaceServer
 
         public static PackageRegistry CreateForHostedMode()
         {
-            var registry = new PackageRegistry(false, new LocalToolInstallingPackageDiscoveryStrategy(Package.DefaultPackagesDirectory));
+            var registry = new PackageRegistry(
+                false, 
+                new LocalToolInstallingPackageDiscoveryStrategy(Package.DefaultPackagesDirectory));
 
             registry.Add("console",
                          packageBuilder =>

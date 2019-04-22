@@ -7,6 +7,13 @@ namespace WorkspaceServer.Packaging
 {
     internal class DirectoryPackageDiscoveryStrategy : IPackageDiscoveryStrategy
     {
+        private readonly bool _createRebuildablePackage;
+
+        public DirectoryPackageDiscoveryStrategy(bool createRebuildablePackage)
+        {
+            _createRebuildablePackage = createRebuildablePackage;
+        }
+
         public Task<PackageBuilder> Locate(PackageDescriptor packageDescriptor, Budget budget)
         {
             var directory = new DirectoryInfo(Path.Combine(
@@ -15,7 +22,7 @@ namespace WorkspaceServer.Packaging
             if (directory.Exists)
             {
                 var packageBuilder = new PackageBuilder(packageDescriptor.Name);
-                packageBuilder.CreateRebuildablePackage = packageDescriptor.IsRebuildable;
+                packageBuilder.CreateRebuildablePackage = _createRebuildablePackage;
                 return Task.FromResult(packageBuilder);
             }
 

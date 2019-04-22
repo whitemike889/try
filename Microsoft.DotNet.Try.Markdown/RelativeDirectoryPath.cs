@@ -17,7 +17,7 @@ namespace Microsoft.DotNet.Try.Markdown
         {
             if (Path.IsPathRooted(path))
             {
-                throw new ArgumentException("Path cannot be absolute.");
+                throw new ArgumentException($"Path cannot be absolute: {path}");
             }
         }
 

@@ -7,26 +7,30 @@ namespace WorkspaceServer
     {
         private readonly IDirectoryAccessor _directoryAccessor;
 
-        public FindPackageInDefaultLocation(IDirectoryAccessor directoryAccessor)
+        public FindPackageInDefaultLocation(IDirectoryAccessor directoryAccessor = null)
         {
-            _directoryAccessor = directoryAccessor;
+            _directoryAccessor = directoryAccessor ??
+                                 new FileSystemDirectoryAccessor(Package.DefaultPackagesDirectory);
         }
 
-        public async Task<T> Find<T>(PackageDescriptor descriptor) where T : IPackage
+        public async Task<T> Find<T>(PackageDescriptor descriptor)
+            where T : IPackage
         {
-            Package2 package = null;
+            var package = default(T);
 
+            if (_directoryAccessor.DirectoryExists(descriptor.Name))
+            {
+                var pkg = new Package2(
+                    descriptor,
+                    _directoryAccessor);
 
-            // if (_directoryAccessor.DirectoryExists(descriptor.Name))
-            // {
-            //     package = new Package2(
-            //         descriptor.Name,
-            //         descriptor.Version,
-            //         DirectoryAccessor.
-            //     );
-            // }
+                if (pkg is T t)
+                {
+                    return t;
+                }
+            }
 
-            return default;
+            return package;
         }
     }
 }
