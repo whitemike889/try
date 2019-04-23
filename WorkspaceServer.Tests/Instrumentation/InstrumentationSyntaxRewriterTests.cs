@@ -164,11 +164,11 @@ namespace WorkspaceServer.Tests.Instrumentation
         }
 
         [Fact]
-        public async void Syntax_Tree_Has_Same_Language_As_Workspace_Build()
+        public async void Syntax_Tree_Has_Same_Language_As_Package()
         {
-            var workspaceBuild = await Create.ConsoleWorkspaceCopy();
-            var workspace = WorkspaceFactory.CreateWorkspaceFromDirectory(workspaceBuild.Directory, workspaceBuild.Name, includeInstrumentation: true);
-            var roslynWorkspaceServer = new RoslynWorkspaceServer(workspaceBuild);
+            var package = await Create.ConsoleWorkspaceCopy();
+            var workspace = WorkspaceFactory.CreateWorkspaceFromDirectory(package.Directory, package.Name, includeInstrumentation: true);
+            var roslynWorkspaceServer = new RoslynWorkspaceServer(package);
             Func<Task> run = ()=> roslynWorkspaceServer.Run(new WorkspaceRequest(workspace));
             run.Should().NotThrow();
         }

@@ -15,11 +15,14 @@ namespace WorkspaceServer.Packaging
 
             Name = name;
             Version = version;
+            IsPathSpecified = name.Contains("\\") || name.Contains("/");
         }
 
         public string Name { get; }
 
         public string Version { get; }
+
+        internal bool IsPathSpecified { get; }
 
         public override string ToString() => Name;
     }

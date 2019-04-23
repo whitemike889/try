@@ -36,8 +36,6 @@ namespace Microsoft.DotNet.Try.Jupyter
 
                     var code = executeRequest.Code;
 
-                    var package = await  _packageRegistry.Get<Package>("console");
-
                     var workspace = new Workspace(
                         files: new[]
                                {
@@ -47,11 +45,11 @@ namespace Microsoft.DotNet.Try.Jupyter
                                 {
                                     new Buffer(new BufferId("Program.cs", "main"), code), 
                                 },
-                        workspaceType: package.Name);
+                        workspaceType: "console");
 
                     var workspaceRequest = new WorkspaceRequest(workspace);
 
-                    var server = new RoslynWorkspaceServer(package);
+                    var server = new RoslynWorkspaceServer(new PackageRegistry());
 
                     var result = await server.Run(workspaceRequest);
 

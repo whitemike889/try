@@ -1,8 +1,28 @@
-﻿using System.Threading.Tasks;
+﻿using System.IO;
+using System.Threading.Tasks;
 using WorkspaceServer.Packaging;
 
 namespace WorkspaceServer
 {
+    public class PackageNameIsFullyQualifiedPath : IPackageFinder
+    {
+        public async Task<T> Find<T>(PackageDescriptor descriptor)
+            where T : IPackage
+        {
+            if (descriptor.IsPathSpecified)
+            {
+                var pkg = new Package2(descriptor.Name, new FileSystemDirectoryAccessor(new FileInfo(descriptor.Name).Directory));
+
+                if (pkg is T t)
+                {
+                    return t;
+                }
+            }
+
+            return default;
+        }
+    }
+
     public class FindPackageInDefaultLocation : IPackageFinder
     {
         private readonly IDirectoryAccessor _directoryAccessor;
@@ -16,9 +36,8 @@ namespace WorkspaceServer
         public async Task<T> Find<T>(PackageDescriptor descriptor)
             where T : IPackage
         {
-            var package = default(T);
-
-            if (_directoryAccessor.DirectoryExists(descriptor.Name))
+            if (!descriptor.IsPathSpecified &&
+                _directoryAccessor.DirectoryExists(descriptor.Name))
             {
                 var pkg = new Package2(
                     descriptor,
@@ -30,7 +49,7 @@ namespace WorkspaceServer
                 }
             }
 
-            return package;
+            return default;
         }
     }
 }

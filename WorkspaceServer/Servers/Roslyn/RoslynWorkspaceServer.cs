@@ -20,48 +20,42 @@ using WorkspaceServer.Features;
 using static Pocket.Logger<WorkspaceServer.Servers.Roslyn.RoslynWorkspaceServer>;
 using Workspace = Microsoft.DotNet.Try.Protocol.Workspace;
 using WorkspaceServer.LanguageServices;
+using WorkspaceServer.Packaging;
 using Package = WorkspaceServer.Packaging.Package;
 
 namespace WorkspaceServer.Servers.Roslyn
 {
     public class RoslynWorkspaceServer : ILanguageService, ICodeRunner, ICodeCompiler
     {
-        private readonly GetPackageByName getPackageByName;
+        private readonly IPackageFinder _packageFinder;
         private const int defaultBudgetInSeconds = 30;
         private readonly ConcurrentDictionary<string, AsyncLock> locks = new ConcurrentDictionary<string, AsyncLock>();
         private readonly IWorkspaceTransformer _transformer = new BufferInliningTransformer();
         private static readonly string UserCodeCompleted = nameof(UserCodeCompleted);
 
-        private delegate Task<Package> GetPackageByName(string name);
-
-        public RoslynWorkspaceServer(Package package)
+        public RoslynWorkspaceServer(IPackage package)
         {
-            if (package == null)
-            {
-                throw new ArgumentNullException(nameof(package));
-            }
-
-            getPackageByName = s => Task.FromResult(package);
+            _packageFinder = PackageFinder.Create(package);
         }
 
-        public RoslynWorkspaceServer(PackageRegistry registry)
+        public RoslynWorkspaceServer(IPackageFinder packageRegistry)
         {
-            if (registry == null)
-            {
-                throw new ArgumentNullException(nameof(registry));
-            }
-            
-            getPackageByName = async s => await registry.Get<Package>(s);
+            _packageFinder = packageRegistry ?? throw new ArgumentNullException(nameof(packageRegistry));
         }
 
         public async Task<CompletionResult> GetCompletionList(WorkspaceRequest request, Budget budget)
         {
             budget = budget ?? new TimeBudget(TimeSpan.FromSeconds(defaultBudgetInSeconds));
-            var package = await getPackageByName(request.Workspace.WorkspaceType);
+            var package = await _packageFinder.Find<Package>(request.Workspace.WorkspaceType);
 
             var processed = await _transformer.TransformAsync(request.Workspace);
             var sourceFiles = processed.GetSourceFiles();
-            var (_, documents) = await package.GetCompilationForLanguageServices(sourceFiles, GetSourceCodeKind(request), GetUsings(request.Workspace), budget);
+
+            var (_, documents) = await package.GetCompilationForLanguageServices(
+                                     sourceFiles, 
+                                     GetSourceCodeKind(request), 
+                                     GetUsings(request.Workspace), 
+                                     budget);
 
             var file = processed.GetFileFromBufferId(request.ActiveBufferId);
             var (_, _, absolutePosition) = processed.GetTextLocation(request.ActiveBufferId);
@@ -122,7 +116,7 @@ namespace WorkspaceServer.Servers.Roslyn
         {
             budget = budget ?? new TimeBudget(TimeSpan.FromSeconds(defaultBudgetInSeconds));
 
-            var package = await getPackageByName(request.Workspace.WorkspaceType);
+            var package = await _packageFinder.Find<Package>(request.Workspace.WorkspaceType);
 
             var processed = await _transformer.TransformAsync(request.Workspace);
 
@@ -163,7 +157,7 @@ namespace WorkspaceServer.Servers.Roslyn
         {
             budget = budget ?? new TimeBudget(TimeSpan.FromSeconds(defaultBudgetInSeconds));
 
-            var package = await getPackageByName(request.Workspace.WorkspaceType);
+            var package = await _packageFinder.Find<Package>(request.Workspace.WorkspaceType);
 
             var workspace = await _transformer.TransformAsync(request.Workspace);
 
@@ -233,7 +227,7 @@ namespace WorkspaceServer.Servers.Roslyn
             using (Log.OnEnterAndExit())
             using (await locks.GetOrAdd(workspace.WorkspaceType, s => new AsyncLock()).LockAsync())
             {
-                var package = await getPackageByName(workspace.WorkspaceType);
+                var package = await _packageFinder.Find<Package>(workspace.WorkspaceType);
 
                 var result = await CompileWorker(request.Workspace, request.ActiveBufferId, budget);
 
@@ -414,7 +408,7 @@ namespace WorkspaceServer.Servers.Roslyn
             BufferId activeBufferId,
             Budget budget)
         {
-            var package = await getPackageByName(workspace.WorkspaceType);
+            var package = await _packageFinder.Find<Package>(workspace.WorkspaceType);
             workspace = await _transformer.TransformAsync(workspace);
             var compilation = await package.Compile(workspace, budget, activeBufferId);
             var (diagnosticsInActiveBuffer, allDiagnostics) = workspace.MapDiagnostics(activeBufferId, compilation.GetDiagnostics());

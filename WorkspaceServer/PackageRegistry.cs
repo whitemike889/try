@@ -10,7 +10,9 @@ using WorkspaceServer.Packaging;
 
 namespace WorkspaceServer
 {
-    public class PackageRegistry : IEnumerable<Task<PackageBuilder>>
+    public class PackageRegistry : 
+        IPackageFinder,
+        IEnumerable<Task<PackageBuilder>>
     {
         private readonly List<IPackageFinder> _packageFinders;
 
@@ -33,7 +35,6 @@ namespace WorkspaceServer
             IEnumerable<IPackageDiscoveryStrategy> strategies,
             IEnumerable<IPackageFinder> packageFinders = null)
         {
-
             foreach (var strategy in strategies)
             {
                 if (strategy == null)
@@ -77,12 +78,18 @@ namespace WorkspaceServer
                 var descriptor = new PackageDescriptor(packageName);
 
                 // FIX: (Get) 
-                foreach (var packgeFinder in _packageFinders)
+                if (typeof(T) != typeof(Package))
                 {
-                    // if (await packgeFinder.Find<T>(descriptor) is T pkg)
+                    // foreach (var packgeFinder in _packageFinders)
                     // {
-                    //     return pkg;
+                    //     if (await packgeFinder.Find<T>(descriptor) is T pkg)
+                    //     {
+                    //         return pkg;
+                    //     }
                     // }
+                }
+                else
+                {
                 }
 
                 var packageBuilder = await _packageBuilders.GetOrAdd(
@@ -212,7 +219,13 @@ namespace WorkspaceServer
 
         private static IEnumerable<IPackageFinder> GetDefaultPackageFinders()
         {
+            yield return new PackageNameIsFullyQualifiedPath();
             yield return new FindPackageInDefaultLocation(new FileSystemDirectoryAccessor(Package.DefaultPackagesDirectory));
+        }
+
+        Task<T> IPackageFinder.Find<T>(PackageDescriptor descriptor)
+        {
+            return Get<T>(descriptor.Name);
         }
     }
 }
