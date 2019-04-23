@@ -78,5 +78,7 @@ namespace WorkspaceServer
             return files.Select(f =>
              new RelativeFilePath(PathUtilities.GetRelativePath(_rootDirectory.FullName, f.FullName)));
         }
+
+        public override string ToString() => _rootDirectory.FullName;
     }
 }

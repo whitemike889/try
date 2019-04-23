@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.CodeAnalysis;
@@ -15,7 +16,12 @@ namespace WorkspaceServer.Packaging
         DirectoryInfo Directory { get; }
     }
 
-    public interface IMayOrMayNotSupportBlazor : IPackage
+    public interface IHaveADirectoryAccessor : IPackage
+    {
+        IDirectoryAccessor Directory { get; }
+    }
+
+    public interface IMightSupportBlazor : IPackage
     {
         bool CanSupportBlazor { get; }
     }
@@ -24,12 +30,6 @@ namespace WorkspaceServer.Packaging
     {
         Task<Workspace> CreateRoslynWorkspaceForRunAsync(Budget budget);
     }
-
-    public interface IPackageFinder
-    {
-        Task<T> Find<T>(PackageDescriptor descriptor) where T : IPackage;
-    }
-
 
     public static class PackageFinder
     {
@@ -45,13 +45,13 @@ namespace WorkspaceServer.Packaging
             return new AnonymousPackageFinder(package);
         }
 
-        public class AnonymousPackageFinder : IPackageFinder
+        private class AnonymousPackageFinder : IPackageFinder
         {
             private readonly IPackage _package;
 
             public AnonymousPackageFinder(IPackage package)
             {
-                _package = package;
+                _package = package ?? throw new ArgumentNullException(nameof(package));
             }
 
             public Task<T> Find<T>(PackageDescriptor descriptor) where T : IPackage

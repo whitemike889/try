@@ -13,12 +13,18 @@ namespace WorkspaceServer.Packaging
     public abstract class PackageBase : 
         IPackage, 
         IHaveADirectory,
-        IMayOrMayNotSupportBlazor
+        IMightSupportBlazor
+        // FIX: (PackageBase) 
+        // , IHaveADirectoryAccessor
     {
+        // IDirectoryAccessor IHaveADirectoryAccessor.Directory => new FileSystemDirectoryAccessor(Directory);
+
+
         internal const string FullBuildBinlogFileName = "package_fullBuild.binlog";
 
         private readonly AsyncLazy<bool> _lazyCreation;
         private bool? _canSupportBlazor;
+        private IDirectoryAccessor directory;
 
         protected PackageBase(
             string name = null,
@@ -155,5 +161,6 @@ namespace WorkspaceServer.Packaging
         {
             return Directory.GetFiles("*.csproj").FirstOrDefault();
         }
+
     }
 }

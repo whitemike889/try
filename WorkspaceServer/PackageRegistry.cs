@@ -73,34 +73,35 @@ namespace WorkspaceServer
                 packageName = "console";
             }
 
-            var package = await _packages.GetOrAdd(packageName, async name =>
-            {
-                var descriptor = new PackageDescriptor(packageName);
+            var descriptor = new PackageDescriptor(packageName);
 
-                // FIX: (Get) 
-                if (typeof(T) != typeof(Package))
+            // FIX: (Get) move this into the cache
+
+            if (typeof(T) != typeof(Package))
+            {
+                foreach (var packgeFinder in _packageFinders)
                 {
-                    // foreach (var packgeFinder in _packageFinders)
+                    // if (await packgeFinder.Find<T>(descriptor) is T pkg)
                     // {
-                    //     if (await packgeFinder.Find<T>(descriptor) is T pkg)
-                    //     {
-                    //         return pkg;
-                    //     }
+                    //     return pkg;
                     // }
                 }
-                else
-                {
-                }
+            }
+            else
+            {
+            }
+
+            var package = await _packages.GetOrAdd(packageName, async name =>
+            {
 
                 var packageBuilder = await _packageBuilders.GetOrAdd(
                     name,
                     async name2 =>
                     {
-                        var packageDescriptor = new PackageDescriptor(name2);
 
                         foreach (var strategy in _strategies)
                         {
-                            var builder = await strategy.Locate(packageDescriptor, budget);
+                            var builder = await strategy.Locate(descriptor, budget);
 
                             if (builder != null)
                             {

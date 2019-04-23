@@ -8,10 +8,12 @@ namespace WorkspaceServer.Packaging
     public class Package2 :
         IPackage,
         IHaveADirectory,
-        IMayOrMayNotSupportBlazor
+        IMightSupportBlazor,
+        IHaveADirectoryAccessor
     {
         private readonly PackageDescriptor _descriptor;
         private readonly Dictionary<Type, PackageAsset> _assets = new Dictionary<Type, PackageAsset>();
+        private IDirectoryAccessor directory;
 
         public Package2(
             string name,
@@ -34,7 +36,7 @@ namespace WorkspaceServer.Packaging
 
         public string Version => _descriptor.Version;
 
-        protected IDirectoryAccessor DirectoryAccessor { get; }
+        public IDirectoryAccessor DirectoryAccessor { get; }
 
         public void Add(PackageAsset asset)
         {
@@ -57,5 +59,7 @@ namespace WorkspaceServer.Packaging
         public bool CanSupportBlazor => Assets.Any(a => a is WebAssemblyAsset);
 
         public DirectoryInfo Directory => DirectoryAccessor.GetFullyQualifiedRoot();
+
+        IDirectoryAccessor IHaveADirectoryAccessor.Directory => DirectoryAccessor;
     }
 }

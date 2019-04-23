@@ -10,9 +10,10 @@ namespace WorkspaceServer.Tests
         private readonly PackageRegistry registry = new PackageRegistry();
 
       
-        [Fact]
+        [Fact(Skip = "Cache is disabled for the moment")]
         public async Task PackageRegistry_will_return_same_instance_of_a_package()
         {
+            // FIX: (PackageRegistry_will_return_same_instance_of_a_package) 
             var packageName = Package.CreateDirectory(nameof(PackageRegistry_will_return_same_instance_of_a_package)).Name;
 
             registry.Add(packageName,

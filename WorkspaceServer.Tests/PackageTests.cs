@@ -178,7 +178,7 @@ namespace WorkspaceServer.Tests
         public async Task CanSupportBlazor_indicates_whether_the_package_supports_Blazor(string packageName, bool expected)
         {
             var registry = PackageRegistry.CreateForHostedMode();
-            var package = await registry.Get<IMayOrMayNotSupportBlazor>(packageName);
+            var package = await registry.Get<IMightSupportBlazor>(packageName);
             package.CanSupportBlazor.Should().Be(expected);
         }
     }

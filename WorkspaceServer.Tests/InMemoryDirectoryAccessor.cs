@@ -26,13 +26,33 @@ namespace WorkspaceServer.Tests
                                  WorkingDirectory;
         }
 
-        public DirectoryInfo WorkingDirectory { get; }
+        internal DirectoryInfo WorkingDirectory { get; }
 
         public void Add((string path, string content) file)
         {
             var fileInfo = new FileInfo(Path.Combine(_rootDirToAddFiles.FullName, file.path));
 
             _files.Add(fileInfo, file.content);
+        }
+
+        public FileSystemDirectoryAccessor CreateFiles()
+        {
+            foreach (var filePath in GetAllFilesRecursively())
+            {
+                var absolutePath = GetFullyQualifiedPath(filePath);
+
+                var text = ReadAllText(filePath);
+
+                if (absolutePath is FileInfo file &&
+                    !file.Directory.Exists)
+                {
+                    file.Directory.Create();
+                }
+
+                File.WriteAllText(absolutePath.FullName, text);
+            }
+
+            return new FileSystemDirectoryAccessor(WorkingDirectory);
         }
 
         public bool DirectoryExists(RelativeDirectoryPath path)
@@ -119,6 +139,8 @@ namespace WorkspaceServer.Tests
             return _files.Keys.Select(key => new RelativeFilePath(
                                           Path.GetRelativePath(WorkingDirectory.FullName, key.FullName)));
         }
+
+        public override string ToString() => this.GetFullyQualifiedRoot().FullName;
 
         internal class FileSystemInfoComparer : IEqualityComparer<FileSystemInfo>
         {

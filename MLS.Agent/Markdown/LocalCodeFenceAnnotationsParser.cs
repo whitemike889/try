@@ -41,9 +41,18 @@ namespace MLS.Agent.Markdown
             {
                 local.DirectoryAccessor =
                     new AsyncLazy<IDirectoryAccessor>(async () =>
-                                                          await GetDirectoryAccessorForPackage(
-                                                              local,
-                                                              _packageRegistry) ?? _directoryAccessor);
+                    {
+                        var package = await GetDirectoryAccessorForPackage(
+                                          local,
+                                          _packageRegistry);
+
+                        if (package != null)
+                        {
+                            return package;
+                        }
+
+                        return _directoryAccessor;
+                    });
 
                 var projectResult = local.ParseResult.CommandResult["project"];
                 if (projectResult?.IsImplicit ?? false)
@@ -59,10 +68,21 @@ namespace MLS.Agent.Markdown
             CodeBlockAnnotations annotations,
             PackageRegistry packageRegistry)
         {
+            // FIX: (GetDirectoryAccessorForPackage) clean this up
             if (annotations.Package != null &&
                 await packageRegistry.Get<IHaveADirectory>(annotations.Package)
                     is IHaveADirectory package)
             {
+                if (package is IHaveADirectoryAccessor hasDirectoryAccessor)
+                {
+                    if (hasDirectoryAccessor.Directory.FileExists(package.Name))
+                    {
+                        return null;
+                    }
+
+                    return hasDirectoryAccessor.Directory;
+                }
+
                 if (File.Exists(package.Name))
                 {
                     return null;

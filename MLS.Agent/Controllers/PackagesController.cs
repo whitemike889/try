@@ -28,7 +28,7 @@ namespace MLS.Agent.Controllers
         {
             try
             {
-                var package = await _registry.Get<IMayOrMayNotSupportBlazor>(name);
+                var package = await _registry.Get<IMightSupportBlazor>(name);
                 var isBlazorSupported = package.CanSupportBlazor;
                 return Ok(value: new Microsoft.DotNet.Try.Protocol.Package(isBlazorSupported));
             }
