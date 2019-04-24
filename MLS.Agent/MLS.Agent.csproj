@@ -85,6 +85,7 @@
     <ProjectReference Include="..\MLS.Agent.Tools\MLS.Agent.Tools.csproj" />
     <ProjectReference Include="..\MLS.Blazor\MLS.Blazor.csproj" />
     <ProjectReference Include="..\Microsoft.DotNet.Try.Jupyter\Microsoft.DotNet.Try.Jupyter.csproj" />
+    <ProjectReference Include="..\MLS.HumanizerRunner\MLS.HumanizerRunner.csproj" />
     <ProjectReference Include="..\MLS.Repositories\MLS.Repositories.csproj" />
     <ProjectReference Include="..\WorkspaceServer\WorkspaceServer.csproj" />
   </ItemGroup>

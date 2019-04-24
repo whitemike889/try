@@ -87,6 +87,15 @@ dotnet add package Newtonsoft.Json
 xmlstarlet ed --inplace --insert "/Project/PropertyGroup/OutputType" --type elem -n "LangVersion" --value "7.3" blazor-console.csproj
 dotnet build /bl:package_fullBuild.binlog
 
+#humanizer.api
+mkdir -p $WORKSPACES_ROOT/humanizer.api
+cd $WORKSPACES_ROOT/humanizer.api
+dotnet new classlib
+dotnet add package Newtonsoft.Json
+dotnet add package Humanizer
+xmlstarlet ed --inplace --insert "/Project/PropertyGroup/OutputType" --type elem -n "LangVersion" --value "7.3" humanizer.api.csproj
+dotnet build /bl:package_fullBuild.binlog
+
 ## NodaTime
 mkdir -p $WORKSPACES_ROOT/blazor-nodatime.api
 cd $WORKSPACES_ROOT/blazor-nodatime.api
