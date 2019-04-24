@@ -3,12 +3,9 @@ using System.CommandLine;
 using System.CommandLine.Binding;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using Markdig;
 using Microsoft.DotNet.Try.Markdown;
-using MLS.Agent.Tools;
 using WorkspaceServer;
-using WorkspaceServer.Packaging;
 
 namespace MLS.Agent.Markdown
 {
@@ -39,20 +36,8 @@ namespace MLS.Agent.Markdown
             if (result is SuccessfulCodeFenceOptionParseResult succeeded &&
                 succeeded.Annotations is LocalCodeBlockAnnotations local)
             {
-                local.DirectoryAccessor =
-                    new AsyncLazy<IDirectoryAccessor>(async () =>
-                    {
-                        var package = await GetDirectoryAccessorForPackage(
-                                          local,
-                                          _packageRegistry);
-
-                        if (package != null)
-                        {
-                            return package;
-                        }
-
-                        return _directoryAccessor;
-                    });
+                local.MarkdownProjectRoot = _directoryAccessor;
+                local.PackageRegistry = _packageRegistry;
 
                 var projectResult = local.ParseResult.CommandResult["project"];
                 if (projectResult?.IsImplicit ?? false)
@@ -62,39 +47,6 @@ namespace MLS.Agent.Markdown
             }
 
             return result;
-        }
-
-        private static async Task<IDirectoryAccessor> GetDirectoryAccessorForPackage(
-            CodeBlockAnnotations annotations,
-            PackageRegistry packageRegistry)
-        {
-            // FIX: (GetDirectoryAccessorForPackage) clean this up
-            if (annotations.Package != null &&
-                await packageRegistry.Get<IHaveADirectory>(annotations.Package)
-                    is IHaveADirectory package)
-            {
-                if (package is IHaveADirectoryAccessor hasDirectoryAccessor)
-                {
-                    if (hasDirectoryAccessor.Directory.FileExists(package.Name))
-                    {
-                        return null;
-                    }
-
-                    return hasDirectoryAccessor.Directory;
-                }
-
-                if (File.Exists(package.Name))
-                {
-                    return null;
-                }
-
-                if (package.Directory != null)
-                {
-                    return new FileSystemDirectoryAccessor(package.Directory);
-                }
-            }
-
-            return null;
         }
 
         protected override ModelBinder CreateModelBinder()

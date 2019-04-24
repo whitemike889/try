@@ -81,10 +81,10 @@ namespace WorkspaceServer
             {
                 foreach (var packgeFinder in _packageFinders)
                 {
-                    // if (await packgeFinder.Find<T>(descriptor) is T pkg)
-                    // {
-                    //     return pkg;
-                    // }
+                    if (await packgeFinder.Find<T>(descriptor) is T pkg)
+                    {
+                        return pkg;
+                    }
                 }
             }
             else

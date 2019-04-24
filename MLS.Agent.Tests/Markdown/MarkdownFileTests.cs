@@ -420,17 +420,6 @@ This is the end of the file"));
             }
 
             [Fact]
-            public async Task When_file_argument_is_specified_then_it_inserts_code_present_in_csharp_file_from_a_package()
-            {
-                var html = await RenderHtml(("readme.md", @"
-```cs --source-file Program.cs --package console
-```
-                        "));
-
-                html.Should().Contain("Hello World!");
-            }
-
-            [Fact]
             public async Task Package_option_defaults_to_startup_options()
             {
                 var expectedPackage = "console";

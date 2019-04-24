@@ -9,7 +9,7 @@ namespace WorkspaceServer.Packaging
             DirectoryAccessor = directoryAccessor ?? throw new ArgumentNullException(nameof(directoryAccessor));
         }
 
-        protected internal IDirectoryAccessor DirectoryAccessor { get; }
+        public IDirectoryAccessor DirectoryAccessor { get; }
     }
 
     public class ProjectAsset : PackageAsset

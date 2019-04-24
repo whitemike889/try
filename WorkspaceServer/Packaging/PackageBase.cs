@@ -14,17 +14,14 @@ namespace WorkspaceServer.Packaging
         IPackage, 
         IHaveADirectory,
         IMightSupportBlazor
-        // FIX: (PackageBase) 
-        // , IHaveADirectoryAccessor
+        , IHaveADirectoryAccessor
     {
-        // IDirectoryAccessor IHaveADirectoryAccessor.Directory => new FileSystemDirectoryAccessor(Directory);
-
+        IDirectoryAccessor IHaveADirectoryAccessor.Directory => new FileSystemDirectoryAccessor(Directory);
 
         internal const string FullBuildBinlogFileName = "package_fullBuild.binlog";
 
         private readonly AsyncLazy<bool> _lazyCreation;
         private bool? _canSupportBlazor;
-        private IDirectoryAccessor directory;
 
         protected PackageBase(
             string name = null,

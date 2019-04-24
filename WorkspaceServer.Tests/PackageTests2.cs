@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
 using FluentAssertions;
 using WorkspaceServer.Packaging;
 using Xunit;
@@ -34,7 +36,39 @@ namespace WorkspaceServer.Tests
                    .And
                    .Message
                    .Should()
-                   .Be("Asset must be located under package path");
+                   .StartWith("Asset must be located under package path");
+        }
+
+        [Fact]
+        public async Task A_package_discovers_project_assets_in_its_root()
+        {
+            var package = new Package2(
+                "the-package",
+                new InMemoryDirectoryAccessor
+                {
+                    ("myapp.csproj", "")
+                });
+
+            await package.EnsureLoadedAsync();
+
+            package.Assets.Should().ContainSingle(a => a is ProjectAsset);
+            package.Assets.Single().DirectoryAccessor.FileExists("myapp.csproj").Should().BeTrue();
+        }
+
+        [Fact]
+        public async Task A_package_discovers_project_assets_in_subfolders()
+        {
+            var package = new Package2(
+                "the-package",
+                new InMemoryDirectoryAccessor
+                {
+                    ("./subfolder/myapp.csproj", "")
+                });
+
+            await package.EnsureLoadedAsync();
+
+            package.Assets.Should().ContainSingle(a => a is ProjectAsset);
+            package.Assets.Single().DirectoryAccessor.FileExists("myapp.csproj").Should().BeTrue();
         }
     }
 }

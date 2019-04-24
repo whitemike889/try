@@ -190,9 +190,9 @@ $@"```cs --project {package} --source-file ../src/sample/Program.cs
         [Fact]
         public async Task Sets_the_trydotnet_package_attribute_using_the_passed_package_option()
         {
-            var rootDirectory = TestAssets.SampleConsole;
-            var currentDir = new DirectoryInfo(Path.Combine(rootDirectory.FullName, "docs"));
-            var directoryAccessor = new InMemoryDirectoryAccessor(currentDir, rootDirectory)
+            var rootDirectoryToAddFiles = TestAssets.SampleConsole;
+            var workingDirectory = new DirectoryInfo(Path.Combine(rootDirectoryToAddFiles.FullName, "docs"));
+            var directoryAccessor = new InMemoryDirectoryAccessor(workingDirectory, rootDirectoryToAddFiles)
             {
                 ("src/sample/Program.cs", ""),
                 ("src/sample/sample.csproj", "")
@@ -202,7 +202,7 @@ $@"```cs --project {package} --source-file ../src/sample/Program.cs
             var pipeline = new MarkdownPipelineBuilder().UseCodeBlockAnnotations(directoryAccessor, registry).Build();
 
             var document =
-$@"```cs --package {package} --source-file Program.cs
+$@"```cs --package {package} --source-file ../src/sample/Program.cs
 ```";
 
             var html = (await pipeline.RenderHtmlAsync(document)).EnforceLF();
@@ -501,7 +501,7 @@ $@"```cs --source-file Program.cs --region {region}
             package = "not-the-package";
 
             var document =
-$@"```cs --package {package} --source-file Program.cs
+$@"```cs --package {package} 
 ```";
 
             var html = (await pipeline.RenderHtmlAsync(document)).EnforceLF();

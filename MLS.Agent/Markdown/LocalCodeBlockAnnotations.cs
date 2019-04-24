@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.DotNet.Try.Markdown;
 using Microsoft.DotNet.Try.Project;
-using MLS.Agent.Tools;
 using WorkspaceServer;
+using WorkspaceServer.Packaging;
 
 namespace MLS.Agent.Markdown
 {
@@ -39,7 +39,9 @@ namespace MLS.Agent.Markdown
 
         public bool IsProjectImplicit { get; set; }
 
-        public AsyncLazy<IDirectoryAccessor> DirectoryAccessor { get; set; }
+        public IDirectoryAccessor MarkdownProjectRoot { get; internal set; }
+
+        internal PackageRegistry PackageRegistry { get; set; }
 
         public override async Task<CodeBlockContentFetchResult> TryGetExternalContent()
         {
@@ -56,7 +58,7 @@ namespace MLS.Agent.Markdown
                     return CodeBlockContentFetchResult.None;
                 }
 
-                content = (await DirectoryAccessor.ValueAsync()).ReadAllText(SourceFile);
+                content = MarkdownProjectRoot.ReadAllText(SourceFile);
 
                 if (string.IsNullOrWhiteSpace(Region))
                 {
@@ -93,18 +95,7 @@ namespace MLS.Agent.Markdown
 
         private async Task Validate(List<string> errors)
         {
-            IDirectoryAccessor accessor;
-            try
-            {
-                accessor = await DirectoryAccessor.ValueAsync();
-            }
-            catch (PackageNotFoundException e)
-            {
-                errors.Add(e.Message);
-                return;
-            }
-
-            if (SourceFile != null && !accessor.FileExists(SourceFile))
+            if (SourceFile != null && !MarkdownProjectRoot.FileExists(SourceFile))
             {
                 errors.Add($"File not found: {SourceFile.Value}");
             }
@@ -114,9 +105,29 @@ namespace MLS.Agent.Markdown
                 errors.Add("No project file or package specified");
             }
 
-            if (Package != null && !IsProjectImplicit)
+            if (Package != null)
             {
-                errors.Add("Can't specify both --project and --package");
+                if (!IsProjectImplicit)
+                {
+                    errors.Add("Can't specify both --project and --package");
+                }
+                else
+                {
+                    try
+                    {
+                        var package = await PackageRegistry.Find<IPackage>(Package);
+
+                        if (package == null)
+                        {
+                        
+                        }
+                    }
+                    catch (PackageNotFoundException e)
+                    {
+                        errors.Add(e.Message);
+                        return;
+                    }
+                }
             }
 
             if (Project != null)
@@ -125,7 +136,7 @@ namespace MLS.Agent.Markdown
 
                 if (packageName == null)
                 {
-                    errors.Add($"No project file could be found at path {accessor.GetFullyQualifiedPath(new RelativeDirectoryPath("."))}");
+                    errors.Add($"No project file could be found at path {MarkdownProjectRoot.GetFullyQualifiedPath(new RelativeDirectoryPath("."))}");
                 }
             }
         }
@@ -154,7 +165,7 @@ namespace MLS.Agent.Markdown
             var file = DestinationFile ?? SourceFile;
             return file == null
                        ? string.Empty
-                       : (await DirectoryAccessor.ValueAsync())
+                       : MarkdownProjectRoot
                          .GetFullyQualifiedPath(file)
                          .FullName;
         }
@@ -166,7 +177,7 @@ namespace MLS.Agent.Markdown
 
         private async Task<string> GetSourceFileAbsolutePath()
         {
-            return (await DirectoryAccessor.ValueAsync()).GetFullyQualifiedPath(SourceFile).FullName;
+            return MarkdownProjectRoot.GetFullyQualifiedPath(SourceFile).FullName;
         }
     }
 }
