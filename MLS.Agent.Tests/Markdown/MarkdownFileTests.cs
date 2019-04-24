@@ -316,6 +316,45 @@ Console.WriteLine(""This code should not appear"");
             }
 
             [Fact]
+            public async Task Should_enforce_editable_false_for_hidden_blocks()
+            {
+                var codeContent = @"using System;
+
+namespace BasicConsoleApp
+{
+    class Program
+    {
+        static void MyProgram(string[] args)
+        {
+            Console.WriteLine(""Hello World!"");
+        }
+    }
+}".EnforceLF();
+
+                var html = await RenderHtml(
+                    ("sample.csproj", ""),
+                    ("Program.cs", codeContent),
+                    ("Readme.md",
+                        @"```cs --source-file Program.cs --hidden
+Console.WriteLine(""This code should not appear"");
+```"));
+
+                var htmlDocument = new HtmlDocument();
+                htmlDocument.LoadHtml(html);
+
+                var code = htmlDocument.DocumentNode
+                    .SelectSingleNode("//pre/code");
+
+                var output = code.InnerHtml.EnforceLF();
+
+                code.Attributes["data-trydotnet-mode"].Value.Should().Match("include");
+
+                code.ParentNode.Attributes["style"].Value.Should().Match("border:none; margin:0px; padding:0px; visibility:hidden; display: none;");
+
+                output.Should().Contain($"{codeContent.HtmlEncode()}");
+            }
+
+            [Fact]
             public async Task Multiple_fenced_code_blocks_are_correctly_rendered()
             {
                 var region1Code = @"Console.WriteLine(""I am region one code"");";
