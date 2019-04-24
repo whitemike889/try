@@ -27,7 +27,7 @@ namespace Microsoft.DotNet.Try.Markdown
             RunArgs = runArgs;
             ParseResult = parseResult;
             PackageVersion = packageVersion;
-            Editable = editable;
+            Editable = !hidden && editable;
             Hidden = hidden;
 
             if (string.IsNullOrWhiteSpace(Session) && Editable)
