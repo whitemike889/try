@@ -37,7 +37,7 @@ namespace MLS.Agent.Tests.Markdown
                  .And
                  .Contain(new RelativeFilePath("Subdirectory/Tutorial.md"));
         }
-        
+
         [Fact]
         public void GetAllFilesRecursively_does_not_return_directories()
         {
@@ -47,6 +47,36 @@ namespace MLS.Agent.Tests.Markdown
 
             files.Should().NotContain(f => f.Value.EndsWith("Subdirectory"));
             files.Should().NotContain(f => f.Value.EndsWith("Subdirectory/"));
+        }
+
+        [Fact]
+        public void It_can_retrieve_all_directories_recursively()
+        {
+            var directory = GetDirectory(TestAssets.SampleConsole);
+
+            var directories = directory.GetAllDirectoriesRecursively();
+
+            directories.Should()
+                       .Contain(new RelativeDirectoryPath("Subdirectory"));
+        }
+
+        [Fact]
+        public void GetAllDirectoriesRecursively_does_not_return_files()
+        {
+            var directory = GetDirectory(TestAssets.SampleConsole);
+
+            var directories = directory.GetAllDirectoriesRecursively();
+
+            directories.Should()
+                       .NotContain(d => d.Value.EndsWith("BasicConsoleApp.csproj"))
+                       .And
+                       .NotContain(d => d.Value.EndsWith("Program.cs"))
+                       .And
+                       .NotContain(d => d.Value.EndsWith("Readme.md"))
+                       .And
+                       .NotContain(d => d.Value.EndsWith("Subdirectory/AnotherProgram.cs"))
+                       .And
+                       .NotContain(d => d.Value.EndsWith("Subdirectory/Tutorial.md"));
         }
 
         [Theory]
@@ -191,6 +221,19 @@ namespace MLS.Agent.Tests.Markdown
                 var fullyQualifiedPath = directory.GetFullyQualifiedPath(relativePath).FullName;
                 fullyQualifiedPath.Should().NotContain(unexpectedPathSeparator);
             }
+        }
+
+        [Fact]
+        public void It_can_make_a_directory_accessor_from_an_absolute_DirectoryInfo()
+        {
+            
+            var directory = GetDirectory(TestAssets.SampleConsole);
+
+            var fullyQualifiedSubdirectory = new DirectoryInfo(directory.GetFullyQualifiedFilePath("./Subdirectory/").FullName);
+
+            var subdirectory = directory.GetDirectoryAccessorFor(fullyQualifiedSubdirectory);
+
+            subdirectory.FileExists("Tutorial.md").Should().BeTrue();
         }
     }
 

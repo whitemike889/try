@@ -10,7 +10,6 @@ namespace WorkspaceServer
 
         bool DirectoryExists(RelativeDirectoryPath path);
 
-
         void EnsureDirectoryExists(RelativeDirectoryPath path);
 
         string ReadAllText(RelativeFilePath path);
@@ -18,6 +17,8 @@ namespace WorkspaceServer
         void WriteAllText(RelativeFilePath path, string text);
 
         IEnumerable<RelativeFilePath> GetAllFilesRecursively();
+
+        IEnumerable<RelativeDirectoryPath> GetAllDirectoriesRecursively();
 
         FileSystemInfo GetFullyQualifiedPath(RelativePath path);
 

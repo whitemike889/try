@@ -4,24 +4,38 @@ using System.Threading.Tasks;
 
 namespace WorkspaceServer.Packaging
 {
-    internal class ToolContainingWebAssemblyAssetLoader : IPackageAssetLoader
+    public class ToolContainingWebAssemblyAssetLoader : IPackageAssetLoader
     {
-      
-        public Task<IEnumerable<PackageAsset>> LoadAsync(Package2 package)
+        private readonly IToolPackageLocator _toolPackageLocator;
+
+        public ToolContainingWebAssemblyAssetLoader(IToolPackageLocator toolPackageLocator = null)
+        {
+            _toolPackageLocator = toolPackageLocator ??
+                                  new ToolPackageLocator();
+        }
+
+        public async Task<IEnumerable<PackageAsset>> LoadAsync(Package2 package)
         {
             var directory = package.DirectoryAccessor;
 
-            if (directory.DirectoryExists(".store") )
+            if (directory.DirectoryExists(".store"))
             {
                 var exeName = package.Name.ExecutableName();
 
-                if (directory.FileExists(exeName)) 
+                if (directory.FileExists(exeName))
                 {
+                    var exePath = directory.GetFullyQualifiedFilePath(exeName);
 
+                    var toolDirectory = await _toolPackageLocator.PrepareToolAndLocateAssetDirectory(exePath);
+
+                    return new PackageAsset[]
+                           {
+                               new WebAssemblyAsset(directory.GetDirectoryAccessorFor(toolDirectory))
+                           };
                 }
             }
 
-            return Task.FromResult(Enumerable.Empty<PackageAsset>());
+            return Enumerable.Empty<PackageAsset>();
         }
     }
 }

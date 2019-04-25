@@ -146,6 +146,14 @@ namespace WorkspaceServer.Tests
                    };
         }
 
+        public IEnumerable<RelativeDirectoryPath> GetAllDirectoriesRecursively()
+        {
+            return _files.Keys
+                         .OfType<DirectoryInfo>()
+                         .Select(key => new RelativeDirectoryPath(
+                                          Path.GetRelativePath(WorkingDirectory.FullName, key.FullName)));
+        }
+
         public IEnumerable<RelativeFilePath> GetAllFilesRecursively()
         {
             return _files.Keys
@@ -156,7 +164,7 @@ namespace WorkspaceServer.Tests
 
         public override string ToString() => this.GetFullyQualifiedRoot().FullName;
 
-        internal class FileSystemInfoComparer : IEqualityComparer<FileSystemInfo>
+        private class FileSystemInfoComparer : IEqualityComparer<FileSystemInfo>
         {
             public static FileSystemInfoComparer Instance { get; } = new FileSystemInfoComparer();
 

@@ -72,12 +72,20 @@ namespace WorkspaceServer
             return new FileSystemDirectoryAccessor(new DirectoryInfo(absolutePath));
         }
 
+        public IEnumerable<RelativeDirectoryPath> GetAllDirectoriesRecursively()
+        {
+            var directories = _rootDirectory.GetDirectories("*", SearchOption.AllDirectories);
+
+            return directories.Select(f =>
+                                          new RelativeDirectoryPath(PathUtilities.GetRelativePath(_rootDirectory.FullName, f.FullName)));
+        }
+
         public IEnumerable<RelativeFilePath> GetAllFilesRecursively()
         {
             var files = _rootDirectory.GetFiles("*", SearchOption.AllDirectories);
 
             return files.Select(f =>
-             new RelativeFilePath(PathUtilities.GetRelativePath(_rootDirectory.FullName, f.FullName)));
+                                    new RelativeFilePath(PathUtilities.GetRelativePath(_rootDirectory.FullName, f.FullName)));
         }
 
         public override string ToString() => _rootDirectory.FullName;

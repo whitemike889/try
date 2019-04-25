@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using Microsoft.DotNet.Try.Markdown;
+using WorkspaceServer.Servers.Roslyn;
 
 namespace WorkspaceServer
 {
@@ -38,7 +39,19 @@ namespace WorkspaceServer
             string relativePath) =>
             directoryAccessor.GetDirectoryAccessorForRelativePath(new RelativeDirectoryPath(relativePath));
 
+        public static IDirectoryAccessor GetDirectoryAccessorFor(this IDirectoryAccessor directory, DirectoryInfo directoryInfo)
+        {
+            var relative = PathUtilities.GetRelativePath(
+                directory.GetFullyQualifiedRoot().FullName, 
+                directoryInfo.FullName);
+            return directory.GetDirectoryAccessorForRelativePath(new RelativeDirectoryPath(relative));
+        }
+
         public static DirectoryInfo GetFullyQualifiedRoot(this IDirectoryAccessor directoryAccessor) =>
             (DirectoryInfo) directoryAccessor.GetFullyQualifiedPath(new RelativeDirectoryPath("."));
+
+        public static FileInfo GetFullyQualifiedFilePath(this IDirectoryAccessor directoryAccessor, string relativeFilePath) =>
+            (FileInfo) directoryAccessor.GetFullyQualifiedPath(new RelativeFilePath(relativeFilePath));
+
     }
 }

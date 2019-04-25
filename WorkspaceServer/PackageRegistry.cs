@@ -93,12 +93,10 @@ namespace WorkspaceServer
 
             var package = await _packages.GetOrAdd(packageName, async name =>
             {
-
                 var packageBuilder = await _packageBuilders.GetOrAdd(
                     name,
                     async name2 =>
                     {
-
                         foreach (var strategy in _strategies)
                         {
                             var builder = await strategy.Locate(descriptor, budget);

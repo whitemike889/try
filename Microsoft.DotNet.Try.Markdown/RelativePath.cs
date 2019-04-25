@@ -22,8 +22,9 @@ namespace Microsoft.DotNet.Try.Markdown
         private static bool IsPathRootedRegardlessOfOS(string path)
         {
             return Path.IsPathRooted(path) ||
+                   path.StartsWith(@"/") ||
                    path.StartsWith(@"\\") ||
-                   path.Substring(1).StartsWith(@":\\");
+                   path.Substring(1).StartsWith(@":\");
         }
 
         public string Value { get; protected set; }

@@ -1,8 +1,9 @@
 ﻿using System;
+using FluentAssertions;
 using System.Linq;
 using System.Threading.Tasks;
-using FluentAssertions;
 using WorkspaceServer.Packaging;
+using WorkspaceServer.Tests.Packaging;
 using Xunit;
 
 namespace WorkspaceServer.Tests
@@ -74,49 +75,62 @@ namespace WorkspaceServer.Tests
         [Fact]
         public async Task It_discovers_web_assembly_assets_for_previously_installed_packages()
         {
-            var accessor = new InMemoryDirectoryAccessor
-                           {
-                               ("PACKAGE.exe", null),
-                               ("./.store/PACKAGE/1.0.0/PACKAGE/1.0.0/tools/netcoreapp2.1/any/project/runner-PACKAGE/MLS.Blazor/runtime/PACKAGE.dll",
-                                "")
-                           };
+            var directory = ToolPackageDirectoryAccessor();
 
             var package = new Package2(
                 "PACKAGE",
-                accessor);
+                directory);
 
-            await package.EnsureLoadedAsync();
+            await package.EnsureLoadedAsync(AssetLoaders(directory));
 
-            package.Assets.Should().ContainSingle(a => a is WebAssemblyAsset);
-            package.Assets.Single()
+            package.Assets
+                   .OfType<WebAssemblyAsset>()
+                   .Single()
                    .DirectoryAccessor
-                   .FileExists("./runtime/PACKAGE.dll")
+                   .FileExists("./MLS.Blazor/runtime/PACKAGE.dll")
                    .Should()
                    .BeTrue();
         }
-        
+
         [Fact]
         public async Task It_discovers_project_assets_for_previously_installed_packages()
         {
-            var accessor = new InMemoryDirectoryAccessor
-                           {
-                               ("PACKAGE.exe", null),
-                               ("./.store/PACKAGE/1.0.0/PACKAGE/1.0.0/tools/netcoreapp2.1/any/project/packTarget/PACKAGE.csproj",
-                                "")
-                           };
+            var directory = ToolPackageDirectoryAccessor();
 
             var package = new Package2(
                 "PACKAGE",
-                accessor);
+                directory);
 
-            await package.EnsureLoadedAsync();
+            await package.EnsureLoadedAsync(AssetLoaders(directory));
 
-            package.Assets.Should().ContainSingle(a => a is WebAssemblyAsset);
-            package.Assets.Single()
+            package.Assets
+                   .OfType<ProjectAsset>()
+                   .Single()
                    .DirectoryAccessor
-                   .FileExists("./packTarget/PACKAGE.csproj")
+                   .FileExists("./PACKAGE.csproj")
                    .Should()
                    .BeTrue();
+        }
+
+        private static InMemoryDirectoryAccessor ToolPackageDirectoryAccessor()
+        {
+            return new InMemoryDirectoryAccessor
+                   {
+                       ("PACKAGE".ExecutableName(), null),
+                       ("./.store/PACKAGE/1.0.0/PACKAGE/1.0.0/tools/netcoreapp2.1/any/project/runner-PACKAGE/MLS.Blazor/runtime/PACKAGE.dll",
+                        ""),
+                       ("./.store/PACKAGE/1.0.0/PACKAGE/1.0.0/tools/netcoreapp2.1/any/project/packTarget/PACKAGE.csproj",
+                        "")
+                   };
+        }
+
+        private static IPackageAssetLoader[] AssetLoaders(InMemoryDirectoryAccessor directory)
+        {
+            return new IPackageAssetLoader[]
+                   {
+                       new ProjectAssetLoader(), 
+                       new ToolContainingWebAssemblyAssetLoader(new FakeToolPackageLocator(directory))
+                   };
         }
     }
 }

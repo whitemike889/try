@@ -37,6 +37,11 @@ namespace MLS.Agent.Markdown
                 return Enumerable.Empty<RelativeFilePath>();
             }
 
+            public IEnumerable<RelativeDirectoryPath> GetAllDirectoriesRecursively()
+            {
+                return Enumerable.Empty<RelativeDirectoryPath>();
+            }
+
             public FileSystemInfo GetFullyQualifiedPath(RelativePath path)
             {
                 return null;

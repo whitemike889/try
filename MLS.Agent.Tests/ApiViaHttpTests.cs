@@ -23,7 +23,6 @@ using Microsoft.Net.Http.Headers;
 using HtmlAgilityPack;
 using System.Web;
 using MLS.Agent.Controllers;
-using Microsoft.DotNet.Try.Project;
 using CodeManipulation = WorkspaceServer.Tests.CodeManipulation;
 using SourceFile = Microsoft.DotNet.Try.Protocol.ClientApi.SourceFile;
 
@@ -901,7 +900,6 @@ namespace FibonacciTest
                 var paramsObject = json.FromJsonTo<EmbeddableController.ClientParameters>();
 
                 paramsObject.Referrer.Should().Be(new Uri(referrer));
-
             }
         }
 

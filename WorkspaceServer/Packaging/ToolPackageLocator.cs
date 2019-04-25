@@ -8,7 +8,7 @@ using MLS.Agent.Tools;
 
 namespace WorkspaceServer.Packaging
 {
-    internal class ToolPackageLocator
+    internal class ToolPackageLocator : IToolPackageLocator
     {
         // FIX: (ToolPackageLocator) rename
         private readonly string _basePath;
@@ -20,7 +20,7 @@ namespace WorkspaceServer.Packaging
 
         public async Task<Package> LocatePackageAsync(string name, Budget budget)
         {
-            var assetDirectory = await InitializeAndGetAssetDirectory(new FileInfo(Path.Combine(_basePath, name)));
+            var assetDirectory = await PrepareToolAndLocateAssetDirectory(new FileInfo(Path.Combine(_basePath, name)));
 
             if (assetDirectory == null)
             {
@@ -30,7 +30,7 @@ namespace WorkspaceServer.Packaging
             return new NonrebuildablePackage(name, directory: assetDirectory);
         }
 
-        public async Task<DirectoryInfo> InitializeAndGetAssetDirectory(FileInfo tool, Budget budget = null)
+        public async Task<DirectoryInfo> PrepareToolAndLocateAssetDirectory(FileInfo tool, Budget budget = null)
         {
             CommandLineResult result;
 

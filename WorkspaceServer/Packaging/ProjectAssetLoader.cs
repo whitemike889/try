@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace WorkspaceServer.Packaging
 {
-    internal class ProjectAssetLoader : IPackageAssetLoader
+    public class ProjectAssetLoader : IPackageAssetLoader
     {
         public Task<IEnumerable<PackageAsset>> LoadAsync(Package2 package)
         {
