@@ -2,14 +2,31 @@
 using System.IO;
 using System.Linq;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.StaticFiles.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Net.Http.Headers;
+using Recipes;
 
 namespace MLS.Agent
 {
     internal static class ApplicationBuilderExtensions
     {
+        public static IApplicationBuilder EnableCachingBlazorContent(this IApplicationBuilder app)
+        {
+            return app.Use((context, next) =>
+            {
+                if (HttpMethods.IsGet(context.Request.Method))
+                {
+                    context.Response.Headers[HeaderNames.ETag] = VersionSensor.Version().AssemblyVersion;
+                    context.Response.Headers[HeaderNames.CacheControl] = "public, max-age=31536000, must-revalidate";
+                }
+
+                return next();
+            });
+        }
+
         public static IApplicationBuilder UseStaticFilesFromToolLocation(this IApplicationBuilder app)
         {
             var options = GetStaticFilesOptions();

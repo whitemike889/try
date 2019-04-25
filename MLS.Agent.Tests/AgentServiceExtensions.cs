@@ -7,7 +7,16 @@ namespace MLS.Agent.Tests
     {
         public static Task<HttpResponseMessage> GetAsync(
             this AgentService service,
-            string uri) =>
-            service.SendAsync(new HttpRequestMessage(HttpMethod.Get, uri));
+            string uri, 
+            string referer = null)
+        {
+            var message = new HttpRequestMessage(HttpMethod.Get, uri);
+            if (referer != null)
+            {
+                message.Headers.Add("referer", referer);
+            }
+
+            return service.SendAsync(message);
+        }
     }
 }

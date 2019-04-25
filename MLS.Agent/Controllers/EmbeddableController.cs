@@ -44,7 +44,7 @@ namespace MLS.Agent.Controllers
             {
                 var parameters = new ClientParameters
                                  {
-                                     referrer = uri
+                                     Referrer = uri
                                  };
 
                 return HttpUtility.HtmlAttributeEncode(parameters.ToJson());
@@ -55,17 +55,17 @@ namespace MLS.Agent.Controllers
 
         public class ClientParameters
         {
-            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-            public string workspaceType { get; set; }
+            [JsonProperty("workspaceType", NullValueHandling = NullValueHandling.Ignore)]
+            public string WorkspaceType { get; set; }
 
-            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-            public string scaffold { get; set; }
+            [JsonProperty("useBlazor", NullValueHandling = NullValueHandling.Ignore)]
+            public bool? UseBlazor { get; set; }
 
+            [JsonProperty("scaffold", NullValueHandling = NullValueHandling.Ignore)]
+            public string Scaffold { get; set; }
 
-            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-            public bool? enableBlazor { get; set; }
-
-            public Uri referrer { get; set; }
+            [JsonProperty("referrer", NullValueHandling = NullValueHandling.Ignore)]
+            public Uri Referrer { get; set; }
         }
     }
 }

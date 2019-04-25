@@ -18,6 +18,10 @@ using FluentAssertions.Extensions;
 using Microsoft.DotNet.Try.Protocol;
 using Microsoft.DotNet.Try.Protocol.ClientApi;
 using Buffer = Microsoft.DotNet.Try.Protocol.Buffer;
+using Microsoft.Net.Http.Headers;
+using HtmlAgilityPack;
+using System.Web;
+using MLS.Agent.Controllers;
 
 namespace MLS.Agent.Tests
 {
@@ -703,7 +707,7 @@ namespace FibonacciTest
 
 
         [Fact]
-        public async Task Can_serve_blazor_code_runner()
+        public async Task Can_serve_blazor_console_code_runner()
         {
             using (var agent = new AgentService())
             {
@@ -712,6 +716,45 @@ namespace FibonacciTest
                 response.EnsureSuccess();
                 var result = await response.Content.ReadAsStringAsync();
                 result.Should().Contain("Loading...");
+            }
+        }
+
+        [Fact]
+        public async Task Blazor_console_content_has_etag()
+        {
+            using (var agent = new AgentService())
+            {
+                var response = await agent.GetAsync(@"/LocalCodeRunner/blazor-console");
+
+                response.EnsureSuccess();
+
+                response.Headers.GetValues(HeaderNames.ETag).Should().NotBeEmpty();
+            }
+        }
+
+        [Fact]
+        public async Task Can_serve_humanizer_code_runner()
+        {
+            using (var agent = new AgentService())
+            {
+                var response = await agent.GetAsync(@"/LocalCodeRunner/humanizer.api");
+
+                response.EnsureSuccess();
+                var result = await response.Content.ReadAsStringAsync();
+                result.Should().Contain("Loading...");
+            }
+        }
+
+        [Fact]
+        public async Task Humanizer_content_has_etag()
+        {
+            using (var agent = new AgentService())
+            {
+                var response = await agent.GetAsync(@"/LocalCodeRunner/humanizer.api");
+
+                response.EnsureSuccess();
+
+                response.Headers.GetValues(HeaderNames.ETag).Should().NotBeEmpty();
             }
         }
 
@@ -822,6 +865,39 @@ namespace FibonacciTest
                       .IsBlazorSupported
                       .Should()
                       .BeTrue();
+            }
+        }
+
+        [Fact]
+        public async Task Embeddable_returns_referrer()
+        {
+            using (var agent = new AgentService())
+            {
+                var referrer = "http://coolreferrer";
+                var response = await agent.GetAsync(@"/ide", referrer);
+
+                response.EnsureSuccess();
+                var html = await response.Content.ReadAsStringAsync();
+
+                var document = new HtmlDocument();
+                document.LoadHtml(html);
+
+                var script = document.DocumentNode
+                                     .Descendants("script")
+                                     .FirstOrDefault(s => s.Attributes["id"]?.Value == "bundlejs");
+
+                script.Should().NotBeNull();
+
+                var additionalParameters = script.Attributes["data-client-parameters"];
+
+                additionalParameters.Should().NotBeNull();
+
+                var json = HttpUtility.HtmlDecode(additionalParameters.Value);
+
+                var paramsObject = json.FromJsonTo<EmbeddableController.ClientParameters>();
+
+                paramsObject.Referrer.Should().Be(new Uri(referrer));
+
             }
         }
 

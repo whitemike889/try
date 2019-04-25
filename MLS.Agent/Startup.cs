@@ -6,11 +6,13 @@ using System.Net.Mime;
 using Clockwise;
 using Microsoft.AspNetCore.Blazor.Server;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Net.Http.Headers;
 using MLS.Agent.Blazor;
 using MLS.Agent.CommandLine;
 using MLS.Agent.Markdown;
@@ -160,12 +162,14 @@ namespace MLS.Agent
                 app.Map("/LocalCodeRunner/blazor-console", builder =>
                 {
                     builder.UsePathBase("/LocalCodeRunner/blazor-console/");
+                    builder.EnableCachingBlazorContent();
                     builder.UseBlazor<MLS.Blazor.Program>();
                 });
 
                 app.Map("/LocalCodeRunner/humanizer.api", builder =>
                 {
                     builder.UsePathBase("/LocalCodeRunner/humanizer/");
+                    builder.EnableCachingBlazorContent();
                     builder.UseBlazor<MLS.HumanizerRunner.Program>();
                 });
 
