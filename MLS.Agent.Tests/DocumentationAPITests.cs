@@ -73,7 +73,7 @@ namespace MLS.Agent.Tests
                                    .ToArray();
 
                 links.Should().Contain("./Readme.md");
-                links.Should().Contain("Subdirectory/Tutorial.md");
+                links.Should().Contain("./Subdirectory/Tutorial.md");
             }
         }
 

@@ -17,7 +17,6 @@ namespace MLS.PackageTool
         {
             var parser = CommandLineParser.Create(
                 LocateAssemblyHandler,
-                ExtractPackageHandler,
                 Prepare);
 
             await parser.InvokeAsync(args);
@@ -25,14 +24,14 @@ namespace MLS.PackageTool
 
         private static async Task Prepare(IConsole console)
         {
-            await ExtractPackageHandler(console);
+            await UnzipProjectAsset(console);
             var projectDirectory = new DirectoryInfo(ProjectDirectoryLocation());
             
             var runnerDir = projectDirectory.GetDirectories("runner-*").First().GetDirectories("MLS.Blazor").First();
             await CommandLine.Execute("dotnet", "build -o runtime /bl", runnerDir);
         }
 
-        public static async Task ExtractPackageHandler(IConsole console)
+        private static async Task UnzipProjectAsset(IConsole console)
         { 
             var directory = AssemblyDirectory();
             var zipFilePath = Path.Combine(directory, "project.zip");
@@ -85,12 +84,11 @@ namespace MLS.PackageTool
 
     public class CommandLineParser
     {
-        public static Parser Create(Action<IConsole> getAssembly, Func<IConsole, Task> extract, Func<IConsole, Task> prepare)
+        public static Parser Create(Action<IConsole> getAssembly, Func<IConsole, Task> prepare)
         {
             var rootCommand = new RootCommand
                               {
                                   LocateAssembly(),
-                                  ExtractPackage(),
                                   PreparePackage()
                               };
 
@@ -103,14 +101,6 @@ namespace MLS.PackageTool
                 return new Command("locate-projects")
                 {
                     Handler = CommandHandler.Create(getAssembly)
-                };
-            }
-
-            Command ExtractPackage()
-            {
-                return new Command("extract-package", "Extracts the project package zip")
-                {
-                    Handler = CommandHandler.Create(extract)
                 };
             }
 

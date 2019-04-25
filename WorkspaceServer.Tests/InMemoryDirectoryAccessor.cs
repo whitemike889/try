@@ -33,6 +33,16 @@ namespace WorkspaceServer.Tests
             var fileInfo = new FileInfo(Path.Combine(_rootDirToAddFiles.FullName, file.path));
 
             _files.Add(fileInfo, file.content);
+
+            var directory = fileInfo.Directory;
+
+            while (directory != null &&
+                   !FileSystemInfoComparer.Instance.Equals(directory, WorkingDirectory))
+            {
+                _files.TryAdd(directory, null);
+
+                directory = directory.Parent;
+            }
         }
 
         public FileSystemDirectoryAccessor CreateFiles()
@@ -43,13 +53,15 @@ namespace WorkspaceServer.Tests
 
                 var text = ReadAllText(filePath);
 
-                if (absolutePath is FileInfo file &&
-                    !file.Directory.Exists)
+                if (absolutePath is FileInfo file)
                 {
-                    file.Directory.Create();
-                }
+                    if (!file.Directory.Exists)
+                    {
+                        file.Directory.Create();
+                    }
 
-                File.WriteAllText(absolutePath.FullName, text);
+                    File.WriteAllText(absolutePath.FullName, text);
+                }
             }
 
             return new FileSystemDirectoryAccessor(WorkingDirectory);
@@ -136,7 +148,9 @@ namespace WorkspaceServer.Tests
 
         public IEnumerable<RelativeFilePath> GetAllFilesRecursively()
         {
-            return _files.Keys.Select(key => new RelativeFilePath(
+            return _files.Keys
+                         .OfType<FileInfo>()
+                         .Select(key => new RelativeFilePath(
                                           Path.GetRelativePath(WorkingDirectory.FullName, key.FullName)));
         }
 
@@ -148,7 +162,7 @@ namespace WorkspaceServer.Tests
 
             public bool Equals(FileSystemInfo x, FileSystemInfo y)
             {
-                if (x.GetType() == y.GetType())
+                if (x?.GetType() == y?.GetType() && x != null)
                 {
                     return x is DirectoryInfo
                                ? RelativePath.NormalizeDirectory(x.FullName) == RelativePath.NormalizeDirectory(y.FullName)

@@ -7,14 +7,14 @@ namespace Microsoft.DotNet.Try.Markdown
         RelativePath,
         IEquatable<RelativeFilePath>
     {
-        public RelativeFilePath(string filePath)
+        public RelativeFilePath(string value) : base(value)
         {
-            if (string.IsNullOrWhiteSpace(filePath))
+            if (string.IsNullOrWhiteSpace(value))
             {
-                throw new ArgumentException("File path cannot be null or consist entirely of whitespace", nameof(filePath));
+                throw new ArgumentException("File path cannot be null or consist entirely of whitespace", nameof(value));
             }
 
-            var (directoryPath, fileName) = GetFileAndDirectoryNames(filePath);
+            var (directoryPath, fileName) = GetFileAndDirectoryNames(value);
 
             FileName = fileName;
 

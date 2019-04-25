@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 
 namespace Microsoft.DotNet.Try.Markdown
 {
@@ -7,18 +6,9 @@ namespace Microsoft.DotNet.Try.Markdown
         RelativePath,
         IEquatable<RelativeDirectoryPath>
     {
-        public RelativeDirectoryPath(string path)
+        public RelativeDirectoryPath(string value) : base(value)
         {
-            Value = NormalizeDirectory(path);
-            ThrowIfPathIsRooted(Value);
-        }
-
-        private void ThrowIfPathIsRooted(string path)
-        {
-            if (Path.IsPathRooted(path))
-            {
-                throw new ArgumentException($"Path cannot be absolute: {path}");
-            }
+            Value = NormalizeDirectory(value);
         }
 
         public bool Equals(RelativeDirectoryPath other)

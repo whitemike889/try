@@ -32,7 +32,7 @@ namespace MLS.Agent.Tests
 
                 files.Should().HaveCount(2);
                 files.Should().Contain(f => f.Path.Value.Equals("./Readme.md"));
-                files.Should().Contain(f => f.Path.Value.Equals("Subdirectory/Tutorial.md"));
+                files.Should().Contain(f => f.Path.Value.Equals("./Subdirectory/Tutorial.md"));
             }
         }
 

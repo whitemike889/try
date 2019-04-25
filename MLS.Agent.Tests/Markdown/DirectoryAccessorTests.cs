@@ -2,12 +2,14 @@
 using System.IO;
 using System.Runtime.CompilerServices;
 using FluentAssertions;
+using Microsoft.DotNet.PlatformAbstractions;
 using Microsoft.DotNet.Try.Markdown;
 using WorkspaceServer;
 using WorkspaceServer.Packaging;
 using WorkspaceServer.Tests;
 using WorkspaceServer.Tests.TestUtility;
 using Xunit;
+using static Microsoft.DotNet.PlatformAbstractions.RuntimeEnvironment;
 
 namespace MLS.Agent.Tests.Markdown
 {
@@ -16,6 +18,36 @@ namespace MLS.Agent.Tests.Markdown
         public abstract IDirectoryAccessor GetDirectory(DirectoryInfo dirInfo, DirectoryInfo rootDirectoryToAddFiles = null);
 
         public abstract IDirectoryAccessor CreateDirectory([CallerMemberName]string testName = null);
+
+        [Fact]
+        public void It_can_retrieve_all_files_recursively()
+        {
+            var directory = GetDirectory(TestAssets.SampleConsole);
+
+            var files = directory.GetAllFilesRecursively();
+
+            files.Should()
+                 .Contain(new RelativeFilePath("BasicConsoleApp.csproj"))
+                 .And
+                 .Contain(new RelativeFilePath("Program.cs"))
+                 .And
+                 .Contain(new RelativeFilePath("Readme.md"))
+                 .And
+                 .Contain(new RelativeFilePath("Subdirectory/AnotherProgram.cs"))
+                 .And
+                 .Contain(new RelativeFilePath("Subdirectory/Tutorial.md"));
+        }
+        
+        [Fact]
+        public void GetAllFilesRecursively_does_not_return_directories()
+        {
+            var directory = GetDirectory(TestAssets.SampleConsole);
+
+            var files = directory.GetAllFilesRecursively();
+
+            files.Should().NotContain(f => f.Value.EndsWith("Subdirectory"));
+            files.Should().NotContain(f => f.Value.EndsWith("Subdirectory/"));
+        }
 
         [Theory]
         [InlineData(".")]
@@ -145,6 +177,21 @@ namespace MLS.Agent.Tests.Markdown
             var inner = outerDirAccessor.GetDirectoryAccessorForRelativePath(new RelativeDirectoryPath("Subdirectory"));
             inner.FileExists(new RelativeFilePath("AnotherProgram.cs")).Should().BeTrue();
         }
+
+        [Fact]
+        public void Path_separators_are_uniform()
+        {
+            var directory = GetDirectory(TestAssets.SampleConsole);
+            var unexpectedPathSeparator = OperatingSystemPlatform == Platform.Windows
+                                              ? "/"
+                                              : "\\";
+
+            foreach (var relativePath in directory.GetAllFilesRecursively())
+            {
+                var fullyQualifiedPath = directory.GetFullyQualifiedPath(relativePath).FullName;
+                fullyQualifiedPath.Should().NotContain(unexpectedPathSeparator);
+            }
+        }
     }
 
     public class FileSystemDirectoryAccessorTests : DirectoryAccessorTests
@@ -169,6 +216,20 @@ namespace MLS.Agent.Tests.Markdown
             return new InMemoryDirectoryAccessor();
         }
 
+        [Theory]
+        [InlineData("one")]
+        [InlineData("./one")]
+        [InlineData("./one/two")]
+        [InlineData("./one/two/three")]
+        public void DirectoryExists_returns_true_for_parent_directories_of_explicitly_added_relative_file_paths(string relativeDirectoryPath)
+        {
+            var directory = new InMemoryDirectoryAccessor
+                            {
+                                ("./one/two/three/file.txt", "")
+                            };
+
+            directory.DirectoryExists(relativeDirectoryPath).Should().BeTrue();
+        }
 
         public override IDirectoryAccessor GetDirectory(DirectoryInfo rootDirectory, DirectoryInfo rootDirectoryToAddFiles = null)
         {
@@ -202,8 +263,8 @@ namespace BasicConsoleApp
 
 ```cs Program.cs
 ```"),
-            ("Subdirectory/Tutorial.md", "This is a sample *tutorial file*"),
-            ("Subdirectory/AnotherProgram.cs",
+            ("./Subdirectory/Tutorial.md", "This is a sample *tutorial file*"),
+            ("./Subdirectory/AnotherProgram.cs",
 @"using System;
 using System.Collections.Generic;
 using System.Text;

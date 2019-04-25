@@ -21,7 +21,7 @@ namespace MLS.PackageTool.Tests
             _parser = CommandLineParser.Create(
                 getAssembly: (_) => { _command = "getAssembly"; },
                 extract: (_) => {
-                    _command = "extract-package";
+                    _command = "prepare-package";
                     return Task.CompletedTask;
                 });
         }
@@ -34,10 +34,10 @@ namespace MLS.PackageTool.Tests
         }
 
         [Fact]
-        public async Task Parse_extract_calls_extract()
+        public async Task Parse_extract_calls_prepare()
         {
-            await _parser.InvokeAsync("extract-package", _console);
-            _command.Should().Be("extract-package");
+            await _parser.InvokeAsync("prepare-package", _console);
+            _command.Should().Be("prepare-package");
         }
     }
 }

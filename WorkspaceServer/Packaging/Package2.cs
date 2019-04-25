@@ -14,7 +14,6 @@ namespace WorkspaceServer.Packaging
     {
         private readonly PackageDescriptor _descriptor;
         private readonly Dictionary<Type, PackageAsset> _assets = new Dictionary<Type, PackageAsset>();
-        private IDirectoryAccessor directory;
         private bool _loaded;
 
         public Package2(
@@ -64,20 +63,34 @@ namespace WorkspaceServer.Packaging
 
         IDirectoryAccessor IHaveADirectoryAccessor.Directory => DirectoryAccessor;
 
-        public async Task EnsureLoadedAsync()
+        public async Task EnsureLoadedAsync(
+            IEnumerable<IPackageAssetLoader> assetLoaders = null)
         {
             if (_loaded)
             {
                 return;
             }
 
-            foreach (var csproj in DirectoryAccessor.GetAllFilesRecursively()
-                                                    .Where(f => f.Extension == ".csproj"))
+            foreach (var loader in assetLoaders ?? GetDefaultAssetLoaders())
             {
-                Add(new ProjectAsset(DirectoryAccessor.GetDirectoryAccessorForRelativePath(csproj.Directory)));
+                var assets = await loader.LoadAsync(this);
+
+                if (assets != null)
+                {
+                    foreach (var asset in assets)
+                    {
+                        Add(asset);
+                    }
+                }
             }
 
             _loaded = true;
+        }
+
+        private IEnumerable<IPackageAssetLoader> GetDefaultAssetLoaders()
+        {
+            yield return new ProjectAssetLoader();
+            yield return new ToolContainingWebAssemblyAssetLoader();
         }
     }
 }

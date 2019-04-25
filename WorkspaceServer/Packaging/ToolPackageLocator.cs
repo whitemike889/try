@@ -1,15 +1,16 @@
 ﻿using System;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Clockwise;
 using MLS.Agent.Tools;
-using Pocket;
 
 namespace WorkspaceServer.Packaging
 {
     internal class ToolPackageLocator
     {
+        // FIX: (ToolPackageLocator) rename
         private readonly string _basePath;
 
         public ToolPackageLocator(string basePath = "")
@@ -19,29 +20,42 @@ namespace WorkspaceServer.Packaging
 
         public async Task<Package> LocatePackageAsync(string name, Budget budget)
         {
-            var fileName = Path.Combine(_basePath, name);
+            var assetDirectory = await InitializeAndGetAssetDirectory(new FileInfo(Path.Combine(_basePath, name)));
+
+            if (assetDirectory == null)
+            {
+                return null;
+            }
+
+            return new NonrebuildablePackage(name, directory: assetDirectory);
+        }
+
+        public async Task<DirectoryInfo> InitializeAndGetAssetDirectory(FileInfo tool, Budget budget = null)
+        {
             CommandLineResult result;
+
             try
             {
-                result = await CommandLine.Execute(fileName, "extract-package", budget: budget);
-                result = await CommandLine.Execute(fileName, "locate-projects", budget: budget);
+                result = await CommandLine.Execute(tool.FullName, "prepare-package", budget: budget);
+
+                result.ThrowOnFailure();
+
+                result = await CommandLine.Execute(tool.FullName, "locate-projects", budget: budget);
+
+                result.ThrowOnFailure();
             }
-            catch (System.ComponentModel.Win32Exception)
+            catch (Win32Exception)
             {
                 return null;
             }
 
-            var output = result.Output.FirstOrDefault();
-            if (output == null || !Directory.Exists(output))
+            var directory = result.Output.FirstOrDefault();
+            if (directory == null || !Directory.Exists(directory))
             {
                 return null;
             }
 
-            var directory = output;
-            var projectDirectory = Path.Combine(directory, "packTarget");
-            Logger<ToolPackageLocator>.Log.Info($"Project: {projectDirectory}");
-            var package = new NonrebuildablePackage(name, directory: new DirectoryInfo(projectDirectory));
-            return package;
+            return new DirectoryInfo(Path.Combine(directory, "packTarget"));
         }
     }
 }

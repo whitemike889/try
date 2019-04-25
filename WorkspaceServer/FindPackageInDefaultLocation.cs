@@ -16,18 +16,21 @@ namespace WorkspaceServer
         public async Task<T> Find<T>(PackageDescriptor descriptor)
             where T : IPackage
         {
-            if (!descriptor.IsPathSpecified &&
-                _directoryAccessor.DirectoryExists(descriptor.Name))
+            if (!descriptor.IsPathSpecified)
             {
-                var directoryAccessor = _directoryAccessor.GetDirectoryAccessorForRelativePath(descriptor.Name);
 
-                var pkg = new Package2(
-                    descriptor,
-                    directoryAccessor);
-
-                if (pkg is T t)
+                if (_directoryAccessor.DirectoryExists(descriptor.Name))
                 {
-                    return t;
+                    var directoryAccessor = _directoryAccessor.GetDirectoryAccessorForRelativePath(descriptor.Name);
+
+                    var pkg = new Package2(
+                        descriptor,
+                        directoryAccessor);
+
+                    if (pkg is T t)
+                    {
+                        return t;
+                    }
                 }
             }
 

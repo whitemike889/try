@@ -23,7 +23,7 @@ namespace WorkspaceServer.Tests
         }
 
         [Fact]
-        public void An_asset_must_be_in_subdirectory_of_the_package()
+        public void An_asset_must_be_in_a_subdirectory_of_the_package()
         {
             var directoryAccessor = new InMemoryDirectoryAccessor();
 
@@ -40,7 +40,7 @@ namespace WorkspaceServer.Tests
         }
 
         [Fact]
-        public async Task A_package_discovers_project_assets_in_its_root()
+        public async Task It_discovers_project_assets_in_its_root()
         {
             var package = new Package2(
                 "the-package",
@@ -56,7 +56,7 @@ namespace WorkspaceServer.Tests
         }
 
         [Fact]
-        public async Task A_package_discovers_project_assets_in_subfolders()
+        public async Task It_discovers_project_assets_in_subfolders()
         {
             var package = new Package2(
                 "the-package",
@@ -69,6 +69,54 @@ namespace WorkspaceServer.Tests
 
             package.Assets.Should().ContainSingle(a => a is ProjectAsset);
             package.Assets.Single().DirectoryAccessor.FileExists("myapp.csproj").Should().BeTrue();
+        }
+
+        [Fact]
+        public async Task It_discovers_web_assembly_assets_for_previously_installed_packages()
+        {
+            var accessor = new InMemoryDirectoryAccessor
+                           {
+                               ("PACKAGE.exe", null),
+                               ("./.store/PACKAGE/1.0.0/PACKAGE/1.0.0/tools/netcoreapp2.1/any/project/runner-PACKAGE/MLS.Blazor/runtime/PACKAGE.dll",
+                                "")
+                           };
+
+            var package = new Package2(
+                "PACKAGE",
+                accessor);
+
+            await package.EnsureLoadedAsync();
+
+            package.Assets.Should().ContainSingle(a => a is WebAssemblyAsset);
+            package.Assets.Single()
+                   .DirectoryAccessor
+                   .FileExists("./runtime/PACKAGE.dll")
+                   .Should()
+                   .BeTrue();
+        }
+        
+        [Fact]
+        public async Task It_discovers_project_assets_for_previously_installed_packages()
+        {
+            var accessor = new InMemoryDirectoryAccessor
+                           {
+                               ("PACKAGE.exe", null),
+                               ("./.store/PACKAGE/1.0.0/PACKAGE/1.0.0/tools/netcoreapp2.1/any/project/packTarget/PACKAGE.csproj",
+                                "")
+                           };
+
+            var package = new Package2(
+                "PACKAGE",
+                accessor);
+
+            await package.EnsureLoadedAsync();
+
+            package.Assets.Should().ContainSingle(a => a is WebAssemblyAsset);
+            package.Assets.Single()
+                   .DirectoryAccessor
+                   .FileExists("./packTarget/PACKAGE.csproj")
+                   .Should()
+                   .BeTrue();
         }
     }
 }

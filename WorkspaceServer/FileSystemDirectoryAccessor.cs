@@ -75,6 +75,7 @@ namespace WorkspaceServer
         public IEnumerable<RelativeFilePath> GetAllFilesRecursively()
         {
             var files = _rootDirectory.GetFiles("*", SearchOption.AllDirectories);
+
             return files.Select(f =>
              new RelativeFilePath(PathUtilities.GetRelativePath(_rootDirectory.FullName, f.FullName)));
         }

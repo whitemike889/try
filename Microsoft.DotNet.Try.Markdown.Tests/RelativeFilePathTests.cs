@@ -1,6 +1,5 @@
 ﻿using System;
 using FluentAssertions;
-using Microsoft.DotNet.Try.Markdown;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -61,7 +60,7 @@ namespace Microsoft.DotNet.Try.Markdown.Tests
 
         [Theory]
         [InlineData("../src/Program.cs", "../src/")]
-        [InlineData("src/Program.cs", "src/")]
+        [InlineData("src/Program.cs", "./src/")]
         [InlineData("Readme.md", "./")]
         public void Returns_the_directory_path(string path, string directory)
         {

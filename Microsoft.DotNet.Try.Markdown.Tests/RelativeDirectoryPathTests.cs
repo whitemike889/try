@@ -1,9 +1,8 @@
-﻿using FluentAssertions;
-using System;
-using Microsoft.DotNet.Try.Markdown;
+﻿using System;
+using FluentAssertions;
 using Xunit;
 
-namespace MLS.Agent.Tests
+namespace Microsoft.DotNet.Try.Markdown.Tests
 {
     public class RelativeDirectoryPathTests
     {
@@ -31,7 +30,7 @@ namespace MLS.Agent.Tests
         [Theory]
         [InlineData("/")]
         [InlineData("/some/path")]
-        [InlineData(@"c:\some\path", Skip = "fails on Linux")]
+        [InlineData(@"c:\some\path")]
         [InlineData(@"\\some\path")]
         public void Throws_if_path_is_absolute(string value)
         {
@@ -41,10 +40,14 @@ namespace MLS.Agent.Tests
 
         [Theory]
         [InlineData(".", ".")]
+        [InlineData(".", "./")]
+        [InlineData(".", @".\")]
+        [InlineData("./", @".\")]
         [InlineData("..", "..")]
         [InlineData(@"../", @"..\")]
         [InlineData("../a/", "../a")]
-        public void Equality_is_based_on_same_resolved_file_path(
+        [InlineData("a", "./a")]
+        public void Equality_is_based_on_same_resolved_directory_path(
             string value1,
             string value2)
         {

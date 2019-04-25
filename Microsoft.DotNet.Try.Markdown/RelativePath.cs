@@ -1,10 +1,31 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace Microsoft.DotNet.Try.Markdown
 {
     public abstract class RelativePath
     {
+        protected RelativePath(string value)
+        {
+            ThrowIfPathIsRooted(value);
+        }
+
+        private void ThrowIfPathIsRooted(string path)
+        {
+            if (IsPathRootedRegardlessOfOS(path))
+            {
+                throw new ArgumentException($"Path cannot be absolute: {path}");
+            }
+        }
+
+        private static bool IsPathRootedRegardlessOfOS(string path)
+        {
+            return Path.IsPathRooted(path) ||
+                   path.StartsWith(@"\\") ||
+                   path.Substring(1).StartsWith(@":\\");
+        }
+
         public string Value { get; protected set; }
 
         public override int GetHashCode() =>
@@ -106,6 +127,14 @@ namespace Microsoft.DotNet.Try.Markdown
             }
             else
             {
+                if (!IsPathRootedRegardlessOfOS(directoryPath) &&
+                    !directoryPath.StartsWith(".") && 
+                    !directoryPath.StartsWith("..") && 
+                    !directoryPath.StartsWith("/"))
+                {
+                    directoryPath = $"./{directoryPath}";
+                }
+
                 directoryPath = directoryPath.TrimEnd('\\', '/') + '/';
             }
 
