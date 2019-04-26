@@ -6,18 +6,8 @@ namespace Microsoft.DotNet.Try.Markdown
         RelativePath,
         IEquatable<RelativeDirectoryPath>
     {
-        public static RelativeDirectoryPath Root => new RelativeDirectoryPath("./");
-
-        public static bool operator ==(RelativeDirectoryPath left, RelativeDirectoryPath right)
-        {
-            return Equals(left, right);
-        }
-
-        public static bool operator !=(RelativeDirectoryPath left, RelativeDirectoryPath right)
-        {
-            return !Equals(left, right);
-        }
-
+        public static RelativeDirectoryPath Root { get; } = new RelativeDirectoryPath("./");
+      
         public RelativeDirectoryPath(string value) : base(value)
         {
             Value = NormalizeDirectory(value);
