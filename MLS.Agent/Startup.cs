@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Blazor.Server;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.DotNet.Try.Markdown;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -78,7 +79,7 @@ namespace MLS.Agent
 
                 services.AddSingleton(c => new RoslynWorkspaceServer(c.GetRequiredService<PackageRegistry>()));
 
-                services.TryAddSingleton<IBrowserLauncher>(c => new BrowserLauncher());
+                services.TryAddSingleton<IBrowserLauncher>(c => new BrowserLauncher(c.GetRequiredService<IDirectoryAccessor>()));
 
                 services.TryAddSingleton(c =>
                 {
@@ -222,8 +223,30 @@ namespace MLS.Agent
             {
                 uri = new Uri(uri, StartupOptions.Uri);
             }
+            else if (StartupOptions.Uri == null)
+            {
+                var readmeFile = FindReadmeFileAtRoot(browserLauncher.DirectoryAccessor);
+                if (readmeFile != null)
+                {
+                    uri = new Uri(uri, readmeFile.ToString());
+                }
+            }
 
             browserLauncher.LaunchBrowser(uri);
+
+            RelativeFilePath FindReadmeFileAtRoot(IDirectoryAccessor directoryAccessor)
+            {
+                var files = directoryAccessor.GetAllFilesRecursively().Where(f => (StringComparer.InvariantCultureIgnoreCase.Compare(f.FileName, "readme.md") == 0) && IsRoot(f.Directory)).ToList();
+
+                return files.FirstOrDefault();
+            }
+
+            bool IsRoot(RelativePath path)
+            {
+                var isRoot = path == null || string.IsNullOrWhiteSpace(path.Value) || path.Value == "./";
+                return isRoot;
+            }
         }
+
     }
 }
