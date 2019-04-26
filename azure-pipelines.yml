@@ -1,0 +1,92 @@
+variables:
+  _BuildConfig: Release
+  _SignType: real
+  _TeamName: TryDotNet
+  TeamName: $(_TeamName)
+  BlazorTemplateVersion: 0.7.0
+  DotNetVersion: 2.1.503
+  TRexVersion: 1.0.87
+  TryDotNetPackagesPath: $(Build.SourcesDirectory)\artifacts\.trydotnet\packages
+
+jobs:
+- job: Full_Signed
+  pool:
+    name: VSEng-MicroBuildVS2017
+  steps:
+
+  - script: git config --global core.longpaths true
+    displayName: Enable `git clean` to handle long paths
+
+  - checkout: self
+    clean: true
+
+  - task: ms-vseng.MicroBuildTasks.30666190-6959-11e5-9f96-f56098202fef.MicroBuildSigningPlugin@1
+    displayName: Install Signing Plugin
+    inputs:
+      signType: $(_SignType)
+      esrpSigning: true
+
+  - task: UseDotNet@2
+    displayName: 'Set .NET CLI to $(DotNetVersion)'
+    inputs:
+      packageType: sdk
+      version: $(DotNetVersion)
+      installationPath: $(Agent.ToolsDirectory)/dotnet
+
+  - script: dotnet new -i Microsoft.AspNetCore.Blazor.Templates::$(BlazorTemplateVersion)
+    displayName: Install Blazor templates
+
+  - script: |
+      robocopy "eng\resources" "$(Build.SourcesDirectory)\artifacts"
+      :: robocopy return codes are terrible; 1 means files were copied
+      if "%errorlevel%" == "1" exit /b 0
+      exit /b 1
+    displayName: Prevent test directory crawling
+
+  - script: eng\CIBuild.cmd
+      -configuration $(_BuildConfig)
+      -prepareMachine
+      -sign
+      -test
+      /p:DotNetSignType=$(_SignType)
+      /p:TeamName=$(_TeamName)
+      /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
+    displayName: Build
+    env:
+      TRYDOTNET_PACKAGES_PATH: $(TryDotNetPackagesPath)
+
+  - task: PublishBuildArtifacts@1
+    displayName: Publish Logs
+    inputs:
+      PathtoPublish: '$(Build.SourcesDirectory)\artifacts\log\$(_BuildConfig)'
+      ArtifactName: 'Build Diagnostic Files'
+      publishLocation: Container
+    continueOnError: true
+    condition: succeededOrFailed()
+
+  - task: PublishTestResults@2
+    displayName: Publish Test Results
+    condition: succeededOrFailed()
+    inputs:
+      testResultsFormat: xUnit
+      testResultsFiles: '$(Build.SourcesDirectory)\artifacts\TestResults\**\*.xml'
+
+  - task: PublishBuildArtifacts@1
+    displayName: Publish Test Logs
+    inputs:
+      PathtoPublish: '$(Build.SourcesDirectory)\artifacts\TestResults'
+      ArtifactName: 'Test Results'
+      publishLocation: Container
+    continueOnError: true
+    condition: succeededOrFailed()
+
+  - task: PublishBuildArtifacts@1
+    displayName: Publish Artifact Packages
+    inputs:
+      PathtoPublish: '$(Build.SourcesDirectory)\artifacts\packages\$(_BuildConfig)'
+      ArtifactName: 'Packages'
+    condition: succeeded()
+
+  - task: ms-vseng.MicroBuildTasks.521a94ea-9e68-468a-8167-6dcf361ea776.MicroBuildCleanup@1
+    displayName: Execute cleanup tasks
+    condition: succeededOrFailed()

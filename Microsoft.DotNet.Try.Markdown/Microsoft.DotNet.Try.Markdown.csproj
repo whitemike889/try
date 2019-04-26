@@ -3,6 +3,8 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <LangVersion>latest</LangVersion>
+    <NoWarn>$(NoWarn);659;660</NoWarn><!-- override for `GetHashCode()` not provided -->
+    <NoWarn>$(NoWarn);8002</NoWarn><!-- Markdig isn't strongly signed -->
   </PropertyGroup>
 
   <PropertyGroup>
@@ -10,12 +12,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="markdig" Version="0.16.0" />
+    <PackageReference Include="Markdig" Version="0.16.0" />
     <PackageReference Include="CdpxBuildProps" Version="0.1.8580001">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="system.commandline.experimental" Version="0.2.0-alpha.19226.1" />
+    <PackageReference Include="System.CommandLine.Experimental" Version="0.2.0-alpha.19226.1" />
     <PackageReference Include="Microsoft.AspNetCore.Html.Abstractions" Version="2.1.1" />
   </ItemGroup>
 </Project>

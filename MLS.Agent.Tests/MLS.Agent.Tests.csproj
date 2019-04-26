@@ -3,6 +3,7 @@
     <LangVersion>Latest</LangVersion>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <AssetTargetFallback>$(AssetTargetFallback);dotnet5.4;portable-net45+win8</AssetTargetFallback>
+    <NoWarn>$(NoWarn);8002</NoWarn><!-- Assent, Clockwise, and Markdig aren't strongly signed -->
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="TestResults\**" />
@@ -12,7 +13,7 @@
 
   <ItemGroup>
     <PackageReference Include="FluentAssertions" Version="5.6.0" />
-    <PackageReference Include="htmlagilitypack" Version="1.9.0" />
+    <PackageReference Include="HtmlAgilityPack" Version="1.9.0" />
     <PackageReference Include="HttpResponseMessageAssertions" Version="0.1.8580001">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
@@ -26,27 +27,21 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="2.1.1" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.9.1" />
-    <PackageReference Include="newtonsoft.json" Version="11.0.2" />
-    <PackageReference Include="pocket.disposable" Version="1.0.5">
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    <PackageReference Include="Pocket.Disposable" Version="1.0.5">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="pocket.typediscovery" Version="0.4.1">
+    <PackageReference Include="Pocket.TypeDiscovery" Version="0.4.1">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="pocketlogger" Version="0.3.0">
+    <PackageReference Include="PocketLogger" Version="0.3.0">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="pocketlogger.for.xunit" Version="0.1.4">
+    <PackageReference Include="PocketLogger.For.Xunit" Version="0.1.4">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="pocketlogger.subscribe" Version="0.6.1">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="xunit" Version="2.4.1" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1">
+    <PackageReference Include="PocketLogger.Subscribe" Version="0.6.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>

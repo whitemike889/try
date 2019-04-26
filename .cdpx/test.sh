@@ -5,6 +5,8 @@ REPO_ROOT=`dirname "$0"`; REPO_ROOT=`eval "cd \"$REPO_ROOT/..\" && pwd"`
 
 cd $REPO_ROOT
 
+export DISABLEARCADE=1
+
 EXIT_STATUS=0
 
 dotnet test Microsoft.DotNet.Try.Project.Tests/Microsoft.DotNet.Try.Project.Tests.csproj --configuration Release --logger trx --diag:TestResults/Microsoft.DotNet.Try.Project.Tests.log.txt || EXIT_STATUS=$?
