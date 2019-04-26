@@ -6,6 +6,16 @@ namespace Microsoft.DotNet.Try.Markdown
 {
     public abstract class RelativePath
     {
+        public static bool operator ==(RelativePath left, RelativePath right)
+        {
+            return Equals(left, right);
+        }
+
+        public static bool operator !=(RelativePath left, RelativePath right)
+        {
+            return !Equals(left, right);
+        }
+
         protected RelativePath(string value)
         {
             ThrowIfPathIsRooted(value);

@@ -2,7 +2,7 @@ using System;
 
 namespace MLS.Agent.Tests
 {
-    public class FakeBrowerLauncher : IBrowserLauncher
+    public class FakeBrowserLauncher : IBrowserLauncher
     {
         public void LaunchBrowser(Uri uri)
         {

@@ -1,12 +1,15 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Clockwise;
 using FluentAssertions;
 using FluentAssertions.Extensions;
 using HtmlAgilityPack;
+using Microsoft.DotNet.Try.Markdown;
 using MLS.Agent.CommandLine;
 using Recipes;
+using WorkspaceServer.Tests;
 using WorkspaceServer.Tests.TestUtility;
 using Xunit;
 
@@ -142,6 +145,34 @@ namespace MLS.Agent.Tests
                      .ToString()
                      .Should()
                      .Match("http://localhost:*/something.md");
+            }
+        }
+
+        [Fact]
+        public async Task When_readme_file_is_on_root_browser_opens_there()
+        {
+
+            var directoryAccessor = new InMemoryDirectoryAccessor
+            {
+                ("./readme.md", ""),
+                ("./subfolder/part1.md", ""),
+                ("./subfolder/part2.md", "")
+            };
+
+            var root = directoryAccessor.GetFullyQualifiedPath(new RelativeDirectoryPath(".")) as DirectoryInfo;
+
+            var options = new StartupOptions(rootDirectory:root);
+
+            using (var clock = VirtualClock.Start())
+            using (var agent = new AgentService(options: options, directoryAccessor: directoryAccessor))
+            {
+                await clock.Wait(5.Seconds());
+
+                agent.BrowserLauncher
+                    .LaunchedUri
+                    .ToString()
+                    .Should()
+                    .Match("http://localhost:*/readme.md");
             }
         }
     }

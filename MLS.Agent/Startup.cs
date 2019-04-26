@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Blazor.Server;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.DotNet.Try.Markdown;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -103,7 +104,7 @@ namespace MLS.Agent
                                           c.GetRequiredService<PackageRegistry>(),
                                           StartupOptions));
 
-                services.AddSingleton<IDirectoryAccessor>(_ =>
+                services.TryAddSingleton<IDirectoryAccessor>(_ =>
                 {
                     if (StartupOptions.Uri?.IsAbsoluteUri == true)
                     {
@@ -122,11 +123,9 @@ namespace MLS.Agent
                         var fileInfo = new FileInfo(temp);
                         return new FileSystemDirectoryAccessor(fileInfo.Directory);
                     }
-                    else
-                    {
-                        return new FileSystemDirectoryAccessor(StartupOptions.RootDirectory ??
-                                                               new DirectoryInfo(Directory.GetCurrentDirectory()));
-                    }
+
+                    return new FileSystemDirectoryAccessor(StartupOptions.RootDirectory ??
+                                                           new DirectoryInfo(Directory.GetCurrentDirectory()));
                 });
 
                 services.AddResponseCompression(options =>
@@ -151,6 +150,7 @@ namespace MLS.Agent
             IApplicationBuilder app,
             IApplicationLifetime lifetime,
             IBrowserLauncher browserLauncher,
+            IDirectoryAccessor directoryAccessor,
             PackageRegistry packageRegistry)
         {
             using (var operation = Log.OnEnterAndConfirmOnExit())
@@ -187,7 +187,7 @@ namespace MLS.Agent
                 if (StartupOptions.Mode == StartupMode.Try)
                 {
                     Clock.Current
-                         .Schedule(_ => LaunchBrowser(browserLauncher), TimeSpan.FromSeconds(1));
+                         .Schedule(_ => LaunchBrowser(browserLauncher,directoryAccessor), TimeSpan.FromSeconds(1));
                 }
             }
         }
@@ -208,7 +208,7 @@ namespace MLS.Agent
             });
         }
 
-        private void LaunchBrowser(IBrowserLauncher browserLauncher)
+        private void LaunchBrowser(IBrowserLauncher browserLauncher, IDirectoryAccessor directoryAccessor)
         {
             var processName = Process.GetCurrentProcess().ProcessName;
 
@@ -222,8 +222,30 @@ namespace MLS.Agent
             {
                 uri = new Uri(uri, StartupOptions.Uri);
             }
+            else if (StartupOptions.Uri == null)
+            {
+                var readmeFile = FindReadmeFileAtRoot();
+                if (readmeFile != null)
+                {
+                    uri = new Uri(uri, readmeFile.ToString());
+                }
+            }
 
             browserLauncher.LaunchBrowser(uri);
+
+            RelativeFilePath FindReadmeFileAtRoot()
+            {
+                var files = directoryAccessor.GetAllFilesRecursively().Where(f => (StringComparer.InvariantCultureIgnoreCase.Compare(f.FileName, "readme.md") == 0) && IsRoot(f.Directory)).ToList();
+
+                return files.FirstOrDefault();
+            }
+
+            bool IsRoot(RelativeDirectoryPath path)
+            {
+                var isRoot = path == null || path == RelativeDirectoryPath.Root;
+                return isRoot;
+            }
         }
+
     }
 }

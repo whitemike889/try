@@ -6,6 +6,8 @@ namespace Microsoft.DotNet.Try.Markdown
         RelativePath,
         IEquatable<RelativeDirectoryPath>
     {
+        public static RelativeDirectoryPath Root { get; } = new RelativeDirectoryPath("./");
+      
         public RelativeDirectoryPath(string value) : base(value)
         {
             Value = NormalizeDirectory(value);
@@ -43,7 +45,7 @@ namespace Microsoft.DotNet.Try.Markdown
                 return false;
             }
 
-            return Equals((RelativeDirectoryPath) obj);
+            return Equals((RelativeDirectoryPath)obj);
         }
     }
 }
