@@ -240,9 +240,9 @@ namespace MLS.Agent
                 return files.FirstOrDefault();
             }
 
-            bool IsRoot(RelativePath path)
+            bool IsRoot(RelativeDirectoryPath path)
             {
-                var isRoot = path == null || string.IsNullOrWhiteSpace(path.Value) || path.Value == "./";
+                var isRoot = path == null || path == new RelativeDirectoryPath("./");
                 return isRoot;
             }
         }
