@@ -161,7 +161,7 @@ namespace MLS.Agent.Tests
 
             var root = directoryAccessor.GetFullyQualifiedPath(new RelativeDirectoryPath(".")) as DirectoryInfo;
 
-            var options = new StartupOptions(rootDirectory:root);
+            var options = new StartupOptions(dir: root);
 
             using (var clock = VirtualClock.Start())
             using (var agent = new AgentService(options: options, directoryAccessor: directoryAccessor))

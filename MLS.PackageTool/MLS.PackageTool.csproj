@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="system.commandline.experimental" Version="0.2.0-alpha.19213.1" />
+    <PackageReference Include="system.commandline.experimental" Version="0.2.0-alpha.19226.1" />
   </ItemGroup>
 
 </Project>
