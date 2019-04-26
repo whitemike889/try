@@ -242,7 +242,7 @@ namespace MLS.Agent
 
             bool IsRoot(RelativeDirectoryPath path)
             {
-                var isRoot = path == null || path == new RelativeDirectoryPath("./");
+                var isRoot = path == null || path == RelativeDirectoryPath.Root;
                 return isRoot;
             }
         }

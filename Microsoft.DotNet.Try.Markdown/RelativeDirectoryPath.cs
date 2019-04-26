@@ -6,7 +6,8 @@ namespace Microsoft.DotNet.Try.Markdown
         RelativePath,
         IEquatable<RelativeDirectoryPath>
     {
-       
+        public static RelativeDirectoryPath Root => new RelativeDirectoryPath("./");
+
         public static bool operator ==(RelativeDirectoryPath left, RelativeDirectoryPath right)
         {
             return Equals(left, right);
@@ -54,7 +55,7 @@ namespace Microsoft.DotNet.Try.Markdown
                 return false;
             }
 
-            return Equals((RelativeDirectoryPath) obj);
+            return Equals((RelativeDirectoryPath)obj);
         }
     }
 }
