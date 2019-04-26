@@ -91,7 +91,7 @@ namespace MLS.Agent
                         case StartupMode.Try:
                         case StartupMode.Jupyter:
                             return PackageRegistry.CreateForTryMode(
-                                StartupOptions.RootDirectory, 
+                                StartupOptions.Dir, 
                                 StartupOptions.AddPackageSource);
 
                         default:
@@ -123,9 +123,11 @@ namespace MLS.Agent
                         var fileInfo = new FileInfo(temp);
                         return new FileSystemDirectoryAccessor(fileInfo.Directory);
                     }
-
-                    return new FileSystemDirectoryAccessor(StartupOptions.RootDirectory ??
-                                                           new DirectoryInfo(Directory.GetCurrentDirectory()));
+                    else
+                    {
+                        return new FileSystemDirectoryAccessor(StartupOptions.Dir ??
+                                                               new DirectoryInfo(Directory.GetCurrentDirectory()));
+                    }
                 });
 
                 services.AddResponseCompression(options =>

@@ -93,7 +93,7 @@ namespace MLS.Agent.Tests.CommandLine
         {
             var path = TestAssets.SampleConsole.FullName;
             await _parser.InvokeAsync(new[] { path }, _console);
-            _start_options.RootDirectory.FullName.Should().Be(path);
+            _start_options.Dir.FullName.Should().Be(path);
         }
 
         [Fact]
@@ -147,7 +147,7 @@ namespace MLS.Agent.Tests.CommandLine
         public async Task Parse_empty_command_line_has_current_directory_as_root_directory()
         {
             await _parser.InvokeAsync("", _console);
-            _start_options.RootDirectory.FullName.Should().Be(Directory.GetCurrentDirectory());
+            _start_options.Dir.FullName.Should().Be(Directory.GetCurrentDirectory());
         }
 
         [Fact]
@@ -318,7 +318,7 @@ namespace MLS.Agent.Tests.CommandLine
         {
             var directory = Path.GetDirectoryName(typeof(VerifyCommand).Assembly.Location);
             await _parser.InvokeAsync($"verify {directory}");
-            _verifyOptions.RootDirectory.FullName.Should().Be(directory);
+            _verifyOptions.Dir.FullName.Should().Be(directory);
         }
 
         [Fact]

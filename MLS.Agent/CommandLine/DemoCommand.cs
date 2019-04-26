@@ -59,7 +59,7 @@ namespace MLS.Agent.CommandLine
             startServer?.Invoke(new StartupOptions(
                                     uri: new Uri("QuickStart.md", UriKind.Relative),
                                     enablePreviewFeatures: options.EnablePreviewFeatures,
-                                    rootDirectory: options.Output),
+                                    dir: options.Output),
                                 context);
 
             return Task.FromResult(0);

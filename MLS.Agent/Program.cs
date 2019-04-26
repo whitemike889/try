@@ -43,8 +43,8 @@ namespace MLS.Agent
                 verify: (options, console) =>
                     VerifyCommand.Do(options,
                                      console,
-                                     () => new FileSystemDirectoryAccessor(options.RootDirectory),
-                                     PackageRegistry.CreateForTryMode(options.RootDirectory)),
+                                     () => new FileSystemDirectoryAccessor(options.Dir),
+                                     PackageRegistry.CreateForTryMode(options.Dir)),
                 jupyter:  JupyterCommand.Do,
                 _serviceCollection);
 

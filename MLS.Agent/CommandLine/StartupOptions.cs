@@ -13,7 +13,7 @@ namespace MLS.Agent.CommandLine
             string applicationInsightsKey = null,
             string id = null,
             string regionId = null,
-            DirectoryInfo rootDirectory = null,
+            DirectoryInfo dir = null,
             DirectoryInfo addPackageSource = null,
             Uri uri = null,
             DirectoryInfo logPath = null,
@@ -30,7 +30,7 @@ namespace MLS.Agent.CommandLine
             Key = key;
             ApplicationInsightsKey = applicationInsightsKey;
             RegionId = regionId;
-            RootDirectory = rootDirectory;
+            Dir = dir;
             AddPackageSource = addPackageSource;
             Uri = uri;
             EnablePreviewFeatures = enablePreviewFeatures;
@@ -41,7 +41,7 @@ namespace MLS.Agent.CommandLine
         public bool EnablePreviewFeatures { get; }
         public string Id { get; }
         public string RegionId { get; }
-        public DirectoryInfo RootDirectory { get; }
+        public DirectoryInfo Dir { get; }
         public DirectoryInfo AddPackageSource { get; }
         public Uri Uri { get; }
         public bool Production { get; }
@@ -49,7 +49,7 @@ namespace MLS.Agent.CommandLine
         public string Key { get; }
         public string ApplicationInsightsKey { get; }
 
-        public StartupMode Mode => RootDirectory == null
+        public StartupMode Mode => Dir == null
                                        ? StartupMode.Hosted
                                        : StartupMode.Try; 
 

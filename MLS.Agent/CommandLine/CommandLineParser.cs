@@ -10,7 +10,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MLS.Agent.Markdown;
 using WorkspaceServer;
-using WorkspaceServer.Packaging;
 using CommandHandler = System.CommandLine.Invocation.CommandHandler;
 
 namespace MLS.Agent.CommandLine
@@ -65,7 +64,6 @@ namespace MLS.Agent.CommandLine
 
             rootCommand.AddCommand(StartInHostedMode());
             rootCommand.AddCommand(Demo());
-            rootCommand.AddCommand(ListPackages());
             rootCommand.AddCommand(GitHub());
             rootCommand.AddCommand(Pack());
             rootCommand.AddCommand(Install());
@@ -94,7 +92,7 @@ namespace MLS.Agent.CommandLine
                     Description = ".NET interactive documentation in your browser",
                     Argument = new Argument<DirectoryInfo>(() => new DirectoryInfo(Directory.GetCurrentDirectory()))
                     {
-                        Name = nameof(StartupOptions.RootDirectory),
+                        Name = nameof(StartupOptions.Dir).ToLower(),
                         Description = "Specify the path to the root directory to run samples from"
                     }.ExistingOnly()
                 };
@@ -102,17 +100,26 @@ namespace MLS.Agent.CommandLine
                 command.AddOption(new Option(
                                      "--add-package-source",
                                      "Specify an additional NuGet package source",
-                                     new Argument<DirectoryInfo>(new DirectoryInfo(Directory.GetCurrentDirectory())).ExistingOnly()));
+                                     new Argument<DirectoryInfo>(new DirectoryInfo(Directory.GetCurrentDirectory()))
+                                     {
+                                         Name = "NuGet source"
+                                     }.ExistingOnly()));
 
                 command.AddOption(new Option(
                      "--package",
                      "Specify a Try .NET package or path to a .csproj to run code samples with",
-                     new Argument<string>()));
+                     new Argument<string>
+                     {
+                         Name = "name or .csproj"
+                     }));
 
                 command.AddOption(new Option(
                      "--package-version",
                      "Specify a Try .NET package version to use with the --package option",
-                     new Argument<string>()));
+                     new Argument<string>
+                     {
+                         Name = "version"
+                     }));
 
                 command.AddOption(new Option(
                      "--uri",
@@ -127,7 +134,10 @@ namespace MLS.Agent.CommandLine
                 command.AddOption(new Option(
                     "--log-path", 
                     "Enable file logging to the specified directory",
-                    new Argument<DirectoryInfo>()));
+                    new Argument<DirectoryInfo>
+                    {
+                        Name = "dir"
+                    }));
 
                 command.AddOption(new Option(
                     "--verbose", 
@@ -137,7 +147,7 @@ namespace MLS.Agent.CommandLine
                 command.Handler = CommandHandler.Create<InvocationContext, StartupOptions>((context, options) =>
                 {
                     services.AddSingleton(_ => PackageRegistry.CreateForTryMode(
-                                              options.RootDirectory,
+                                              options.Dir,
                                               options.AddPackageSource));
                  
                     startServer(options, context);
@@ -195,31 +205,6 @@ namespace MLS.Agent.CommandLine
                 return command;
             }
 
-            Command ListPackages()
-            {
-                var run = new Command("list-packages", "Lists the installed Try .NET packages");
-
-                run.Handler = CommandHandler.Create(async (IConsole console) =>
-                {
-                    await Task.Yield();
-                    var packagesDirectory = new DirectoryInfo(Path.Combine(Package.DefaultPackagesDirectory.FullName, ".store"));
-
-                    if (packagesDirectory.Exists)
-                    {
-                        foreach (var package in packagesDirectory.GetDirectories())
-                        {
-                            console.Out.WriteLine(package.FullName);
-                        }
-                    }
-                    else
-                    {
-                        console.Out.WriteLine("No Try .NET packages installed");
-                    }
-                });
-
-                return run;
-            }
-
             Command Demo()
             {
                 var demoCommand = new Command("demo", "Learn how to create Try .NET content with an interactive demo")
@@ -250,6 +235,7 @@ namespace MLS.Agent.CommandLine
                 argument.Name = nameof(TryGitHubOptions.Repo);
 
                 var github = new Command("github", "Try a GitHub repo", argument: argument);
+                github.IsHidden = true;
 
                 github.Handler = CommandHandler.Create<TryGitHubOptions, IConsole>((repo, console) => tryGithub(repo, console));
 
@@ -259,6 +245,7 @@ namespace MLS.Agent.CommandLine
             Command Jupyter()
             {
                 var jupyterCommand = new Command("jupyter", "Starts dotnet try as a Jupyter kernel");
+                jupyterCommand.IsHidden = true;
                 var connectionFileArgument = new Argument<FileInfo>
                                              {
                                                  Name = "ConnectionFile"
@@ -290,6 +277,7 @@ namespace MLS.Agent.CommandLine
             Command Pack()
             {
                 var packCommand = new Command("pack", "Create a Try .NET package");
+                packCommand.IsHidden = true;
                 packCommand.Argument = new Argument<DirectoryInfo>();
                 packCommand.Argument.Name = nameof(PackOptions.PackTarget);
 
@@ -329,7 +317,7 @@ namespace MLS.Agent.CommandLine
                 {
                     Argument = new Argument<DirectoryInfo>(() => new DirectoryInfo(Directory.GetCurrentDirectory()))
                     {
-                        Name = nameof(VerifyOptions.RootDirectory),
+                        Name = nameof(VerifyOptions.Dir).ToLower(),
                         Description = "Specify the path to the root directory"
                     }.ExistingOnly()
                 };

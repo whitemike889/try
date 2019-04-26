@@ -20,7 +20,7 @@ namespace MLS.Agent.Tests
         [Fact]
         public async Task Request_for_non_existent_markdown_file_returns_404()
         {
-            using (var agent = new AgentService(new StartupOptions(rootDirectory: TestAssets.SampleConsole)))
+            using (var agent = new AgentService(new StartupOptions(dir: TestAssets.SampleConsole)))
             {
                 var response = await agent.GetAsync(@"/DOESNOTEXIST");
 
@@ -31,7 +31,7 @@ namespace MLS.Agent.Tests
         [Fact]
         public async Task Return_html_for_an_existing_markdown_file()
         {
-            using (var agent = new AgentService(new StartupOptions(rootDirectory: TestAssets.SampleConsole)))
+            using (var agent = new AgentService(new StartupOptions(dir: TestAssets.SampleConsole)))
             {
                 var response = await agent.GetAsync(@"Readme.md");
 
@@ -45,7 +45,7 @@ namespace MLS.Agent.Tests
         [Fact]
         public async Task Return_html_for_existing_markdown_files_in_a_subdirectory()
         {
-            using (var agent = new AgentService(new StartupOptions(rootDirectory: TestAssets.SampleConsole)))
+            using (var agent = new AgentService(new StartupOptions(dir: TestAssets.SampleConsole)))
             {
                 var response = await agent.GetAsync(@"Subdirectory/Tutorial.md");
 
@@ -59,7 +59,7 @@ namespace MLS.Agent.Tests
         [Fact]
         public async Task Lists_markdown_files_when_a_folder_is_requested()
         {
-            using (var agent = new AgentService(new StartupOptions(rootDirectory: TestAssets.SampleConsole)))
+            using (var agent = new AgentService(new StartupOptions(dir: TestAssets.SampleConsole)))
             {
                 var response = await agent.GetAsync(@"/");
 
@@ -83,7 +83,7 @@ namespace MLS.Agent.Tests
         [Fact]
         public async Task Scaffolding_HTML_includes_trydotnet_js_script_link()
         {
-            using (var agent = new AgentService(new StartupOptions(rootDirectory: TestAssets.SampleConsole)))
+            using (var agent = new AgentService(new StartupOptions(dir: TestAssets.SampleConsole)))
             {
                 var response = await agent.GetAsync(@"Subdirectory/Tutorial.md");
 
@@ -107,7 +107,7 @@ namespace MLS.Agent.Tests
         [Fact]
         public async Task Scaffolding_HTML_includes_trydotnet_js_autoEnable_invocation()
         {
-            using (var agent = new AgentService(new StartupOptions(rootDirectory: TestAssets.SampleConsole)))
+            using (var agent = new AgentService(new StartupOptions(dir: TestAssets.SampleConsole)))
             {
                 var response = await agent.GetAsync(@"Subdirectory/Tutorial.md");
 
@@ -135,7 +135,7 @@ namespace MLS.Agent.Tests
 
             using (var clock = VirtualClock.Start())
             using (var agent = new AgentService(new StartupOptions(
-                                                    rootDirectory: TestAssets.SampleConsole,
+                                                    dir: TestAssets.SampleConsole,
                                                     uri: launchUri)))
             {
                 await clock.Wait(5.Seconds());
