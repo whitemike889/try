@@ -158,13 +158,13 @@ namespace MLS.Agent.Tests
                 ("./subfolder/part1.md", ""),
                 ("./subfolder/part2.md", "")
             };
-            var onDisk = directoryAccessor.CreateFiles();
-            var root = onDisk.GetFullyQualifiedPath(new RelativeDirectoryPath(".")) as DirectoryInfo;
+
+            var root = directoryAccessor.GetFullyQualifiedPath(new RelativeDirectoryPath(".")) as DirectoryInfo;
 
             var options = new StartupOptions(rootDirectory:root);
 
             using (var clock = VirtualClock.Start())
-            using (var agent = new AgentService(options: options, directoryAccessor: onDisk))
+            using (var agent = new AgentService(options: options, directoryAccessor: directoryAccessor))
             {
                 await clock.Wait(5.Seconds());
 
