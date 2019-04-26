@@ -45,10 +45,14 @@ namespace MLS.Agent.Tests
             var builder = new WebHostBuilder()
                           .ConfigureServices(c =>
                           {
+                              if (_directoryAccessor != null)
+                              {
+                                  c.AddSingleton(_directoryAccessor);
+                              }
                               c.AddSingleton(_options);
                               c.AddSingleton<IBrowserLauncher>(sp =>
                               {
-                                  BrowserLauncher = new FakeBrowserLauncher(_directoryAccessor??sp.GetRequiredService<IDirectoryAccessor>());
+                                  BrowserLauncher = new FakeBrowserLauncher();
                                   return BrowserLauncher;
                               });
                           })

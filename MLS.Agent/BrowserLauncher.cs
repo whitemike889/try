@@ -1,19 +1,11 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using WorkspaceServer;
 
 namespace MLS.Agent
 {
     internal class BrowserLauncher : IBrowserLauncher
     {
-        public IDirectoryAccessor DirectoryAccessor { get; }
-
-        public BrowserLauncher(IDirectoryAccessor directoryAccessor)
-        {
-            DirectoryAccessor = directoryAccessor;
-        }
-
         public void LaunchBrowser(Uri uri)
         {
             if (uri == null)
