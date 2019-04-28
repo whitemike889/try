@@ -18,7 +18,7 @@ namespace WorkspaceServer.Tests
     public class WorkspaceServerRegistryTests : IDisposable
     {
         private readonly CompositeDisposable disposables = new CompositeDisposable();
-        private readonly PackageRegistry registry = new PackageRegistry();
+        private readonly PackageRegistry registry = PackageRegistry.CreateForHostedMode();
 
         public WorkspaceServerRegistryTests(ITestOutputHelper output)
         {
@@ -36,7 +36,7 @@ namespace WorkspaceServer.Tests
             registry.Add(packageName,
                          options => options.CreateUsingDotnet("console"));
 
-            var package = await registry.Get<ICreateAWorkspace>(packageName);
+            var package = await registry.Get<ICreateWorkspaceForRun>(packageName);
 
             var workspace = await package.CreateRoslynWorkspaceForRunAsync(new TimeBudget(30.Seconds()));
 
@@ -88,7 +88,7 @@ namespace Twilio_try.dot.net_sample
         {
             var unregisteredWorkspace = await Default.ConsoleWorkspace();
 
-            var package = await registry.Get<ICreateAWorkspace>(unregisteredWorkspace.Name);
+            var package = await registry.Get<ICreateWorkspaceForRun>(unregisteredWorkspace.Name);
 
             var workspace = await package.CreateRoslynWorkspaceForRunAsync(new TimeBudget(30.Seconds()));
 

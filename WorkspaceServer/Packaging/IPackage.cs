@@ -26,9 +26,14 @@ namespace WorkspaceServer.Packaging
         bool CanSupportBlazor { get; }
     }
 
-    public interface ICreateAWorkspace : IPackage
+    public interface ICreateWorkspaceForRun : IPackage
     {
         Task<Workspace> CreateRoslynWorkspaceForRunAsync(Budget budget);
+    }
+
+    public interface ICreateWorkspaceForLanguageServices : IPackage
+    {
+        Task<Workspace> CreateRoslynWorkspaceForLanguageServicesAsync(Budget budget);
     }
 
     public static class PackageFinder

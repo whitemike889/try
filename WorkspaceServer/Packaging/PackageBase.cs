@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using MLS.Agent.Tools;
 using Pocket;
+using WorkspaceServer.Servers.Roslyn;
 using static Pocket.Logger<WorkspaceServer.Packaging.PackageBase>;
 
 namespace WorkspaceServer.Packaging
@@ -33,7 +34,7 @@ namespace WorkspaceServer.Packaging
             Name = name ?? directory?.Name ?? throw new ArgumentException($"You must specify {nameof(name)}, {nameof(directory)}, or both.");
             Directory = directory ?? new DirectoryInfo(Path.Combine(Package.DefaultPackagesDirectory.FullName, Name));
 
-            _lazyCreation = new AsyncLazy<bool>(Create);
+            _lazyCreation = new AsyncLazy<bool>(() => this.Create(Initializer));
             LastBuildErrorLogFile = new FileInfo(Path.Combine(Directory.FullName, ".trydotnet-builderror"));
         }
 
@@ -68,36 +69,6 @@ namespace WorkspaceServer.Packaging
             budget.RecordEntry();
         }
 
-        protected async Task<bool> Create()
-        {
-            using (var operation = Log.OnEnterAndConfirmOnExit())
-            {
-                //to do: identify if this flag is needed
-                if (!IsDirectoryCreated)
-                {
-                    Directory.Refresh();
-
-                    if (!Directory.Exists)
-                    {
-                        operation.Info("Creating directory {directory}", Directory);
-                        Directory.Create();
-                        Directory.Refresh();
-                    }
-
-                    IsDirectoryCreated = true;
-                }
-
-                if (Directory.GetFiles("*", SearchOption.AllDirectories).Length == 0)
-                {
-                    operation.Info("Initializing package using {_initializer} in {directory}", Initializer, Directory);
-                    await Initializer.Initialize(Directory);
-                }
-
-                operation.Succeed();
-                return true;
-            }
-        }
-
         public bool CanSupportBlazor
         {
             get
@@ -125,7 +96,7 @@ namespace WorkspaceServer.Packaging
         {
             using (var operation = Log.OnEnterAndConfirmOnExit())
             {
-                var projectFile = GetProjectFile();
+                var projectFile = this.GetProjectFile();
                 var args = $"/bl:{FullBuildBinlogFileName}";
                 if (projectFile?.Exists == true)
                 {
@@ -153,11 +124,5 @@ namespace WorkspaceServer.Packaging
         }
 
         protected FileInfo LastBuildErrorLogFile { get; }
-
-        protected FileInfo GetProjectFile()
-        {
-            return Directory.GetFiles("*.csproj").FirstOrDefault();
-        }
-
     }
 }

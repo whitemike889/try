@@ -9,8 +9,8 @@ namespace WorkspaceServer.Packaging
     public class Package2 :
         IPackage,
         IHaveADirectory,
-        IMightSupportBlazor,
-        IHaveADirectoryAccessor
+        IHaveADirectoryAccessor,
+        IMightSupportBlazor
     {
         private readonly PackageDescriptor _descriptor;
         private readonly Dictionary<Type, PackageAsset> _assets = new Dictionary<Type, PackageAsset>();

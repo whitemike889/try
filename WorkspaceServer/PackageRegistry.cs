@@ -76,44 +76,54 @@ namespace WorkspaceServer
             var descriptor = new PackageDescriptor(packageName);
 
             // FIX: (Get) move this into the cache
+            var package = await GetPackage2<T>(descriptor);
 
-            if (typeof(T) != typeof(Package))
+            if (package == null)
             {
-                foreach (var packgeFinder in _packageFinders)
+                package = await GetPackageFromPackageBuilder<T>(packageName, budget, descriptor);
+            }
+
+            return (T) package;
+        }
+
+        private async Task<IPackage> GetPackage2<T>(PackageDescriptor descriptor)
+            where T : IPackage
+        {
+            foreach (var packgeFinder in _packageFinders)
+            {
+                if (await packgeFinder.Find<T>(descriptor) is T pkg)
                 {
-                    if (await packgeFinder.Find<T>(descriptor) is T pkg)
-                    {
-                        return pkg;
-                    }
+                   return pkg;
                 }
             }
-            else
-            {
-            }
 
-            var package = await _packages.GetOrAdd(packageName, async name =>
+            return default;
+        }
+
+        private Task<IPackage> GetPackageFromPackageBuilder<T>(string packageName, Budget budget, PackageDescriptor descriptor)
+            where T : IPackage
+        {
+            return _packages.GetOrAdd(packageName, async name =>
             {
                 var packageBuilder = await _packageBuilders.GetOrAdd(
-                    name,
-                    async name2 =>
-                    {
-                        foreach (var strategy in _strategies)
-                        {
-                            var builder = await strategy.Locate(descriptor, budget);
+                                         name,
+                                         async name2 =>
+                                         {
+                                             foreach (var strategy in _strategies)
+                                             {
+                                                 var builder = await strategy.Locate(descriptor, budget);
 
-                            if (builder != null)
-                            {
-                                return builder;
-                            }
-                        }
+                                                 if (builder != null)
+                                                 {
+                                                     return builder;
+                                                 }
+                                             }
 
-                        throw new PackageNotFoundException($"Package named \"{name2}\" not found.");
-                    });
+                                             throw new PackageNotFoundException($"Package named \"{name2}\" not found.");
+                                         });
 
                 return packageBuilder.GetPackage(budget);
             });
-
-            return (T) package;
         }
 
         public static PackageRegistry CreateForTryMode(DirectoryInfo project, DirectoryInfo addSource = null)

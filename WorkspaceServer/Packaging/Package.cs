@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reactive.Concurrency;
@@ -29,7 +28,8 @@ namespace WorkspaceServer.Packaging
 {
     public abstract class Package : 
         PackageBase,
-        ICreateAWorkspace
+        ICreateWorkspaceForLanguageServices,
+        ICreateWorkspaceForRun
     {
         internal const string DesignTimeBuildBinlogFileName = "package_designTimeBuild.binlog";
         private static readonly object _createDirectoryLock = new object();
@@ -88,7 +88,6 @@ namespace WorkspaceServer.Packaging
             DirectoryInfo directory = null,
             IScheduler buildThrottleScheduler = null) : base(name, initializer, directory)
         {
-        
             Initializer = initializer ?? new PackageInitializer("console", Name);
         
             _log = new Logger($"{nameof(Package)}:{Name}");
@@ -109,40 +108,11 @@ namespace WorkspaceServer.Packaging
             RoslynWorkspace = null;
         }
 
-
-        private FileInfo FindLatestBinLog() => FindBinLogs().OrderByDescending(f => f.LastWriteTimeUtc).FirstOrDefault();
-        private IEnumerable<FileInfo> FindBinLogs() => Directory.GetFiles("*.binlog").Where(f => f.FullName.EndsWith(FullBuildBinlogFileName) || f.FullName.EndsWith(DesignTimeBuildBinlogFileName));
-
-        private async Task WaitForFileAvailable(FileInfo file)
+        private static void LoadDesignTimeBuildFromBuildLogFile(Package package, FileSystemInfo binLog)
         {
-            const int waitAmount = 100;
-            var attemptCount = 1;
-            while (file.Exists && attemptCount <= 10 && !IsAvailable())
-            {
-                await Task.Delay(waitAmount * attemptCount);
-                attemptCount++;
-            }
-
-            bool IsAvailable()
-            {
-                try
-                {
-                    using (file.Open(FileMode.Open, FileAccess.Read, FileShare.None))
-                    {
-                        return true;
-                    }
-                }
-                catch (IOException)
-                {
-                    return false;
-                }
-            }
-        }
-
-        private void LoadDesignTimeBuildFromBuildLogFile(FileSystemInfo binLog)
-        {
-            var projectFile = GetProjectFile();
-            if (projectFile != null && binLog.LastWriteTimeUtc >= projectFile.LastWriteTimeUtc)
+            var projectFile = package.GetProjectFile();
+            if (projectFile != null && 
+                binLog.LastWriteTimeUtc >= projectFile.LastWriteTimeUtc)
             {
                 var manager = new AnalyzerManager();
                 var results = manager.Analyze(binLog.FullName);
@@ -155,15 +125,15 @@ namespace WorkspaceServer.Packaging
                 var result = results.FirstOrDefault(p => p.ProjectFilePath == projectFile.FullName);
                 if (result != null)
                 {
-                    RoslynWorkspace = null;
-                    DesignTimeBuildResult = result;
-                    LastDesignTimeBuild = binLog.LastWriteTimeUtc;
+                    package.RoslynWorkspace = null;
+                    package.DesignTimeBuildResult = result;
+                    package.LastDesignTimeBuild = binLog.LastWriteTimeUtc;
                     if (result.Succeeded && !binLog.Name.EndsWith(DesignTimeBuildBinlogFileName))
                     {
-                        LastSuccessfulBuildTime = binLog.LastWriteTimeUtc;
-                        if (CanBeUsedToGenerateCompilation(DesignTimeBuildResult, out var ws))
+                        package.LastSuccessfulBuildTime = binLog.LastWriteTimeUtc;
+                        if (package.DesignTimeBuildResult.TryGetWorkspace(out var ws))
                         {
-                            RoslynWorkspace = ws;
+                            package.RoslynWorkspace = ws;
                         }
                     }
                 }
@@ -174,16 +144,15 @@ namespace WorkspaceServer.Packaging
         {
             if (Directory.Exists)
             {
-                var binLog = FindLatestBinLog();
+                var binLog = this.FindLatestBinLog();
                 if (binLog != null)
                 {
-                    LoadDesignTimeBuildFromBuildLogFile(binLog);
+                    LoadDesignTimeBuildFromBuildLogFile(this, binLog);
                 }
             }
         }
 
         private DateTimeOffset? LastDesignTimeBuild { get; set; }
-
 
         private DateTimeOffset? LastSuccessfulBuildTime { get; set; }
 
@@ -197,7 +166,7 @@ namespace WorkspaceServer.Packaging
         {
             get
             {
-                if (_isWebProject == null && GetProjectFile() is FileInfo csproj)
+                if (_isWebProject == null && this.GetProjectFile() is FileInfo csproj)
                 {
                     var csprojXml = File.ReadAllText(csproj.FullName);
 
@@ -219,9 +188,9 @@ namespace WorkspaceServer.Packaging
 
         public static DirectoryInfo DefaultPackagesDirectory { get; }
 
-        public FileInfo EntryPointAssemblyPath => _entryPointAssemblyPath ?? (_entryPointAssemblyPath = GetEntryPointAssemblyPath(Directory, IsWebProject));
+        public FileInfo EntryPointAssemblyPath => _entryPointAssemblyPath ?? (_entryPointAssemblyPath = this.GetEntryPointAssemblyPath(IsWebProject));
 
-        public string TargetFramework => _targetFramework ?? (_targetFramework = GetTargetFramework(Directory));
+        public string TargetFramework => _targetFramework ?? (_targetFramework = this.GetTargetFramework());
         
         public Task<Workspace> CreateRoslynWorkspaceForRunAsync(Budget budget)
         {
@@ -235,7 +204,11 @@ namespace WorkspaceServer.Packaging
                 }
             }
 
-            return RequestFullBuild(budget);
+            CreateCompletionSourceIfNeeded(ref _fullBuildCompletionSource, _fullBuildCompletionSourceLock);
+
+            _fullBuildRequestChannel.OnNext(budget);
+
+            return _fullBuildCompletionSource.Task;
         }
 
         public Task<Workspace> CreateRoslynWorkspaceForLanguageServicesAsync(Budget budget)
@@ -300,13 +273,6 @@ namespace WorkspaceServer.Packaging
                         break;
                 }
             }
-        }
-
-        private Task<Workspace> RequestFullBuild(Budget budget)
-        {
-            CreateCompletionSourceIfNeeded(ref _fullBuildCompletionSource, _fullBuildCompletionSourceLock);
-            _fullBuildRequestChannel.OnNext(budget);
-            return _fullBuildCompletionSource.Task;
         }
 
         private Task<Workspace> RequestDesignTimeBuild(Budget budget)
@@ -396,7 +362,7 @@ namespace WorkspaceServer.Packaging
 
             var ws = build.GetWorkspace();
 
-            if (!CanBeUsedToGenerateCompilation(ws))
+            if (!ws.CanBeUsedToGenerateCompilation())
             {
                 RoslynWorkspace = null;
                 DesignTimeBuildResult = null;
@@ -412,17 +378,6 @@ namespace WorkspaceServer.Packaging
             ws.TryApplyChanges(solution);
             RoslynWorkspace = ws;
             return ws;
-        }
-
-        private static bool CanBeUsedToGenerateCompilation(AnalyzerResult analyzerResult, out Workspace ws)
-        {
-            ws = analyzerResult.GetWorkspace();
-            return CanBeUsedToGenerateCompilation(ws);
-        }
-
-        private static bool CanBeUsedToGenerateCompilation(Workspace ws)
-        {
-            return (ws?.CurrentSolution?.Projects?.Count() > 0);
         }
 
         protected Workspace RoslynWorkspace { get; set; }
@@ -522,9 +477,9 @@ namespace WorkspaceServer.Packaging
                     operation.Error("Exception building workspace", exception);
                 }
 
-                var binLog = FindLatestBinLog();
-                await WaitForFileAvailable(binLog);
-                LoadDesignTimeBuildFromBuildLogFile(binLog);
+                var binLog = this.FindLatestBinLog();
+                await binLog.WaitForFileAvailable();
+                LoadDesignTimeBuildFromBuildLogFile(this, binLog);
             }
         }
      
@@ -682,7 +637,7 @@ namespace WorkspaceServer.Packaging
         {
             using (var operation = _log.OnEnterAndConfirmOnExit())
             {
-                var csProj = GetProjectFile();
+                var csProj = this.GetProjectFile();
                 var logWriter = new StringWriter();
                 var manager = new AnalyzerManager(new AnalyzerManagerOptions
                 {
@@ -716,43 +671,5 @@ namespace WorkspaceServer.Packaging
 
         public virtual SyntaxTree GetInstrumentationEmitterSyntaxTree() =>
             CreateInstrumentationEmitterSyntaxTree();
-
-        private static string GetTargetFramework(DirectoryInfo directory)
-        {
-            var runtimeConfig = directory.GetFiles("*.runtimeconfig.json", SearchOption.AllDirectories).FirstOrDefault();
-
-            if (runtimeConfig != null)
-            {
-                return RuntimeConfig.GetTargetFramework(runtimeConfig);
-            }
-
-            return "netstandard2.0";
-        }
-
-        private static FileInfo GetEntryPointAssemblyPath(DirectoryInfo directory, bool isWebProject)
-        {
-            var depsFile = directory.GetFiles("*.deps.json", SearchOption.AllDirectories).FirstOrDefault();
-
-            if (depsFile == null)
-            {
-                return null;
-            }
-
-            var entryPointAssemblyName = DepsFileParser.GetEntryPointAssemblyName(depsFile);
-
-            var path =
-                Path.Combine(
-                    directory.FullName,
-                    "bin",
-                    "Debug",
-                    GetTargetFramework(directory));
-
-            if (isWebProject)
-            {
-                path = Path.Combine(path, "publish");
-            }
-
-            return new FileInfo(Path.Combine(path, entryPointAssemblyName));
-        }
     }
 }
