@@ -29,6 +29,10 @@ ul.index > li {
     background-color: lighten($dotnet-purple, 17.5%);
   }
 
+  &:disabled {
+    background-color: lighten($dotnet-purple, 40.5%);
+  }
+
   svg {
     height: 16px;
     display: inline-flex;

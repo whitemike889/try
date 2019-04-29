@@ -15,7 +15,7 @@
   "devDependencies": {
     "@mdi/font": "3.5.95",
     "github-markdown-css": "3.0.1",
-    "node-sass": "4.11.0",
+    "node-sass": "4.12.0",
     "xterm": "3.12.0"
   }
 }
