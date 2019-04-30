@@ -50,14 +50,14 @@ namespace WorkspaceServer.Servers.Roslyn
                 .Where(v => v.Destination?.Name != null)
                 .GroupBy(v => v.Destination.Name,
                          v => v.Region,
-                        (name, region) => new InstrumentationMap(name, region)
-            );
+                        (name, region) => new InstrumentationMap(name, region))
+                .ToArray();
 
             var solution = document.Project.Solution;
             var newCompilation = compilation;
             foreach (var tree in newCompilation.SyntaxTrees)
             {
-                var replacementRegions = regions?.Where(r => tree.FilePath.EndsWith(r.FileToInstrument)).FirstOrDefault()?.InstrumentationRegions;
+                var replacementRegions = regions.FirstOrDefault(r => tree.FilePath.EndsWith(r.FileToInstrument))?.InstrumentationRegions;
 
                 var subdocument = solution.GetDocument(tree);
                 var visitor = new InstrumentationSyntaxVisitor(subdocument, await subdocument.GetSemanticModelAsync(), replacementRegions);

@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -738,7 +739,7 @@ namespace FibonacciTest
         [Fact]
         public async Task Can_serve_nodatime_code_runner()
         {
-            using (var agent = new AgentService())
+            using (var agent = new AgentService(new StartupOptions()))
             {
                 var response = await agent.GetAsync(@"/LocalCodeRunner/blazor-nodatime.api");
 

@@ -285,7 +285,6 @@ namespace WorkspaceServer.Packaging
 
         private void SetupWorkspaceCreationFromBuildChannel()
         {
-
             _fullBuildThrottlerSubscription.Disposable = _fullBuildRequestChannel
                 .Throttle(TimeSpan.FromSeconds(0.5), _buildThrottleScheduler)
                 .ObserveOn(TaskPoolScheduler.Default)
