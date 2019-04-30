@@ -721,20 +721,7 @@ namespace FibonacciTest
                 result.Should().Contain("Loading...");
             }
         }
-
-        [Fact]
-        public async Task Blazor_console_content_has_etag()
-        {
-            using (var agent = new AgentService())
-            {
-                var response = await agent.GetAsync(@"/LocalCodeRunner/blazor-console");
-
-                response.EnsureSuccess();
-
-                response.Headers.GetValues(HeaderNames.ETag).Should().NotBeEmpty();
-            }
-        }
-
+        
         [Fact]
         public async Task Can_serve_humanizer_code_runner()
         {
@@ -747,20 +734,7 @@ namespace FibonacciTest
                 result.Should().Contain("Loading...");
             }
         }
-
-        [Fact]
-        public async Task Humanizer_content_has_etag()
-        {
-            using (var agent = new AgentService())
-            {
-                var response = await agent.GetAsync(@"/LocalCodeRunner/humanizer.api");
-
-                response.EnsureSuccess();
-
-                response.Headers.GetValues(HeaderNames.ETag).Should().NotBeEmpty();
-            }
-        }
-
+        
         [Fact]
         public async Task Can_serve_nodatime_code_runner()
         {
