@@ -18,8 +18,7 @@ namespace MLS.Agent
             return app.Use((context, next) =>
             {
                 if (HttpMethods.IsGet(context.Request.Method))
-                {
-                    context.Response.Headers[HeaderNames.ETag] = VersionSensor.Version().AssemblyVersion;
+                {                    
                     context.Response.Headers[HeaderNames.CacheControl] = "public, max-age=604800";
                 }
 
