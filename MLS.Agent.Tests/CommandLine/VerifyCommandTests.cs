@@ -169,6 +169,52 @@ public class EmptyClassTwo {}
             }
 
             [Fact]
+            public async Task When_projects_are_deeper_than_root_it_succeeds()
+            {
+                var root = Create.EmptyWorkspace(isRebuildablePackage: true).Directory;
+
+                var directoryAccessor = new InMemoryDirectoryAccessor(root, root)
+                {
+                    ("some.csproj", CsprojContents),
+                    ("Program.cs", CompilingProgramCs),
+                    ("doc.md", @"
+```cs --source-file Program.cs
+```
+```cs --editable false
+// global include
+public class EmptyClass {}
+```
+```cs --editable false
+// global include
+public class EmptyClassTwo {}
+```
+"),
+                    ("/folder/project/some.csproj", CsprojContents),
+                    ("/folder/project/Program.cs", CompilingProgramWithRegionCs),
+                    ("/folder/doc2.md", @"
+```cs --source-file ./projectProgram.cs --region targetRegion
+```
+
+```cs --source-file ./projectProgram.cs --region userCode
+```
+
+")
+                }.CreateFiles();
+
+                var console = new TestConsole();
+
+                var resultCode = await VerifyCommand.Do(
+                    new VerifyOptions(root),
+                    console,
+                    () => directoryAccessor,
+                    PackageRegistry.CreateForTryMode(root));
+
+                _output.WriteLine(console.Out.ToString());
+
+                resultCode.Should().Be(0);
+            }
+
+            [Fact]
             public async Task With_non_editable_code_block_targeting_regions_with_non_compiling_code_then_validation_fails()
             {
                 var root = Create.EmptyWorkspace(isRebuildablePackage: true).Directory;
