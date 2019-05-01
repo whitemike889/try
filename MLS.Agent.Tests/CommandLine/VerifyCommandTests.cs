@@ -192,10 +192,10 @@ public class EmptyClassTwo {}
                     ("/folder/project/some.csproj", CsprojContents),
                     ("/folder/project/Program.cs", CompilingProgramWithRegionCs),
                     ("/folder/doc2.md", @"
-```cs --source-file ./projectProgram.cs --region targetRegion
+```cs --source-file ./project/Program.cs --region targetRegion
 ```
 
-```cs --source-file ./projectProgram.cs --region userCode
+```cs --source-file ./project/Program.cs --region userCode
 ```
 
 ")
