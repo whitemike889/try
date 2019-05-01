@@ -175,27 +175,13 @@ public class EmptyClassTwo {}
 
                 var directoryAccessor = new InMemoryDirectoryAccessor(root, root)
                 {
-                    ("some.csproj", CsprojContents),
-                    ("Program.cs", CompilingProgramCs),
-                    ("doc.md", @"
-```cs --source-file Program.cs
-```
-```cs --editable false
-// global include
-public class EmptyClass {}
-```
-```cs --editable false
-// global include
-public class EmptyClassTwo {}
-```
-"),
-                    ("/folder/project/some.csproj", CsprojContents),
-                    ("/folder/project/Program.cs", CompilingProgramWithRegionCs),
-                    ("/folder/doc2.md", @"
-```cs --source-file ./project/Program.cs --region targetRegion
+                    ("./folder/project/some.csproj", CsprojContents),
+                    ("./folder/project/Program.cs", CompilingProgramWithRegionCs),
+                    ("./folder/doc2.md", @"
+```cs --source-file ./project/Program.cs --region targetRegion --project ./project/some.csproj
 ```
 
-```cs --source-file ./project/Program.cs --region userCode
+```cs --source-file ./project/Program.cs --region userCodeRegion --project ./project/some.csproj
 ```
 
 ")
