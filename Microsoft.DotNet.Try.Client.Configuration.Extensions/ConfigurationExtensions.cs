@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
 using Microsoft.DotNet.Try.Protocol.ClientApi;
@@ -14,6 +16,29 @@ namespace Microsoft.DotNet.Try.Client.Configuration.Extensions
     public static class ConfigurationExtensions
     {
         private static readonly Regex OptionalRouteFilter = new Regex(@"/\{.+\?\}", RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+
+        private static string ToSha256(string value)
+        {
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
+            var inputBytes = Encoding.UTF8.GetBytes(value);
+
+            byte[] hash;
+            using (var sha256 = SHA256.Create())
+            {
+                hash = sha256.ComputeHash(inputBytes);
+            }
+
+            return Convert.ToBase64String(hash);
+        }
+        public static string ComputeHash(this RequestDescriptors links)
+        {
+            return ToSha256(links.ToJson());
+        }
+
         public static string BuildUrl(this RequestDescriptor requestDescriptor, Dictionary<string, object> context = null)
         {
             var url = requestDescriptor.Href;
