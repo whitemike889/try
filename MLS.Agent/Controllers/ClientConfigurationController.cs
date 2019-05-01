@@ -1,11 +1,13 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Http;
 using Microsoft.DotNet.Try.Client.Configuration;
 using Microsoft.DotNet.Try.Client.Configuration.Extensions;
+using Microsoft.DotNet.Try.Protocol;
 using Pocket;
 using static Pocket.Logger<MLS.Agent.Controllers.ClientConfigurationController>;
+using HttpRequest = Microsoft.AspNetCore.Http.HttpRequest;
+
 namespace MLS.Agent.Controllers
 {
     public class ClientConfigurationController : Controller

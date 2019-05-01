@@ -4,6 +4,7 @@ using System.Linq;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.DotNet.Try.Client.Configuration;
 using Microsoft.DotNet.Try.Project;
+using Microsoft.DotNet.Try.Protocol;
 using Microsoft.DotNet.Try.Protocol.ClientApi;
 using Pocket;
 using static Pocket.Logger<MLS.Agent.Controllers.ProjectController>;

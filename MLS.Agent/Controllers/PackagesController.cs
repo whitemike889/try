@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
-using Microsoft.DotNet.Try.Client.Configuration;
+using Microsoft.DotNet.Try.Protocol;
 using WorkspaceServer;
 using WorkspaceServer.Packaging;
 
