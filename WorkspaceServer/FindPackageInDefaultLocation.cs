@@ -13,7 +13,7 @@ namespace WorkspaceServer
                                  new FileSystemDirectoryAccessor(Package.DefaultPackagesDirectory);
         }
 
-        public async Task<T> Find<T>(PackageDescriptor descriptor)
+        public Task<T> Find<T>(PackageDescriptor descriptor)
             where T : IPackage
         {
             if (!descriptor.IsPathSpecified)
@@ -29,12 +29,12 @@ namespace WorkspaceServer
 
                     if (pkg is T t)
                     {
-                        return t;
+                        return Task.FromResult(t);
                     }
                 }
             }
 
-            return default;
+            return Task.FromResult<T>(default);
         }
     }
 }

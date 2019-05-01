@@ -45,7 +45,19 @@ namespace Microsoft.DotNet.Try.Markdown
                 return false;
             }
 
-            return Equals((RelativeDirectoryPath)obj);
+            return Equals((RelativeDirectoryPath) obj);
+        }
+
+        public override int GetHashCode() => Value.GetHashCode();
+
+        public static bool operator ==(RelativeDirectoryPath left, RelativeDirectoryPath right)
+        {
+            return Equals(left, right);
+        }
+
+        public static bool operator !=(RelativeDirectoryPath left, RelativeDirectoryPath right)
+        {
+            return !Equals(left, right);
         }
     }
 }

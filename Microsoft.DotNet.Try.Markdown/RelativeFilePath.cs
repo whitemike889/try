@@ -99,5 +99,7 @@ namespace Microsoft.DotNet.Try.Markdown
 
             return Equals((RelativeFilePath) obj);
         }
+
+        public override int GetHashCode() => Value.GetHashCode();
     }
 }
