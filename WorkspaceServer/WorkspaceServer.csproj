@@ -28,7 +28,7 @@
     <PackageReference Include="Buildalyzer" Version="2.2.0" />
     <PackageReference Include="Buildalyzer.Workspaces" Version="2.2.0" />
     <PackageReference Include="CdpxBuildProps" Version="0.1.6040001" />
-    <PackageReference Include="Clockwise" Version="1.0.254-beta" />
+    <PackageReference Include="Clockwise" Version="1.0.261-beta" />
     <PackageReference Include="DictionaryExtensions" Version="0.1.5650001">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
