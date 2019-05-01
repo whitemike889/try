@@ -180,7 +180,7 @@ namespace MLS.Agent.Controllers
         private IHtmlContent Header() => $@"
 <header>
     <div>
-        <span class=""dotnet-try"">dotnet try</span>
+        <span class=""dotnet-try"">Try .NET</span>
         <span class=""project-file-path"">{_startupOptions.Dir.FullName.ToLowerInvariant().HtmlEncode()}</span>
     </div>
     <a href=""https://dotnet.microsoft.com/platform/try-dotnet"">Powered by Try .NET</a>
