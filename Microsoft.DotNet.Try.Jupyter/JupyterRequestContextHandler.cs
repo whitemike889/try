@@ -6,10 +6,8 @@ using Microsoft.DotNet.Try.Jupyter.Protocol;
 using Microsoft.DotNet.Try.Protocol;
 using Newtonsoft.Json.Linq;
 using WorkspaceServer;
-using WorkspaceServer.Packaging;
 using WorkspaceServer.Servers.Roslyn;
 using Buffer = Microsoft.DotNet.Try.Protocol.Buffer;
-using Package = WorkspaceServer.Packaging.Package;
 
 namespace Microsoft.DotNet.Try.Jupyter
 {

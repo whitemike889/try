@@ -200,3 +200,5 @@ MLS\.Styles/css/
 *.binlog
 
 \.trydotnet-builderror
+
+*.trx

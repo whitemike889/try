@@ -17,7 +17,7 @@
     <PackageReference Include="HttpResponseMessageExtensions" Version="0.1.5650001" />
     <PackageReference Include="JsonSerializationExtensions" Version="0.1.5650001" />
     <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="2.1.1" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.8.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.9.1" />
     <PackageReference Include="newtonsoft.json" Version="11.0.2" />
     <PackageReference Include="pocket.disposable" Version="1.0.5">
       <PrivateAssets>all</PrivateAssets>
