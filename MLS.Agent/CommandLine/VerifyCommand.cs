@@ -24,7 +24,7 @@ namespace MLS.Agent.CommandLine
         {
             var directoryAccessor = getDirectoryAccessor();
             var markdownProject = new MarkdownProject(
-                directoryAccessor, 
+                directoryAccessor,
                 packageRegistry,
                 startupOptions);
             var returnCode = 0;
@@ -41,6 +41,7 @@ namespace MLS.Agent.CommandLine
             foreach (var markdownFile in markdownFiles)
             {
                 var fullName = directoryAccessor.GetFullyQualifiedPath(markdownFile.Path).FullName;
+                var markdownFileDirectoryAccessor = directoryAccessor.GetDirectoryAccessorForRelativePath(markdownFile.Path.Directory);
 
                 console.Out.WriteLine();
                 console.Out.WriteLine(fullName);
@@ -61,15 +62,15 @@ namespace MLS.Agent.CommandLine
 
                     foreach (var codeLinkBlock in session)
                     {
-                        ReportCodeLinkageResults(codeLinkBlock);
+                        ReportCodeLinkageResults(codeLinkBlock, markdownFileDirectoryAccessor);
                     }
 
                     Console.ResetColor();
 
                     if (!session.Any(block => block.Diagnostics.Any()))
                     {
-                        var (buffersToInclude, filesToInclude) = await markdownFile.GetIncludes(directoryAccessor);
-                        await ReportCompileResults(session, markdownFile, filesToInclude, buffersToInclude);
+                        var (buffersToInclude, filesToInclude) = await markdownFile.GetIncludes(markdownFileDirectoryAccessor);
+                        await ReportCompileResults(session, markdownFile, filesToInclude, buffersToInclude, markdownFileDirectoryAccessor);
                     }
 
                     Console.ResetColor();
@@ -84,7 +85,8 @@ namespace MLS.Agent.CommandLine
                 returnCode = 1;
             }
 
-            async Task ReportCompileResults(IGrouping<string, AnnotatedCodeBlock> session, MarkdownFile markdownFile, Dictionary<string, File[]> filesToInclude, Dictionary<string, Buffer[]> buffersToInclude)
+            async Task ReportCompileResults(IGrouping<string, AnnotatedCodeBlock> session, MarkdownFile markdownFile, Dictionary<string, File[]> filesToInclude,
+                IReadOnlyDictionary<string, Buffer[]> buffersToInclude, IDirectoryAccessor accessor)
             {
                 console.Out.WriteLine($"\n  Compiling samples for session \"{session.Key}\"\n");
 
@@ -95,7 +97,7 @@ namespace MLS.Agent.CommandLine
                     .FirstOrDefault(name => !string.IsNullOrWhiteSpace(name));
 
                 var buffers = editableCodeBlocks
-                              .Select(block => block.GetBufferAsync(directoryAccessor, markdownFile))
+                              .Select(block => block.GetBufferAsync(accessor, markdownFile))
                               .ToList();
 
                 var files = new List<File>();
@@ -130,7 +132,7 @@ namespace MLS.Agent.CommandLine
 
                 var processed = await mergeTransformer.TransformAsync(workspace);
                 processed = await inliningTransformer.TransformAsync(processed);
-                processed = new Workspace(usings:processed.Usings, workspaceType: processed.WorkspaceType, files:processed.Files);
+                processed = new Workspace(usings: processed.Usings, workspaceType: processed.WorkspaceType, files: processed.Files);
 
                 var result = await workspaceServer.Value.Compile(new WorkspaceRequest(processed));
 
@@ -173,7 +175,7 @@ namespace MLS.Agent.CommandLine
                 }
             }
 
-            void ReportCodeLinkageResults(AnnotatedCodeBlock codeLinkBlock)
+            void ReportCodeLinkageResults(AnnotatedCodeBlock codeLinkBlock, IDirectoryAccessor accessor)
             {
                 var diagnostics = codeLinkBlock.Diagnostics.ToArray();
 
@@ -190,14 +192,14 @@ namespace MLS.Agent.CommandLine
                     Console.ForegroundColor = ConsoleColor.Green;
                 }
 
-                var blockOptions = (LocalCodeBlockAnnotations) codeLinkBlock.Annotations;
+                var blockOptions = (LocalCodeBlockAnnotations)codeLinkBlock.Annotations;
 
                 var file = blockOptions?.SourceFile ?? blockOptions?.DestinationFile;
                 var sourceFile =
                     file != null
-                        ? directoryAccessor.GetFullyQualifiedPath(file).FullName
+                        ? accessor.GetFullyQualifiedPath(file).FullName
                         : "UNKNOWN";
-                
+
                 var project = codeLinkBlock.ProjectOrPackageName() ?? "UNKNOWN";
 
                 var symbol = diagnostics.Any()

@@ -67,6 +67,7 @@ namespace MLS.Agent.Markdown
 
         internal async Task<(Dictionary<string, Buffer[]> buffers,  Dictionary<string, File[]> files)> GetIncludes(IDirectoryAccessor directoryAccessor)
         {
+           
             var buffersToIncludeBySession = new Dictionary<string, Buffer[]>(StringComparer.InvariantCultureIgnoreCase);
 
             var contentBuildersByBufferBySession = new Dictionary<string, Dictionary<BufferId, StringBuilder>>(StringComparer.InvariantCultureIgnoreCase);

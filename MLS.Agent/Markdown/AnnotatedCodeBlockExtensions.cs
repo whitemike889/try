@@ -17,10 +17,8 @@ namespace MLS.Agent.Markdown
                 var bufferId = new BufferId(absolutePath, block.Annotations.Region);
                 return new Buffer(bufferId, block.SourceCode);
             }
-            else
-            {
-                return null;
-            }
+
+            return null;
         }
 
         public static string ProjectOrPackageName(this AnnotatedCodeBlock block)
