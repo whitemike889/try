@@ -129,7 +129,7 @@ footer {
   }
 }
 
-.inline-code-container {
+.code-container-inline {
   position: relative;
   margin-top: 1em;
   margin-bottom: 1em;
@@ -163,11 +163,15 @@ footer {
 
 .output-panel-inline.expanded {
   visibility: visible;
-  min-height: $output-panel-min-height;
-  max-height: 400px;
+  min-height: 2em;
+  max-height: 20em;
   padding: 2px;
   padding-left: 0.5em;
   margin: 1px;
+}
+
+.output-panel-inline.size-to-content {
+  max-height: 20em;
 }
 
 .output-panel-inline.run-failure {

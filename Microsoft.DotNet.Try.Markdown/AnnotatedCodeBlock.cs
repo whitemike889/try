@@ -110,7 +110,7 @@ namespace Microsoft.DotNet.Try.Markdown
             {
                 renderer
                     .WriteLine(inlineControls
-                                   ? @"<div class=""inline-code-container"">"
+                                   ? @"<div class=""code-container-inline"">"
                                    : @"<div class=""code-container"">");
             }
 
@@ -142,7 +142,7 @@ namespace Microsoft.DotNet.Try.Markdown
                 renderer
                     .WriteLine(enablePreviewFeatures
                                    ? $@"<div class=""output-panel-inline collapsed"" data-trydotnet-mode=""runResult"" data-trydotnet-output-type=""terminal"" data-trydotnet-session-id=""{Annotations.Session}""></div>"
-                                   : $@"<div class=""output-panel-inline collapsed"" data-trydotnet-mode=""runResult"" data-trydotnet-session-id=""{Annotations.Session}""></div>");
+                                   : $@"<div class=""output-panel-inline collapsed size-to-content"" data-trydotnet-mode=""runResult"" data-trydotnet-session-id=""{Annotations.Session}""></div>");
             }
 
             if (Annotations.Editable)
