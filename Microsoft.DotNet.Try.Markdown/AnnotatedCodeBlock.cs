@@ -137,7 +137,7 @@ namespace Microsoft.DotNet.Try.Markdown
             {
                 renderer
                     .WriteLine(
-                        $@"<button class=""run"" data-trydotnet-mode=""run"" data-trydotnet-session-id=""{Annotations.Session}"" data-trydotnet-run-args=""{Annotations.RunArgs.HtmlAttributeEncode()}"">{SvgResources.PlaySvg}</button>");
+                        $@"<button class=""run"" data-trydotnet-mode=""run"" data-trydotnet-session-id=""{Annotations.Session}"" data-trydotnet-run-args=""{Annotations.RunArgs.HtmlAttributeEncode()}"">{SvgResources.RunButtonSvg}</button>");
 
                 renderer
                     .WriteLine(enablePreviewFeatures
