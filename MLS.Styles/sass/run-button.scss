@@ -12,16 +12,34 @@
 }
 
 @keyframes buttonBusy{
-  from {
+  0% {
     opacity: 0;
     stroke: $white;
     transform: rotate(0deg);
   }
 
-  to {
+  25% {
     opacity: 1;
     stroke: lighten($dotnet-purple, 17.5%);
-    transform: rotate(720deg);
+    transform: rotate(179deg);
+  }
+
+  50% {
+    opacity: 0;
+    stroke: $white;
+    transform: rotate(359deg);
+  }
+
+  75% {
+    opacity: 1;
+    stroke: lighten($dotnet-purple, 17.5%);
+    transform: rotate(539deg);
+  }
+
+  100% {
+    opacity: 0;
+    stroke: $white;
+    transform: rotate(719deg);
   }
 }
 
@@ -75,9 +93,6 @@ ul.index > li > a {
 
 .code-container-inline button.busy {
   svg {
-    animation-duration: 1s;
-    animation-name: buttonBusy;
-    animation-iteration-count: infinite;
-    animation-direction: alternate;  
+    animation: buttonBusy 2s infinite linear;
   }
 }
