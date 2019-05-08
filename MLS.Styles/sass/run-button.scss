@@ -62,7 +62,6 @@ ul.index > li > a {
   right: 0px;
   top: 0px;
   margin: 4px;
-  content: "run";
   svg {
     fill: $white;
     path {
@@ -75,7 +74,20 @@ ul.index > li > a {
   }
 }
 
-.code-container-inline button.busy {
+button.run {
+  svg {
+    fill: $white;
+    path {
+      opacity: 1;
+    }
+
+    g.spinner {
+      opacity: 0;
+    }
+  }
+}
+
+@mixin action-button-busy {
   svg {
     path {
       opacity: 0;
@@ -109,7 +121,7 @@ ul.index > li > a {
       }
 
       g:nth-child(6) {
-        animation-delay: -2.0s;
+        animation-delay: -2s;
       }
 
       g:nth-child(7) {
@@ -121,4 +133,9 @@ ul.index > li > a {
       }
     }
   }
+}
+
+button.busy,
+.code-container-inline button.busy {
+  @include action-button-busy;
 }
