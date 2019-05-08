@@ -11,7 +11,16 @@
   }
 }
 
-@keyframes buttonBusy{
+@keyframes busy-spinning {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(720deg);
+  }
+}
+
+@keyframes buttonBusy {
   0% {
     opacity: 0;
     stroke: $white;
@@ -85,14 +94,63 @@ ul.index > li > a {
   right: 0px;
   top: 0px;
   margin: 4px;
-  content:"run";
+  content: "run";
   svg {
     fill: $white;
+    path {
+      opacity: 1;
+    }
+
+    g.spinner {
+      opacity: 0;
+    }
   }
 }
 
 .code-container-inline button.busy {
   svg {
-    animation: buttonBusy 2s infinite linear;
+    path {
+      opacity: 0;
+    }
+
+    g.spinner {
+      opacity: 1;
+      g {
+        animation: busy-spinning 4.8s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+        transform-origin: 12px 12px;
+      }
+
+      g:nth-child(1) {
+        animation-delay: -1s;
+      }
+
+      g:nth-child(2) {
+        animation-delay: -1.1s;
+      }
+
+      g:nth-child(3) {
+        animation-delay: -1.2s;
+      }
+
+      g:nth-child(4) {
+        animation-delay: -1.4s;
+      }
+
+      g:nth-child(5) {
+        animation-delay: -1.6s;
+      }
+
+      g:nth-child(6) {
+        animation-delay: -1.8s;
+      }
+
+      g:nth-child(7) {
+        animation-delay: -2s;
+      }
+
+      g:nth-child(8) {
+        animation-delay: -2.2s;
+      }
+    }
   }
 }

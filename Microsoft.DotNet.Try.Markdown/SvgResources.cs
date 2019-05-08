@@ -2,6 +2,8 @@
 {
     internal class SvgResources
     {
+        public const string RunButtonSvg = "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" version=\"1.1\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\">\r\n    <path d=\"M8,5.14V19.14L19,12.14L8,5.14Z\" />\r\n    <g class=\"spinner\" opacity=\"0\">\r\n        <g><circle cx=\"12\" cy=\"20\" r=\"2.5\" /></g>\r\n        <g><circle cx=\"12\" cy=\"20\" r=\"2.5\" /></g>\r\n        <g><circle cx=\"12\" cy=\"20\" r=\"2.5\" /></g>\r\n        <g><circle cx=\"12\" cy=\"20\" r=\"2.5\" /></g>\r\n        <g><circle cx=\"12\" cy=\"20\" r=\"2.5\" /></g>\r\n        <g><circle cx=\"12\" cy=\"20\" r=\"2.5\" /></g>\r\n        <g><circle cx=\"12\" cy=\"20\" r=\"2.5\" /></g>\r\n        <g><circle cx=\"12\" cy=\"20\" r=\"2.5\" /></g>\r\n    </g>  \r\n</svg>";
+
         public const string PlaySvg =
             "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" version=\"1.1\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\"><path d=\"M8,5.14V19.14L19,12.14L8,5.14Z\" /></svg>";
 
