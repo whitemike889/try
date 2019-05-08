@@ -2,6 +2,7 @@
 using System.Linq;
 using FluentAssertions;
 using Microsoft.DotNet.Try.Client.Configuration.Extensions;
+using Microsoft.DotNet.Try.Protocol;
 using Xunit;
 
 namespace Microsoft.DotNet.Try.Client.Configuration.Tests

@@ -64,8 +64,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Try.Client
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Try.Client.Configuration.Extensions", "Microsoft.DotNet.Try.Client.Configuration.Extensions\Microsoft.DotNet.Try.Client.Configuration.Extensions.csproj", "{C9497444-F28D-4DFF-A4E0-FEA9EB3C2684}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Try.Client.Configuration", "Microsoft.DotNet.Try.Client.Configuration\Microsoft.DotNet.Try.Client.Configuration.csproj", "{E6659738-1684-4337-BAF6-F6301C745752}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -168,10 +166,6 @@ Global
 		{C9497444-F28D-4DFF-A4E0-FEA9EB3C2684}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C9497444-F28D-4DFF-A4E0-FEA9EB3C2684}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C9497444-F28D-4DFF-A4E0-FEA9EB3C2684}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E6659738-1684-4337-BAF6-F6301C745752}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E6659738-1684-4337-BAF6-F6301C745752}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E6659738-1684-4337-BAF6-F6301C745752}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E6659738-1684-4337-BAF6-F6301C745752}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -202,7 +196,6 @@ Global
 		{1020AE11-EBBE-41B5-9621-A804F1754154} = {6EE8F484-DFA2-4F0F-939F-400CE78DFAC2}
 		{3B47CFEF-504A-4055-9815-17A12E52B4DC} = {8192FEAD-BCE6-4E62-97E5-2E9EA884BD71}
 		{C9497444-F28D-4DFF-A4E0-FEA9EB3C2684} = {6EE8F484-DFA2-4F0F-939F-400CE78DFAC2}
-		{E6659738-1684-4337-BAF6-F6301C745752} = {6EE8F484-DFA2-4F0F-939F-400CE78DFAC2}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D6CD99BA-B16B-4570-8910-225CBDFFA3AD}

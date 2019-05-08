@@ -1,7 +1,7 @@
 ﻿using System;
 using Newtonsoft.Json;
 
-namespace Microsoft.DotNet.Try.Client.Configuration
+namespace Microsoft.DotNet.Try.Protocol
 {
     public class RequestDescriptorProperty
     {
