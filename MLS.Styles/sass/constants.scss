@@ -19,7 +19,6 @@ $run-failure-foreground: $white;
   color: $run-failure-foreground;
 }
 
-.busy,
 .run-execution {
   animation-duration: 1s;
   animation-name: textBlink;

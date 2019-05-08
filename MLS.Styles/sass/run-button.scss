@@ -11,6 +11,20 @@
   }
 }
 
+@keyframes buttonBusy{
+  from {
+    opacity: 0;
+    stroke: $white;
+    transform: rotate(0deg);
+  }
+
+  to {
+    opacity: 1;
+    stroke: lighten($dotnet-purple, 17.5%);
+    transform: rotate(720deg);
+  }
+}
+
 @mixin action-button {
   font-size: 20px;
   border: none;
@@ -30,10 +44,11 @@ ul.index > li {
   }
 
   &:disabled {
-    background-color: lighten($dotnet-purple, 40.5%);
+    background-color: lighten($dotnet-purple, 25.5%);
   }
 
   svg {
+    transform-origin: 50% 50%;
     height: 16px;
     display: inline-flex;
     fill: $white;
@@ -52,11 +67,17 @@ ul.index > li > a {
   right: 0px;
   top: 0px;
   margin: 4px;
+  content:"run";
   svg {
     fill: $white;
   }
 }
 
 .code-container-inline button.busy {
-  content: "busy";
+  svg {
+    animation-duration: 1s;
+    animation-name: buttonBusy;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;  
+  }
 }
