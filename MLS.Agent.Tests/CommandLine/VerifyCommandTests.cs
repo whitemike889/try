@@ -259,11 +259,10 @@ public class EmptyClassTwo {}
             [Theory]
             [InlineData("invalid")]
             [InlineData("--source-file ./NONEXISTENT.CS")]
-            [InlineData("--source-file ./Program.cs")]
             [InlineData("--source-file ./Program.cs --region NONEXISTENT")]
             public async Task When_there_are_code_fence_annotation_errors_then_return_code_is_nonzero(string args)
             {
-                var rootDirectory = new DirectoryInfo(".");
+                var rootDirectory = Create.EmptyWorkspace(isRebuildablePackage: true).Directory;
 
                 var directoryAccessor = new InMemoryDirectoryAccessor(rootDirectory)
                                     {
