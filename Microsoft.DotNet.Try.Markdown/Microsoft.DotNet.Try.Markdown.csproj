@@ -11,9 +11,9 @@
 
   <ItemGroup>
     <PackageReference Include="markdig" Version="0.16.0" />
-    <PackageReference Include="CdpxBuildProps" Version="0.1.6040001">
+    <PackageReference Include="CdpxBuildProps" Version="0.1.8580001">
       <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
     <PackageReference Include="system.commandline.experimental" Version="0.2.0-alpha.19226.1" />
     <PackageReference Include="Microsoft.AspNetCore.Html.Abstractions" Version="2.1.1" />

@@ -29,17 +29,35 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="BadRequestOnInvalidModelFilter" Version="0.1.5650001" />
-    <PackageReference Include="CdpxBuildProps" Version="0.1.6040001" />
-    <PackageReference Include="clockwise" Version="1.0.261-beta" />
-    <PackageReference Include="ConfigurationExtensions" Version="0.1.5650001" />
-    <PackageReference Include="DictionaryExtensions" Version="0.1.5650001" />
-    <PackageReference Include="EnvironmentExtensions" Version="0.1.5650001" />
-    <PackageReference Include="JsonSerializationExtensions" Version="0.1.5650001">
+    <PackageReference Include="BadRequestOnInvalidModelFilter" Version="0.1.8580001">
       <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="LoggerExtensions" Version="0.1.5650001" />
+    <PackageReference Include="CdpxBuildProps" Version="0.1.8580001">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="ClientConfiguration" Version="0.1.8580001">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="clockwise" Version="1.0.261-beta" />
+    <PackageReference Include="ConfigurationExtensions" Version="0.1.8580001">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="DictionaryExtensions" Version="0.1.8580001">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="EnvironmentExtensions" Version="0.1.8580001">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="LoggerExtensions" Version="0.1.8580001">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="markdig" Version="0.16.0" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.3.0" />
     <PackageReference Include="Microsoft.AspNetCore.App" Version="2.1.7" />
@@ -68,8 +86,14 @@
     </PackageReference>
     <PackageReference Include="system.commandline.experimental" Version="0.2.0-alpha.19226.1" />
     <PackageReference Include="System.Reactive" Version="4.1.3" />
-    <PackageReference Include="TaskExtensions" Version="0.1.5650001" />
-    <PackageReference Include="VersionSensor" Version="0.1.5650001" />
+    <PackageReference Include="TaskExtensions" Version="0.1.8580001">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="VersionSensor" Version="0.1.8580001">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
   <ItemGroup>
     <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="1.0.0" />
@@ -78,7 +102,6 @@
     <Import Project="AssemblyInfo.props" Condition="Exists('AssemblyInfo.props')" />
   </ImportGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.DotNet.Try.Client.Configuration.Extensions\Microsoft.DotNet.Try.Client.Configuration.Extensions.csproj" />
     <ProjectReference Include="..\Microsoft.DotNet.Try.Markdown\Microsoft.DotNet.Try.Markdown.csproj" />
     <ProjectReference Include="..\Microsoft.DotNet.Try.Project\Microsoft.DotNet.Try.Project.csproj" />
     <ProjectReference Include="..\Microsoft.DotNet.Try.Protocol.ClientApi\Microsoft.DotNet.Try.Protocol.ClientApi.csproj" />

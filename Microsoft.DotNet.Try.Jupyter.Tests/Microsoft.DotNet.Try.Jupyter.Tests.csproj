@@ -9,7 +9,10 @@
     <PackageReference Include="fluentassertions" Version="5.6.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.9.1" />
     <PackageReference Include="Microsoft.Reactive.Testing" Version="4.1.3" />
-    <PackageReference Include="JsonSerializationExtensions" Version="0.1.5650001" />
+    <PackageReference Include="JsonSerializationExtensions" Version="0.1.8580001">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="pocket.disposable" Version="1.0.5">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

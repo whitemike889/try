@@ -13,9 +13,18 @@
   <ItemGroup>
     <PackageReference Include="FluentAssertions" Version="5.6.0" />
     <PackageReference Include="htmlagilitypack" Version="1.9.0" />
-    <PackageReference Include="HttpResponseMessageAssertions" Version="0.1.5720001" />
-    <PackageReference Include="HttpResponseMessageExtensions" Version="0.1.5650001" />
-    <PackageReference Include="JsonSerializationExtensions" Version="0.1.5650001" />
+    <PackageReference Include="HttpResponseMessageAssertions" Version="0.1.8580001">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="HttpResponseMessageExtensions" Version="0.1.8580001">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="JsonSerializationExtensions" Version="0.1.8580001">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="2.1.1" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.9.1" />
     <PackageReference Include="newtonsoft.json" Version="11.0.2" />
