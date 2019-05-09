@@ -6,6 +6,7 @@
 
 @import "./constants";
 @import "./run-button";
+@import "./output-panels";
 
 html,
 body {
@@ -96,12 +97,6 @@ footer {
   }
 }
 
-.collapsed {
-  visibility: collapse;
-  min-height: 0px;
-  height: 0px;
-}
-
 .notification.is-danger {
   border: 1px solid red;
   padding: 1em;
@@ -115,17 +110,6 @@ footer {
   }
   span {
     display: inline-flex;
-  }
-}
-
-.output-panel {
-  min-height: 160px;
-  margin: 16px 0;
-  border: 1px solid #ddd;
-  padding: 2px;
-  overflow: auto;
-  pre {
-    background: none;
   }
 }
 
@@ -145,53 +129,6 @@ footer {
   padding: 01px;
   border: 1px solid #ab9ce0;
   border-left: 4px solid #ab9ce0;
-}
-
-.output-panel-inline {
-  position: relative;
-  background: rgb(245, 244, 247);
-  color: #000;
-  pre {
-    background: none;
-  }
-  div.trydotnet-run-result{
-    position: absolute;
-    top: 0px;
-  }
-}
-
-@mixin output-panel-expanded {
-  visibility: visible;
-  max-height: 20em;
-  padding: 2px;
-  padding-left: 0.5em;
-  margin: 1px;
-}
-
-.output-panel-inline.size-to-content {
-  max-height: 20em;
-}
-
-.output-panel-inline.run-failure {
-  @include output-panel-expanded;
-  @include output-panel-transition;
-
-  background: $run-failure-background;
-  color: $run-failure-foreground;
-}
-
-.output-panel-inline.run-success {
-  @include output-panel-expanded;
-  @include output-panel-transition;
-}
-
-.output-panel-inline.error {
-  @include output-panel-expanded;
-  @include output-panel-transition;
- 
-  color: red;
-  border: red;
-  border-style: dotted;
 }
 
 .editor-panel {
