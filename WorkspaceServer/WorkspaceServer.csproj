@@ -17,23 +17,22 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AsyncLock" Version="0.1.5650001">
+    <PackageReference Include="AsyncLock" Version="0.1.8580001">
       <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="AsyncSemaphore" Version="0.1.5650001">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>   
     <PackageReference Include="Buildalyzer" Version="2.2.0" />
     <PackageReference Include="Buildalyzer.Workspaces" Version="2.2.0" />
-    <PackageReference Include="CdpxBuildProps" Version="0.1.6040001" />
+    <PackageReference Include="CdpxBuildProps" Version="0.1.8580001">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Clockwise" Version="1.0.261-beta" />
-    <PackageReference Include="DictionaryExtensions" Version="0.1.5650001">
+    <PackageReference Include="DictionaryExtensions" Version="0.1.8580001">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="JsonSerializationExtensions" Version="0.1.5650001">
+    <PackageReference Include="JsonSerializationExtensions" Version="0.1.8580001">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
@@ -53,17 +52,17 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="ConfirmationLoggerExtensions" Version="0.1.5980001">
+    <PackageReference Include="ConfirmationLoggerExtensions" Version="0.1.8580001">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="DictionaryExtensions" Version="0.1.5650001">
+    <PackageReference Include="DictionaryExtensions" Version="0.1.8580001">
       <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="JsonSerializationExtensions" Version="0.1.5650001">
+    <PackageReference Include="JsonSerializationExtensions" Version="0.1.8580001">
       <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
     <PackageReference Include="System.ComponentModel.Annotations" Version="4.5.0" />
     <PackageReference Include="TaskExtensions" Version="0.1.5650001">
@@ -78,7 +77,10 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="System.Runtime.Loader" Version="4.3.0" />
-    <PackageReference Include="TaskExtensions" Version="0.1.5650001" />
+    <PackageReference Include="TaskExtensions" Version="0.1.8580001">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>

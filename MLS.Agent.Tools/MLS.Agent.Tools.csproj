@@ -16,7 +16,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CdpxBuildProps" Version="0.1.6040001" />
+    <PackageReference Include="CdpxBuildProps" Version="0.1.8580001">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="clockwise" Version="1.0.261-beta" />
     <PackageReference Include="newtonsoft.json" Version="11.0.2" />
     <PackageReference Include="pocketlogger" Version="0.3.0">
@@ -26,7 +29,10 @@
     <PackageReference Include="System.Runtime.Extensions" Version="4.3.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="3.0.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="3.0.0" />
-    <PackageReference Include="TaskExtensions" Version="0.1.5650001" />
+    <PackageReference Include="TaskExtensions" Version="0.1.8580001">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
