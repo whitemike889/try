@@ -31,6 +31,10 @@
   <ItemGroup>
     <PackageReference Include="BadRequestOnInvalidModelFilter" Version="0.1.5650001" />
     <PackageReference Include="CdpxBuildProps" Version="0.1.6040001" />
+    <PackageReference Include="ClientConfiguration" Version="0.1.8580001">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="clockwise" Version="1.0.261-beta" />
     <PackageReference Include="ConfigurationExtensions" Version="0.1.5650001" />
     <PackageReference Include="DictionaryExtensions" Version="0.1.5650001" />
@@ -78,7 +82,6 @@
     <Import Project="AssemblyInfo.props" Condition="Exists('AssemblyInfo.props')" />
   </ImportGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.DotNet.Try.Client.Configuration.Extensions\Microsoft.DotNet.Try.Client.Configuration.Extensions.csproj" />
     <ProjectReference Include="..\Microsoft.DotNet.Try.Markdown\Microsoft.DotNet.Try.Markdown.csproj" />
     <ProjectReference Include="..\Microsoft.DotNet.Try.Project\Microsoft.DotNet.Try.Project.csproj" />
     <ProjectReference Include="..\Microsoft.DotNet.Try.Protocol.ClientApi\Microsoft.DotNet.Try.Protocol.ClientApi.csproj" />

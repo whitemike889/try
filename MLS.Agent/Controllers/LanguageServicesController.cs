@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using Clockwise;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.DotNet.Try.Client.Configuration;
 using Microsoft.DotNet.Try.Protocol;
 using MLS.Agent.Middleware;
 using Pocket;

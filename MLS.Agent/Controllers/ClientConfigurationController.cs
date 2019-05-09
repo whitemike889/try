@@ -1,10 +1,9 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.DotNet.Try.Client.Configuration;
-using Microsoft.DotNet.Try.Client.Configuration.Extensions;
 using Microsoft.DotNet.Try.Protocol;
 using Pocket;
+using Recipes;
 using static Pocket.Logger<MLS.Agent.Controllers.ClientConfigurationController>;
 using HttpRequest = Microsoft.AspNetCore.Http.HttpRequest;
 

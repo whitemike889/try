@@ -1,6 +1,4 @@
-using System;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.DotNet.Try.Client.Configuration;
 using Microsoft.DotNet.Try.Protocol;
 using Recipes;
 
