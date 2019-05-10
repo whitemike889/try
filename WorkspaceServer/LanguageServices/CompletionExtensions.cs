@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Reflection;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Tags;
 using Microsoft.DotNet.Try.Protocol;
@@ -16,6 +17,7 @@ namespace WorkspaceServer.LanguageServices
         private static readonly string SymbolName = nameof(SymbolName);
         private static readonly string Symbols = nameof(Symbols);
         private static readonly string GetSymbolsAsync = nameof(GetSymbolsAsync);
+        private static readonly PropertyInfo providerNameAccessor = typeof(RoslynCompletionItem).GetProperty("ProviderName", BindingFlags.NonPublic | BindingFlags.Instance);
 
         private static readonly ImmutableArray<string> KindTags = ImmutableArray.Create(
             WellKnownTags.Class,
@@ -86,10 +88,10 @@ namespace WorkspaceServer.LanguageServices
             Dictionary<(string, int), ISymbol> recommendedSymbols,
             Document document)
         {
-            var properties = completionItem.Properties;
-
-            if (properties.TryGetValue(Provider, out var provider) && provider == SymbolCompletionProvider)
+            var provider = GetProviderName(completionItem);
+            if (provider == SymbolCompletionProvider)
             {
+                var properties = completionItem.Properties;
                 if (recommendedSymbols.TryGetValue((properties[SymbolName], int.Parse(properties[nameof(SymbolKind)])), out var symbol))
                 {
                     // We were able to match this SymbolCompletionProvider item with a recommended symbol
@@ -98,6 +100,11 @@ namespace WorkspaceServer.LanguageServices
             }
 
             return null;
+        }
+
+        private static string GetProviderName(RoslynCompletionItem item)
+        {
+            return (string)providerNameAccessor.GetValue(item);
         }
     }
 }

@@ -56,7 +56,8 @@ namespace WorkspaceServer.Packaging
             await dotnet.AddPackage("System.CommandLine.Experimental", "0.2.0-alpha.19176.2");
 
             var result = await dotnet.Build("-o runtime /bl", budget: budget);
-            result.ThrowOnFailure();
+            var stuff = string.Concat(string.Join("\n", result.Output), (string.Join("\n", result.Error)));
+            result.ThrowOnFailure(stuff);
 
             void AddRootNamespaceAndBlazorLinkerDirective()
             {
