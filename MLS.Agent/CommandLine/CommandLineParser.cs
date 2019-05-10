@@ -91,8 +91,9 @@ namespace MLS.Agent.CommandLine
                 {
                     Name = "dotnet-try",
                     Description = ".NET interactive documentation in your browser",
-                    Argument = new Argument<DirectoryInfo>(() => new DirectoryInfo(Directory.GetCurrentDirectory()))
+                    Argument = new Argument<DirectoryInfo>
                     {
+                        Arity = ArgumentArity.ZeroOrOne,
                         Name = nameof(StartupOptions.Dir).ToLower(),
                         Description = "Specify the path to the root directory for your documentation"
                     }.ExistingOnly()

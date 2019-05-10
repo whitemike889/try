@@ -30,12 +30,16 @@ namespace MLS.Agent.CommandLine
             Key = key;
             ApplicationInsightsKey = applicationInsightsKey;
             RegionId = regionId;
-            Dir = dir;
+            Dir = dir ?? new DirectoryInfo(Directory.GetCurrentDirectory());
             AddPackageSource = addPackageSource;
             Uri = uri;
             EnablePreviewFeatures = enablePreviewFeatures;
             Package = package;
             PackageVersion = packageVersion;
+
+            Mode = dir == null
+                       ? StartupMode.Hosted
+                       : StartupMode.Try;
         }
 
         public bool EnablePreviewFeatures { get; }
@@ -49,9 +53,7 @@ namespace MLS.Agent.CommandLine
         public string Key { get; }
         public string ApplicationInsightsKey { get; }
 
-        public StartupMode Mode => Dir == null
-                                       ? StartupMode.Hosted
-                                       : StartupMode.Try; 
+        public StartupMode Mode { get; } 
 
         public string EnvironmentName =>
             Production || Mode != StartupMode.Hosted
