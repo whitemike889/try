@@ -2,11 +2,11 @@
 
 - [Quick Start](./QuickStart.md)
 - **Create a New Project**
-- [Define Regions](./Regions.md)
+- [Show snippets using regions](./Regions.md)
 - [Create Sessions](./Sessions.md)
 - [Verify your Project](./Verify.md)
 - [Passing Arguments](./PassingArgs.md)
-- [Glossary](./Glossary.md)
+- [Reference](./Reference.md)
 
 Let's walk through how to create some `dotnet try`-powered documentation from scratch. 
 
@@ -41,8 +41,8 @@ Let's walk through how to create some `dotnet try`-powered documentation from sc
     > dotnet try /path/to/your/project/folder
     ```
 
-**Tada!** You have created your first C# interactive developer experience. You should now be able to run your console app and see the result in the browser.  
+**Congratulations!** You have created your first C# interactive developer experience with `dotnet try`. You should now be able to click run and see the result in the browser.  
 
 As you might have noticed, you see the full `Program.cs` file. But suppose you'd like to show your user only `Console.WriteLine("Hello World!");`? The next step in the tutorial will show you how to do that.
 
-**NEXT: [Define Regions &raquo;](./Regions.md)**
+**NEXT: [Show snippets using regions &raquo;](./Regions.md)**

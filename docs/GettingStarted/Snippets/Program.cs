@@ -11,6 +11,7 @@ namespace Snippets
             string project = null,
             string[] args = null)
         {
+#region Main
             switch (region)
             {
                 case "run":
@@ -27,6 +28,7 @@ namespace Snippets
                     break;
             }
         }
+#endregion
 
         public static void Run()
         {

@@ -2,11 +2,10 @@
 
 - **Quick Start**
 - [Create a New Project](./NewProject.md)
-- [Define Regions](./Regions.md)
-- [Create Sessions](./Sessions.md)
+- [Show snippets using regions](./Regions.md)
 - [Verify your Project](./Verify.md)
 - [Passing Arguments](./PassingArgs.md)
-- [Glossary](./Glossary.md)
+- [Reference](./Reference.md)
 
 Congratulations! You just ran `dotnet try demo`. This is an interactive guide to get you familiar with the `dotnet try` tool. 
 
@@ -16,7 +15,7 @@ Congratulations! You just ran `dotnet try demo`. This is an interactive guide to
 
 #### Example 1
 
-```csharp --source-file .\Snippets\Program.cs --session "Run example 1" --region run1
+```csharp --source-file ./Snippets/Program.cs --project ./Snippets/Snippets.csproj --region run1
 ```
 
 ### What's happening behind the scenes?
@@ -39,24 +38,23 @@ The `dotnet try` tool extends Markdown using a set of options that can be added 
 
 #### Example 2
 
-```cs --source-file .\Snippets\Program.cs --region run2 --session "Run example 2" 
+```cs --source-file ./Snippets/Program.cs --project ./Snippets/Snippets.csproj --region run2  
 ```
 
 For example, the code snippet above was extended using `dotnet try`. The code fence that wires it up looks like this: 
 
 ````markdown
-```cs --source-file .\Snippets\Program.cs --project .\Snippets\Snippets.csproj --region run2 --session "Run example 2" 
+```cs --source-file ./Snippets/Program.cs --project ./Snippets/Snippets.csproj --region run2 
 ```
 ````
 
-### What do those options do?
+### What do the options do?
 
 | Option                                 | What it does                                                                                                                |
 |----------------------------------------|-----------------------------------------------------------------------------------------------------------------------------|
-| `--project .\Snippets\Snippets.csproj` | Points to the project that the sample is part of. (Optional. Defaults to any .csproj in the same folder as the `.md` file.) |
+| `--project ./Snippets/Snippets.csproj` | Points to the project that the sample is part of. (Optional. Defaults to any .csproj in the same folder as the `.md` file.) |
 | `--region run2`                        | Identifes a C# code `#region` to focus on. (Optional. If not specified, the whole file is displayed in the editor.)         |
-| `--session "Run example 2"`            | Creates a new session and provides the text for the run button. (Optional. If not provided, all samples run together.)      |  
-| `--source-file .\Snippets\Program.cs`  | Points to the file where the sample code is pulled from.                                                                    |
+| `--source-file ./Snippets/Program.cs`  | Points to the file where the sample code is pulled from.                                                                    |
 
 ### Document Verification
 
@@ -73,9 +71,9 @@ Verifying that your code samples work is vital to your user experience, so `dotn
 
 Now change the region option back to `--region run1`. Save the changes. If you re-run the  `dotnet try verify` you'll see all green check marks and the error is gone. 
 
-### Exercise   
+### Exercise
 
-Here's a quick exercise that will teach you how to create a new snippet, specify a region in an existing backing project, and define a new session. 
+Here's a quick exercise that will teach you how to create a new snippet, use a region in an existing backing project. 
 
 1. In a text editor, open `./Snippets/Program.cs` under your demo folder.
 
@@ -102,6 +100,6 @@ Console.WriteLine(primes);
 
 4. Refresh the browser.
 
-*Hint* Look at the static code snippet above, under **Code fence options**. Make sure to update the `--session` and `--region` options.
+*Hint* Look at the static code snippet above, under **Code fence options**. Make sure to update `--region` option.
 
-**NEXT: [A beginner's guide to getting started with *dotnet try* from scratch &raquo;](./NewProject.md)**
+**NEXT: [Create a New Project &raquo;](./NewProject.md)**

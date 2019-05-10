@@ -2,11 +2,11 @@
 
 - [Quick Start](./QuickStart.md)
 - [Create a New Project](./NewProject.md)
-- [Define Regions](./Regions.md)
+- [Show snippets using regions](./Regions.md)
 - [Create Sessions](./Sessions.md)
 - **Verify your Project**
 - [Passing Arguments](./PassingArgs.md)
-- [Glossary](./Glossary.md)
+- [Reference](./Reference.md)
 
 `dotnet try verify` is a compiler for your documentation. With this command, you can make sure that every code snippet will work and is in sync with the backing project. The goal of `dotnet try verify` is to enable you to check the correctness of your documentation as you work, and to enable the same checks inside of your build pipeline.
 

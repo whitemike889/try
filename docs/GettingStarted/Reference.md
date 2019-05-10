@@ -2,7 +2,7 @@
 
 - [Quick Start](./QuickStart.md)
 - [Create a New Project](./NewProject.md)
-- [Define Regions](./Regions.md)
+- [Show snippets using regions](./Regions.md)
 - [Create Sessions](./Sessions.md)
 - [Verify your Project](./Verify.md)
 - [Passing Arguments](./PassingArgs.md)
@@ -10,7 +10,7 @@
 
 ### dotnet try
 
-`dotnet try` is a set of tools that allows you to create interactive samples for your users.
+`dotnet try` is a .NET Core tool that allows you to create interactive samples for your users.
 
 **List of available dotnet try commands.**
 
@@ -19,8 +19,6 @@ If you shut down this project and type the command `dotnet try -h` you will see 
 | Command        | Purpose                                |
 |----------------|----------------------------------------|
 | `demo`         | launches getting started documentation |
-| `list-package` | list of installed Try .NET packages    |
-| `github`       | try a GitHub repo                      |
 | `verify`       | compiler for documentation             |
 
 ### Code Fence Options
@@ -30,5 +28,4 @@ If you shut down this project and type the command `dotnet try -h` you will see 
 | Option      | Purpose                                                                    |
 |-------------|----------------------------------------------------------------------------|
 | `--project` | enables you to point to a specific file.                                   |
-| `--session` | allows you create a seperate session in single file.                       |
 | `--region`  | lets you specify the block of code that you want to display in the editor. |

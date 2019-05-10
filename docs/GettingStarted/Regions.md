@@ -1,12 +1,11 @@
-# Step-by-step tutorial: Define Regions
+# Step-by-step tutorial: Show snippets using regions
 
 - [Quick Start](./QuickStart.md)
 - [Create a New Project](./NewProject.md)
-- **Define Regions**
-- [Create Sessions](./Sessions.md)
+- **Show snippets using regions**
 - [Verify your Project](./Verify.md)
 - [Passing Arguments](./PassingArgs.md)
-- [Glossary](./Glossary.md)
+- [Reference](./Reference.md)
 
 Code documentation almost always features code snippets in isolation, like this:
 
@@ -16,7 +15,7 @@ Console.WriteLine(DateTime.Now);
 
 The `dotnet try` tool provides a way to do this while also making the code sample interactive:
 
-```cs --source-file ./Snippets/Program.cs --region run1
+```cs --source-file ./Snippets/Program.cs --project ./Snippets/Snippets.csproj --region run1
 Console.WriteLine("Hello World!");
 ```
 
