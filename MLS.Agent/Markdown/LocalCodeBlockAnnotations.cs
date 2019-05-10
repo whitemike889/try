@@ -35,6 +35,8 @@ namespace MLS.Agent.Markdown
 
         public FileInfo Project { get; }
 
+        public override string Package => base.Package ?? Project?.FullName;
+
         public RelativeFilePath SourceFile { get; }
 
         public bool IsProjectImplicit { get; set; }
@@ -68,7 +70,7 @@ namespace MLS.Agent.Markdown
                 }
 
                 var sourceText = SourceText.From(content);
-                var sourceFileAbsolutePath = await GetSourceFileAbsolutePath();
+                var sourceFileAbsolutePath = GetSourceFileAbsolutePath();
 
                 var buffers = sourceText.ExtractBuffers(sourceFileAbsolutePath)
                                         .Where(b => b.Id.RegionName == Region)
@@ -100,33 +102,21 @@ namespace MLS.Agent.Markdown
                 errors.Add($"File not found: {SourceFile.Value}");
             }
 
-            if (Editable && string.IsNullOrEmpty(Package) && Project == null)
+            if (string.IsNullOrEmpty(Package) && Project == null)
             {
                 errors.Add("No project file or package specified");
             }
 
             if (Package != null)
             {
-                if (!IsProjectImplicit)
+                try
                 {
-                    errors.Add("Can't specify both --project and --package");
+                    var package = await PackageRegistry.Find<IPackage>(Package);
                 }
-                else
+                catch (PackageNotFoundException e)
                 {
-                    try
-                    {
-                        var package = await PackageRegistry.Find<IPackage>(Package);
-
-                        if (package == null)
-                        {
-                        
-                        }
-                    }
-                    catch (PackageNotFoundException e)
-                    {
-                        errors.Add(e.Message);
-                        return;
-                    }
+                    errors.Add(e.Message);
+                    return;
                 }
             }
 
@@ -148,7 +138,7 @@ namespace MLS.Agent.Markdown
                 block.AddAttribute("data-trydotnet-package", Project.FullName);
             }
 
-            var fileName = await GetDestinationFileAbsolutePath();
+            var fileName = GetDestinationFileAbsolutePath();
 
             if (!string.IsNullOrWhiteSpace(fileName))
             {
@@ -160,7 +150,7 @@ namespace MLS.Agent.Markdown
             await base.AddAttributes(block);
         }
 
-        private async Task<string> GetDestinationFileAbsolutePath()
+        private string GetDestinationFileAbsolutePath()
         {
             var file = DestinationFile ?? SourceFile;
             return file == null
@@ -175,7 +165,7 @@ namespace MLS.Agent.Markdown
             return projectFile?.FullName;
         }
 
-        private async Task<string> GetSourceFileAbsolutePath()
+        private string GetSourceFileAbsolutePath()
         {
             return MarkdownProjectRoot.GetFullyQualifiedPath(SourceFile).FullName;
         }

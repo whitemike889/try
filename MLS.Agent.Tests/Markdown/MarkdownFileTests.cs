@@ -405,7 +405,7 @@ This is the end of the file"));
             public async Task Non_editable_code_inserts_code_present_in_markdown()
             {
                 var html = await RenderHtml(("readme.md", @"
-```cs --editable false
+```cs --editable false --package console
 //some code to include
 ```
                         "));

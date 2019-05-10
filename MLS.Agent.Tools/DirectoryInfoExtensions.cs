@@ -45,6 +45,11 @@ namespace MLS.Agent.Tools
             return new DirectoryInfo(Path.Combine(directoryInfo.FullName, path));
         }
 
+        public static FileInfo File(this DirectoryInfo directoryInfo, string name)
+        {
+            return new FileInfo(Path.Combine(directoryInfo.FullName, name));
+        }
+
         public static DirectoryInfo NormalizeEnding(this DirectoryInfo directoryInfo)
         {
             if (!directoryInfo.FullName.EndsWith(Path.DirectorySeparatorChar.ToString()))

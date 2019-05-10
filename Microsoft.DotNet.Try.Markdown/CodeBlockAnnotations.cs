@@ -36,7 +36,7 @@ namespace Microsoft.DotNet.Try.Markdown
             }
         }
 
-        public string Package { get; }
+        public virtual string Package { get; }
         public RelativeFilePath DestinationFile { get; }
         public string Region { get; }
         public string RunArgs { get; set; }

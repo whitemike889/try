@@ -43,7 +43,7 @@ namespace MLS.Agent.CommandLine
         public string RegionId { get; }
         public DirectoryInfo Dir { get; }
         public DirectoryInfo AddPackageSource { get; }
-        public Uri Uri { get; }
+        public Uri Uri { get; set; }
         public bool Production { get; }
         public bool IsLanguageService { get; set; }
         public string Key { get; }

@@ -216,7 +216,7 @@ $@"```cs --package {package} --source-file ../src/sample/Program.cs
         }
 
         [Fact]
-        public async Task Sets_a_diagnostic_if_both_package_and_project_are_specified()
+        public async Task When_both_package_and_project_are_specified_then_package_wins()
         {
             var rootDirectory = TestAssets.SampleConsole;
             var currentDir = new DirectoryInfo(Path.Combine(rootDirectory.FullName, "docs"));
@@ -238,10 +238,10 @@ $@"```cs --package {package} --project {project} --source-file ../src/sample/Pro
 
             var htmlDocument = new HtmlDocument();
             htmlDocument.LoadHtml(html);
-            var node = htmlDocument.DocumentNode.SelectSingleNode("//div[@class='notification is-danger']");
+            var node = htmlDocument.DocumentNode
+                                     .SelectSingleNode("//pre/code").Attributes["data-trydotnet-package"];
 
-            node.InnerHtml.Should().Contain("Can't specify both --project and --package");
-
+            node.Value.Should().Be(package);
         }
 
         [Fact]

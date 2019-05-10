@@ -55,7 +55,7 @@ namespace MLS.Agent.Tests.CommandLine
                     _install_packageSource = options.AddSource;
                     return Task.CompletedTask;
                 },
-                verify: (options, console) =>
+                verify: (options, console, startupOptions) =>
                 {
                     _verifyOptions = options;
                     return Task.FromResult(1);
@@ -172,7 +172,6 @@ namespace MLS.Agent.Tests.CommandLine
             _start_options.EnablePreviewFeatures.Should().BeTrue();
         }
 
-
         [Fact]
         public async Task Parse_language_service_mode_flag_switches_option_to_language_service()
         {
@@ -235,13 +234,6 @@ namespace MLS.Agent.Tests.CommandLine
 
         [Fact]
         public async Task When_hosted_command_is_specified_then_agent_is_in_hosted_mode()
-        {
-            await _parser.InvokeAsync("hosted", _console);
-            _start_options.Mode.Should().Be(StartupMode.Hosted);
-        }
-
-        [Fact]
-        public async Task When_jupyter_command_is_specified_then_agent_is_in_jupyter_mode()
         {
             await _parser.InvokeAsync("hosted", _console);
             _start_options.Mode.Should().Be(StartupMode.Hosted);
@@ -367,25 +359,6 @@ namespace MLS.Agent.Tests.CommandLine
             await _parser.InvokeAsync("jupyter", testConsole);
 
             testConsole.Error.ToString().Should().Contain("Required argument missing for command: jupyter");
-        }
-
-        [Fact]
-        public async Task Demo_allows_enabling_preview_features()
-        {
-            var expected = Path.GetTempPath();
-
-            await _parser.InvokeAsync($"demo --output {expected} --enable-preview-features");
-
-            _demoOptions
-                .Output
-                .FullName
-                .Should()
-                .Be(expected);
-
-            _demoOptions
-                .EnablePreviewFeatures
-                .Should()
-                .BeTrue();
         }
     }
 }

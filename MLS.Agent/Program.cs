@@ -15,7 +15,6 @@ using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.DotNet.Try.Jupyter;
-using MLS.Agent.Markdown;
 using WorkspaceServer.Servers.Roslyn;
 using static Pocket.Logger<MLS.Agent.Program>;
 using SerilogLoggerConfiguration = Serilog.LoggerConfiguration;
@@ -40,12 +39,13 @@ namespace MLS.Agent
                                           new GitHubRepoLocator()),
                 pack: PackCommand.Do,
                 install: InstallCommand.Do,
-                verify: (options, console) =>
-                    VerifyCommand.Do(options,
+                verify: (verifyOptions, console, startupOptions) =>
+                    VerifyCommand.Do(verifyOptions,
                                      console,
-                                     () => new FileSystemDirectoryAccessor(options.Dir),
-                                     PackageRegistry.CreateForTryMode(options.Dir)),
-                jupyter:  JupyterCommand.Do,
+                                     () => new FileSystemDirectoryAccessor(verifyOptions.Dir),
+                                     PackageRegistry.CreateForTryMode(verifyOptions.Dir),
+                                     startupOptions),
+                jupyter: JupyterCommand.Do,
                 _serviceCollection);
 
             return await parser.InvokeAsync(args);

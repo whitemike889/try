@@ -4,13 +4,11 @@ namespace MLS.Agent.CommandLine
 {
     public class DemoOptions
     {
-        public DemoOptions(DirectoryInfo output, bool enablePreviewFeatures = false)
+        public DemoOptions(DirectoryInfo output)
         {
             Output = output;
-            EnablePreviewFeatures = enablePreviewFeatures;
         }
 
-        public DirectoryInfo Output { get;  }
-        public bool EnablePreviewFeatures { get; set; }
+        public DirectoryInfo Output { get; }
     }
 }

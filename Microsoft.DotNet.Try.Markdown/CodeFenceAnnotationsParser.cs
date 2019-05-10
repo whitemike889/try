@@ -48,8 +48,6 @@ namespace Microsoft.DotNet.Try.Markdown
 
             var result = _parser.Parse(line);
 
-            CodeBlockAnnotations annotations = null;
-
             if (result.CommandResult.Name != "csharp" ||
                 result.Tokens.Count == 1)
             {
@@ -62,7 +60,7 @@ namespace Microsoft.DotNet.Try.Markdown
             }
             else
             {
-                annotations = (CodeBlockAnnotations) _modelBinder.Value.CreateInstance(new BindingContext(result));
+                var annotations = (CodeBlockAnnotations) _modelBinder.Value.CreateInstance(new BindingContext(result));
 
                 annotations.Language = result.Tokens.First().Value;
                 annotations.RunArgs = Untokenize(result);

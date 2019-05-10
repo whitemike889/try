@@ -40,7 +40,8 @@ namespace MLS.Agent.CommandLine
 
         public delegate Task<int> Verify(
             VerifyOptions options,
-            IConsole console);
+            IConsole console,
+            StartupOptions startupOptions);
 
         public delegate Task<int> Jupyter(
             JupyterOptions options,
@@ -93,63 +94,63 @@ namespace MLS.Agent.CommandLine
                     Argument = new Argument<DirectoryInfo>(() => new DirectoryInfo(Directory.GetCurrentDirectory()))
                     {
                         Name = nameof(StartupOptions.Dir).ToLower(),
-                        Description = "Specify the path to the root directory to run samples from"
+                        Description = "Specify the path to the root directory for your documentation"
                     }.ExistingOnly()
                 };
 
                 command.AddOption(new Option(
-                                     "--add-package-source",
-                                     "Specify an additional NuGet package source",
-                                     new Argument<DirectoryInfo>(new DirectoryInfo(Directory.GetCurrentDirectory()))
-                                     {
-                                         Name = "NuGet source"
-                                     }.ExistingOnly()));
+                                      "--add-package-source",
+                                      "Specify an additional NuGet package source",
+                                      new Argument<DirectoryInfo>(new DirectoryInfo(Directory.GetCurrentDirectory()))
+                                      {
+                                          Name = "NuGet source"
+                                      }.ExistingOnly()));
 
                 command.AddOption(new Option(
-                     "--package",
-                     "Specify a Try .NET package or path to a .csproj to run code samples with",
-                     new Argument<string>
-                     {
-                         Name = "name or .csproj"
-                     }));
+                                      "--package",
+                                      "Specify a Try .NET package or path to a .csproj to run code samples with",
+                                      new Argument<string>
+                                      {
+                                          Name = "name or .csproj"
+                                      }));
 
                 command.AddOption(new Option(
-                     "--package-version",
-                     "Specify a Try .NET package version to use with the --package option",
-                     new Argument<string>
-                     {
-                         Name = "version"
-                     }));
+                                      "--package-version",
+                                      "Specify a Try .NET package version to use with the --package option",
+                                      new Argument<string>
+                                      {
+                                          Name = "version"
+                                      }));
 
                 command.AddOption(new Option(
-                     "--uri",
-                     "Specify a URL to a markdown file",
-                     new Argument<Uri>()));
+                                      "--uri",
+                                      "Specify a URL or a relative path to a Markdown file",
+                                      new Argument<Uri>()));
 
                 command.AddOption(new Option(
-                    "--enable-preview-features",
-                    "Enable preview features",
-                    new Argument<bool>()));
+                                      "--enable-preview-features",
+                                      "Enable preview features",
+                                      new Argument<bool>()));
 
                 command.AddOption(new Option(
-                    "--log-path", 
-                    "Enable file logging to the specified directory",
-                    new Argument<DirectoryInfo>
-                    {
-                        Name = "dir"
-                    }));
+                                      "--log-path",
+                                      "Enable file logging to the specified directory",
+                                      new Argument<DirectoryInfo>
+                                      {
+                                          Name = "dir"
+                                      }));
 
                 command.AddOption(new Option(
-                    "--verbose", 
-                    "Enable verbose logging to the console",
-                    new Argument<bool>()));
+                                      "--verbose",
+                                      "Enable verbose logging to the console",
+                                      new Argument<bool>()));
 
                 command.Handler = CommandHandler.Create<InvocationContext, StartupOptions>((context, options) =>
                 {
                     services.AddSingleton(_ => PackageRegistry.CreateForTryMode(
                                               options.Dir,
                                               options.AddPackageSource));
-                 
+
                     startServer(options, context);
                 });
 
@@ -207,16 +208,16 @@ namespace MLS.Agent.CommandLine
 
             Command Demo()
             {
-                var demoCommand = new Command("demo", "Learn how to create Try .NET content with an interactive demo")
-                                  {
-                                      new Option("--output", "Where should the demo project be written to?")
-                                      {
-                                          Argument = new Argument<DirectoryInfo>(
-                                              defaultValue: () => new DirectoryInfo(Directory.GetCurrentDirectory()))
-                                      },
-                                      new Option("--enable-preview-features", "Enables preview features",
-                                          new Argument<bool>())
-            };
+                var demoCommand = new Command(
+                    "demo", 
+                    "Learn how to create Try .NET content with an interactive demo")
+                {
+                    new Option("--output", "Where should the demo project be written to?")
+                    {
+                        Argument = new Argument<DirectoryInfo>(
+                            defaultValue: () => new DirectoryInfo(Directory.GetCurrentDirectory()))
+                    }
+                };
 
                 demoCommand.Handler = CommandHandler.Create<DemoOptions, InvocationContext>((options, context) =>
                 {
@@ -322,9 +323,9 @@ namespace MLS.Agent.CommandLine
                     }.ExistingOnly()
                 };
 
-                verifyCommand.Handler = CommandHandler.Create<VerifyOptions, IConsole>((options, console) =>
+                verifyCommand.Handler = CommandHandler.Create<VerifyOptions, IConsole, StartupOptions>((options, console, startupOptions) =>
                 {
-                    return verify(options, console);
+                    return verify(options, console, startupOptions);
                 });
 
                 return verifyCommand;

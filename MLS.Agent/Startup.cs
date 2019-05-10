@@ -89,7 +89,6 @@ namespace MLS.Agent
                             return PackageRegistry.CreateForHostedMode();
 
                         case StartupMode.Try:
-                        case StartupMode.Jupyter:
                             return PackageRegistry.CreateForTryMode(
                                 StartupOptions.Dir, 
                                 StartupOptions.AddPackageSource);

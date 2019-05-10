@@ -63,7 +63,7 @@ namespace MLS.Agent.Markdown
 
                                         if (filename == null)
                                         {
-                                            return ArgumentResult.Success<string>(null);
+                                            return ArgumentResult.Success(null);
                                         }
 
                                         if (RelativeFilePath.TryParse(filename, out var relativeFilePath))
