@@ -29,7 +29,7 @@ namespace WorkspaceServer.Tests
             var locator = new PrebuiltBlazorPackageLocator();
 
             var asset = await locator.Locate(packageName);
-            asset.DirectoryAccessor.FileExists("MLS.Blazor.dll").Should().Be(true);
+            asset.DirectoryAccessor.DirectoryExists("MLS.Blazor").Should().Be(true);
         }
 
         public void Dispose()
