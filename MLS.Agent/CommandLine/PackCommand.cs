@@ -28,10 +28,10 @@ namespace MLS.Agent.CommandLine
 
                 if (options.EnableBlazor)
                 {
-                    string runnerDirectoryName = $"runner-{name}";
-                    var temp_projects_blazorRunner = temp_projects.CreateSubdirectory(runnerDirectoryName);
-                    var temp_projects_blazorRunner_mlsblazor = temp_projects_blazorRunner.CreateSubdirectory("MLS.Blazor");
-                    await AddBlazorProject(temp_projects_blazorRunner_mlsblazor, GetProjectFile(temp_projects_packtarget), name);
+                    string runnerDirectoryName = $"wasm";
+                    var temp_projects_wasm = temp_projects.CreateSubdirectory(runnerDirectoryName);
+                    var temp_mlsblazor = temp.CreateSubdirectory("MLS.Blazor");
+                    await AddBlazorProject(temp_mlsblazor, GetProjectFile(temp_projects_packtarget), name, temp_projects_wasm);
                 }
 
                 var temp_toolproject = temp.CreateSubdirectory("project");
@@ -68,12 +68,15 @@ namespace MLS.Agent.CommandLine
             }
         }
 
-        private static async Task AddBlazorProject(DirectoryInfo blazorTargetDirectory, FileInfo projectToReference, string name)
+        private static async Task AddBlazorProject(DirectoryInfo blazorTargetDirectory, FileInfo projectToReference, string name, DirectoryInfo wasmLocation)
         {
             var initializer = new BlazorPackageInitializer(name, new System.Collections.Generic.List<string>());
             await initializer.Initialize(blazorTargetDirectory);
 
             await AddReference(blazorTargetDirectory, projectToReference);
+            var dotnet = new Dotnet(blazorTargetDirectory);
+            var result = await dotnet.Publish($"-o {wasmLocation.FullName}");
+            result.ThrowOnFailure();
         }
 
         private static async Task AddReference(DirectoryInfo blazorTargetDirectory, FileInfo projectToReference)

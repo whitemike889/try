@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using MLS.Agent.Tools;
 using Pocket;
 using WorkspaceServer.Packaging;
+using WorkspaceServer.WorkspaceFeatures;
 using static Pocket.Logger<WorkspaceServer.PrebuiltBlazorPackageLocator>;
 
 namespace WorkspaceServer
@@ -18,7 +19,7 @@ namespace WorkspaceServer
             _packagesDirectory = packagesDirectory ?? Package.DefaultPackagesDirectory;
         }
 
-        public async Task<BlazorPackage> Locate(string name)
+        public async Task<WebAssemblyAsset> Locate(string name)
         {
             using (var operation = Log.OnEnterAndExit())
             {
@@ -28,20 +29,12 @@ namespace WorkspaceServer
                 if (toolNames.Contains(name))
                 {
                     operation.Info($"Checking tool {name}");
-                    var result = await CommandLine.Execute(Path.Combine(_packagesDirectory.FullName, name), "locate-projects");
-                    var directory = new DirectoryInfo(result.Output.First());
-                    if (directory.Exists)
+                    var tool = new PackageTool(name, _packagesDirectory);
+                    await tool.Prepare();
+                    var wasmDir = await tool.LocateWasmAsset();
+                    if (wasmDir.Exists)
                     {
-                        var runnerSubDirectory = directory.GetDirectories("runner-*").FirstOrDefault();
-                        if (runnerSubDirectory?.Exists ?? false)
-                        {
-                            var path = Path.Combine(runnerSubDirectory.FullName, "MLS.Blazor");
-                            var package = new BlazorPackage(runnerSubDirectory.Name, null, new DirectoryInfo(path));
-                            if (package.BlazorEntryPointAssemblyPath.Exists)
-                            {
-                                return package;
-                            }
-                        }
+                        return new WebAssemblyAsset(new FileSystemDirectoryAccessor(wasmDir));
                     }
                 }
             }

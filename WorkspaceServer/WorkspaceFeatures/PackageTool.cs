@@ -24,9 +24,16 @@ namespace WorkspaceServer.WorkspaceFeatures
 
         public string Name { get; }
 
-        public async Task<DirectoryInfo> LocateProjects()
+        public async Task<DirectoryInfo> LocateBuildAsset()
         {
-            var result = await CommandLine.Execute(_path.Value, MLS.PackageTool.PackageToolConstants.LocateProjects, _workingDirectory);
+            var result = await CommandLine.Execute(_path.Value, MLS.PackageTool.PackageToolConstants.LocateBuildAsset, _workingDirectory);
+            var projectDirectory = new DirectoryInfo(string.Join("", result.Output));
+            return projectDirectory;
+        }
+
+        public async Task<DirectoryInfo> LocateWasmAsset()
+        {
+            var result = await CommandLine.Execute(_path.Value, MLS.PackageTool.PackageToolConstants.LocateWasmAsset, _workingDirectory);
             var projectDirectory = new DirectoryInfo(string.Join("", result.Output));
             return projectDirectory;
         }

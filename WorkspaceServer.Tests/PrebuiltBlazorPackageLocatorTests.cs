@@ -28,9 +28,8 @@ namespace WorkspaceServer.Tests
             await InstallCommand.Do(new InstallOptions(addSource, packageName), new TestConsole());
             var locator = new PrebuiltBlazorPackageLocator();
 
-            var package = await locator.Locate(packageName);
-
-            package.Name.Should().Be($"runner-{packageName}");
+            var asset = await locator.Locate(packageName);
+            asset.DirectoryAccessor.FileExists("MLS.Blazor.dll").Should().Be(true);
         }
 
         public void Dispose()
