@@ -5,10 +5,12 @@ using System.CommandLine.Invocation;
 using System.IO;
 using System.Threading.Tasks;
 using Clockwise;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.DotNet.Try.Jupyter;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MLS.Agent.Markdown;
+using MLS.Repositories;
 using WorkspaceServer;
 using CommandHandler = System.CommandLine.Invocation.CommandHandler;
 
@@ -48,18 +50,48 @@ namespace MLS.Agent.CommandLine
             IConsole console,
             StartServer startServer = null,
             InvocationContext context = null);
-
+     
         public static Parser Create(
-            StartServer startServer,
-            Demo demo,
-            TryGitHub tryGithub,
-            Pack pack,
-            Install install,
-            Verify verify,
-            Jupyter jupyter,
+            StartServer startServer = null,
+            Demo demo = null,
+            TryGitHub tryGithub = null,
+            Pack pack = null,
+            Install install = null,
+            Verify verify = null,
+            Jupyter jupyter = null,
             IServiceCollection services = null)
         {
-            services = services ?? new ServiceCollection();
+            startServer = startServer ??
+                          ((options, invocationContext) =>
+                                  Program.ConstructWebHost(options).Run());
+
+            jupyter = jupyter ??
+                      JupyterCommand.Do;
+
+            demo = demo ??
+                   DemoCommand.Do;
+
+            tryGithub = tryGithub ??
+                        ((repo, console) =>
+                                GitHubHandler.Handler(repo,
+                                                      console,
+                                                      new GitHubRepoLocator()));
+
+            verify = verify ??
+                     ((verifyOptions, console, startupOptions) =>
+                             VerifyCommand.Do(verifyOptions,
+                                              console,
+                                              () => new FileSystemDirectoryAccessor(verifyOptions.Dir),
+                                              PackageRegistry.CreateForTryMode(verifyOptions.Dir),
+                                              startupOptions));
+
+            pack = pack ??
+                   PackCommand.Do;
+
+             install = install??
+              InstallCommand.Do;
+            services = services ??
+             new ServiceCollection();
 
             var rootCommand = StartInTryMode();
 

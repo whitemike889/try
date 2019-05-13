@@ -739,7 +739,7 @@ namespace FibonacciTest
         [Fact]
         public async Task Can_serve_nodatime_code_runner()
         {
-            using (var agent = new AgentService(new StartupOptions()))
+            using (var agent = new AgentService(StartupOptions.FromCommandLine("hosted")))
             {
                 var response = await agent.GetAsync(@"/LocalCodeRunner/blazor-nodatime.api");
 

@@ -1,4 +1,6 @@
 using System;
+using System.CommandLine;
+using System.CommandLine.Invocation;
 using System.IO;
 using Microsoft.DotNet.Try.Markdown;
 
@@ -6,6 +8,21 @@ namespace MLS.Agent.CommandLine
 {
     public class StartupOptions : IDefaultCodeBlockAnnotations
     {
+        private readonly ParseResult _parseResult;
+
+        public static StartupOptions FromCommandLine(string commandLine)
+        {
+            StartupOptions startupOptions = null;
+
+            CommandLineParser.Create(startServer: (options, context) =>
+                                    {
+                                        startupOptions = options;
+                                    })
+                                    .InvokeAsync(commandLine);
+
+            return startupOptions;
+        }
+
         public StartupOptions(
             bool production = false,
             bool languageService = false,
@@ -20,8 +37,10 @@ namespace MLS.Agent.CommandLine
             bool verbose = false,
             bool enablePreviewFeatures = false,
             string package = null,
-            string packageVersion = null)
+            string packageVersion = null,
+            ParseResult parseResult = null)
         {
+            _parseResult = parseResult;
             LogPath = logPath;
             Verbose = verbose;
             Id = id;
@@ -36,10 +55,6 @@ namespace MLS.Agent.CommandLine
             EnablePreviewFeatures = enablePreviewFeatures;
             Package = package;
             PackageVersion = packageVersion;
-
-            Mode = dir == null
-                       ? StartupMode.Hosted
-                       : StartupMode.Try;
         }
 
         public bool EnablePreviewFeatures { get; }
@@ -53,7 +68,19 @@ namespace MLS.Agent.CommandLine
         public string Key { get; }
         public string ApplicationInsightsKey { get; }
 
-        public StartupMode Mode { get; } 
+        public StartupMode Mode
+        {
+            get
+            {
+                switch (_parseResult?.CommandResult?.Name)
+                {
+                    case "hosted":
+                        return StartupMode.Hosted;
+                    default:
+                        return StartupMode.Try;
+                }
+            }
+        }
 
         public string EnvironmentName =>
             Production || Mode != StartupMode.Hosted
