@@ -59,7 +59,7 @@ namespace MLS.Agent.Markdown
             var sourceFileArg = new Argument<RelativeFilePath>(
                                     result =>
                                     {
-                                        var filename = result.Arguments.SingleOrDefault();
+                                        var filename = result.Tokens.Select(t => t.Value).SingleOrDefault();
 
                                         if (filename == null)
                                         {
@@ -90,7 +90,7 @@ namespace MLS.Agent.Markdown
         {
             var projectOptionArgument = new Argument<FileInfo>(result =>
                                         {
-                                            var projectPath = new RelativeFilePath(result.Arguments.Single());
+                                            var projectPath = new RelativeFilePath(result.Tokens.Select(t => t.Value).Single());
 
                                             if (directoryAccessor.FileExists(projectPath))
                                             {
