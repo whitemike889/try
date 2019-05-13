@@ -7,12 +7,13 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Clockwise;
 using MLS.Agent.Tools;
+using WorkspaceServer.WorkspaceFeatures;
 
 namespace WorkspaceServer
 {
     public class Dotnet
     {
-        private readonly DirectoryInfo _workingDirectory;
+        protected readonly DirectoryInfo _workingDirectory;
 
         public Dotnet(DirectoryInfo workingDirectory = null)
         {

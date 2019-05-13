@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using MLS.Agent.Tools;
 using WorkspaceServer;
+using WorkspaceServer.WorkspaceFeatures;
 
 namespace MLS.Agent.CommandLine
 {
@@ -16,9 +17,8 @@ namespace MLS.Agent.CommandLine
                 options.Location,
                 options.AddSource)).ThrowOnFailure();
 
-            var commandPath = Path.Combine(options.Location.FullName, options.PackageName);
-
-            (await Tools.CommandLine.Execute(commandPath, "prepare-package")).ThrowOnFailure();
+            var tool = new WorkspaceServer.WorkspaceFeatures.PackageTool(options.PackageName, options.Location);
+            await tool.Prepare();
         }
     }
 }

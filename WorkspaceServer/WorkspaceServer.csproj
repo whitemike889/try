@@ -13,6 +13,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\MLS.PackageTool\Program.cs" Link="WorkspaceFeatures\Program.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <EmbeddedResource Include="Servers\Roslyn\Instrumentation\InstrumentationEmitter.cs" />
   </ItemGroup>
 

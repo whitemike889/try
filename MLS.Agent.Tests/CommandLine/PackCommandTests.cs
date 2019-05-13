@@ -6,6 +6,7 @@ using FluentAssertions;
 using MLS.Agent.CommandLine;
 using WorkspaceServer;
 using WorkspaceServer.Tests;
+using WorkspaceServer.WorkspaceFeatures;
 using Xunit;
 
 namespace MLS.Agent.Tests.CommandLine
@@ -64,10 +65,11 @@ namespace MLS.Agent.Tests.CommandLine
 
             var exe = Path.Combine(asset.Directory.FullName, packageName);
 
-            result = await MLS.Agent.Tools.CommandLine.Execute(exe, "prepare-package", workingDir: asset.Directory);
-            result = await MLS.Agent.Tools.CommandLine.Execute(exe, "locate-projects", workingDir: asset.Directory);
+            var tool = new WorkspaceServer.WorkspaceFeatures.PackageTool(packageName, asset.Directory);
 
-            var projectDirectory = new DirectoryInfo(string.Join("", result.Output));
+            await tool.Prepare();
+
+            var projectDirectory = await tool.LocateProjects();
             var subDirectories = projectDirectory.GetDirectories();
             subDirectories.Should().Contain(d => d.Name == "packTarget");
             subDirectories.Should().Contain(d => d.Name == $"runner-{packageName}");

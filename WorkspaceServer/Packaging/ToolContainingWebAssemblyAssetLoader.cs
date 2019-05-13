@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using WorkspaceServer.WorkspaceFeatures;
 
 namespace WorkspaceServer.Packaging
 {
@@ -24,9 +25,10 @@ namespace WorkspaceServer.Packaging
 
                 if (directory.FileExists(exeName))
                 {
+                    var tool = new PackageTool(package.Name, directory.GetFullyQualifiedRoot());
                     var exePath = directory.GetFullyQualifiedFilePath(exeName);
 
-                    var toolDirectory = await _toolPackageLocator.PrepareToolAndLocateAssetDirectory(exePath);
+                    var toolDirectory = await _toolPackageLocator.PrepareToolAndLocateAssetDirectory(tool);
 
                     return new PackageAsset[]
                            {

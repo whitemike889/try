@@ -15,7 +15,7 @@ namespace WorkspaceServer.Packaging
         public LocalToolInstallingPackageDiscoveryStrategy(DirectoryInfo workingDirectory, DirectoryInfo addSource = null)
         { 
             _workingDirectory = workingDirectory;
-            _locator = new ToolPackageLocator(workingDirectory.FullName);
+            _locator = new ToolPackageLocator(workingDirectory);
             _addSource = addSource;
         }
 

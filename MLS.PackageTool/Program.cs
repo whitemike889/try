@@ -11,6 +11,12 @@ using Process = System.Diagnostics.Process;
 
 namespace MLS.PackageTool
 {
+    public class PackageToolConstants
+    {
+        public const string LocateProjects = "locate-projects";
+        public const string PreparePackage = "prepare-package";
+    }
+
     public class Program
     {
         static async Task Main(string[] args)
@@ -98,7 +104,7 @@ namespace MLS.PackageTool
 
             Command LocateAssembly()
             {
-                return new Command("locate-projects")
+                return new Command(PackageToolConstants.LocateProjects)
                 {
                     Handler = CommandHandler.Create(getAssembly)
                 };
@@ -106,7 +112,7 @@ namespace MLS.PackageTool
 
             Command PreparePackage()
             {
-                return new Command("prepare-package", "Prepares the packages")
+                return new Command(PackageToolConstants.PreparePackage, "Prepares the packages")
                 {
                     Handler = CommandHandler.Create(prepare)
                 };

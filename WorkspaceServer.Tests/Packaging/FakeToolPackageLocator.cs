@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Clockwise;
 using WorkspaceServer.Packaging;
+using WorkspaceServer.WorkspaceFeatures;
 
 namespace WorkspaceServer.Tests.Packaging
 {
@@ -15,7 +16,7 @@ namespace WorkspaceServer.Tests.Packaging
             _directory = directory;
         }
 
-        public async Task<DirectoryInfo> PrepareToolAndLocateAssetDirectory(FileInfo tool, Budget budget = null)
+        public async Task<DirectoryInfo> PrepareToolAndLocateAssetDirectory(PackageTool tool)
         {
             // e.g. C:\Users\abc\.trydotnet\packages\.store\PKGNAME\1.0.0\PKGNAME\1.0.0\tools\netcoreapp2.1\any\project
 

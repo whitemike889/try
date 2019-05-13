@@ -5,22 +5,29 @@ using System.Linq;
 using System.Threading.Tasks;
 using Clockwise;
 using MLS.Agent.Tools;
+using WorkspaceServer.WorkspaceFeatures;
 
 namespace WorkspaceServer.Packaging
 {
     internal class ToolPackageLocator : IToolPackageLocator
     {
         // FIX: (ToolPackageLocator) rename
-        private readonly string _basePath;
+        private readonly DirectoryInfo _baseDirectory;
 
-        public ToolPackageLocator(string basePath = "")
+        public ToolPackageLocator(DirectoryInfo baseDirectory = null)
         {
-            _basePath = basePath ?? "";
+            _baseDirectory = baseDirectory ?? Package.DefaultPackagesDirectory;
         }
 
         public async Task<Package> LocatePackageAsync(string name, Budget budget)
         {
-            var assetDirectory = await PrepareToolAndLocateAssetDirectory(new FileInfo(Path.Combine(_basePath, name)));
+            var candidateTool = new PackageTool(name, _baseDirectory);
+            if (!candidateTool.Exists)
+            {
+                return null;
+            }
+
+            var assetDirectory = await PrepareToolAndLocateAssetDirectory(candidateTool);
 
             if (assetDirectory == null)
             {
@@ -30,32 +37,16 @@ namespace WorkspaceServer.Packaging
             return new NonrebuildablePackage(name, directory: assetDirectory);
         }
 
-        public async Task<DirectoryInfo> PrepareToolAndLocateAssetDirectory(FileInfo tool, Budget budget = null)
+        public async Task<DirectoryInfo> PrepareToolAndLocateAssetDirectory(PackageTool tool)
         {
-            CommandLineResult result;
-
-            try
-            {
-                result = await CommandLine.Execute(tool.FullName, "prepare-package", budget: budget);
-
-                result.ThrowOnFailure();
-
-                result = await CommandLine.Execute(tool.FullName, "locate-projects", budget: budget);
-
-                result.ThrowOnFailure();
-            }
-            catch (Win32Exception)
+            await tool.Prepare();
+            var directory = await tool.LocateProjects();
+            if (directory == null || !directory.Exists)
             {
                 return null;
             }
 
-            var directory = result.Output.FirstOrDefault();
-            if (directory == null || !Directory.Exists(directory))
-            {
-                return null;
-            }
-
-            return new DirectoryInfo(Path.Combine(directory, "packTarget"));
+            return new DirectoryInfo(Path.Combine(directory.FullName, "packTarget"));
         }
     }
 }
