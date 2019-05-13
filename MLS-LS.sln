@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.572
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28803.352
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MLS.Agent", "MLS.Agent\MLS.Agent.csproj", "{5D63B3BA-9C25-4F06-91F0-6B0E1091FCD3}"
 EndProject
@@ -40,7 +40,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MLS.Blazor", "MLS.Blazor\ML
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MLS.WasmCodeRunner", "WasmCodeRunner\MLS.WasmCodeRunner.csproj", "{9DAE862E-C8AE-452B-B27E-C6DEB1403E81}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MLS.WasmCodeRunnerTests", "WasmCodeRunnerTests\MLS.WasmCodeRunnerTests.csproj", "{AAEF5063-5D4C-4CA7-8E22-0DAE1ADBBCD1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MLS.WasmCodeRunner.Tests", "WasmCodeRunner.Tests\MLS.WasmCodeRunner.Tests.csproj", "{AAEF5063-5D4C-4CA7-8E22-0DAE1ADBBCD1}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{E4DF1F27-3AB3-4226-B2B4-D3AC9F17CA96}"
 EndProject

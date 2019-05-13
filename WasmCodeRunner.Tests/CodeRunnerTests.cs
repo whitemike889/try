@@ -8,7 +8,7 @@ using Newtonsoft.Json.Linq;
 using MLS.WasmCodeRunner;
 using Xunit;
 
-namespace MLS.WasmCodeRunnerTests
+namespace MLS.WasmCodeRunner.Tests
 {
     public class CodeRunnerTests
     {
