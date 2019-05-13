@@ -4,6 +4,8 @@
   <Import Project="eng\targets\Settings.props" />
 
   <PropertyGroup>
+    <PackageIconUrl>http://go.microsoft.com/fwlink/?LinkID=288859</PackageIconUrl>
+    
     <!-- private repo, don't do source-link -->
     <DeterministicSourcePaths>false</DeterministicSourcePaths>
     <EnableSourceLink>false</EnableSourceLink>
