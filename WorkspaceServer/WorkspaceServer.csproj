@@ -125,6 +125,7 @@
     <EmbeddedResource Include="..\WasmCodeRunner\WasmCodeRunnerResponse.cs" />
     <EmbeddedResource Include="..\WasmCodeRunner\CommandLineBuilderExtensions.cs" />
     <EmbeddedResource Include="..\WasmCodeRunner\EntryPointDiscoverer.cs" />
+    <EmbeddedResource Include="..\WasmCodeRunner\PreserveConsoleState.cs" />
   </ItemGroup>
 
 </Project>

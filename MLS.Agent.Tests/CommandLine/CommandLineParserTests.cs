@@ -101,7 +101,7 @@ namespace MLS.Agent.Tests.CommandLine
         {
             var logPath = new DirectoryInfo(Path.GetTempPath());
 
-            await _parser.InvokeAsync($"--log-path {logPath}");
+            await _parser.InvokeAsync($"--log-path {logPath}", _console);
 
             _start_options
                 .LogPath
@@ -113,7 +113,7 @@ namespace MLS.Agent.Tests.CommandLine
         [Fact]
         public async Task It_parses_verbose_option()
         {
-            await _parser.InvokeAsync($"--verbose");
+            await _parser.InvokeAsync($"--verbose", _console);
 
             _start_options
                 .Verbose
@@ -124,7 +124,7 @@ namespace MLS.Agent.Tests.CommandLine
         [Fact]
         public async Task It_parses_the_package_option()
         {
-            await _parser.InvokeAsync("--package console");
+            await _parser.InvokeAsync("--package console", _console);
 
             _start_options
                 .Package
@@ -135,7 +135,7 @@ namespace MLS.Agent.Tests.CommandLine
         [Fact]
         public async Task It_parses_the_package_version_option()
         {
-            await _parser.InvokeAsync("--package-version 1.2.3-beta");
+            await _parser.InvokeAsync("--package-version 1.2.3-beta", _console);
 
             _start_options
                 .PackageVersion
@@ -242,14 +242,14 @@ namespace MLS.Agent.Tests.CommandLine
         [Fact]
         public async Task GitHub_handler_not_run_if_argument_is_missing()
         {
-            await _parser.InvokeAsync("github");
+            await _parser.InvokeAsync("github", _console);
             _tryGitHubOptions.Should().BeNull();
         }
 
         [Fact]
         public async Task GitHub_handler_run_if_argument_is_present()
         {
-            await _parser.InvokeAsync("github roslyn");
+            await _parser.InvokeAsync("github roslyn", _console);
             _tryGitHubOptions.Repo.Should().Be("roslyn");
         }
 
@@ -309,7 +309,7 @@ namespace MLS.Agent.Tests.CommandLine
         public async Task Verify_argument_specifies_root_directory()
         {
             var directory = Path.GetDirectoryName(typeof(VerifyCommand).Assembly.Location);
-            await _parser.InvokeAsync($"verify {directory}");
+            await _parser.InvokeAsync($"verify {directory}", _console);
             _verifyOptions.Dir.FullName.Should().Be(directory);
         }
 
@@ -318,7 +318,7 @@ namespace MLS.Agent.Tests.CommandLine
         {
             var expected = Path.GetTempPath();
 
-            await _parser.InvokeAsync($"demo --output {expected}");
+            await _parser.InvokeAsync($"demo --output {expected}", _console);
 
             _demoOptions
                 .Output
@@ -332,7 +332,7 @@ namespace MLS.Agent.Tests.CommandLine
         {
             var expected = Path.GetTempFileName();
 
-            await _parser.InvokeAsync($"jupyter {expected}");
+            await _parser.InvokeAsync($"jupyter {expected}", _console);
 
             _jupyter_Options
                 .ConnectionFile
