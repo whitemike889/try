@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using WorkspaceServer.Packaging;
 
 namespace WorkspaceServer.WorkspaceFeatures
 {
@@ -31,11 +32,11 @@ namespace WorkspaceServer.WorkspaceFeatures
             return projectDirectory;
         }
 
-        public async Task<DirectoryInfo> LocateWasmAsset()
+        public async Task<WebAssemblyAsset> LocateWasmAsset()
         {
             var result = await CommandLine.Execute(_path.Value, MLS.PackageTool.PackageToolConstants.LocateWasmAsset, _workingDirectory);
             var projectDirectory = new DirectoryInfo(string.Join("", result.Output));
-            return projectDirectory;
+            return new WebAssemblyAsset(new FileSystemDirectoryAccessor(projectDirectory));
         }
 
         public Task Prepare()

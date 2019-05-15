@@ -23,15 +23,15 @@ namespace MLS.Agent.CommandLine
 
                 var name = options.PackageName;
 
-                var temp_projects_packtarget = temp_projects.CreateSubdirectory("packTarget");
-                options.PackTarget.CopyTo(temp_projects_packtarget);
+                var temp_projects_build = temp_projects.CreateSubdirectory("build");
+                options.PackTarget.CopyTo(temp_projects_build);
 
                 if (options.EnableBlazor)
                 {
                     string runnerDirectoryName = $"wasm";
                     var temp_projects_wasm = temp_projects.CreateSubdirectory(runnerDirectoryName);
                     var temp_mlsblazor = temp.CreateSubdirectory("MLS.Blazor");
-                    await AddBlazorProject(temp_mlsblazor, GetProjectFile(temp_projects_packtarget), name, temp_projects_wasm);
+                    await AddBlazorProject(temp_mlsblazor, GetProjectFile(temp_projects_build), name, temp_projects_wasm);
                 }
 
                 var temp_toolproject = temp.CreateSubdirectory("project");

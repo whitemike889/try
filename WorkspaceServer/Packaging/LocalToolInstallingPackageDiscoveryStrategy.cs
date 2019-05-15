@@ -6,7 +6,7 @@ using Pocket;
 
 namespace WorkspaceServer.Packaging
 {
-    public class LocalToolInstallingPackageDiscoveryStrategy : IPackageDiscoveryStrategy
+    public class LocalToolInstallingPackageDiscoveryStrategy : 
     {
         private readonly DirectoryInfo _workingDirectory;
         private readonly ToolPackageLocator _locator;
