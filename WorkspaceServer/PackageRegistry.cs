@@ -22,8 +22,11 @@ namespace WorkspaceServer
 
         public PackageRegistry(
             bool createRebuildablePackages = false,
+            DirectoryInfo addSource = null,
+            IEnumerable<IPackageFinder> packageFinders = null,
             params IPackageDiscoveryStrategy[] additionalStrategies)
-            : this(new IPackageDiscoveryStrategy[]
+            : this(addSource,
+                  new IPackageDiscoveryStrategy[]
                    {
                        new ProjectFilePackageDiscoveryStrategy(createRebuildablePackages),
                        new DirectoryPackageDiscoveryStrategy(createRebuildablePackages)
@@ -32,6 +35,7 @@ namespace WorkspaceServer
         }
 
         private PackageRegistry(
+            DirectoryInfo addSource,
             IEnumerable<IPackageDiscoveryStrategy> strategies,
             IEnumerable<IPackageFinder> packageFinders = null)
         {
@@ -44,8 +48,8 @@ namespace WorkspaceServer
 
                 _strategies.Add(strategy);
             }
-
-            _packageFinders = packageFinders?.ToList() ?? GetDefaultPackageFinders().ToList();
+            
+            _packageFinders = packageFinders?.ToList() ?? GetDefaultPackageFinders(addSource).ToList();
         }
 
         public void Add(string name, Action<PackageBuilder> configure)
@@ -224,11 +228,11 @@ namespace WorkspaceServer
         IEnumerator IEnumerable.GetEnumerator() =>
             GetEnumerator();
 
-        private static IEnumerable<IPackageFinder> GetDefaultPackageFinders()
+        private static IEnumerable<IPackageFinder> GetDefaultPackageFinders(DirectoryInfo addSource)
         {
             yield return new PackageNameIsFullyQualifiedPath();
             yield return new FindPackageInDefaultLocation(new FileSystemDirectoryAccessor(Package.DefaultPackagesDirectory));
-            yield return new LocalToolInstallingPackageDiscoveryStrategy(Package.DefaultPackagesDirectory);
+            yield return new LocalToolInstallingPackageDiscoveryStrategy(Package.DefaultPackagesDirectory, addSource);
         }
 
         Task<T> IPackageFinder.Find<T>(PackageDescriptor descriptor)

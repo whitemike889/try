@@ -70,7 +70,7 @@ namespace MLS.Agent.Tests.CommandLine
             await tool.Prepare();
 
             var wasmDirectory = await tool.LocateWasmAsset();
-            wasmDirectory.Exists.Should().BeTrue();
+            wasmDirectory.Should().NotBeNull();
 
         }
 
