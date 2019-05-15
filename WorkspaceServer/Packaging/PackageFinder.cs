@@ -10,7 +10,7 @@ namespace WorkspaceServer.Packaging
             this IPackageFinder finder, 
             string packageName, 
             Budget budget = null) 
-            where T : IPackage =>
+            where T : class, IPackage =>
             finder.Find<T>(new PackageDescriptor(packageName));
 
         public static IPackageFinder Create(IPackage package)
@@ -27,7 +27,7 @@ namespace WorkspaceServer.Packaging
                 _package = package ?? throw new ArgumentNullException(nameof(package));
             }
 
-            public Task<T> Find<T>(PackageDescriptor descriptor) where T : IPackage
+            public Task<T> Find<T>(PackageDescriptor descriptor) where T : class, IPackage
             {
                 if (_package is T package)
                 {

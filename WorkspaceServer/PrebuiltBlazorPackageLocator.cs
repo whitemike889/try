@@ -31,11 +31,7 @@ namespace WorkspaceServer
                     operation.Info($"Checking tool {name}");
                     var tool = new PackageTool(name, _packagesDirectory);
                     await tool.Prepare();
-                    var wasmDir = await tool.LocateWasmAsset();
-                    if (wasmDir.Exists)
-                    {
-                        return new WebAssemblyAsset(new FileSystemDirectoryAccessor(wasmDir));
-                    }
+                    return await tool.LocateWasmAsset();
                 }
             }
 

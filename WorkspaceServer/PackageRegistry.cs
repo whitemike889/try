@@ -66,7 +66,7 @@ namespace WorkspaceServer
         }
 
         public async Task<T> Get<T>(string packageName, Budget budget = null)
-            where T : IPackage
+            where T : class, IPackage
         {
             if (packageName == "script")
             {
@@ -87,7 +87,7 @@ namespace WorkspaceServer
         }
 
         private async Task<IPackage> GetPackage2<T>(PackageDescriptor descriptor)
-            where T : IPackage
+            where T : class, IPackage
         {
             foreach (var packgeFinder in _packageFinders)
             {
@@ -129,8 +129,7 @@ namespace WorkspaceServer
         public static PackageRegistry CreateForTryMode(DirectoryInfo project, DirectoryInfo addSource = null)
         {
             var registry = new PackageRegistry(
-                true,
-                new LocalToolInstallingPackageDiscoveryStrategy(Package.DefaultPackagesDirectory, addSource));
+                true);
 
             registry.Add(project.Name, builder =>
             {
@@ -144,8 +143,7 @@ namespace WorkspaceServer
         public static PackageRegistry CreateForHostedMode()
         {
             var registry = new PackageRegistry(
-                false, 
-                new LocalToolInstallingPackageDiscoveryStrategy(Package.DefaultPackagesDirectory));
+                false);
 
             registry.Add("console",
                          packageBuilder =>
@@ -230,6 +228,7 @@ namespace WorkspaceServer
         {
             yield return new PackageNameIsFullyQualifiedPath();
             yield return new FindPackageInDefaultLocation(new FileSystemDirectoryAccessor(Package.DefaultPackagesDirectory));
+            yield return new LocalToolInstallingPackageDiscoveryStrategy(Package.DefaultPackagesDirectory);
         }
 
         Task<T> IPackageFinder.Find<T>(PackageDescriptor descriptor)

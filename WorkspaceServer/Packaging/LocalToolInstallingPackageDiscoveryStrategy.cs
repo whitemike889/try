@@ -6,7 +6,7 @@ using Pocket;
 
 namespace WorkspaceServer.Packaging
 {
-    public class LocalToolInstallingPackageDiscoveryStrategy : 
+    public class LocalToolInstallingPackageDiscoveryStrategy : IPackageFinder
     {
         private readonly DirectoryInfo _workingDirectory;
         private readonly ToolPackageLocator _locator;
@@ -19,18 +19,7 @@ namespace WorkspaceServer.Packaging
             _addSource = addSource;
         }
 
-        public async Task<PackageBuilder> Locate(PackageDescriptor packageDesciptor, Budget budget = null)
-        {
-            var locatedPackage = await _locator.LocatePackageAsync(packageDesciptor.Name, budget);
-            if (locatedPackage != null)
-            {
-                return CreatePackageBuilder(packageDesciptor, locatedPackage);
-            }
-
-            return await TryInstallAndLocateTool(packageDesciptor, budget);
-        }
-
-        private async Task<PackageBuilder> TryInstallAndLocateTool(PackageDescriptor packageDesciptor, Budget budget)
+        private async Task<IPackage> TryInstallAndLocateTool(PackageDescriptor packageDesciptor, Budget budget)
         {
             var dotnet = new Dotnet();
 
@@ -48,19 +37,18 @@ namespace WorkspaceServer.Packaging
 
             var tool = await _locator.LocatePackageAsync(packageDesciptor.Name, budget);
 
-            if (tool != null)
-            {
-                return CreatePackageBuilder(packageDesciptor, tool);
-            }
-
-            return null;
+            return tool;
         }
 
-        private PackageBuilder CreatePackageBuilder(PackageDescriptor packageDesciptor, Package locatedPackage)
+        public async Task<T> Find<T>(PackageDescriptor descriptor) where T : class, IPackage
         {
-            var pb = new PackageBuilder(packageDesciptor.Name);
-            pb.Directory = locatedPackage.Directory;
-            return pb;
+            var locatedPackage = await _locator.LocatePackageAsync(descriptor.Name, new Budget());
+            if (locatedPackage != null)
+            {
+                return locatedPackage as T;
+            }
+
+            return (await TryInstallAndLocateTool(descriptor, new Budget())) as T;
         }
     }
 }

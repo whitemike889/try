@@ -11,7 +11,7 @@ namespace WorkspaceServer
 
 
         public async Task<T> Find<T>(PackageDescriptor descriptor)
-            where T : IPackage
+            where T : class, IPackage
         {
             if (descriptor.IsPathSpecified)
             {
