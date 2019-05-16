@@ -34,12 +34,12 @@ namespace WorkspaceServer
 
                     if (pkg is T t)
                     {
-                        return Task.FromResult(t);
+                        return t;
                     }
                 }
             }
 
-            return Task.FromResult<T>(default);
+            return default;
         }
     }
 }
