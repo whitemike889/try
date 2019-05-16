@@ -36,6 +36,12 @@ namespace WorkspaceServer.WorkspaceFeatures
         {
             var result = await CommandLine.Execute(_path.Value, MLS.PackageTool.PackageToolConstants.LocateWasmAsset, _workingDirectory);
             var projectDirectory = new DirectoryInfo(string.Join("", result.Output));
+
+            if (!projectDirectory.Exists)
+            {
+                return null;
+            }
+
             return new WebAssemblyAsset(new FileSystemDirectoryAccessor(projectDirectory));
         }
 

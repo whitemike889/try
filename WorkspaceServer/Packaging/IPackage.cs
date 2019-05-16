@@ -31,6 +31,17 @@ namespace WorkspaceServer.Packaging
         Task<Workspace> CreateRoslynWorkspaceForRunAsync(Budget budget);
     }
 
+    public interface ICouldBeWebProject : IPackage
+    {
+        bool IsWebProject { get; }
+    }
+
+    public interface ICouldBeUnitTestProject : IPackage
+    {
+        bool IsUnitTestProject { get; }
+    }
+
+
     public interface ICreateWorkspaceForLanguageServices : IPackage
     {
         Task<Workspace> CreateRoslynWorkspaceForLanguageServicesAsync(Budget budget);

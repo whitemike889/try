@@ -27,6 +27,8 @@ namespace WorkspaceServer
                         descriptor,
                         directoryAccessor);
 
+                    pkg.Add(new ProjectAsset(directoryAccessor));
+
                     if (pkg is T t)
                     {
                         return t;

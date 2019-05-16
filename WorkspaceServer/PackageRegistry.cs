@@ -133,7 +133,8 @@ namespace WorkspaceServer
         public static PackageRegistry CreateForTryMode(DirectoryInfo project, DirectoryInfo addSource = null)
         {
             var registry = new PackageRegistry(
-                true);
+                true, 
+                addSource);
 
             registry.Add(project.Name, builder =>
             {

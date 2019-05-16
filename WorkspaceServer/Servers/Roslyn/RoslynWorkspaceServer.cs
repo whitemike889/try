@@ -227,7 +227,7 @@ namespace WorkspaceServer.Servers.Roslyn
             using (Log.OnEnterAndExit())
             using (await locks.GetOrAdd(workspace.WorkspaceType, s => new AsyncLock()).LockAsync())
             {
-                var package = await _packageFinder.Find<Package>(workspace.WorkspaceType);
+                var package = await _packageFinder.Find<IPackage>(workspace.WorkspaceType);
 
                 var result = await CompileWorker(request.Workspace, request.ActiveBufferId, budget);
 
@@ -248,20 +248,35 @@ namespace WorkspaceServer.Servers.Roslyn
                     return runResult;
                 }
 
-                await EmitCompilationAsync(result.Compilation, package);
+                DirectoryInfo directory;
+                FileInfo entryPoint;
+                if (package is Package p)
+                {
+                    directory = p.Directory;
+                    entryPoint = p.EntryPointAssemblyPath;
+                }
+                else
+                {
+                    var asset = ((Package2)package).Assets.OfType<ProjectAsset>().First();
+                    directory = asset.DirectoryAccessor.GetFullyQualifiedRoot();
+                    entryPoint = asset.EntryPoint;
+                }
 
-                if (package.IsWebProject)
+                await EmitCompilationAsync(result.Compilation, entryPoint);
+
+                if (package is ICouldBeWebProject webProject && webProject.IsWebProject)
                 {
                     return RunWebRequest(package, request.RequestId);
                 }
 
-                if (package.IsUnitTestProject)
+                if (package is ICouldBeUnitTestProject unitTestProject &&  unitTestProject.IsUnitTestProject)
                 {
-                    return await RunUnitTestsAsync(package, result.DiagnosticsWithinBuffers, budget, request.RequestId);
+                    return await RunUnitTestsAsync((Package)package, result.DiagnosticsWithinBuffers, budget, request.RequestId);
                 }
 
                 return await RunConsoleAsync(
-                           package,
+                           directory,
+                           entryPoint,
                            result.DiagnosticsWithinBuffers,
                            budget,
                            request.RequestId,
@@ -270,11 +285,11 @@ namespace WorkspaceServer.Servers.Roslyn
             }
         }
 
-        private static async Task EmitCompilationAsync(Compilation compilation, Package package)
+        private static async Task EmitCompilationAsync(Compilation compilation, FileInfo entryPoint)
         {
-            if (package == null)
+            if (entryPoint == null)
             {
-                throw new ArgumentNullException(nameof(package));
+                throw new ArgumentNullException(nameof(entryPoint));
             }
 
             using (var operation = Log.OnEnterAndExit())
@@ -284,7 +299,7 @@ namespace WorkspaceServer.Servers.Roslyn
                 {
                     try
                     {
-                        compilation.Emit(package.EntryPointAssemblyPath.FullName);
+                        compilation.Emit(entryPoint.FullName);
                         operation.Info("Emit succeeded on attempt #{attempt}", attempt);
                         break;
                     }
@@ -302,17 +317,18 @@ namespace WorkspaceServer.Servers.Roslyn
         }
 
         private static async Task<RunResult> RunConsoleAsync(
-            Package package,
+            DirectoryInfo directory,
+            FileInfo entryPoint,
             IEnumerable<SerializableDiagnostic> diagnostics,
             Budget budget,
             string requestId,
             bool includeInstrumentation,
             string commandLineArgs)
         {
-            var dotnet = new Dotnet(package.Directory);
+            var dotnet = new Dotnet(directory);
 
             var commandLineResult = await dotnet.Execute(
-                                        package.EntryPointAssemblyPath.FullName.AppendArgs(commandLineArgs),
+                                        entryPoint.FullName.AppendArgs(commandLineArgs),
                                         budget);
 
             budget.RecordEntry(UserCodeCompleted);
@@ -396,7 +412,7 @@ namespace WorkspaceServer.Servers.Roslyn
             return result;
         }
 
-        private static RunResult RunWebRequest(Package package, string requestId)
+        private static RunResult RunWebRequest(IPackage package, string requestId)
         {
             var runResult = new RunResult(succeeded: true, requestId: requestId);
             runResult.AddFeature(new WebServer(package));
