@@ -9,6 +9,7 @@ artifacts/
 *.user
 *.sln.docstates
 *NCrunch*
+.trydotnet-*
 
 # Build results
 [Bb]inaries/
@@ -121,6 +122,7 @@ publish/
 
 # NuGet Packages Directory
 packages/
+.packages/
 
 # Windows Azure Build Output
 csx

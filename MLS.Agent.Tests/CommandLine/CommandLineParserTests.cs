@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation and contributors. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 using System;
 using System.CommandLine;
 using System.CommandLine.Invocation;
@@ -55,7 +58,7 @@ namespace MLS.Agent.Tests.CommandLine
                     _install_packageSource = options.AddSource;
                     return Task.CompletedTask;
                 },
-                verify: (options, console) =>
+                verify: (options, console, startupOptions) =>
                 {
                     _verifyOptions = options;
                     return Task.FromResult(1);
@@ -101,7 +104,7 @@ namespace MLS.Agent.Tests.CommandLine
         {
             var logPath = new DirectoryInfo(Path.GetTempPath());
 
-            await _parser.InvokeAsync($"--log-path {logPath}");
+            await _parser.InvokeAsync($"--log-path {logPath}", _console);
 
             _start_options
                 .LogPath
@@ -113,7 +116,7 @@ namespace MLS.Agent.Tests.CommandLine
         [Fact]
         public async Task It_parses_verbose_option()
         {
-            await _parser.InvokeAsync($"--verbose");
+            await _parser.InvokeAsync($"--verbose", _console);
 
             _start_options
                 .Verbose
@@ -124,7 +127,7 @@ namespace MLS.Agent.Tests.CommandLine
         [Fact]
         public async Task It_parses_the_package_option()
         {
-            await _parser.InvokeAsync("--package console");
+            await _parser.InvokeAsync("--package console", _console);
 
             _start_options
                 .Package
@@ -135,7 +138,7 @@ namespace MLS.Agent.Tests.CommandLine
         [Fact]
         public async Task It_parses_the_package_version_option()
         {
-            await _parser.InvokeAsync("--package-version 1.2.3-beta");
+            await _parser.InvokeAsync("--package-version 1.2.3-beta", _console);
 
             _start_options
                 .PackageVersion
@@ -171,7 +174,6 @@ namespace MLS.Agent.Tests.CommandLine
             await _parser.InvokeAsync("--enable-preview-features", _console);
             _start_options.EnablePreviewFeatures.Should().BeTrue();
         }
-
 
         [Fact]
         public async Task Parse_language_service_mode_flag_switches_option_to_language_service()
@@ -241,23 +243,16 @@ namespace MLS.Agent.Tests.CommandLine
         }
 
         [Fact]
-        public async Task When_jupyter_command_is_specified_then_agent_is_in_jupyter_mode()
-        {
-            await _parser.InvokeAsync("hosted", _console);
-            _start_options.Mode.Should().Be(StartupMode.Hosted);
-        }
-
-        [Fact]
         public async Task GitHub_handler_not_run_if_argument_is_missing()
         {
-            await _parser.InvokeAsync("github");
+            await _parser.InvokeAsync("github", _console);
             _tryGitHubOptions.Should().BeNull();
         }
 
         [Fact]
         public async Task GitHub_handler_run_if_argument_is_present()
         {
-            await _parser.InvokeAsync("github roslyn");
+            await _parser.InvokeAsync("github roslyn", _console);
             _tryGitHubOptions.Repo.Should().Be("roslyn");
         }
 
@@ -317,7 +312,7 @@ namespace MLS.Agent.Tests.CommandLine
         public async Task Verify_argument_specifies_root_directory()
         {
             var directory = Path.GetDirectoryName(typeof(VerifyCommand).Assembly.Location);
-            await _parser.InvokeAsync($"verify {directory}");
+            await _parser.InvokeAsync($"verify {directory}", _console);
             _verifyOptions.Dir.FullName.Should().Be(directory);
         }
 
@@ -326,7 +321,7 @@ namespace MLS.Agent.Tests.CommandLine
         {
             var expected = Path.GetTempPath();
 
-            await _parser.InvokeAsync($"demo --output {expected}");
+            await _parser.InvokeAsync($"demo --output {expected}", _console);
 
             _demoOptions
                 .Output
@@ -340,7 +335,7 @@ namespace MLS.Agent.Tests.CommandLine
         {
             var expected = Path.GetTempFileName();
 
-            await _parser.InvokeAsync($"jupyter {expected}");
+            await _parser.InvokeAsync($"jupyter {expected}", _console);
 
             _jupyter_Options
                 .ConnectionFile
@@ -367,25 +362,6 @@ namespace MLS.Agent.Tests.CommandLine
             await _parser.InvokeAsync("jupyter", testConsole);
 
             testConsole.Error.ToString().Should().Contain("Required argument missing for command: jupyter");
-        }
-
-        [Fact]
-        public async Task Demo_allows_enabling_preview_features()
-        {
-            var expected = Path.GetTempPath();
-
-            await _parser.InvokeAsync($"demo --output {expected} --enable-preview-features");
-
-            _demoOptions
-                .Output
-                .FullName
-                .Should()
-                .Be(expected);
-
-            _demoOptions
-                .EnablePreviewFeatures
-                .Should()
-                .BeTrue();
         }
     }
 }

@@ -1,4 +1,7 @@
-﻿using System;
+// Copyright (c) .NET Foundation and contributors. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
 using System.CommandLine;
 using System.CommandLine.Binding;
 using System.IO;
@@ -59,11 +62,11 @@ namespace MLS.Agent.Markdown
             var sourceFileArg = new Argument<RelativeFilePath>(
                                     result =>
                                     {
-                                        var filename = result.Arguments.SingleOrDefault();
+                                        var filename = result.Tokens.Select(t => t.Value).SingleOrDefault();
 
                                         if (filename == null)
                                         {
-                                            return ArgumentResult.Success<string>(null);
+                                            return ArgumentResult.Success(null);
                                         }
 
                                         if (RelativeFilePath.TryParse(filename, out var relativeFilePath))
@@ -90,7 +93,7 @@ namespace MLS.Agent.Markdown
         {
             var projectOptionArgument = new Argument<FileInfo>(result =>
                                         {
-                                            var projectPath = new RelativeFilePath(result.Arguments.Single());
+                                            var projectPath = new RelativeFilePath(result.Tokens.Select(t => t.Value).Single());
 
                                             if (directoryAccessor.FileExists(projectPath))
                                             {

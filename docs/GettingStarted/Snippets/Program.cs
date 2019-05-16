@@ -1,4 +1,7 @@
-﻿using System;
+// Copyright (c) .NET Foundation and contributors. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
 
 namespace Snippets
 {
@@ -11,6 +14,7 @@ namespace Snippets
             string project = null,
             string[] args = null)
         {
+#region Main
             switch (region)
             {
                 case "run":
@@ -27,6 +31,7 @@ namespace Snippets
                     break;
             }
         }
+#endregion
 
         public static void Run()
         {

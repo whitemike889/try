@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation and contributors. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -327,8 +330,9 @@ namespace WorkspaceServer.Servers.Roslyn
         {
             var dotnet = new Dotnet(directory);
 
+            var commandName = $@"""{entryPoint.FullName}""";
             var commandLineResult = await dotnet.Execute(
-                                        entryPoint.FullName.AppendArgs(commandLineArgs),
+                                        commandName.AppendArgs(commandLineArgs),
                                         budget);
 
             budget.RecordEntry(UserCodeCompleted);
@@ -372,7 +376,7 @@ namespace WorkspaceServer.Servers.Roslyn
             var dotnet = new Dotnet(package.Directory);
 
             var commandLineResult = await dotnet.VSTest(
-                                        $"--logger:trx {package.EntryPointAssemblyPath}",
+                                        $@"--logger:trx ""{package.EntryPointAssemblyPath}""",
                                         budget);
 
             budget.RecordEntry(UserCodeCompleted);

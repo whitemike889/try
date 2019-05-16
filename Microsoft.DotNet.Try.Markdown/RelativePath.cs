@@ -1,4 +1,7 @@
-﻿using System;
+// Copyright (c) .NET Foundation and contributors. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 
@@ -6,18 +9,15 @@ namespace Microsoft.DotNet.Try.Markdown
 {
     public abstract class RelativePath
     {
-        public static bool operator ==(RelativePath left, RelativePath right)
-        {
-            return Equals(left, right);
-        }
-
-        public static bool operator !=(RelativePath left, RelativePath right)
-        {
-            return !Equals(left, right);
-        }
+        private string _value;
 
         protected RelativePath(string value)
         {
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
             ThrowIfPathIsRooted(value);
         }
 
@@ -37,10 +37,11 @@ namespace Microsoft.DotNet.Try.Markdown
                    path.Substring(1).StartsWith(@":\");
         }
 
-        public string Value { get; protected set; }
-
-        public override int GetHashCode() =>
-            Value.GetHashCode();
+        public string Value
+        {
+            get => _value;
+            protected set => _value = value ?? throw new ArgumentNullException(nameof(value)) ;
+        }
 
         public override string ToString() => Value;
 
@@ -177,5 +178,15 @@ namespace Microsoft.DotNet.Try.Markdown
                 }
             }
         }
+
+        // public static bool operator ==(RelativePath left, RelativePath right)
+        // {
+        //     return Equals(left, right);
+        // }
+        //
+        // public static bool operator !=(RelativePath left, RelativePath right)
+        // {
+        //     return !Equals(left, right);
+        // }
     }
 }

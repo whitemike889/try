@@ -1,4 +1,7 @@
-﻿using System;
+// Copyright (c) .NET Foundation and contributors. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
 using System.CommandLine;
 using System.Linq;
 using System.Threading.Tasks;
@@ -36,7 +39,7 @@ namespace Microsoft.DotNet.Try.Markdown
             }
         }
 
-        public string Package { get; }
+        public virtual string Package { get; }
         public RelativeFilePath DestinationFile { get; }
         public string Region { get; }
         public string RunArgs { get; set; }

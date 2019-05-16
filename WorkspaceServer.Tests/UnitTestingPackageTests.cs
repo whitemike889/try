@@ -1,4 +1,7 @@
-﻿using System;
+// Copyright (c) .NET Foundation and contributors. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Clockwise;
@@ -27,7 +30,7 @@ namespace WorkspaceServer.Tests
 
         public void Dispose() => _disposables.Dispose();
 
-        [Fact]
+        [Fact(Skip = "CI machines can't install unsigned t-rex")]
         public async Task Run_executes_unit_tests_and_prints_test_results_to_output()
         {
             var (runner, workspaceBuild) = await GetRunnerAndWorkspace();
@@ -68,7 +71,7 @@ namespace MyUnitTestNamespace
             );
         }
 
-        [Fact]
+        [Fact(Skip = "CI machines can't install unsigned t-rex")]
         public async Task Subsequent_runs_update_test_output()
         {
             var (runner, workspace) = await GetRunnerAndWorkspace();
@@ -139,7 +142,7 @@ namespace MyUnitTestNamespace
             );
         }
 
-        [Fact]
+        [Fact(Skip = "CI machines can't install unsigned t-rex")]
         public async Task RunResult_does_not_show_exception_for_test_failures()
         {
             var (runner, workspace) = await GetRunnerAndWorkspace();

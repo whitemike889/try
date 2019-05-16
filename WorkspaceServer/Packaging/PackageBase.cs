@@ -1,4 +1,7 @@
-﻿using System;
+// Copyright (c) .NET Foundation and contributors. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
 using System.IO;
 using Clockwise;
 using System.Linq;
@@ -100,7 +103,7 @@ namespace WorkspaceServer.Packaging
                 var args = $"/bl:{FullBuildBinlogFileName}";
                 if (projectFile?.Exists == true)
                 {
-                    args = $"{projectFile.FullName} {args}";
+                    args = $@"""{projectFile.FullName}"" {args}";
                 }
 
                 operation.Info("Building package {name} in {directory}", Name, Directory);

@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation and contributors. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 using System;
 using System.CommandLine;
 using System.CommandLine.Builder;
@@ -5,10 +8,12 @@ using System.CommandLine.Invocation;
 using System.IO;
 using System.Threading.Tasks;
 using Clockwise;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.DotNet.Try.Jupyter;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MLS.Agent.Markdown;
+using MLS.Repositories;
 using WorkspaceServer;
 using CommandHandler = System.CommandLine.Invocation.CommandHandler;
 
@@ -40,25 +45,56 @@ namespace MLS.Agent.CommandLine
 
         public delegate Task<int> Verify(
             VerifyOptions options,
-            IConsole console);
+            IConsole console,
+            StartupOptions startupOptions);
 
         public delegate Task<int> Jupyter(
             JupyterOptions options,
             IConsole console,
             StartServer startServer = null,
             InvocationContext context = null);
-
+     
         public static Parser Create(
-            StartServer startServer,
-            Demo demo,
-            TryGitHub tryGithub,
-            Pack pack,
-            Install install,
-            Verify verify,
-            Jupyter jupyter,
+            StartServer startServer = null,
+            Demo demo = null,
+            TryGitHub tryGithub = null,
+            Pack pack = null,
+            Install install = null,
+            Verify verify = null,
+            Jupyter jupyter = null,
             IServiceCollection services = null)
         {
-            services = services ?? new ServiceCollection();
+            startServer = startServer ??
+                          ((options, invocationContext) =>
+                                  Program.ConstructWebHost(options).Run());
+
+            jupyter = jupyter ??
+                      JupyterCommand.Do;
+
+            demo = demo ??
+                   DemoCommand.Do;
+
+            tryGithub = tryGithub ??
+                        ((repo, console) =>
+                                GitHubHandler.Handler(repo,
+                                                      console,
+                                                      new GitHubRepoLocator()));
+
+            verify = verify ??
+                     ((verifyOptions, console, startupOptions) =>
+                             VerifyCommand.Do(verifyOptions,
+                                              console,
+                                              () => new FileSystemDirectoryAccessor(verifyOptions.Dir),
+                                              PackageRegistry.CreateForTryMode(verifyOptions.Dir),
+                                              startupOptions));
+
+            pack = pack ??
+                   PackCommand.Do;
+
+             install = install??
+              InstallCommand.Do;
+            services = services ??
+             new ServiceCollection();
 
             var rootCommand = StartInTryMode();
 
@@ -90,66 +126,67 @@ namespace MLS.Agent.CommandLine
                 {
                     Name = "dotnet-try",
                     Description = ".NET interactive documentation in your browser",
-                    Argument = new Argument<DirectoryInfo>(() => new DirectoryInfo(Directory.GetCurrentDirectory()))
+                    Argument = new Argument<DirectoryInfo>
                     {
+                        Arity = ArgumentArity.ZeroOrOne,
                         Name = nameof(StartupOptions.Dir).ToLower(),
-                        Description = "Specify the path to the root directory to run samples from"
+                        Description = "Specify the path to the root directory for your documentation"
                     }.ExistingOnly()
                 };
 
                 command.AddOption(new Option(
-                                     "--add-package-source",
-                                     "Specify an additional NuGet package source",
-                                     new Argument<DirectoryInfo>(new DirectoryInfo(Directory.GetCurrentDirectory()))
-                                     {
-                                         Name = "NuGet source"
-                                     }.ExistingOnly()));
+                                      "--add-package-source",
+                                      "Specify an additional NuGet package source",
+                                      new Argument<DirectoryInfo>(new DirectoryInfo(Directory.GetCurrentDirectory()))
+                                      {
+                                          Name = "NuGet source"
+                                      }.ExistingOnly()));
 
                 command.AddOption(new Option(
-                     "--package",
-                     "Specify a Try .NET package or path to a .csproj to run code samples with",
-                     new Argument<string>
-                     {
-                         Name = "name or .csproj"
-                     }));
+                                      "--package",
+                                      "Specify a Try .NET package or path to a .csproj to run code samples with",
+                                      new Argument<string>
+                                      {
+                                          Name = "name or .csproj"
+                                      }));
 
                 command.AddOption(new Option(
-                     "--package-version",
-                     "Specify a Try .NET package version to use with the --package option",
-                     new Argument<string>
-                     {
-                         Name = "version"
-                     }));
+                                      "--package-version",
+                                      "Specify a Try .NET package version to use with the --package option",
+                                      new Argument<string>
+                                      {
+                                          Name = "version"
+                                      }));
 
                 command.AddOption(new Option(
-                     "--uri",
-                     "Specify a URL to a markdown file",
-                     new Argument<Uri>()));
+                                      "--uri",
+                                      "Specify a URL or a relative path to a Markdown file",
+                                      new Argument<Uri>()));
 
                 command.AddOption(new Option(
-                    "--enable-preview-features",
-                    "Enable preview features",
-                    new Argument<bool>()));
+                                      "--enable-preview-features",
+                                      "Enable preview features",
+                                      new Argument<bool>()));
 
                 command.AddOption(new Option(
-                    "--log-path", 
-                    "Enable file logging to the specified directory",
-                    new Argument<DirectoryInfo>
-                    {
-                        Name = "dir"
-                    }));
+                                      "--log-path",
+                                      "Enable file logging to the specified directory",
+                                      new Argument<DirectoryInfo>
+                                      {
+                                          Name = "dir"
+                                      }));
 
                 command.AddOption(new Option(
-                    "--verbose", 
-                    "Enable verbose logging to the console",
-                    new Argument<bool>()));
+                                      "--verbose",
+                                      "Enable verbose logging to the console",
+                                      new Argument<bool>()));
 
                 command.Handler = CommandHandler.Create<InvocationContext, StartupOptions>((context, options) =>
                 {
                     services.AddSingleton(_ => PackageRegistry.CreateForTryMode(
                                               options.Dir,
                                               options.AddPackageSource));
-                 
+
                     startServer(options, context);
                 });
 
@@ -207,16 +244,16 @@ namespace MLS.Agent.CommandLine
 
             Command Demo()
             {
-                var demoCommand = new Command("demo", "Learn how to create Try .NET content with an interactive demo")
-                                  {
-                                      new Option("--output", "Where should the demo project be written to?")
-                                      {
-                                          Argument = new Argument<DirectoryInfo>(
-                                              defaultValue: () => new DirectoryInfo(Directory.GetCurrentDirectory()))
-                                      },
-                                      new Option("--enable-preview-features", "Enables preview features",
-                                          new Argument<bool>())
-            };
+                var demoCommand = new Command(
+                    "demo", 
+                    "Learn how to create Try .NET content with an interactive demo")
+                {
+                    new Option("--output", "Where should the demo project be written to?")
+                    {
+                        Argument = new Argument<DirectoryInfo>(
+                            defaultValue: () => new DirectoryInfo(Directory.GetCurrentDirectory()))
+                    }
+                };
 
                 demoCommand.Handler = CommandHandler.Create<DemoOptions, InvocationContext>((options, context) =>
                 {
@@ -322,9 +359,9 @@ namespace MLS.Agent.CommandLine
                     }.ExistingOnly()
                 };
 
-                verifyCommand.Handler = CommandHandler.Create<VerifyOptions, IConsole>((options, console) =>
+                verifyCommand.Handler = CommandHandler.Create<VerifyOptions, IConsole, StartupOptions>((options, console, startupOptions) =>
                 {
-                    return verify(options, console);
+                    return verify(options, console, startupOptions);
                 });
 
                 return verifyCommand;

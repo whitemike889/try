@@ -1,7 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
+<<<<<<< HEAD
 VisualStudioVersion = 16.0.28829.227
+=======
+VisualStudioVersion = 16.0.28803.352
+>>>>>>> 69e99ab394568fc5ffb5a176dc3f68a8ee634319
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MLS.Agent", "MLS.Agent\MLS.Agent.csproj", "{5D63B3BA-9C25-4F06-91F0-6B0E1091FCD3}"
 EndProject
@@ -40,7 +44,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MLS.Blazor", "MLS.Blazor\ML
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MLS.WasmCodeRunner", "WasmCodeRunner\MLS.WasmCodeRunner.csproj", "{9DAE862E-C8AE-452B-B27E-C6DEB1403E81}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MLS.WasmCodeRunnerTests", "WasmCodeRunnerTests\MLS.WasmCodeRunnerTests.csproj", "{AAEF5063-5D4C-4CA7-8E22-0DAE1ADBBCD1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MLS.WasmCodeRunner.Tests", "WasmCodeRunner.Tests\MLS.WasmCodeRunner.Tests.csproj", "{AAEF5063-5D4C-4CA7-8E22-0DAE1ADBBCD1}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{E4DF1F27-3AB3-4226-B2B4-D3AC9F17CA96}"
 EndProject
@@ -62,7 +66,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MLS.HumanizerRunner", "MLS.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Try.Client.Configuration.Tests", "Microsoft.DotNet.Try.Client.Configuration.Tests\Microsoft.DotNet.Try.Client.Configuration.Tests.csproj", "{3B47CFEF-504A-4055-9815-17A12E52B4DC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PackageToolTests", "PackageToolTests\PackageToolTests.csproj", "{E4B98584-F452-4D51-B5A3-B6B3D4C4D24B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PackageTool.Tests", "PackageTool.Tests\PackageTool.Tests.csproj", "{E4B98584-F452-4D51-B5A3-B6B3D4C4D24B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

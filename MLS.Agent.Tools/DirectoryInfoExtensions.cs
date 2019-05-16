@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation and contributors. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 using System;
 using System.IO;
 
@@ -43,6 +46,11 @@ namespace MLS.Agent.Tools
         public static DirectoryInfo Subdirectory(this DirectoryInfo directoryInfo, string path)
         {
             return new DirectoryInfo(Path.Combine(directoryInfo.FullName, path));
+        }
+
+        public static FileInfo File(this DirectoryInfo directoryInfo, string name)
+        {
+            return new FileInfo(Path.Combine(directoryInfo.FullName, name));
         }
 
         public static DirectoryInfo NormalizeEnding(this DirectoryInfo directoryInfo)

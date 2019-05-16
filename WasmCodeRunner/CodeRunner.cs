@@ -1,4 +1,7 @@
-﻿using System;
+// Copyright (c) .NET Foundation and contributors. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
 using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Builder;
@@ -43,74 +46,76 @@ namespace MLS.WasmCodeRunner
 
             var stdOut = new StringWriter();
             var stdError = new StringWriter();
-            var originalStdOut = Console.Out;
-            var originalStdError = Console.Error;
-            MethodInfo main;
-            try
+
+            using (var consoleState = new PreserveConsoleState())
             {
-                var assembly = Assembly.Load(bytes);
-
-                Console.SetOut(stdOut);
-                Console.SetError(stdError);
-
-                main = EntryPointDiscoverer.FindStaticEntryMethod(assembly);
-
-            }
-            catch (InvalidProgramException)
-            {
-                var result = new WasmCodeRunnerResponse(succeeded: false, exception: null,
-                    output: new[] { "error CS5001: Program does not contain a static 'Main' method suitable for an entry point" },
-                    diagnostics: Array.Empty<SerializableDiagnostic>(),
-                    runnerException: null);
-
-                return new InteropMessage<WasmCodeRunnerResponse>(sequence, result);
-            }
-
-            try
-            {
-                var args = runRequest.RunArgs;
-
-                var builder = new CommandLineBuilder()
-                    .ConfigureRootCommandFromMethod(main);
-
-                var parser = builder.Build();
-                parser.InvokeAsync(args).GetAwaiter().GetResult();
-            }
-            catch (Exception e)
-            {
-                if ((e.InnerException ?? e) is TypeLoadException t)
+                MethodInfo main;
+                try
                 {
-                    runnerException = $"Missing type `{t.TypeName}`";
+                    var assembly = Assembly.Load(bytes);
+
+                    Console.SetOut(stdOut);
+                    Console.SetError(stdError);
+
+                    main = EntryPointDiscoverer.FindStaticEntryMethod(assembly);
+
                 }
-                if ((e.InnerException ?? e) is MissingMethodException m)
+                catch (InvalidProgramException)
                 {
-                    runnerException = $"Missing method `{m.Message}`";
-                }
-                if ((e.InnerException ?? e) is FileNotFoundException f)
-                {
-                    runnerException = $"Missing file: `{f.FileName}`";
+                    var result = new WasmCodeRunnerResponse(succeeded: false, exception: null,
+                        output: new[] { "error CS5001: Program does not contain a static 'Main' method suitable for an entry point" },
+                        diagnostics: Array.Empty<SerializableDiagnostic>(),
+                        runnerException: null);
+
+                    return new InteropMessage<WasmCodeRunnerResponse>(sequence, result);
                 }
 
-                output.AddRange(SplitOnNewlines(e.ToString()));
+                try
+                {
+                    var args = runRequest.RunArgs;
+
+                    var builder = new CommandLineBuilder()
+                        .ConfigureRootCommandFromMethod(main);
+
+                    var parser = builder.Build();
+                    parser.InvokeAsync(args).GetAwaiter().GetResult();
+                }
+                catch (Exception e)
+                {
+                    if ((e.InnerException ?? e) is TypeLoadException t)
+                    {
+                        runnerException = $"Missing type `{t.TypeName}`";
+                    }
+                    if ((e.InnerException ?? e) is MissingMethodException m)
+                    {
+                        runnerException = $"Missing method `{m.Message}`";
+                    }
+                    if ((e.InnerException ?? e) is FileNotFoundException f)
+                    {
+                        runnerException = $"Missing file: `{f.FileName}`";
+                    }
+
+                    output.AddRange(SplitOnNewlines(e.ToString()));
+                }
+
+                var errors = stdError.ToString();
+                if (!string.IsNullOrWhiteSpace(errors))
+                {
+                    runnerException = errors;
+                    output.AddRange(SplitOnNewlines(errors));
+                }
+
+                output.AddRange(SplitOnNewlines(stdOut.ToString()));
+
+                var rb = new WasmCodeRunnerResponse(
+                    succeeded: true,
+                    exception: null,
+                    output: output.ToArray(),
+                    diagnostics: null,
+                    runnerException: runnerException);
+
+                return new InteropMessage<WasmCodeRunnerResponse>(sequence, rb);
             }
-
-            var errors = stdError.ToString();
-            if (!string.IsNullOrWhiteSpace(errors))
-            {
-                runnerException = errors;
-                output.AddRange(SplitOnNewlines(errors));
-            }
-
-            output.AddRange(SplitOnNewlines(stdOut.ToString()));
-
-            var rb = new WasmCodeRunnerResponse(
-                succeeded: true,
-                exception: null,
-                output: output.ToArray(),
-                diagnostics: null,
-                runnerException: runnerException);
-
-            return new InteropMessage<WasmCodeRunnerResponse>(sequence, rb);
         }
 
         private static IEnumerable<string> SplitOnNewlines(string str)

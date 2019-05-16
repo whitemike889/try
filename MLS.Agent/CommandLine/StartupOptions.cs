@@ -1,4 +1,9 @@
+// Copyright (c) .NET Foundation and contributors. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 using System;
+using System.CommandLine;
+using System.CommandLine.Invocation;
 using System.IO;
 using Microsoft.DotNet.Try.Markdown;
 
@@ -6,6 +11,21 @@ namespace MLS.Agent.CommandLine
 {
     public class StartupOptions : IDefaultCodeBlockAnnotations
     {
+        private readonly ParseResult _parseResult;
+
+        public static StartupOptions FromCommandLine(string commandLine)
+        {
+            StartupOptions startupOptions = null;
+
+            CommandLineParser.Create(startServer: (options, context) =>
+                                    {
+                                        startupOptions = options;
+                                    })
+                                    .InvokeAsync(commandLine);
+
+            return startupOptions;
+        }
+
         public StartupOptions(
             bool production = false,
             bool languageService = false,
@@ -20,8 +40,10 @@ namespace MLS.Agent.CommandLine
             bool verbose = false,
             bool enablePreviewFeatures = false,
             string package = null,
-            string packageVersion = null)
+            string packageVersion = null,
+            ParseResult parseResult = null)
         {
+            _parseResult = parseResult;
             LogPath = logPath;
             Verbose = verbose;
             Id = id;
@@ -30,7 +52,7 @@ namespace MLS.Agent.CommandLine
             Key = key;
             ApplicationInsightsKey = applicationInsightsKey;
             RegionId = regionId;
-            Dir = dir;
+            Dir = dir ?? new DirectoryInfo(Directory.GetCurrentDirectory());
             AddPackageSource = addPackageSource;
             Uri = uri;
             EnablePreviewFeatures = enablePreviewFeatures;
@@ -43,15 +65,25 @@ namespace MLS.Agent.CommandLine
         public string RegionId { get; }
         public DirectoryInfo Dir { get; }
         public DirectoryInfo AddPackageSource { get; }
-        public Uri Uri { get; }
+        public Uri Uri { get; set; }
         public bool Production { get; }
         public bool IsLanguageService { get; set; }
         public string Key { get; }
         public string ApplicationInsightsKey { get; }
 
-        public StartupMode Mode => Dir == null
-                                       ? StartupMode.Hosted
-                                       : StartupMode.Try; 
+        public StartupMode Mode
+        {
+            get
+            {
+                switch (_parseResult?.CommandResult?.Name)
+                {
+                    case "hosted":
+                        return StartupMode.Hosted;
+                    default:
+                        return StartupMode.Try;
+                }
+            }
+        }
 
         public string EnvironmentName =>
             Production || Mode != StartupMode.Hosted

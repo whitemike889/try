@@ -1,4 +1,7 @@
-﻿using Microsoft.CodeAnalysis;
+// Copyright (c) .NET Foundation and contributors. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using Microsoft.CodeAnalysis;
 using System.Collections.Generic;
 using System.Linq;
 using DiagnosticSeverity = Microsoft.CodeAnalysis.DiagnosticSeverity;

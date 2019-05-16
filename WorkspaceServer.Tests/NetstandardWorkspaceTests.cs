@@ -1,4 +1,7 @@
-﻿using System;
+// Copyright (c) .NET Foundation and contributors. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -49,6 +52,28 @@ namespace WorkspaceServer.Tests
             {
                 Succeeded = false,
                 Output = new[] { "(1,19): error CS0103: The name \'banana\' does not exist in the current context" },
+                Exception = (string)null, // we already display the error in Output
+            }, config => config.ExcludingMissingMembers());
+        }
+
+
+        [Fact]
+        public async Task Compile_with_active_buffer_id_includes_diagnostics_on_edge_of_region()
+        {
+            var (server, build) = await GetRunnerAndWorkspace();
+
+            var workspace = new Workspace(
+                workspaceType: build.Name,
+                files: new[] { new File("Program.cs", "using System;\r\nusing System.Collections.Generic;\r\nusing System.Linq;\r\nnamespace MyCodeSample\r\n{\r\npublic class Program\r\n {\r\n public static void Main()\r\n {\r\n #region code\r\n #endregion\r\n }\r\n }\r\n}") },
+                buffers: new[] { new Buffer("Program.cs@code", @"var x = 3", 0) });
+
+
+            var result = await server.Compile(new WorkspaceRequest(workspace, activeBufferId: "Program.cs@code"));
+
+            result.Should().BeEquivalentTo(new
+            {
+                Succeeded = false,
+                Output = new[] { "(1,1): error CS1002: ; expected" },
                 Exception = (string)null, // we already display the error in Output
             }, config => config.ExcludingMissingMembers());
         }

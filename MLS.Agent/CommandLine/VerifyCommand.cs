@@ -1,4 +1,7 @@
-﻿using System;
+// Copyright (c) .NET Foundation and contributors. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
 using System.Collections.Generic;
 using System.CommandLine;
 using System.Linq;
@@ -27,14 +30,14 @@ namespace MLS.Agent.CommandLine
                 directoryAccessor,
                 packageRegistry,
                 startupOptions);
-            var returnCode = 0;
+            var errorCount = 0;
             var workspaceServer = new Lazy<RoslynWorkspaceServer>(() => new RoslynWorkspaceServer(packageRegistry));
 
             var markdownFiles = markdownProject.GetAllMarkdownFiles().ToArray();
 
             if (markdownFiles.Length == 0)
             {
-                console.Error.Write($"No markdown files found under {options.Dir}");
+                console.Error.Write($"No markdown files found under {directoryAccessor.GetFullyQualifiedRoot()}");
                 return -1;
             }
 
@@ -70,31 +73,69 @@ namespace MLS.Agent.CommandLine
                     if (!session.Any(block => block.Diagnostics.Any()))
                     {
                         var (buffersToInclude, filesToInclude) = await markdownFile.GetIncludes(markdownFileDirectoryAccessor);
-                        await ReportCompileResults(session, markdownFile, filesToInclude, buffersToInclude, markdownFileDirectoryAccessor);
+
+                        await ReportCompileResults(
+                            session,
+                            markdownFile,
+                            filesToInclude,
+                            buffersToInclude,
+                            markdownFileDirectoryAccessor);
                     }
 
                     Console.ResetColor();
                 }
             }
 
-            return returnCode;
-
-            void SetError()
+            if (errorCount > 0)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                returnCode = 1;
+                SetError(false);
+            }
+            else
+            {
+                SetOk();
             }
 
-            async Task ReportCompileResults(IGrouping<string, AnnotatedCodeBlock> session, MarkdownFile markdownFile, Dictionary<string, File[]> filesToInclude,
-                IReadOnlyDictionary<string, Buffer[]> buffersToInclude, IDirectoryAccessor accessor)
-            {
-                console.Out.WriteLine($"\n  Compiling samples for session \"{session.Key}\"\n");
+            console.Out.WriteLine($"\n\ndotnet try verify found {errorCount} error(s)");
 
-                var editableCodeBlocks = session.Where(b => b.Annotations.Editable).ToList();
+            Console.ResetColor();
+
+            return errorCount == 0
+                       ? 0
+                       : 1;
+
+            void SetError(bool incrementCount = true)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+
+                if (incrementCount)
+                {
+                    errorCount++;
+                }
+            }
+
+            void SetOk()
+            {
+                Console.ForegroundColor = ConsoleColor.Green;
+            }
+
+            async Task ReportCompileResults(
+                IGrouping<string, AnnotatedCodeBlock> session,
+                MarkdownFile markdownFile,
+                Dictionary<string, File[]> filesToInclude,
+                IReadOnlyDictionary<string, Buffer[]> buffersToInclude,
+                IDirectoryAccessor accessor)
+            {
+                var description = session.Count() == 1 || string.IsNullOrWhiteSpace(session.Key)
+                                      ? $"region \"{session.Select(s => s.Annotations.Region).Distinct().First()}\""
+                                      : $"session \"{session.Key}\"";
+
+                console.Out.WriteLine($"\n  Compiling samples for {description}\n");
 
                 var projectOrPackageName = session
-                    .Select(b => b.ProjectOrPackageName())
-                    .FirstOrDefault(name => !string.IsNullOrWhiteSpace(name));
+                                           .Select(b => b.ProjectOrPackageName())
+                                           .FirstOrDefault(name => !string.IsNullOrWhiteSpace(name));
+
+                var editableCodeBlocks = session.Where(b => b.Annotations.Editable).ToList();
 
                 var buffers = editableCodeBlocks
                               .Select(block => block.GetBufferAsync(accessor, markdownFile))
@@ -158,14 +199,14 @@ namespace MLS.Agent.CommandLine
 
                     if (result.Succeeded)
                     {
-                        Console.ForegroundColor = ConsoleColor.Green;
-                        console.Out.WriteLine($"    {symbol}  No errors found within samples for session \"{session.Key}\"");
+                        SetOk();
+                        console.Out.WriteLine($"    {symbol}  No errors found within samples for {description}");
                     }
                     else
                     {
                         SetError();
 
-                        console.Out.WriteLine($"    {symbol}  Errors found within samples for session \"{session.Key}\"");
+                        console.Out.WriteLine($"    {symbol}  Errors found within samples for {description}");
 
                         foreach (var diagnostic in result.GetFeature<Diagnostics>())
                         {
@@ -175,7 +216,9 @@ namespace MLS.Agent.CommandLine
                 }
             }
 
-            void ReportCodeLinkageResults(AnnotatedCodeBlock codeLinkBlock, IDirectoryAccessor accessor)
+            void ReportCodeLinkageResults(
+                AnnotatedCodeBlock codeLinkBlock, 
+                IDirectoryAccessor accessor)
             {
                 var diagnostics = codeLinkBlock.Diagnostics.ToArray();
 
@@ -195,7 +238,7 @@ namespace MLS.Agent.CommandLine
                 var blockOptions = (LocalCodeBlockAnnotations)codeLinkBlock.Annotations;
 
                 var file = blockOptions?.SourceFile ?? blockOptions?.DestinationFile;
-                var sourceFile =
+                var fullyQualifiedPath =
                     file != null
                         ? accessor.GetFullyQualifiedPath(file).FullName
                         : "UNKNOWN";
@@ -206,7 +249,7 @@ namespace MLS.Agent.CommandLine
                                  ? "X"
                                  : "✓";
 
-                console.Out.WriteLine($"    {symbol}  Line {codeLinkBlock.Line + 1}:\t{sourceFile} (in project {project})");
+                console.Out.WriteLine($"    {symbol}  Line {codeLinkBlock.Line + 1}:\t{fullyQualifiedPath} (in project {project})");
 
                 foreach (var diagnostic in diagnostics)
                 {

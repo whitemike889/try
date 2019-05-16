@@ -1,16 +1,17 @@
+// Copyright (c) .NET Foundation and contributors. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 using System.IO;
 
 namespace MLS.Agent.CommandLine
 {
     public class DemoOptions
     {
-        public DemoOptions(DirectoryInfo output, bool enablePreviewFeatures = false)
+        public DemoOptions(DirectoryInfo output)
         {
             Output = output;
-            EnablePreviewFeatures = enablePreviewFeatures;
         }
 
-        public DirectoryInfo Output { get;  }
-        public bool EnablePreviewFeatures { get; set; }
+        public DirectoryInfo Output { get; }
     }
 }

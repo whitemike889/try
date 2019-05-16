@@ -1,4 +1,7 @@
-﻿using System;
+// Copyright (c) .NET Foundation and contributors. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -156,7 +159,7 @@ namespace WorkspaceServer.Transformations
                 {
                     var lineText = line.ToString();
                     var startCharacter = diagnostic.Location.GetMappedLineSpan().Span.Start.Character;
-                    if (startCharacter < lineText.Length)
+                    if (startCharacter <= lineText.Length)
                     {
                         var partToFind = lineText.Substring(startCharacter);
                         var charOffset = sourceText.Lines[lineOffset].ToString().IndexOf(partToFind, StringComparison.Ordinal);

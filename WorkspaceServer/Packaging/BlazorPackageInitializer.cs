@@ -1,4 +1,7 @@
-﻿using System;
+// Copyright (c) .NET Foundation and contributors. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -53,7 +56,7 @@ namespace WorkspaceServer.Packaging
                 await dotnet.AddPackage(packageId);
             }
 
-            await dotnet.AddPackage("System.CommandLine.Experimental", "0.2.0-alpha.19176.2");
+            await dotnet.AddPackage("System.CommandLine.Experimental", "0.2.0-alpha.19261.1");
 
             var result = await dotnet.Build("-o runtime /bl", budget: budget);
             var stuff = string.Concat(string.Join("\n", result.Output), (string.Join("\n", result.Error)));
@@ -76,7 +79,7 @@ namespace WorkspaceServer.Packaging
         {
             var wwwRootFiles = new[] { "index.html", "interop.js" };
             var pagesFiles = new[] { "Index.cshtml", "Index.cshtml.cs" };
-            var rootFiles = new[] { "Program.cs", "Startup.cs", "Linker.xml", "CodeRunner.cs", "InteropMessage.cs", "SerializableDiagnostic.cs", "WasmCodeRunnerRequest.cs", "WasmCodeRunnerResponse.cs", "CommandLineBuilderExtensions.cs", "EntryPointDiscoverer.cs" };
+            var rootFiles = new[] { "Program.cs", "Startup.cs", "Linker.xml", "CodeRunner.cs", "InteropMessage.cs", "SerializableDiagnostic.cs", "WasmCodeRunnerRequest.cs", "WasmCodeRunnerResponse.cs", "CommandLineBuilderExtensions.cs", "EntryPointDiscoverer.cs", "PreserveConsoleState.cs" };
 
             WriteResourcesToLocation(wwwRootFiles, Path.Combine(root, "wwwroot"));
             WriteResourcesToLocation(pagesFiles, Path.Combine(root, "Pages"));

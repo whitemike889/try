@@ -1,9 +1,13 @@
-﻿using System;
+// Copyright (c) .NET Foundation and contributors. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
 using System.CommandLine;
 using System.IO;
 using System.Threading.Tasks;
 using FluentAssertions;
 using MLS.Agent.CommandLine;
+using MLS.Agent.Tools;
 using WorkspaceServer;
 using WorkspaceServer.Tests;
 using Xunit;
@@ -26,15 +30,44 @@ namespace MLS.Agent.Tests.CommandLine
             var console = new TestConsole();
 
             var outputDirectory = Create.EmptyWorkspace().Directory;
-            var packageFile = Path.Combine(outputDirectory.FullName, "Snippets", "Snippets.csproj");
-            await DemoCommand.Do(new DemoOptions(outputDirectory), console);
+            var packageFile = outputDirectory.Subdirectory("Snippets")
+                                             .File("Snippets.csproj");
+
+            await DemoCommand.Do(new DemoOptions(output: outputDirectory), console);
 
             var resultCode = await VerifyCommand.Do(
-                                 new VerifyOptions(outputDirectory),
+                                 new VerifyOptions(dir: outputDirectory),
                                  console,
                                  () => new FileSystemDirectoryAccessor(outputDirectory),
                                  new PackageRegistry(),
-                                 new StartupOptions(package: packageFile));
+                                 startupOptions: new StartupOptions(package: packageFile.FullName));
+
+            _output.WriteLine(console.Out.ToString());
+            _output.WriteLine(console.Error.ToString());
+
+            resultCode.Should().Be(0);
+        }
+
+        [Fact(Skip = "wip")]
+        public async Task Demo_sources_pass_verification()
+        {
+            var console = new TestConsole();
+
+            var demoSourcesDir = new DirectoryInfo(@"c:\dev\agent\docs\gettingstarted");
+            var packageFile = demoSourcesDir.Subdirectory("Snippets")
+                                            .File("Snippets.csproj");
+
+            _output.WriteLine(demoSourcesDir.FullName);
+            _output.WriteLine(packageFile.FullName);
+
+            await DemoCommand.Do(new DemoOptions(output: demoSourcesDir), console);
+
+            var resultCode = await VerifyCommand.Do(
+                                 new VerifyOptions(dir: demoSourcesDir),
+                                 console,
+                                 () => new FileSystemDirectoryAccessor(demoSourcesDir),
+                                 new PackageRegistry(),
+                                 new StartupOptions(package: packageFile.FullName));
 
             _output.WriteLine(console.Out.ToString());
             _output.WriteLine(console.Error.ToString());
@@ -53,7 +86,7 @@ namespace MLS.Agent.Tests.CommandLine
                     Guid.NewGuid().ToString("N")));
 
             await DemoCommand.Do(
-                new DemoOptions(outputDirectory),
+                new DemoOptions(output: outputDirectory),
                 console,
                 startServer: (options, context) => { });
 
@@ -72,12 +105,12 @@ namespace MLS.Agent.Tests.CommandLine
             File.WriteAllText(Path.Combine(outputDirectory.FullName, "a file.txt"), "");
 
             await DemoCommand.Do(
-                new DemoOptions(outputDirectory),
+                new DemoOptions(output: outputDirectory),
                 console,
                 startServer: (options, context) => { });
 
             var resultCode = await VerifyCommand.Do(
-                                 new VerifyOptions(outputDirectory),
+                                 new VerifyOptions(dir: outputDirectory),
                                  console,
                                  () => new FileSystemDirectoryAccessor(outputDirectory),
                                  new PackageRegistry());
@@ -94,12 +127,12 @@ namespace MLS.Agent.Tests.CommandLine
 
             StartupOptions startupOptions = null;
             await DemoCommand.Do(
-                new DemoOptions(outputDirectory),
+                new DemoOptions(output: outputDirectory),
                 console,
                 (options, context) => startupOptions = options);
 
             await VerifyCommand.Do(
-                new VerifyOptions(outputDirectory),
+                new VerifyOptions(dir: outputDirectory),
                 console,
                 () => new FileSystemDirectoryAccessor(outputDirectory),
                 new PackageRegistry());

@@ -1,4 +1,7 @@
-﻿using Microsoft.ApplicationInsights;
+// Copyright (c) .NET Foundation and contributors. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,13 +12,13 @@ using Pocket.For.ApplicationInsights;
 using Recipes;
 using Serilog.Sinks.RollingFileAlternate;
 using System;
+using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.IO;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.DotNet.Try.Jupyter;
-using MLS.Agent.Markdown;
 using WorkspaceServer.Servers.Roslyn;
 using static Pocket.Logger<MLS.Agent.Program>;
 using SerilogLoggerConfiguration = Serilog.LoggerConfiguration;
@@ -30,25 +33,7 @@ namespace MLS.Agent
 
         public static async Task<int> Main(string[] args)
         {
-            var parser = CommandLineParser.Create(
-                startServer: (options, invocationContext) =>
-                    ConstructWebHost(options).Run(),
-                demo: DemoCommand.Do,
-                tryGithub: (repo, console) =>
-                    GitHubHandler.Handler(repo,
-                                          console,
-                                          new GitHubRepoLocator()),
-                pack: PackCommand.Do,
-                install: InstallCommand.Do,
-                verify: (options, console) =>
-                    VerifyCommand.Do(options,
-                                     console,
-                                     () => new FileSystemDirectoryAccessor(options.Dir),
-                                     PackageRegistry.CreateForTryMode(options.Dir)),
-                jupyter:  JupyterCommand.Do,
-                _serviceCollection);
-
-            return await parser.InvokeAsync(args);
+            return await CommandLineParser.Create().InvokeAsync(args);
         }
 
         public static X509Certificate2 ParseKey(string base64EncodedKey)

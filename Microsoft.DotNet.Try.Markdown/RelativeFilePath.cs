@@ -1,4 +1,7 @@
-﻿using System;
+// Copyright (c) .NET Foundation and contributors. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
 using System.IO;
 
 namespace Microsoft.DotNet.Try.Markdown
@@ -99,5 +102,7 @@ namespace Microsoft.DotNet.Try.Markdown
 
             return Equals((RelativeFilePath) obj);
         }
+
+        public override int GetHashCode() => Value.GetHashCode();
     }
 }

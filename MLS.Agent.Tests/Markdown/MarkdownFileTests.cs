@@ -1,4 +1,7 @@
-﻿using System.IO;
+// Copyright (c) .NET Foundation and contributors. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System.IO;
 using FluentAssertions;
 using System.Linq;
 using System.Threading.Tasks;
@@ -405,7 +408,7 @@ This is the end of the file"));
             public async Task Non_editable_code_inserts_code_present_in_markdown()
             {
                 var html = await RenderHtml(("readme.md", @"
-```cs --editable false
+```cs --editable false --package console
 //some code to include
 ```
                         "));
