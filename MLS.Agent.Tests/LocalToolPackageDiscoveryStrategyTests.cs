@@ -35,7 +35,7 @@ namespace MLS.Agent.Tests
                 result.ExitCode.Should().Be(0);
 
                 var strategy = new LocalToolInstallingPackageDiscoveryStrategy(temp);
-                var tool = await strategy.Find<IPackage>(new PackageDescriptor("console"));
+                var tool = await strategy.Locate(new PackageDescriptor("console"));
                 tool.Should().NotBeNull();
             }
         }
@@ -48,7 +48,7 @@ namespace MLS.Agent.Tests
                 var temp = directory.Directory;
                 var strategy = new LocalToolInstallingPackageDiscoveryStrategy(temp);
 
-                strategy.Invoking(s => s.Find<IPackage>(new PackageDescriptor("not-a-workspace")).Wait()).Should().NotThrow();
+                strategy.Invoking(s => s.Locate(new PackageDescriptor("not-a-workspace")).Wait()).Should().NotThrow();
             }
         }
 
@@ -59,7 +59,7 @@ namespace MLS.Agent.Tests
             var asset = await LocalToolHelpers.CreateTool(console);
 
             var strategy = new LocalToolInstallingPackageDiscoveryStrategy(asset, asset);
-            var package = await strategy.Find<IPackage>(new PackageDescriptor("blazor-console"));
+            var package = await strategy.Locate(new PackageDescriptor("blazor-console"));
             package.Should().NotBeNull();
         }
     }

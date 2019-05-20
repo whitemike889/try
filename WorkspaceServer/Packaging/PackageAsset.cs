@@ -18,14 +18,10 @@ namespace WorkspaceServer.Packaging
 
     public class ProjectAsset : PackageAsset
     {
-        private readonly RebuildablePackage internalPackage;
 
         public ProjectAsset(IDirectoryAccessor directoryAccessor) : base(directoryAccessor)
         {
-            internalPackage = new RebuildablePackage(directory: DirectoryAccessor.GetFullyQualifiedRoot());
         }
-
-        public FileInfo EntryPoint => internalPackage.EntryPointAssemblyPath;
     }
 
     public class WebAssemblyAsset : PackageAsset

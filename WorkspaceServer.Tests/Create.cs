@@ -73,8 +73,8 @@ namespace WorkspaceServer.Tests
             var destination = Package.DefaultPackagesDirectory;
             await InstallCommand.Do(new InstallOptions(addSource, packageName, destination), new TestConsole());
 
-            var strategy = new LocalToolInstallingPackageDiscoveryStrategy(destination);
-            return await strategy.Find<IPackage>(new PackageDescriptor(packageName));
+            var strategy = new WebAssemblyAssetFinder(destination);
+            return await strategy.Find<IPackage>(packageName);
         }
 
         public static string SimpleWorkspaceRequestAsJson(

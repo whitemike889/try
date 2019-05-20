@@ -22,7 +22,7 @@ namespace WorkspaceServer.Packaging
             _baseDirectory = baseDirectory ?? Package.DefaultPackagesDirectory;
         }
 
-        public async Task<IPackage> LocatePackageAsync(string name, Budget budget)
+        public async Task<Package> LocatePackageAsync(string name, Budget budget)
         {
             var candidateTool = new PackageTool(name, _baseDirectory);
             if (!candidateTool.Exists)
@@ -37,30 +37,13 @@ namespace WorkspaceServer.Packaging
                 return null;
             }
 
-            var projectAsset = new ProjectAsset(new FileSystemDirectoryAccessor(assetDirectory));
-            var wasmAsset = await candidateTool.LocateWasmAsset();
-
-            var p2 = new Package2(new PackageDescriptor(name), new FileSystemDirectoryAccessor(assetDirectory.Parent));
-            p2.Add(projectAsset);
-            if(wasmAsset != null)
-            {
-                p2.Add(wasmAsset);
-            }
-
-
-            return p2;
+            return new NonrebuildablePackage(name, directory: assetDirectory);
         }
 
         public async Task<DirectoryInfo> PrepareToolAndLocateAssetDirectory(PackageTool tool)
         {
             await tool.Prepare();
-            var directory = await tool.LocateBuildAsset();
-            if (directory == null || !directory.Exists)
-            {
-                return null;
-            }
-
-            return directory;
+            return await tool.LocateBuildAsset();
         }
     }
 }

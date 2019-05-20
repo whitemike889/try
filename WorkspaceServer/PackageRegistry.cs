@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Clockwise;
+using Microsoft.CodeAnalysis.Operations;
 using WorkspaceServer.Packaging;
 
 namespace WorkspaceServer
@@ -137,7 +138,8 @@ namespace WorkspaceServer
         {
             var registry = new PackageRegistry(
                 true, 
-                addSource);
+                addSource,
+                additionalStrategies: new LocalToolInstallingPackageDiscoveryStrategy(Package.DefaultPackagesDirectory, addSource));
 
             registry.Add(project.Name, builder =>
             {
@@ -151,7 +153,8 @@ namespace WorkspaceServer
         public static PackageRegistry CreateForHostedMode()
         {
             var registry = new PackageRegistry(
-                false);
+                false,
+                additionalStrategies: new LocalToolInstallingPackageDiscoveryStrategy(Package.DefaultPackagesDirectory));
 
             registry.Add("console",
                          packageBuilder =>
@@ -236,7 +239,7 @@ namespace WorkspaceServer
         {
             yield return new PackageNameIsFullyQualifiedPath();
             yield return new FindPackageInDefaultLocation(new FileSystemDirectoryAccessor(Package.DefaultPackagesDirectory));
-            yield return new LocalToolInstallingPackageDiscoveryStrategy(Package.DefaultPackagesDirectory, addSource);
+            //yield return new LocalToolInstallingPackageDiscoveryStrategy(Package.DefaultPackagesDirectory, addSource);
         }
 
         Task<T> IPackageFinder.Find<T>(PackageDescriptor descriptor)

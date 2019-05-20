@@ -9,7 +9,7 @@ using Pocket;
 
 namespace WorkspaceServer.Packaging
 {
-    public class LocalToolInstallingPackageDiscoveryStrategy : IPackageFinder
+    public class LocalToolInstallingPackageDiscoveryStrategy : IPackageDiscoveryStrategy
     {
         private readonly DirectoryInfo _workingDirectory;
         private readonly ToolPackageLocator _locator;
@@ -22,7 +22,18 @@ namespace WorkspaceServer.Packaging
             _addSource = addSource;
         }
 
-        private async Task<IPackage> TryInstallAndLocateTool(PackageDescriptor packageDesciptor, Budget budget)
+        public async Task<PackageBuilder> Locate(PackageDescriptor packageDesciptor, Budget budget = null)
+        {
+            var locatedPackage = await _locator.LocatePackageAsync(packageDesciptor.Name, budget);
+            if (locatedPackage != null)
+            {
+                return CreatePackageBuilder(packageDesciptor, locatedPackage);
+            }
+
+            return await TryInstallAndLocateTool(packageDesciptor, budget);
+        }
+
+        private async Task<PackageBuilder> TryInstallAndLocateTool(PackageDescriptor packageDesciptor, Budget budget)
         {
             var dotnet = new Dotnet();
 
@@ -40,18 +51,19 @@ namespace WorkspaceServer.Packaging
 
             var tool = await _locator.LocatePackageAsync(packageDesciptor.Name, budget);
 
-            return tool;
-        }
-
-        public async Task<T> Find<T>(PackageDescriptor descriptor) where T : class, IPackage
-        {
-            var locatedPackage = await _locator.LocatePackageAsync(descriptor.Name, new Budget());
-            if (locatedPackage != null)
+            if (tool != null)
             {
-                return locatedPackage as T;
+                return CreatePackageBuilder(packageDesciptor, tool);
             }
 
-            return (await TryInstallAndLocateTool(descriptor, new Budget())) as T;
+            return null;
+        }
+
+        private PackageBuilder CreatePackageBuilder(PackageDescriptor packageDesciptor, Package locatedPackage)
+        {
+            var pb = new PackageBuilder(packageDesciptor.Name);
+            pb.Directory = locatedPackage.Directory;
+            return pb;
         }
     }
 }
