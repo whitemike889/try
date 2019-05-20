@@ -47,16 +47,16 @@ namespace WorkspaceServer.Packaging
 
             return null;
         }
-        async Task<IPackage> IPackageFinder.Find<IPackage>(PackageDescriptor descriptor)
+        async Task<IMightSupportBlazor> IPackageFinder.Find<IMightSupportBlazor>(PackageDescriptor descriptor)
         {
             var candidate = new PackageTool(descriptor.Name, _workingDirectory);
             if (candidate.Exists)
             {
                 var package =  await CreatePackage(descriptor, candidate);
-                return (IPackage)package;
+                return (IMightSupportBlazor)package;
             }
 
-            return (IPackage)(await TryInstallAndLocateTool(descriptor));
+            return (IMightSupportBlazor)(await TryInstallAndLocateTool(descriptor));
         }
 
         private async Task<IPackage> CreatePackage(PackageDescriptor descriptor, PackageTool tool)

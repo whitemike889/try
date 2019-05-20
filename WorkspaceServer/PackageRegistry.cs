@@ -239,6 +239,7 @@ namespace WorkspaceServer
         {
             yield return new PackageNameIsFullyQualifiedPath();
             yield return new FindPackageInDefaultLocation(new FileSystemDirectoryAccessor(Package.DefaultPackagesDirectory));
+            yield return new WebAssemblyAssetFinder(Package.DefaultPackagesDirectory, addSource);
             //yield return new LocalToolInstallingPackageDiscoveryStrategy(Package.DefaultPackagesDirectory, addSource);
         }
 
