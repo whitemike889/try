@@ -23,6 +23,23 @@ namespace WorkspaceServer.Packaging
             _addSource = addSource;
         }
 
+        async Task<IMightSupportBlazor> IPackageFinder.Find<IMightSupportBlazor>(PackageDescriptor descriptor)
+        {
+            if (descriptor.IsPathSpecified)
+            {
+                return null;
+            }
+
+            var candidate = new PackageTool(descriptor.Name, _workingDirectory);
+            if (candidate.Exists)
+            {
+                var package = await CreatePackage(descriptor, candidate);
+                return (IMightSupportBlazor)package;
+            }
+
+            return (IMightSupportBlazor)(await TryInstallAndLocateTool(descriptor));
+        }
+
         private async Task<IPackage> TryInstallAndLocateTool(PackageDescriptor packageDesciptor)
         {
             var dotnet = new Dotnet();
@@ -46,17 +63,6 @@ namespace WorkspaceServer.Packaging
             }
 
             return null;
-        }
-        async Task<IMightSupportBlazor> IPackageFinder.Find<IMightSupportBlazor>(PackageDescriptor descriptor)
-        {
-            var candidate = new PackageTool(descriptor.Name, _workingDirectory);
-            if (candidate.Exists)
-            {
-                var package =  await CreatePackage(descriptor, candidate);
-                return (IMightSupportBlazor)package;
-            }
-
-            return (IMightSupportBlazor)(await TryInstallAndLocateTool(descriptor));
         }
 
         private async Task<IPackage> CreatePackage(PackageDescriptor descriptor, PackageTool tool)
