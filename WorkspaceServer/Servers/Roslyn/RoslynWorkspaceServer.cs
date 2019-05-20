@@ -25,7 +25,6 @@ using Workspace = Microsoft.DotNet.Try.Protocol.Workspace;
 using WorkspaceServer.LanguageServices;
 using WorkspaceServer.Packaging;
 using Package = WorkspaceServer.Packaging.Package;
-using System.Runtime.InteropServices;
 
 namespace WorkspaceServer.Servers.Roslyn
 {
@@ -56,9 +55,9 @@ namespace WorkspaceServer.Servers.Roslyn
             var sourceFiles = processed.GetSourceFiles();
 
             var (_, documents) = await package.GetCompilationForLanguageServices(
-                                     sourceFiles,
-                                     GetSourceCodeKind(request),
-                                     GetUsings(request.Workspace),
+                                     sourceFiles, 
+                                     GetSourceCodeKind(request), 
+                                     GetUsings(request.Workspace), 
                                      budget);
 
             var file = processed.GetFileFromBufferId(request.ActiveBufferId);
@@ -79,7 +78,7 @@ namespace WorkspaceServer.Servers.Roslyn
             var symbolToSymbolKey = new Dictionary<(string, int), ISymbol>();
             foreach (var symbol in symbols)
             {
-                var key = (symbol.Name, (int)symbol.Kind);
+                var key = (symbol.Name, (int) symbol.Kind);
                 if (!symbolToSymbolKey.ContainsKey(key))
                 {
                     symbolToSymbolKey[key] = symbol;
@@ -168,7 +167,7 @@ namespace WorkspaceServer.Servers.Roslyn
             var sourceFiles = workspace.GetSourceFiles();
             var (_, documents) = await package.GetCompilationForLanguageServices(sourceFiles, GetSourceCodeKind(request), GetUsings(request.Workspace), budget);
 
-            var selectedDocument = documents.FirstOrDefault(doc => doc.IsMatch(request.ActiveBufferId.FileName))
+            var selectedDocument = documents.FirstOrDefault(doc => doc.IsMatch( request.ActiveBufferId.FileName))
                                    ??
                                    (documents.Count == 1 ? documents.Single() : null);
 
@@ -217,7 +216,7 @@ namespace WorkspaceServer.Servers.Roslyn
                         requestId: request.RequestId);
 
                     compileResult.AddFeature(new ProjectDiagnostics(result.ProjectDiagnostics));
-
+                  
                     return compileResult;
                 }
             }
@@ -252,26 +251,20 @@ namespace WorkspaceServer.Servers.Roslyn
                     return runResult;
                 }
 
-                DirectoryInfo directory;
-                FileInfo entryPoint;
-                directory = package.Directory;
-                entryPoint = package.EntryPointAssemblyPath;
+                await EmitCompilationAsync(result.Compilation, package);
 
-                await EmitCompilationAsync(result.Compilation, entryPoint);
-
-                if (package is ICouldBeWebProject webProject && webProject.IsWebProject)
+                if (package.IsWebProject)
                 {
                     return RunWebRequest(package, request.RequestId);
                 }
 
-                if (package is ICouldBeUnitTestProject unitTestProject && unitTestProject.IsUnitTestProject)
+                if (package.IsUnitTestProject)
                 {
-                    return await RunUnitTestsAsync((Package)package, result.DiagnosticsWithinBuffers, budget, request.RequestId);
+                    return await RunUnitTestsAsync(package, result.DiagnosticsWithinBuffers, budget, request.RequestId);
                 }
 
                 return await RunConsoleAsync(
-                           directory,
-                           entryPoint,
+                           package,
                            result.DiagnosticsWithinBuffers,
                            budget,
                            request.RequestId,
@@ -280,11 +273,11 @@ namespace WorkspaceServer.Servers.Roslyn
             }
         }
 
-        private static async Task EmitCompilationAsync(Compilation compilation, FileInfo entryPoint)
+        private static async Task EmitCompilationAsync(Compilation compilation, Package package)
         {
-            if (entryPoint == null)
+            if (package == null)
             {
-                throw new ArgumentNullException(nameof(entryPoint));
+                throw new ArgumentNullException(nameof(package));
             }
 
             using (var operation = Log.OnEnterAndExit())
@@ -294,7 +287,7 @@ namespace WorkspaceServer.Servers.Roslyn
                 {
                     try
                     {
-                        compilation.Emit(entryPoint.FullName);
+                        compilation.Emit(package.EntryPointAssemblyPath.FullName);
                         operation.Info("Emit succeeded on attempt #{attempt}", attempt);
                         break;
                     }
@@ -312,17 +305,16 @@ namespace WorkspaceServer.Servers.Roslyn
         }
 
         private static async Task<RunResult> RunConsoleAsync(
-            DirectoryInfo directory,
-            FileInfo entryPoint,
+            Package package,
             IEnumerable<SerializableDiagnostic> diagnostics,
             Budget budget,
             string requestId,
             bool includeInstrumentation,
             string commandLineArgs)
         {
-            var dotnet = new Dotnet(directory);
+            var dotnet = new Dotnet(package.Directory);
 
-            var commandName = $@"""{entryPoint.FullName}""";
+            var commandName = $@"""{package.EntryPointAssemblyPath.FullName}""";
             var commandLineResult = await dotnet.Execute(
                                         commandName.AppendArgs(commandLineArgs),
                                         budget);
@@ -360,9 +352,9 @@ namespace WorkspaceServer.Servers.Roslyn
         }
 
         private static async Task<RunResult> RunUnitTestsAsync(
-            Package package,
-            IEnumerable<SerializableDiagnostic> diagnostics,
-            Budget budget,
+            Package package, 
+            IEnumerable<SerializableDiagnostic> diagnostics, 
+            Budget budget, 
             string requestId)
         {
             var dotnet = new Dotnet(package.Directory);
@@ -408,7 +400,7 @@ namespace WorkspaceServer.Servers.Roslyn
             return result;
         }
 
-        private static RunResult RunWebRequest(IPackage package, string requestId)
+        private static RunResult RunWebRequest(Package package, string requestId)
         {
             var runResult = new RunResult(succeeded: true, requestId: requestId);
             runResult.AddFeature(new WebServer(package));

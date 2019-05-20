@@ -32,9 +32,7 @@ namespace WorkspaceServer.Packaging
     public abstract class Package : 
         PackageBase,
         ICreateWorkspaceForLanguageServices,
-        ICreateWorkspaceForRun,
-        ICouldBeWebProject,
-        ICouldBeUnitTestProject
+        ICreateWorkspaceForRun
     {
         internal const string DesignTimeBuildBinlogFileName = "package_designTimeBuild.binlog";
         private static readonly object _createDirectoryLock = new object();

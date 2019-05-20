@@ -613,7 +613,7 @@ namespace FibonacciTest
             }
         }
 
-        [Fact (Skip = "Skipped")]
+        [Fact]
         public async Task When_aspnet_webapi_workspace_request_succeeds_then_output_shows_web_response()
         {
             var workspaceType = await Create.WebApiWorkspaceCopy();
