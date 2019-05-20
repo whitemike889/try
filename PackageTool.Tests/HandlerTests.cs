@@ -22,21 +22,21 @@ namespace MLS.PackageTool.Tests
             _output = output;
         }
 
-        [Fact]
-        public void Locate_assembly_does_something()
-        {
-            Program.LocateAssemblyHandler(_console);
-            _console.Out.ToString().Should().Contain("project");
-        }
+        // [Fact]
+        // public void Locate_assembly_does_something()
+        // {
+        //     Program.LocateAssemblyHandler(_console);
+        //     _console.Out.ToString().Should().Contain("project");
+        // }
 
-        [Fact]
-        public async Task Extract_extracts_something()
-        {
-            await Program.ExtractPackageHandler(_console);
-            var children = Directory.GetDirectories(Program.AssemblyDirectory());
-            children.Single().Should().EndWith("project");
-            Directory.Delete(Path.Combine(Program.AssemblyDirectory(), "project"), recursive: true);
+        // [Fact]
+        // public async Task Extract_extracts_something()
+        // {
+        //     await Program.ExtractPackageHandler(_console);
+        //     var children = Directory.GetDirectories(Program.AssemblyDirectory());
+        //     children.Single().Should().EndWith("project");
+        //     Directory.Delete(Path.Combine(Program.AssemblyDirectory(), "project"), recursive: true);
 
-        }
+        // }
     }
 }

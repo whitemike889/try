@@ -22,19 +22,28 @@ namespace MLS.PackageTool.Tests
         {
             _output = output;
             _parser = CommandLineParser.Create(
-                getAssembly: (_) => { _command = "getAssembly"; },
-                extract: (_) => {
+                getBuildAsset: (_) => { _command = PackageToolConstants.LocateBuildAsset; },
+                getWasmAsset: (_) => { _command = PackageToolConstants.LocateWasmAsset; },
+                prepare: (_) => {
                     _command = "prepare-package";
                     return Task.CompletedTask;
                 });
         }
 
         [Fact]
-        public async Task Parse_locate_assembly_locates_assembly()
+        public async Task Parse_locate_build_locates_build()
         {
-            await _parser.InvokeAsync("locate-projects", _console);
-            _command.Should().Be("getAssembly");
+            await _parser.InvokeAsync(PackageToolConstants.LocateBuildAsset, _console);
+            _command.Should().Be(PackageToolConstants.LocateBuildAsset);
         }
+
+        [Fact]
+        public async Task Parse_locate_wasm_locates_wasm()
+        {
+            await _parser.InvokeAsync(PackageToolConstants.LocateWasmAsset, _console);
+            _command.Should().Be(PackageToolConstants.LocateWasmAsset);
+        }
+
 
         [Fact]
         public async Task Parse_extract_calls_prepare()
