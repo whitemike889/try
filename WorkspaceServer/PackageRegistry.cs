@@ -39,7 +39,11 @@ namespace WorkspaceServer
         }
 
         private PackageRegistry(
+<<<<<<< HEAD
             PackageSource addSource,
+=======
+            DirectoryInfo addSource,
+>>>>>>> 61e1683097179c38ecfd231faae75ce8851949de
             IEnumerable<IPackageDiscoveryStrategy> strategies,
             IEnumerable<IPackageFinder> packageFinders = null)
         {
@@ -235,11 +239,19 @@ namespace WorkspaceServer
         IEnumerator IEnumerable.GetEnumerator() =>
             GetEnumerator();
 
+<<<<<<< HEAD
         private static IEnumerable<IPackageFinder> GetDefaultPackageFinders(PackageSource addSource)
+=======
+        private static IEnumerable<IPackageFinder> GetDefaultPackageFinders(DirectoryInfo addSource)
+>>>>>>> 61e1683097179c38ecfd231faae75ce8851949de
         {
             yield return new PackageNameIsFullyQualifiedPath();
             yield return new FindPackageInDefaultLocation(new FileSystemDirectoryAccessor(Package.DefaultPackagesDirectory));
             yield return new WebAssemblyAssetFinder(Package.DefaultPackagesDirectory, addSource);
+<<<<<<< HEAD
+=======
+            //yield return new LocalToolInstallingPackageDiscoveryStrategy(Package.DefaultPackagesDirectory, addSource);
+>>>>>>> 61e1683097179c38ecfd231faae75ce8851949de
         }
 
         Task<T> IPackageFinder.Find<T>(PackageDescriptor descriptor)
